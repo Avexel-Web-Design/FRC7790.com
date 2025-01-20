@@ -92,7 +92,11 @@ body {
 }
 
 .subtitle {
+    position: absolute;
     text-align: center;
-    color: rgb(238, 185, 9);
+    color: rgb(2, 95, 241, 0.7);
     font-size: 1rem;
+    top: 65%;
+    font-size: large;
+    font-weight: bold;
 }
