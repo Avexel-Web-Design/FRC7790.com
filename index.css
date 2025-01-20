@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -10,7 +12,7 @@ body {
     display: flex; /* Center the content vertically and horizontally */
     height: 100vh; /* Full height */
     background-color: #f4f4f4; /* Optional background */
-    font-family: 'Montserrat', 'Comfortaa','Roboto' sans-serif;
+    font-family: 'Montserrat';
 }
 
 .navbar {
@@ -41,6 +43,7 @@ body {
 .nav-links a {
     color: white;
     text-decoration: none;
+    font-family: "Montserrat";
     font-size: 1.2rem;
     padding: 10px 15px; /* Add padding for better click area */
     border-radius: 5px; /* Optional rounded corners */
@@ -64,6 +67,7 @@ body {
 }
 
 .title {
+    font-family: 'Montserrat';
     position: absolute;
     top: 33%;
     left: 50%;
@@ -73,11 +77,13 @@ body {
 }
 
 .title h1 {
+    font-family: 'Montserrat';
     Font-size: 5rem;
 
 }
 
 .title h2 {
+    font-family: 'Montserrat';
     padding-top: 2rem;
     Font-size: 4rem;
 }
@@ -92,11 +98,13 @@ body {
 }
 
 .subtitle {
+    font-family: 'Montserrat';
     position: absolute;
     text-align: center;
-    color: rgb(2, 95, 241, 0.7);
+    margin: auto;
+    color: rgba(255, 255, 255, 0.7);
     font-size: 1rem;
     top: 65%;
-    font-size: large;
+    font-size: 2.5rem;
     font-weight: bold;
 }
