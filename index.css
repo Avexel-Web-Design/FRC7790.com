@@ -84,9 +84,9 @@ body {
 
 .title img {
     padding-top: 5vh;
-    position: absolute;
-    margin: auto;
-    left: 50%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
     width: 40vw;
     height: 23vh;
 }
