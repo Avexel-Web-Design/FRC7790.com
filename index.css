@@ -10,7 +10,7 @@ body {
     display: flex; /* Center the content vertically and horizontally */
     height: 100vh; /* Full height */
     background-color: #f4f4f4; /* Optional background */
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Montserrat', 'Comfortaa','Roboto' sans-serif;
 }
 
 .navbar {
