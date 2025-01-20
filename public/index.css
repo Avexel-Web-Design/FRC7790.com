@@ -1,0 +1,83 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    display: flex; /* Center the content vertically and horizontally */
+    height: 100vh; /* Full height */
+    background-color: #f4f4f4; /* Optional background */
+    font-family: 'Roboto', sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 10vh;
+    color: white;
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.nav-links {
+    list-style: none;
+    text-align: center;
+    display: flex;
+    gap: 2vw;
+    margin: auto;
+}
+
+.nav-links li {
+    padding: 8px 12px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+    padding: 10px 15px; /* Add padding for better click area */
+    border-radius: 5px; /* Optional rounded corners */
+}
+
+.nav-links a:hover {
+    background-color: #6f96af; /* Change background color on hover */
+    color: #fff; /* Ensure text color remains visible */
+}
+
+.navbar img {
+    height: 10vh;
+    width: auto;
+    object-fit: contain;
+}
+
+.banner img {
+    height: 100vh;
+    width: 100vw;
+    object-fit: cover;
+}
+
+.title {
+    position: absolute;
+    top: 33%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: rgba(2, 95, 241, 0.7);
+}
+
+.title h1 {
+    Font-size: 5rem;
+
+}
+
+.title h2 {
+    padding-top: 2rem;
+    Font-size: 4rem;
+}
