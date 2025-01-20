@@ -81,3 +81,11 @@ body {
     padding-top: 2rem;
     Font-size: 4rem;
 }
+
+.title img {
+    padding-top: 5vh;
+    position: absolute;
+    left: 50%;
+    width: 40vw;
+    height: 23vh;
+}
