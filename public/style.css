@@ -62,33 +62,34 @@ body {
     color: #00c6ff;
 }
 
-/* Video section */
 .video-section {
-    position: relative;
-    width: 100vw;
-    height: 100vh; /* Ensure the video covers the full screen height */
+    position: relative;          /* Required for absolute positioning of the video */
     display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    margin-top: 10vh; /* Remove any default margin */
+    justify-content: center;     /* Centers content horizontally */
+    align-items: center;         /* Centers content vertically */
+    width: 100vw;                /* Makes sure it spans the full viewport width */
+    height: 100vh;               /* Makes sure it spans the full viewport height */
+    overflow: hidden;            /* Ensures no overflow outside the screen */
+    margin: 0;
     padding: 0;
 }
 
 .video-section video {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centers the video */
+    width: 100%;                     /* Expands to full width of viewport */
+    height: 100%;                    /* Expands to full height of viewport */
+    object-fit: cover;               /* Ensures video covers the area without distortion */
 }
 
 .opening {
-    position: absolute;
-    margin-top: 10vh;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
     color: rgb(255, 255, 255);
 }
 
@@ -97,20 +98,40 @@ body {
     Font-size: 5rem;
     padding-top: 2rem;
     padding-bottom: 2rem;
-    padding-left: 20vw;
 }
 
 .opening h2 {
     font-family: Montserrat, Roboto, sans-serif;
     Font-size: 3rem;
     padding-top: 2rem;
-    padding-left: 20vw;
+
 }
 .opening img {
-    margin-left: 25vw;
     padding-top: 10vh;
-    display: block;
-    margin-right: auto;
+    max-width: 70%;
     width: auto;
-    height: 35vh;
+    height: auto;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-35px)
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0px)
+    }
+}
+
+.animate {
+    opacity: 0;
+    transform: translateX(-35px);
+    transition: all 0.8s ease-out;
+}
+
+.animate.visible {
+    opacity: 1;
+    transform: translateX(0px);
+    animation: fadeIn 0.6s ease-out forwards;
 }
