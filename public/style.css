@@ -1,0 +1,142 @@
+/* Resetting base styles to avoid spacing issues */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Roboto, sans-serif;
+    color: #ffffff;
+    background-color: #000000;
+}
+
+/* Navbar */
+.navbar {
+    position: static;
+    top: 2vh;
+    left: 0;
+    width: 100%;
+    height: 70px; /* Set explicit height for proper layout */
+    padding: 0 20px; /* Add some horizontal padding */
+    margin-top: 2vh;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center aligns the nav links */
+    background: rgba(0, 0, 0, 1); /* Semi-transparent background */
+    z-index: 10;
+}
+
+.navbar .logo {
+    position: absolute; /* Take the logo out of the flex layout */
+    left: 50px; /* Align the logo to the far left */
+    top: 2vh;
+}
+
+.navbar .logo img {
+    height: 10vh; /* Adjust logo size as per your design */
+}
+
+.navbar .nav-links {
+    margin-top: 3vh;
+    list-style: none;
+    display: flex;
+    gap: 60px;
+}
+
+.navbar .nav-links li {
+    display: inline;
+}
+
+.navbar .nav-links li a {
+    font-family: Roboto, sans-serif;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.4rem;
+    transition: color 0.3s ease;
+}
+
+.navbar .nav-links li a:hover {
+    color: #00c6ff;
+}
+
+/* Video section */
+.video-section {
+    position: relative;
+    width: 100vw;
+    height: 100vh; /* Ensure the video covers the full screen height */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-top: 10vh; /* Remove any default margin */
+    padding: 0;
+}
+
+.video-section video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+#overlay-text {
+    z-index: 1;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+#overlay-text h1,
+#overlay-text h2 {
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+#main-text {
+    font-size: 3rem;
+}
+
+#riptide-text {
+    font-size: 5rem;
+    font-family: "Anurati", sans-serif;
+    letter-spacing: 5px;
+    display: none; /* Initially hidden */
+    animation: fadeInUp 1s ease forwards;
+}
+/* Custom text animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade-in animation after video ends */
+#overlay-text.show {
+    opacity: 1;
+}
+
+#riptide-text.show {
+    display: block;
+}
+
+/* Media Queries */
+@media screen and (max-width: 768px) {
+    #overlay-text h1 {
+        font-size: 2rem;
+    }
+
+    #riptide-text {
+        font-size: 3rem;
+        letter-spacing: 3px;
+    }
+}
