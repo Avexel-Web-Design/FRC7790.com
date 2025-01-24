@@ -157,7 +157,7 @@ html {
 }
 
 .robot img {
-    width: 30%;
+    width: 35vw;
     height: auto;
     object-fit: contain;
     margin-top: -30vh;

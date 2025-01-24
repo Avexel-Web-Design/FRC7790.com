@@ -118,9 +118,9 @@ html {
 
 .riptide img {
     width: auto;
-    height: 50vh;
+    height: 70vh;
     object-fit: contain;
-    margin-top: -250px;
+    margin-top: -325px;
     margin-left: 20vw;
     float: left;
 }
