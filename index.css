@@ -11,7 +11,7 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     font-weight: 400;
 }
 
@@ -19,20 +19,6 @@ html {
     height: 100%;
 }
 
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 3vh;
-    color: white;
-    padding: 0 50px;
-    position: fixed;
-    top: 5%; 
-    width: calc(100% - 100px); 
-    margin: 0 auto; 
-    z-index: 1000;
-    transition: top 0.3s;
-}
 
 .nav-links {
     list-style: none;
@@ -49,7 +35,7 @@ html {
 .nav-links a {
     color: black;
     text-decoration: none;
-    font-family: "Comfortaa";
+    font-family: "Comfortaa", sans-serif;
     font-size: 1.2rem;
     font-weight: 400;
     padding: 10px 15px; 
@@ -86,7 +72,7 @@ html {
 }
 
 .title {
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     font-size: 5.3rem;
     font-weight: 400;
     position: absolute;
@@ -99,7 +85,7 @@ html {
 }
 
 .subtitle {
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     position: absolute;
     text-align: center;
     margin: auto;
@@ -128,7 +114,7 @@ html {
 }
 
 .robot {
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     text-align: left;
     margin-top: 50px;
     margin-left: 50px;
@@ -164,7 +150,7 @@ html {
     background-color: #FF7100;
     color: white;
     text-decoration: none;
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     font-size: 1rem;
     font-weight: 300;
     border-radius: 50px;
@@ -177,7 +163,7 @@ html {
 
 .footer {
     background-color: black;
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     text-align: center;
     padding: 70px 0;
     position: relative;
