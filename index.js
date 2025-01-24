@@ -13,3 +13,27 @@ window.addEventListener('scroll', () => {
   }
   lastScrollTop = scrollTop;
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const elements = document.querySelectorAll('.robot, .robot img');
+
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.75
+  };
+
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  elements.forEach(element => {
+    element.classList.add('animated');
+    observer.observe(element);
+  });
+});
