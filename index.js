@@ -1,6 +1,6 @@
 let lastScrollTop = 0;
 const navbar = document.getElementById('navbar');
-const scrollThreshold = 50; // Adjust this value to set how soon the navbar disappears
+const scrollThreshold = 10; // Adjust this value to set how soon the navbar disappears
 
 window.addEventListener('scroll', () => {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;

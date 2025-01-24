@@ -24,7 +24,7 @@ html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 3vw;
+    height: 3vh;
     color: white;
     padding: 0 50px; /* Increase the padding for more spacing from the sides */
     position: fixed;
@@ -80,7 +80,7 @@ html {
 }
 
 .banner img {
-    height: 110.6vh;
+    height: 115vh;
     width: 100vw;
     object-fit: cover;
 }
@@ -95,6 +95,7 @@ html {
     transform: translate(-50%, -50%);
     text-align: center;
     color: #005AA0;
+    padding-bottom: 3vh;
 }
 
 .subtitle {
@@ -103,6 +104,7 @@ html {
     text-align: center;
     margin: auto;
     color: rgba(255, 255, 255, 1);
+    padding-top: 2vh;
     font-size: 1rem;
     top: 50%;
     font-weight: 300;
@@ -117,6 +119,7 @@ html {
     top: 85%;
     left: 50%;
     transform: translate(-50%, -50%);
+    padding-top: 7vh;
     width: 560px;
     height: 315px;
     display: flex;
@@ -143,6 +146,13 @@ html {
     color: white;
     margin-top: 25px;
     line-height: .5;
+}
+
+.robot img {
+    width: 30%;
+    height: auto;
+    object-fit: contain;
+    margin-top: 50px;
 }
 
 .robot-button {
