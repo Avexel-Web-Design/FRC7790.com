@@ -83,6 +83,7 @@ html {
     height: 115vh;
     width: 100vw;
     object-fit: cover;
+    clip-path: ellipse(100% 90% at 50% 0%);
 }
 
 .title {
@@ -116,7 +117,7 @@ html {
 
 .video-container {
     position: absolute;
-    top: 85%;
+    top: 75%;
     left: 50%;
     transform: translate(-50%, -50%);
     padding-top: 7vh;
@@ -137,8 +138,8 @@ html {
 .robot {
     font-family: 'Comfortaa', sans-serif;
     text-align: left;
-    margin-top: 50px;
-    margin-left: 50px;
+    margin-top: 5vh;
+    margin-left: 15vw;
 }
 
 .robot h1 {
@@ -151,7 +152,7 @@ html {
     font-size: 1rem;
     font-weight: 300;
     color: white;
-    margin-top: 25px;
+    margin-top: 2.5vh;
     line-height: .5;
 }
 
@@ -159,8 +160,8 @@ html {
     width: 30%;
     height: auto;
     object-fit: contain;
-    margin-top: -250px;
-    margin-right: 50px;
+    margin-top: -30vh;
+    margin-right: 15vw;
     float: right;
 }
 
