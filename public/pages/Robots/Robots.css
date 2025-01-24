@@ -113,7 +113,89 @@ html {
     height: auto;
     object-fit: contain;
     margin-top: -250px;
-    margin-left: 250px;
+    margin-left: 300px;
+    float: left;
+}
+
+.cobalt {
+    font-family: 'Comfortaa';
+    text-align: left;
+    margin-top: 200px;  
+}
+
+.cobalt h1 {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #ffffff;
+    margin-left: 300px;
+    line-height: 1.5;
+}
+
+.cobalt h2 {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #ffffff;
+    margin-left: 345px;
+    line-height: 1.25;
+}
+
+.cobalt name {
+    font-family: 'Anurati';
+    font-size: 4.5rem;
+    font-weight: 400;
+    color: #015aaa;
+    margin-left: 270px;
+    line-height: 1.25;
+    letter-spacing: 0.1em;
+}
+
+.cobalt img {
+    width: 25%;
+    height: auto;
+    object-fit: contain;
+    margin-top: -250px;
+    margin-right: 300px;
+    float: right;
+}
+
+.hungry {
+    font-family: 'Comfortaa';
+    text-align: right;
+    margin-top: 200px;  
+}
+
+.hungry h1 {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #ffffff;
+    margin-right: 450px;
+    line-height: 1.5;
+}
+
+.hungry h2 {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #ffffff;
+    margin-right: 310px;
+    line-height: 1.25;
+}
+
+.hungry name {
+    font-family: 'Anurati';
+    font-size: 4.2rem;
+    font-weight: 400;
+    color: white;
+    margin-right: 270px;
+    line-height: 1.25;
+    letter-spacing: 0.1em;
+}
+
+.hungry img {
+    width: 25%;
+    height: auto;
+    object-fit: contain;
+    margin-top: -250px;
+    margin-left: 300px;
     float: left;
 }
 
