@@ -8,13 +8,16 @@
 }
 
 body {
+    background-color: black;
     margin: 0;
     padding: 0;
-    display: flex; /* Center the content vertically and horizontally */
-    height: 100vh; /* Full height */
-    background-color: #f4f4f4; /* Optional background */
+    height: 100%;
     font-family: 'Comfortaa';
     font-weight: 400;
+}
+
+html {
+    height: 100%;
 }
 
 .navbar {
@@ -29,6 +32,7 @@ body {
     width: calc(100% - 100px); /* Adjust width to account for padding */
     margin: 0 auto; /* Center the navbar */
     z-index: 1000;
+    transition: top 0.3s;
 }
 
 .nav-links {
@@ -44,7 +48,7 @@ body {
 }
 
 .nav-links a {
-    color: white;
+    color: black;
     text-decoration: none;
     font-family: "Comfortaa";
     font-size: 1.2rem;
@@ -55,7 +59,7 @@ body {
 
 .nav-links a:hover {
     background-color: #ffffff58; /* Change background color on hover */
-    color: #fff; /* Ensure text color remains visible */
+    color: black; /* Ensure text color remains visible */
 }
 
 .nav-links a.current-page {
@@ -67,6 +71,12 @@ body {
     height: 8vh;
     width: auto;
     object-fit: contain;
+}
+
+.banner {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 .banner img {
@@ -95,28 +105,60 @@ body {
     color: rgba(255, 255, 255, 1);
     font-size: 1rem;
     top: 50%;
-    font-weight: 400;
-    max-width: 40%; /* Adjust as needed */
+    font-weight: 300;
+    max-width: 40%;
     left: 50%;
     transform: translateX(-50%);
-    line-height: 1.5; /* Double the line spacing */
+    line-height: 1.5;
 }
 
 .video-container {
     position: absolute;
-    top: 85%; /* Adjust as needed */
+    top: 85%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 560px; /* Match the iframe width */
-    height: 315px; /* Match the iframe height */
+    width: 560px;
+    height: 315px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .robot {
-    background-color: black;
+    font-family: 'Comfortaa';
+    text-align: left;
+    margin-top: 50px;
+    margin-left: 50px;
+}
+
+.robot h1 {
+    font-size: 5.3rem;
+    font-weight: 400;
+    color: #FF7100;
+}
+
+.robot p {
+    font-size: 1rem;
+    font-weight: 300;
     color: white;
-    padding: 50px 20px;
-    text-align: center;
+    margin-top: 25px;
+    line-height: .5;
+}
+
+.robot-button {
+    display: inline-block;
+    padding: 22px 36px;
+    margin-top: 25px;
+    background-color: #FF7100;
+    color: white;
+    text-decoration: none;
+    font-family: 'Comfortaa';
+    font-size: 1rem;
+    font-weight: 300;
+    border-radius: 50px;
+    transition: background-color 0.3s ease;
+}
+
+.robot-button:hover {
+    background-color: #e66000;
 }
