@@ -152,7 +152,9 @@ html {
     width: 30%;
     height: auto;
     object-fit: contain;
-    margin-top: 50px;
+    margin-top: -250px;
+    margin-right: 50px;
+    float: right;
 }
 
 .robot-button {
