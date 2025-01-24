@@ -1,27 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
-
-@font-face {
-    font-family: 'Anurati';
-    src: url('../../assets/fonts/Anurati-Regular.otf') format('opentype');
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* riptide.css */
 
 body {
-    background-color: black;
     margin: 0;
     padding: 0;
-    height: 100%;
-    font-family: 'Comfortaa';
-    font-weight: 400;
-}
-
-html {
-    height: 100%;
+    font-family: Arial, sans-serif;
 }
 
 .navbar {
@@ -32,9 +14,9 @@ html {
     color: white;
     padding: 0 50px;
     position: fixed;
-    top: 5%; 
-    width: calc(100% - 100px); 
-    margin: 0 auto; 
+    top: 5%;
+    width: calc(100% - 100px);
+    margin: 0 auto;
     z-index: 1000;
     transition: top 0.3s;
 }
@@ -43,7 +25,7 @@ html {
     list-style: none;
     text-align: center;
     display: flex;
-    gap: 2vw; 
+    gap: 2vw;
     margin: auto;
 }
 
@@ -54,17 +36,18 @@ html {
 .nav-links a {
     color: white;
     text-decoration: none;
-    font-family: "Comfortaa";
+    font-family: "Comfortaa", sans-serif;
     font-size: 1.2rem;
     font-weight: 400;
-    padding: 10px 15px; 
-    border-radius: 10px; 
-    transition: transform 0.3s ease, background-color 0.3s ease; 
+    padding: 10px 15px; /* Add padding for better click area */
+    border-radius: 10px; /* Optional rounded corners */
+    transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 .nav-links a:hover {
-    background-color: #ffffff58;
-    color: white;
+    background-color: #ffffff58; /* Change background color on hover */
+    color: white; /* Ensure text color remains visible */
+    transition: background-color 0.3s ease;
 }
 
 .nav-links a.current-page {
@@ -79,62 +62,35 @@ html {
 }
 
 .title {
-    font-weight: 400;
-    position: absolute;
-    transform: translate(-50%, -50%);
     text-align: center;
-    color: #FF7100;
-    padding-bottom: 3vh;
+    margin: 2rem 0;
 }
 
-.title h1 {
-    font-family: 'Comfortaa';
-    font-size: 5.3rem;
-    top: 36%;
-    left: 50%;
-}
-
-.title name {
-    font-family: 'Anurati';
-    font-size: 6rem;
-    top: 36%;
-    left: 50%;
-}
-
-.footer {
-    background-color: black;
-    font-family: 'Comfortaa';
-    text-align: center;
-    padding: 70px 0;
-    position: relative;
-    width: 100%;
+.feature-content {
     display: flex;
     justify-content: space-around;
     align-items: center;
+    margin: 2rem 0;
+}
+
+.feature-content video{
+    width: 25vw;
+    height: auto;
+}
+
+.feature-content img {
+    width: 25vw;
+    height: auto;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-around;
+    background-color: #333;
+    color: white;
+    padding: 2rem 0;
 }
 
 .footer div {
-    flex: 1;
     text-align: center;
-}
-
-.footer h1 {
-    color: #FF7100;
-    font-size: 3.7rem;
-    font-weight: 400;
-    line-height: 1.25;
-}
-
-.footer h2 {
-    color: #FF7100;
-    font-size: 2.2rem;
-    font-weight: 400;
-    line-height: 2;
-}
-
-.footer p {
-    color: white;
-    font-size: 1rem;
-    font-weight: 300;
-    line-height: 1.25;
 }
