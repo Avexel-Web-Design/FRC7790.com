@@ -19,6 +19,20 @@ html {
     height: 100%;
 }
 
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 3vh;
+    color: white;
+    padding: 0 50px;
+    position: fixed;
+    top: 5%;
+    width: calc(100% - 100px);
+    margin: 0 auto;
+    z-index: 1000;
+    transition: top 0.3s;
+}
 
 .nav-links {
     list-style: none;

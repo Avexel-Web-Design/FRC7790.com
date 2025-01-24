@@ -236,6 +236,29 @@ html {
     background-color: rgba(255, 255, 255, 0);
     z-index: 1;
 }
+/* Media query to handle tinier screens than desktops. */
+@media (max-width: 768px) {
+    /* Adjust the breakpoint and values as needed */
+
+    .riptide, .cobalt, .hungry {
+        text-align: center;
+    }
+
+    .riptide h1, .riptide h2, .riptide name,
+    .cobalt h1, .cobalt h2, .cobalt name,
+    .hungry h1, .hungry h2, .hungry name {
+        margin: 1rem auto;
+    }
+
+    .riptide img, .cobalt img, .hungry img {
+        float: none;
+        display: block;
+        margin: 1rem auto;
+        width: 80%; /* Ensure the image scales down for smaller devices */
+        height: auto;
+    }
+}
+
 
 .footer {
     background-color: black;
@@ -273,4 +296,66 @@ html {
     font-size: 1rem;
     font-weight: 300;
     line-height: 1.25;
+}
+
+/* Hides the native checkbox input and shows the hamburger icon instead */
+#menu-btn {
+    display: none; /* Hide checkbox visually */
+}
+
+.menu-icon {
+    display: none; /* Hidden on large screens */
+    cursor: pointer;
+    /* Simple styling for a hamburger icon */
+    width: 2rem;
+    height: 2rem;
+    position: relative;
+}
+
+.menu-icon span {
+    background-color: white;
+    display: block;
+    height: 0.2rem;
+    margin: 0.4rem 0;
+    transition: 0.3s;
+}
+
+/* When screen is smaller, show the hamburger icon and hide the nav links by default */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        text-align: center;
+        background-color: black;
+        width: 100%;
+        padding: 1rem 0;
+        position: absolute;
+        top: 5vh;  /* Adjust for your header height if needed */
+        left: 0;
+        z-index: 999;
+    }
+
+    /* Show the hamburger on small screens */
+    .menu-icon {
+        display: block;
+    }
+
+    /* When the checkbox is "checked," show the nav links */
+    #menu-btn:checked ~ .nav-links {
+        display: flex;
+    }
+
+    /* Footer resizing / stacking on smaller screens */
+    .footer {
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+    }
+
+    .footer h1,
+    .footer h2,
+    .footer p {
+        margin: 0.5rem 0;
+        text-align: center;
+    }
 }
