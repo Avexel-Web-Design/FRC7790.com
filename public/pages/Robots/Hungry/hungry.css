@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: 'Anurati';
-    src: url('../../assets/fonts/Anurati-Regular.otf') format('opentype');
+    src: url('../../../assets/fonts/Anurati-Regular.otf') format('opentype');
 }
 
 * {
@@ -16,14 +16,13 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     font-weight: 400;
 }
 
 html {
     height: 100%;
 }
-
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -32,9 +31,9 @@ html {
     color: white;
     padding: 0 50px;
     position: fixed;
-    top: 5%; 
-    width: calc(100% - 100px); 
-    margin: 0 auto; 
+    top: 5%;
+    width: calc(100% - 100px);
+    margin: 0 auto;
     z-index: 1000;
     transition: top 0.3s;
 }
@@ -54,7 +53,7 @@ html {
 .nav-links a {
     color: white;
     text-decoration: none;
-    font-family: "Comfortaa";
+    font-family: "Comfortaa", sans-serif;
     font-size: 1.2rem;
     font-weight: 400;
     padding: 10px 15px; 
@@ -80,7 +79,7 @@ html {
 
 .footer {
     background-color: black;
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     text-align: center;
     padding: 70px 0;
     position: relative;

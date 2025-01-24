@@ -18,7 +18,9 @@ body {
     height: 100%;
     font-family: 'Comfortaa', sans-serif;
     font-weight: 400;
+    font-size: 1rem;
 }
+
 
 html {
     height: 100%;
@@ -29,9 +31,12 @@ html {
     list-style: none;
     text-align: center;
     display: flex;
-    gap: 2vw; 
+    flex-wrap: wrap;
+    gap: 1.5vw;
     margin: auto;
+    justify-content: center;
 }
+
 
 .nav-links li {
     padding: 8px 12px;
