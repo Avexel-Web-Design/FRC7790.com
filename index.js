@@ -15,7 +15,7 @@ window.addEventListener('scroll', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  const elements = document.querySelectorAll('.robot, .robot img');
+  const elements = document.querySelectorAll('.title, .subtitle, .video-container, .robot, .robot img, .footer h1, .footer h2, .footer p');
 
   const observerOptions = {
     root: null,
@@ -33,7 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }, observerOptions);
 
   elements.forEach(element => {
-    element.classList.add('animated');
+    if (element.classList.contains('title') || element.classList.contains('subtitle') || element.classList.contains('video-container')) {
+      element.classList.add('title-animated');
+    } else {
+      element.classList.add('animated');
+    }
     observer.observe(element);
   });
 });
