@@ -39,3 +39,27 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(robot);
   });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const robots = document.querySelectorAll('.riptide, .cobalt, .hungry');
+
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.75
+  };
+
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  robots.forEach(robot => {
+    robot.classList.add('robot');
+    observer.observe(robot);
+  });
+});

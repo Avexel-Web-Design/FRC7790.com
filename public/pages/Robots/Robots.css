@@ -331,8 +331,8 @@ html {
 /* Add this at the end of your CSS file */
 .robot {
     opacity: 0;
-    transform: translateX(100px);
-    transition: opacity 0.9s ease-out, transform 0.8s ease-out;
+    transform: translateY(100px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
 .robot.visible {
