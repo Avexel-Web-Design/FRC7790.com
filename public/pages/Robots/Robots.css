@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
+
+@font-face {
+    font-family: 'Anurati';
+    src: url('../../assets/fonts/Anurati-Regular.otf') format('opentype');
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Comfortaa';
+    font-weight: 400;
+}
+
+html {
+    height: 100%;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 3vh;
+    color: white;
+    padding: 0 50px; /* Increase the padding for more spacing from the sides */
+    position: fixed;
+    top: 5%; /* Move the navbar farther down */
+    width: calc(100% - 100px); /* Adjust width to account for padding */
+    margin: 0 auto; /* Center the navbar */
+    z-index: 1000;
+    transition: top 0.3s;
+}
+
+.nav-links {
+    list-style: none;
+    text-align: center;
+    display: flex;
+    gap: 1vw; /* Reduce the spacing between each word */
+    margin: auto;
+}
+
+.nav-links li {
+    padding: 8px 12px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-family: "Comfortaa";
+    font-size: 1.2rem;
+    font-weight: 400;
+    padding: 10px 15px; /* Add padding for better click area */
+    border-radius: 10px; /* Optional rounded corners */
+}
+
+.nav-links a:hover {
+    background-color: #ffffff58; /* Change background color on hover */
+    color: white; /* Ensure text color remains visible */
+}
+
+.nav-links a.current-page {
+    text-decoration: underline; /* Underline the current page link */
+    text-underline-offset: 4px; /* Adjust the offset as needed */
+}
+
+.navbar img {
+    height: 8vh;
+    width: auto;
+    object-fit: contain;
+}
+
+.riptide {
+    font-family: 'Comfortaa';
+    text-align: right;
+    margin-top: 300px;  
+}
+
+.riptide h1 {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #ffffff;
+    margin-right: 450px;
+    line-height: 1.5;
+}
+
+.riptide h2 {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #ffffff;
+    margin-right: 310px;
+    line-height: 1.25;
+}
+
+.riptide name {
+    font-family: 'Anurati';
+    font-size: 4rem;
+    font-weight: 400;
+    color: #FF7100;
+    margin-right: 270px;
+    line-height: 1.25;
+}
+
+.riptide img {
+    width: 25%;
+    height: auto;
+    object-fit: contain;
+    margin-top: -250px;
+    margin-left: 250px;
+    float: left;
+}
+
+.footer {
+    background-color: black;
+    font-family: 'Comfortaa';
+    text-align: center;
+    padding: 70px 0;
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.footer div {
+    flex: 1;
+    text-align: center;
+}
+
+.footer h1 {
+    color: #FF7100;
+    font-size: 3.7rem;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+.footer h2 {
+    color: #FF7100;
+    font-size: 2.2rem;
+    font-weight: 400;
+    line-height: 2;
+}
+
+.footer p {
+    color: white;
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.25;
+}
