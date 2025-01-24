@@ -4,7 +4,7 @@
 
 We as members, contributors, and leaders pledge to make participation in our
 community a harassment-free experience for everyone, regardless of age, body
-size, visible or invisible disability, ethnicity, sex characteristics, LGBTQQIAP2SA+ status, level of experience, education, socio-economic status,
+size, visible or invisible disability, ethnicity, sex characteristics, gender identity, level of experience, education, socio-economic status,
 nationality, personal appearance, race, or religion.
 
 We pledge to act and interact in ways that contribute to an open, welcoming,
@@ -27,7 +27,7 @@ Examples of unacceptable behavior include:
 
 * The use of sexualized language or imagery, and sexual attention or
   advances of any kind
-* Trolling, insulting or derogatory comments such as calling someone a nigger, and personal or political attacks
+* Trolling, insulting or derogatory comments, and personal or political attacks
 * Public or private harassment
 * Publishing others' private information, such as a physical or email
   address, without their explicit permission

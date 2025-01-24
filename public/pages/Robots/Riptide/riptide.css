@@ -30,11 +30,11 @@ html {
     align-items: center;
     height: 3vh;
     color: white;
-    padding: 0 50px;
+    padding: 0 50px; /* Increase the padding for more spacing from the sides */
     position: fixed;
-    top: 5%; 
-    width: calc(100% - 100px); 
-    margin: 0 auto; 
+    top: 5%; /* Move the navbar farther down */
+    width: calc(100% - 100px); /* Adjust width to account for padding */
+    margin: 0 auto; /* Center the navbar */
     z-index: 1000;
     transition: top 0.3s;
 }
@@ -43,7 +43,7 @@ html {
     list-style: none;
     text-align: center;
     display: flex;
-    gap: 2vw; 
+    gap: 1vw; /* Reduce the spacing between each word */
     margin: auto;
 }
 
@@ -57,19 +57,18 @@ html {
     font-family: "Comfortaa";
     font-size: 1.2rem;
     font-weight: 400;
-    padding: 10px 15px; 
-    border-radius: 10px; 
-    transition: transform 0.3s ease, background-color 0.3s ease; 
+    padding: 10px 15px; /* Add padding for better click area */
+    border-radius: 10px; /* Optional rounded corners */
 }
 
 .nav-links a:hover {
-    background-color: #ffffff58;
-    color: white;
+    background-color: #ffffff58; /* Change background color on hover */
+    color: white; /* Ensure text color remains visible */
 }
 
 .nav-links a.current-page {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+    text-decoration: underline; /* Underline the current page link */
+    text-underline-offset: 4px; /* Adjust the offset as needed */
 }
 
 .navbar img {
@@ -82,7 +81,6 @@ html {
     font-family: 'Comfortaa';
     text-align: right;
     margin-top: 300px;  
-    position: relative;
 }
 
 .riptide h1 {
@@ -108,11 +106,6 @@ html {
     color: #FF7100;
     margin-right: 270px;
     line-height: 1.25;
-    text-decoration: none;
-}
-
-.riptide a name {
-    text-decoration: none;
 }
 
 .riptide img {
@@ -122,16 +115,6 @@ html {
     margin-top: -250px;
     margin-left: 300px;
     float: left;
-}
-
-.riptide overlay {
-    position: absolute;
-    top: 0;
-    right: 250px;
-    width: 30%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0);
-    z-index: 1;
 }
 
 .cobalt {
@@ -175,16 +158,6 @@ html {
     float: right;
 }
 
-.cobalt overlay {
-    position: absolute;
-    top: 650px;
-    left: 250px;
-    width: 30%;
-    height: 30%;
-    background-color: rgba(255, 255, 255, 0);
-    z-index: 1;
-}
-
 .hungry {
     font-family: 'Comfortaa';
     text-align: right;
@@ -224,16 +197,6 @@ html {
     margin-top: -250px;
     margin-left: 300px;
     float: left;
-}
-
-.hungry overlay {
-    position: absolute;
-    top: 1050px;
-    right: 250px;
-    width: 30%;
-    height: 30%;
-    background-color: rgba(255, 255, 255, 0);
-    z-index: 1;
 }
 
 .footer {
