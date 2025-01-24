@@ -16,7 +16,7 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     font-weight: 400;
 }
 
@@ -54,7 +54,7 @@ html {
 .nav-links a {
     color: white;
     text-decoration: none;
-    font-family: "Comfortaa";
+    font-family: "Comfortaa", sans-serif;
     font-size: 1.2rem;
     font-weight: 400;
     padding: 10px 15px; /* Add padding for better click area */
@@ -80,7 +80,7 @@ html {
 }
 
 .riptide {
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     text-align: right;
     margin-top: 300px;  
     position: relative;
@@ -103,7 +103,7 @@ html {
 }
 
 .riptide name {
-    font-family: 'Anurati';
+    font-family: 'Anurati', Roboto, sans-serif;
     font-size: 4rem;
     font-weight: 400;
     color: #FF7100;
@@ -136,7 +136,7 @@ html {
 }
 
 .cobalt {
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     text-align: left;
     margin-top: 200px;  
 }
@@ -158,7 +158,7 @@ html {
 }
 
 .cobalt name {
-    font-family: 'Anurati';
+    font-family: 'Anurati', roboto, sans-serif;
     font-size: 4.5rem;
     font-weight: 400;
     color: #015aaa;
@@ -187,7 +187,7 @@ html {
 }
 
 .hungry {
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     text-align: right;
     margin-top: 200px;  
 }
@@ -209,7 +209,7 @@ html {
 }
 
 .hungry name {
-    font-family: 'Anurati';
+    font-family: 'Anurati', sans-serif;
     font-size: 4.2rem;
     font-weight: 400;
     color: white;
@@ -239,7 +239,7 @@ html {
 
 .footer {
     background-color: black;
-    font-family: 'Comfortaa';
+    font-family: 'Comfortaa', sans-serif;
     text-align: center;
     padding: 70px 0;
     position: relative;
