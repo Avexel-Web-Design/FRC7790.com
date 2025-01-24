@@ -221,13 +221,24 @@ html {
     line-height: 1.25;
 }
 
+.title-animated {
+    opacity: 0;
+    transform: translate(-50%, 50px); /* Move down initially while keeping horizontal translation */
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.title-animated.visible {
+    opacity: 1;
+    transform: translate(-50%, -50%); /* Move to its original position */
+}
+
 .animated {
     opacity: 0;
-    transform: translateY(100px);
+    transform: translateY(100px); /* Move down initially */
     transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
 .animated.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0); /* Move straight up to its original position */
 }
