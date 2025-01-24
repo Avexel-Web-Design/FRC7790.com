@@ -59,11 +59,13 @@ html {
     font-weight: 400;
     padding: 10px 15px; /* Add padding for better click area */
     border-radius: 10px; /* Optional rounded corners */
+    transition: transform 0.3s ease, background-color 0.3s ease; 
 }
 
 .nav-links a:hover {
     background-color: #ffffff58; /* Change background color on hover */
     color: white; /* Ensure text color remains visible */
+    transition: background-color 0.3s ease; 
 }
 
 .nav-links a.current-page {
