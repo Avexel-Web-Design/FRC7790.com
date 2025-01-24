@@ -30,11 +30,11 @@ html {
     align-items: center;
     height: 3vh;
     color: white;
-    padding: 0 50px; /* Increase the padding for more spacing from the sides */
+    padding: 0 50px;
     position: fixed;
-    top: 5%; /* Move the navbar farther down */
-    width: calc(100% - 100px); /* Adjust width to account for padding */
-    margin: 0 auto; /* Center the navbar */
+    top: 5%; 
+    width: calc(100% - 100px); 
+    margin: 0 auto; 
     z-index: 1000;
     transition: top 0.3s;
 }
@@ -43,7 +43,7 @@ html {
     list-style: none;
     text-align: center;
     display: flex;
-    gap: 1vw; /* Reduce the spacing between each word */
+    gap: 2vw; 
     margin: auto;
 }
 
@@ -57,18 +57,19 @@ html {
     font-family: "Comfortaa";
     font-size: 1.2rem;
     font-weight: 400;
-    padding: 10px 15px; /* Add padding for better click area */
-    border-radius: 10px; /* Optional rounded corners */
+    padding: 10px 15px; 
+    border-radius: 10px; 
+    transition: transform 0.3s ease, background-color 0.3s ease; 
 }
 
 .nav-links a:hover {
-    background-color: #ffffff58; /* Change background color on hover */
-    color: white; /* Ensure text color remains visible */
+    background-color: #ffffff58;
+    color: white;
 }
 
 .nav-links a.current-page {
-    text-decoration: underline; /* Underline the current page link */
-    text-underline-offset: 4px; /* Adjust the offset as needed */
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
 
 .navbar img {
@@ -77,126 +78,27 @@ html {
     object-fit: contain;
 }
 
-.riptide {
-    font-family: 'Comfortaa';
-    text-align: right;
-    margin-top: 300px;  
-}
-
-.riptide h1 {
-    font-size: 2.2rem;
+.title {
     font-weight: 400;
-    color: #ffffff;
-    margin-right: 450px;
-    line-height: 1.5;
-}
-
-.riptide h2 {
-    font-size: 2.2rem;
-    font-weight: 400;
-    color: #ffffff;
-    margin-right: 310px;
-    line-height: 1.25;
-}
-
-.riptide name {
-    font-family: 'Anurati';
-    font-size: 4rem;
-    font-weight: 400;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    text-align: center;
     color: #FF7100;
-    margin-right: 270px;
-    line-height: 1.25;
+    padding-bottom: 3vh;
 }
 
-.riptide img {
-    width: 25%;
-    height: auto;
-    object-fit: contain;
-    margin-top: -250px;
-    margin-left: 300px;
-    float: left;
-}
-
-.cobalt {
+.title h1 {
     font-family: 'Comfortaa';
-    text-align: left;
-    margin-top: 200px;  
+    font-size: 5.3rem;
+    top: 36%;
+    left: 50%;
 }
 
-.cobalt h1 {
-    font-size: 2.2rem;
-    font-weight: 400;
-    color: #ffffff;
-    margin-left: 300px;
-    line-height: 1.5;
-}
-
-.cobalt h2 {
-    font-size: 2.2rem;
-    font-weight: 400;
-    color: #ffffff;
-    margin-left: 345px;
-    line-height: 1.25;
-}
-
-.cobalt name {
+.title name {
     font-family: 'Anurati';
-    font-size: 4.5rem;
-    font-weight: 400;
-    color: #015aaa;
-    margin-left: 270px;
-    line-height: 1.25;
-    letter-spacing: 0.1em;
-}
-
-.cobalt img {
-    width: 25%;
-    height: auto;
-    object-fit: contain;
-    margin-top: -250px;
-    margin-right: 300px;
-    float: right;
-}
-
-.hungry {
-    font-family: 'Comfortaa';
-    text-align: right;
-    margin-top: 200px;  
-}
-
-.hungry h1 {
-    font-size: 2.2rem;
-    font-weight: 400;
-    color: #ffffff;
-    margin-right: 450px;
-    line-height: 1.5;
-}
-
-.hungry h2 {
-    font-size: 2.2rem;
-    font-weight: 400;
-    color: #ffffff;
-    margin-right: 310px;
-    line-height: 1.25;
-}
-
-.hungry name {
-    font-family: 'Anurati';
-    font-size: 4.2rem;
-    font-weight: 400;
-    color: white;
-    margin-right: 270px;
-    line-height: 1.25;
-    letter-spacing: 0.1em;
-}
-
-.hungry img {
-    width: 25%;
-    height: auto;
-    object-fit: contain;
-    margin-top: -250px;
-    margin-left: 300px;
-    float: left;
+    font-size: 6rem;
+    top: 36%;
+    left: 50%;
 }
 
 .footer {
