@@ -37,4 +37,24 @@ document.addEventListener('DOMContentLoaded', () => {
     element.classList.add('animate');
     observer.observe(element);
   });
+
+  const animatedSections = document.querySelectorAll('.feature');
+
+  const featureObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        const video = entry.target.querySelector('video');
+        if (video) {
+          video.play();
+        }
+      }
+    });
+  }, {
+    threshold: 0.1
+  });
+
+  animatedSections.forEach(section => {
+    featureObserver.observe(section);
+  });
 });

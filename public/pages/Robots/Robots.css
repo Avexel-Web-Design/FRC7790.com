@@ -222,7 +222,7 @@ html {
     width: auto;
     height: 50vh;
     object-fit: contain;
-    margin-top: -250px;
+    margin-top: 0;
     margin-left: 20vw;
     float: left;
 }
@@ -294,12 +294,14 @@ html {
     background-color: black;
     font-family: 'Comfortaa', sans-serif;
     text-align: center;
-    padding-top: 15vh;
+    margin-top: 15vh;
     position: relative;
     width: 100%;
     display: flex;
     justify-content: space-around;
     align-items: center;
+    position: relative;
+    bottom: 0;
 }
 
 .footer div {

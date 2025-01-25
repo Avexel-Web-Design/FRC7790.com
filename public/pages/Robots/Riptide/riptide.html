@@ -1,19 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Required Meta Tags -->
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-
-  <!-- Page Title -->
-  <title>Baywatch Robotics</title>
-
-  <!-- CSS Stylesheet -->
+  <title>Riptide</title>
   <link rel="stylesheet" href="riptide.css">
-
-  <!-- Favicon (Optional) -->
-  <link rel="icon" type="image/png" href="../../../assets/images/logo.png">
+  <script src="riptide.js" defer></script>
 </head>
 <body>
 <nav class="navbar" id="navbar">
@@ -40,24 +31,45 @@
 </div>
 
 <div class="content">
-  <h1>Algae Manipulator</h1>
-  <p>RIPTIDE has a simple algae intake and placement system, with a singular compliant wheel on each side of the algae. The structure is attached to the bottom of the first stage of the robot’s elevator and can rotate up and down. This allows it to pick up algae from the low spot on the reef as coral is placed on L4 and put it in the processor.</p>
-  <video class="ball-sucker-video" src="../../../assets/images/RIPTIDE/Ball-sucker.mp4" autoplay muted loop></video>
-</div>
-<div class="content">
-  <h1>Coral Placement</h1>
-  <p>RIPTIDE uses three-inch compliant wheel rollers on either side of the coral to index it from the funnel. The placement mechanism rotates vertically at the top of the two-stage elevator and laterally at the end of the arm. A camera on the back looks through the coral and uses the three-axis maneuverability to shoot the coral onto the reef correctly every time.</p>
-  <video class="placement-video" src="../../../assets/images/RIPTIDE/Placement.mp4" autoplay muted loop></video>
-</div>
-<div class="content">
-  <h1>Climb</h1>
-  <p>RIPTIDE can climb onto the Deep Cage with a design inspired by RustHounds Ri3D. The funnel folds back to create room in the robot's middle for the cage, which the climbing arm rotates into the robot.</p>
-  <img class="climb-image" src="../../../assets/images/RIPTIDE/Climb.png" alt="Climb">
-</div>
-<div class="content">
-  <h1>Auton</h1>
-  <p>RIPTIDE places four Coral onto L4 during auton, totaling 28 points. With a combination of the Coral “scope,” 3-camera pose estimation, Algae detection, and placement memory, the robot can be almost fully autonomous during TeleOp, only requiring human input to help decide where to score or to avoid defensive robots.</p>
-  <video class="full-intake-video" src="../../../assets/images/RIPTIDE/Full-intake.mp4" autoplay muted loop></video>
+  <section class="feature animated-section" id="algae-manipulator">
+    <div class="text-content">
+      <h1>Algae Manipulator</h1>
+      <p>RIPTIDE has a simple algae intake and placement system, with a singular compliant wheel on each side of the algae. The structure is attached to the bottom of the first stage of the robot’s elevator and can rotate up and down. This allows it to pick up algae from the low spot on the reef as coral is placed on L4 and put it in the processor.</p>
+    </div>
+    <div class="media-content">
+      <video class="feature-video" src="../../../assets/images/RIPTIDE/Ball-sucker.mp4" autoplay muted loop></video>
+    </div>
+  </section>
+
+  <section class="feature" id="coral-placement">
+    <div class="text-content">
+      <h1>Coral Placement</h1>
+      <p>RIPTIDE uses three-inch compliant wheel rollers on either side of the coral to index it from the funnel. The placement mechanism rotates vertically at the top of the two-stage elevator and laterally at the end of the arm. A camera on the back looks through the coral and uses the three-axis maneuverability to shoot the coral onto the reef correctly every time.</p>
+    </div>
+    <div class="media-content">
+      <video class="feature-video" src="../../../assets/images/RIPTIDE/Placement.mp4" autoplay muted ></video>
+    </div>
+  </section>
+
+  <section class="feature" id="climb">
+    <div class="text-content">
+      <h1>Climb</h1>
+      <p>RIPTIDE can climb onto the Deep Cage with a design inspired by RustHounds Ri3D. The funnel folds back to create room in the robot's middle for the cage, which the climbing arm rotates into the robot.</p>
+    </div>
+    <div class="media-content">
+      <img class="feature-image" src="../../../assets/images/RIPTIDE/Climb.png" alt="Climb">
+    </div>
+  </section>
+
+  <section class="feature" id="auton">
+    <div class="text-content">
+      <h1>Auton</h1>
+      <p>RIPTIDE places four Coral onto L4 during auton, totaling 28 points. With a combination of the Coral “scope,” 3-camera pose estimation, Algae detection, and placement memory, the robot can be almost fully autonomous during TeleOp, only requiring human input to help decide where to score or to avoid defensive robots.</p>
+    </div>
+    <div class="media-content">
+      <video class="feature-video" src="../../../assets/images/RIPTIDE/Full-intake.mp4" autoplay muted ></video>
+    </div>
+  </section>
 </div>
 
 <footer class="footer">
@@ -76,7 +88,5 @@
   </div>
 </footer>
 
-<!-- JavaScript -->
-<script src="riptide.js"></script>
 </body>
 </html>

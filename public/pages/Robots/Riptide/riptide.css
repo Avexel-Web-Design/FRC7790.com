@@ -18,6 +18,7 @@ body {
     height: 100%;
     font-family: 'Comfortaa', sans-serif;
     font-weight: 400;
+    color: white; /* Ensure text is visible on black background */
 }
 
 html {
@@ -82,13 +83,13 @@ html {
 .title {
     text-align: center;
     position: relative;
+    margin-top: 20vh;
 }
 
 .title h1 {
     font-family: 'Comfortaa', sans-serif;
     font-size: 5.3rem;
     font-weight: 400;
-    margin-top: 20vh;
     color: #FF7100;
 }
 
@@ -101,56 +102,145 @@ html {
 }
 
 .title img {
-    margin-top: 5vh;
+    margin-top: -17vh;
     width: auto;
-    height: 50vh;
+    height: 60vh;
+    margin-bottom: 10vh;
 }
 
 .content {
-    font-family: 'Comfortaa', sans-serif;
-    text-align: left;
-    margin-top: 40vh;
-    position: relative;
     display: flex;
-    flex-direction: column; /* Add this line */
-    justify-content: flex-start; /* Change this line */
-    align-items: flex-start; /* Change this line */
+    flex-direction: column;
+    align-items: center;
+    padding: 5vh;
 }
 
-.content video{
-    width: 25vw;
+.feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 2vh 0;
+    width: 80%;
+}
+
+.feature:nth-child(even) {
+    flex-direction: column;
+}
+
+.feature h1 {
+    font-size: 2rem;
+    margin: 0 0 2vw 0;
+    color: #FF7100; /* Orange color for titles */
+}
+
+.feature-content {
+    display: flex;
+    flex-direction: row; /* Ensure text and image are side by side */
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* Ensure all features use a row layout */
+.feature {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    margin: 4vh auto; /* Consistent spacing for all sections */
+}
+
+/* Target even children to reverse the order if needed */
+.feature:nth-child(even) {
+    flex-direction: row-reverse;
+}
+
+/* Text content styling */
+.text-content, .feature > div:not(.media-content) {
+    flex: 1;
+    padding: 20px;
+    max-width: 45%;
+}
+
+/* Media content styling */
+.media-content, .feature > video, .feature > img {
+    flex: 1;
+    max-width: 45%;
+    margin: 0 20px;
+}
+
+/* Ensure direct children (h1, p) in features without wrappers are grouped */
+.feature > h1, .feature > p {
+    width: 100%;
+    max-width: 45%;
+}
+
+.feature-content img {
+    width: 45%;
     height: auto;
 }
 
-.content img {
-    width: 25vw;
+.feature-content .text {
+    width: 45%;
+    padding: 20px;
+    font-size: 1.2em;
+}
+
+.feature p {
+    font-size: 1.2em;
+    line-height: 1.6;
+    margin: 0;
+    color: white; /* White color for body text */
+}
+
+.feature img, .feature video {
+    max-width: 600px; /* Increase the maximum width */
+    border-radius: 10px;
+    margin: 0 20px;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0;
+}
+
+.section-header {
+    font-size: 2em;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.section-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.section-content .text {
+    width: 50%;
+    order: 1;
+}
+
+.section-content .media {
+    width: 50%;
+    order: 2;
+}
+
+.section-content img {
+    width: 50%; /* Adjust width to 50% */
     height: auto;
 }
 
-.content h1 {
-    font-size: 2.5rem;
-    font-weight: 400;
-    color: #FF7100;
-    margin-left: 20vw;
-    line-height: 1.5;
-    max-width: 30%;
+.section-content .text {
+    width: 50%; /* Adjust width to 50% */
+    padding: 20px;
+    font-size: 1.2em;
 }
 
-.content p {
-    font-size: 1.5rem;
-    font-weight: 400;
-    color: #ffffff;
-    margin-left: 20vw;
-    line-height: 1.5;
-    max-width: 30%;
-}
-
-.content ball-sucker {
-    margin-right: 5vw;
-
-}
-
-.footer {
+footer {
     background-color: black;
     font-family: 'Comfortaa', sans-serif;
     text-align: center;
@@ -188,15 +278,55 @@ html {
     line-height: 1.25;
 }
 
-/* Add this at the end of your CSS file */
-.animate {
-    opacity: 0;
-    transform: translateY(100px);
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* Final state for elements when they become visible */
-.visible {
-  opacity: 1;
-  transform: translateY(0);
+.feature {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px 0;
+}
+
+.text-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.media-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.feature-video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Fade-in from below keyframe */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hide elements initially */
+.animated-section {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* Once the element is in view */
+.animated-section.visible {
+  animation: fadeInUp 0.8s ease-out forwards;
 }
