@@ -16,12 +16,12 @@ window.addEventListener('scroll', () => {
 
 // Code to affect when the different elements appear on the screen
 document.addEventListener('DOMContentLoaded', () => {
-  const elements = document.querySelectorAll('.title, .content, .footer');
+  const elements = document.querySelectorAll('.title, .content, .footer h1, .footer h2, .footer p, .footer');
 
   const observerOptions = {
     root: null,
     rootMargin: '0px',
-    threshold: 0.75
+    threshold: 0.01
   };
 
   const observer = new IntersectionObserver((entries, observer) => {
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(element);
   });
 
-  const animatedSections = document.querySelectorAll('.feature');
+  const animatedSections = document.querySelectorAll('.feature, .footer');
 
   const featureObserver = new IntersectionObserver(entries => {
     entries.forEach(entry => {
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }, {
-    threshold: 0.1
+    threshold: 0.01
   });
 
   animatedSections.forEach(section => {

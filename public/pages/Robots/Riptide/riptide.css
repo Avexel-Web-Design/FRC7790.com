@@ -247,6 +247,7 @@ footer {
     padding-top: 15vh;
     position: relative;
     width: 100%;
+    padding: 70px 0;
     display: flex;
     justify-content: space-around;
     align-items: center;
