@@ -270,4 +270,29 @@ html {
         left: 0.5rem; /* Adjust as needed */
         width: 90vw; /* Adjust as needed */
     }
+
+    .footer {
+        flex-direction: column;
+        padding: 20px 0;
+    }
+
+    .footer div {
+        margin-bottom: 20px;
+    }
+
+    .footer h1 {
+        font-size: 2rem;
+    }
+    
+    .footer h2 {
+        font-size: 1.5rem;
+    }
+
+    .footer p {
+        font-size: 0.875rem;
+    }
+
+    .footer img {
+        height: 3vh;
+    }
 }

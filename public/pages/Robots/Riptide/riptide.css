@@ -318,6 +318,35 @@ html {
     height: auto;
 }
 
+/* Media query for footer */
+@media (max-width: 600px) {
+    /* Adjust the breakpoint and values as needed */
+    .footer {
+        flex-direction: column;
+        padding: 20px 0;
+    }
+
+    .footer div {
+        margin-bottom: 20px;
+    }
+
+    .footer h1 {
+        font-size: 2rem;
+    }
+    
+    .footer h2 {
+        font-size: 1.5rem;
+    }
+
+    .footer p {
+        font-size: 0.875rem;
+    }
+
+    .footer img {
+        height: 3vh;
+    }
+}
+
 /* Fade-in from below keyframe */
 @keyframes fadeInUp {
   0% {
