@@ -100,9 +100,10 @@ html {
     color: #FF7100;
 }
 
-.title img {
-    width: 25vw;
-    height: auto;
+.title video {
+    margin-top: 0;
+    width: auto;
+    height: 25vh;
 }
 
 .content {
@@ -114,7 +115,6 @@ html {
     flex-direction: column; /* Add this line */
     justify-content: flex-start; /* Change this line */
     align-items: flex-start; /* Change this line */
-    margin: 2rem 0;
 }
 
 .content video{
@@ -131,7 +131,7 @@ html {
     font-size: 2.5rem;
     font-weight: 400;
     color: #FF7100;
-    margin-left: 20;
+    margin-left: 20vw;
     line-height: 1.5;
     max-width: 30%;
 }
@@ -140,7 +140,7 @@ html {
     font-size: 1.5rem;
     font-weight: 400;
     color: #ffffff;
-    margin-left: 20;
+    margin-left: 20vw;
     line-height: 1.5;
     max-width: 30%;
 }
