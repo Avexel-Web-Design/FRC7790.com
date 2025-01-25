@@ -1,9 +1,27 @@
-/* riptide.css */
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
 
-body {
+@font-face {
+    font-family: 'Anurati';
+    src: url('../../assets/fonts/Anurati-Regular.otf') format('opentype');
+}
+
+* {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Comfortaa', sans-serif;
+    font-weight: 400;
+}
+
+html {
+    height: 100%;
 }
 
 .navbar {
@@ -14,9 +32,9 @@ body {
     color: white;
     padding: 0 50px;
     position: fixed;
-    top: 5%;
-    width: calc(100% - 100px);
-    margin: 0 auto;
+    top: 5%; 
+    width: calc(100% - 100px); 
+    margin: 0 auto; 
     z-index: 1000;
     transition: top 0.3s;
 }
@@ -25,7 +43,7 @@ body {
     list-style: none;
     text-align: center;
     display: flex;
-    gap: 2vw;
+    gap: 2vw; 
     margin: auto;
 }
 
@@ -41,13 +59,13 @@ body {
     font-weight: 400;
     padding: 10px 15px; /* Add padding for better click area */
     border-radius: 10px; /* Optional rounded corners */
-    transition: transform 0.3s ease, background-color 0.3s ease;
+    transition: transform 0.3s ease, background-color 0.3s ease; 
 }
 
 .nav-links a:hover {
     background-color: #ffffff58; /* Change background color on hover */
     color: white; /* Ensure text color remains visible */
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease; 
 }
 
 .nav-links a.current-page {
@@ -63,34 +81,99 @@ body {
 
 .title {
     text-align: center;
-    margin: 2rem 0;
+    margin-top: 20vh;
+    position: relative;
 }
 
-.feature-content {
+.title h1 {
+    font-family: 'Comfortaa', sans-serif;
+    font-size: 5.3rem;
+    font-weight: 400;
+    color: #FF7100;
+}
+
+.title name {
+    font-family: 'Anurati', sans-serif;
+    font-size: 5.3rem;
+    font-weight: 400;
+    color: #FF7100;
+}
+
+.content {
+    font-family: 'Comfortaa', sans-serif;
+    text-align: left;
+    margin-top: 40vh;
+    position: relative;
     display: flex;
     justify-content: space-around;
     align-items: center;
     margin: 2rem 0;
 }
 
-.feature-content video{
+.content video{
     width: 25vw;
     height: auto;
 }
 
-.feature-content img {
+.content img {
     width: 25vw;
     height: auto;
+}
+
+.content p {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #ffffff;
+    margin-right: 40vw;
+    line-height: 1.5;
 }
 
 .footer {
+    background-color: black;
+    font-family: 'Comfortaa', sans-serif;
+    text-align: center;
+    padding-top: 15vh;
+    position: relative;
+    width: 100%;
     display: flex;
     justify-content: space-around;
-    background-color: #333;
-    color: white;
-    padding: 2rem 0;
+    align-items: center;
 }
 
 .footer div {
+    flex: 1;
     text-align: center;
+}
+
+.footer h1 {
+    color: #FF7100;
+    font-size: 3.7rem;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+.footer h2 {
+    color: #FF7100;
+    font-size: 2.2rem;
+    font-weight: 400;
+    line-height: 2;
+}
+
+.footer p {
+    color: white;
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.25;
+}
+
+/* Add this at the end of your CSS file */
+.robot {
+    opacity: 0;
+    transform: translateY(100px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
