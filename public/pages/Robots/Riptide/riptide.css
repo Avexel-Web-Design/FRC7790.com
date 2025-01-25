@@ -81,7 +81,6 @@ html {
 
 .title {
     text-align: center;
-    margin-top: 20vh;
     position: relative;
 }
 
@@ -89,14 +88,21 @@ html {
     font-family: 'Comfortaa', sans-serif;
     font-size: 5.3rem;
     font-weight: 400;
+    margin-top: 20vh;
     color: #FF7100;
 }
 
 .title name {
     font-family: 'Anurati', sans-serif;
     font-size: 5.3rem;
+    margin-top: 20vh;
     font-weight: 400;
     color: #FF7100;
+}
+
+.title img {
+    width: 25vw;
+    height: auto;
 }
 
 .content {
@@ -105,8 +111,9 @@ html {
     margin-top: 40vh;
     position: relative;
     display: flex;
-    justify-content: space-around;
-    align-items: center;
+    flex-direction: column; /* Add this line */
+    justify-content: flex-start; /* Change this line */
+    align-items: flex-start; /* Change this line */
     margin: 2rem 0;
 }
 
@@ -120,12 +127,22 @@ html {
     height: auto;
 }
 
+.content h1 {
+    font-size: 2.5rem;
+    font-weight: 400;
+    color: #FF7100;
+    margin-left: 20;
+    line-height: 1.5;
+    max-width: 30%;
+}
+
 .content p {
     font-size: 1.5rem;
     font-weight: 400;
     color: #ffffff;
-    margin-right: 40vw;
+    margin-left: 20;
     line-height: 1.5;
+    max-width: 30%;
 }
 
 .footer {
