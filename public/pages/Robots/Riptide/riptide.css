@@ -94,16 +94,16 @@ html {
 
 .title name {
     font-family: 'Anurati', sans-serif;
-    font-size: 5.3rem;
-    margin-top: 20vh;
+    font-size: 5.6rem;
+    margin-top: 2vh;
     font-weight: 400;
     color: #FF7100;
 }
 
-.title video {
-    margin-top: 0;
+.title img {
+    margin-top: 5vh;
     width: auto;
-    height: 25vh;
+    height: 50vh;
 }
 
 .content {
@@ -143,6 +143,11 @@ html {
     margin-left: 20vw;
     line-height: 1.5;
     max-width: 30%;
+}
+
+.content ball-sucker {
+    margin-right: 5vw:
+    
 }
 
 .footer {
