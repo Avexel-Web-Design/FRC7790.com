@@ -100,10 +100,9 @@ html {
     color: #FF7100;
 }
 
-.title video {
-    margin-top: 0;
-    width: auto;
-    height: 25vh;
+.title img {
+    height: auto;
+    width: 25vw;
 }
 
 .content {
