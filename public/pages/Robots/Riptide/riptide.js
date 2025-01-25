@@ -16,7 +16,7 @@ window.addEventListener('scroll', () => {
 
 // Code to affect when the different elements appear on the screen
 document.addEventListener('DOMContentLoaded', () => {
-  const elements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, img, video');
+  const elements = document.querySelectorAll('.title, .content, .footer');
 
   const observerOptions = {
     root: null,

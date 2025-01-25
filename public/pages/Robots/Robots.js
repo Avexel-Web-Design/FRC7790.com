@@ -17,7 +17,7 @@ window.addEventListener('scroll', () => {
 
 // Code to affect when the different robots appear on the screen
 document.addEventListener('DOMContentLoaded', () => {
-  const robots = document.querySelectorAll('.riptide, .cobalt, .hungry');
+  const robots = document.querySelectorAll('.riptide, .cobalt, .hungry, .footer');
 
   const observerOptions = {
     root: null,
