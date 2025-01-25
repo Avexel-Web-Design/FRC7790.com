@@ -1,53 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Required Meta Tags -->
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-
-  <!-- Page Title -->
-  <title>Baywatch Robotics</title>
-
-  <!-- CSS Stylesheet -->
+  <title>Riptide</title>
   <link rel="stylesheet" href="cobalt.css">
-
-  <!-- Favicon (Optional) -->
-  <link rel="icon" type="image/png" href="../../../assets/images/logo.png">
+  <script src="cobalt.js" defer></script>
 </head>
 <body>
-  <nav class="navbar" id="navbar">
-    <div class="logo">
-      <a href="../../../../index.html">
-        <img src="../../../assets/images/logo.png" alt="logo">
-      </a>
-    </div>
-    <ul class="nav-links">
-      <li><a href="../../../../index.html">Home</a></li>
-      <li><a href="../../Robots/Robots.html">Robots</a></li>
-      <li><a href="../../Sponsors/Sponsors.html">Sponsors</a></li>
-      <li><a href="../../Schedule/Schedule.html">Schedule</a></li>
-      <li><a href="../../FTC/FTC.html">FTC</a></li>
-    </ul>
-  </nav>
+<nav class="navbar" id="navbar">
+  <div class="logo">
+    <a href="../../../../index.html">
+      <img src="../../../assets/images/logo.png" alt="logo">
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="../../../../index.html">Home</a></li>
+    <li><a href="../../Robots/Robots.html">Robots</a></li>
+    <li><a href="../../Sponsors/Sponsors.html">Sponsors</a></li>
+    <li><a href="../../Schedule/Schedule.html">Schedule</a></li>
+    <li><a href="../../FTC/FTC.html">FTC</a></li>
+  </ul>
+</nav>
 
-  <footer class="footer">
-    <div>
-      <h2>Location</h2>
-      <p>500 Spring Street<br>Harbor Springs, MI 49740</p>
-    </div>
-    <div>
-      <h1>Baywatch</h1>
-      <h1>Robotics</h1>
-    </div>
-    <div>
-      <h2>Contact</h2>
-      <p>baywatch@frc7790.com</p>
-      <p>. . . .</p>
-    </div>
-  </footer>
+<div class="title animate">
+  <h1>Meet</h1>
+  <name>R I P T I D E</name>
+</div>
+<div class="title animated-section">
+  <img src="../../../assets/images/RIPTIDE/short-better.png">
+</div>
 
-  <!-- JavaScript -->
-  <script src="cobalt.js"></script>
+<div class="content">
+  <section class="feature animate" id="algae-manipulator">
+    <div class="text-content">
+      <h1>Algae Manipulator</h1>
+      <p>RIPTIDE has a simple algae intake and placement system, with a singular compliant wheel on each side of the algae. The structure is attached to the bottom of the first stage of the robot’s elevator and can rotate up and down. This allows it to pick up algae from the low spot on the reef as coral is placed on L4 and put it in the processor.</p>
+    </div>
+    <div class="media-content">
+      <video class="feature-video" src="../../../assets/images/RIPTIDE/Ball-sucker.mp4" autoplay muted></video>
+    </div>
+  </section>
+
+  <section class="feature animate" id="coral-placement">
+    <div class="text-content">
+      <h1>Coral Placement</h1>
+      <p>RIPTIDE uses three-inch compliant wheel rollers on either side of the coral to index it from the funnel. The placement mechanism rotates vertically at the top of the two-stage elevator and laterally at the end of the arm. A camera on the back looks through the coral and uses the three-axis maneuverability to shoot the coral onto the reef correctly every time.</p>
+    </div>
+    <div class="media-content">
+      <video class="feature-video" src="../../../assets/images/RIPTIDE/Placement.mp4" autoplay muted loop></video>
+    </div>
+  </section>
+
+  <section class="feature animate" id="climb">
+    <div class="text-content">
+      <h1>Climb</h1>
+      <p>RIPTIDE can climb onto the Deep Cage with a design inspired by RustHounds Ri3D. The funnel folds back to create room in the robot's middle for the cage, which the climbing arm rotates into the robot.</p>
+    </div>
+    <div class="media-content">
+      <img class="feature-image" src="../../../assets/images/RIPTIDE/Climb.png" alt="Climb">
+    </div>
+  </section>
+
+  <section class="feature animate" id="auton">
+    <div class="text-content">
+      <h1>Auton</h1>
+      <p>RIPTIDE places four Coral onto L4 during auton, totaling 28 points. With a combination of the Coral “scope,” 3-camera pose estimation, Algae detection, and placement memory, the robot can be almost fully autonomous during TeleOp, only requiring human input to help decide where to score or to avoid defensive robots.</p>
+    </div>
+    <div class="media-content">
+      <video class="feature-video" src="../../../assets/images/RIPTIDE/Full-intake.mp4" autoplay muted ></video>
+    </div>
+  </section>
+</div>
+
+<footer class="footer animate">
+  <div>
+    <h2>Location</h2>
+    <p>500 Spring Street<br>Harbor Springs, MI 49740</p>
+  </div>
+  <div>
+    <h1>Baywatch</h1>
+    <h1>Robotics</h1>
+  </div>
+  <div>
+    <h2>Contact</h2>
+    <p>baywatch@frc7790.com</p>
+    <a href="https://www.instagram.com/frc7790/" target="_blank" rel="noopener noreferrer">
+      <img src="https://img.icons8.com/?size=100&id=32320&format=png&color=ffffff" alt="Instagram">
+    </a>
+    <a href="https://www.x.com/frc7790/" target="_blank" rel="noopener noreferrer">
+      <img src="https://img.icons8.com/?size=100&id=jlpBF1fJe9fs&format=png&color=ffffff" alt="X">
+    </a>
+  </div>
+</footer>
+
 </body>
 </html>

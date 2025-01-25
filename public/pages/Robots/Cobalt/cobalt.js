@@ -13,3 +13,48 @@ window.addEventListener('scroll', () => {
   }
   lastScrollTop = scrollTop;
 });
+
+// Code to affect when the different elements appear on the screen
+document.addEventListener('DOMContentLoaded', () => {
+  const elements = document.querySelectorAll('.title, .content, .footer h1, .footer h2, .footer p, .footer');
+
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.01
+  };
+
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  elements.forEach(element => {
+    element.classList.add('animate');
+    observer.observe(element);
+  });
+
+  const animatedSections = document.querySelectorAll('.feature, .footer');
+
+  const featureObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        const video = entry.target.querySelector('video');
+        if (video) {
+          video.play();
+        }
+      }
+    });
+  }, {
+    threshold: 0.01
+  });
+
+  animatedSections.forEach(section => {
+    featureObserver.observe(section);
+  });
+});
