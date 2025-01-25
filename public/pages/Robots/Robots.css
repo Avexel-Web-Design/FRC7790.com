@@ -237,37 +237,8 @@ html {
     z-index: 1;
 }
 
-@media (max-width: 1344px) {
-    .riptide, .cobalt, .hungry {
-        text-align: center;
-        margin: 25vh 1rem; /* Add margin for spacing */
-    }
-
-    .riptide h1, .riptide h2, .riptide name,
-    .cobalt h1, .cobalt h2, .cobalt name,
-    .hungry h1, .hungry h2, .hungry name {
-        margin: 1rem auto;
-    }
-
-    .riptide img, .cobalt img, .hungry img {
-        float: none;
-        display: block;
-        margin: 1rem auto;
-        width: auto; /* Ensure the image scales down for smaller devices */
-        height: 10vh;
-    }
-
-    .riptide overlay, .cobalt overlay, .hungry overlay {
-        position: static; /* Make overlay position static */
-        width: 100%; /* Ensure overlay covers the image */
-        height: auto;
-        background-color: rgba(255, 255, 255, 0.5); /* Optional: Add a semi-transparent background */
-    }
-}
-
-
 /* Media query to handle tinier screens than desktops. */
-@media (max-width: 1344px) {
+@media (max-width: 1400px) {
     /* Adjust the breakpoint and values as needed */
 
     .riptide, .cobalt, .hungry {
@@ -288,7 +259,6 @@ html {
         height: auto;
     }
 }
-
 
 .footer {
     background-color: black;
