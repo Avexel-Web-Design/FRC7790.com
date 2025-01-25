@@ -191,7 +191,7 @@ html {
     position: relative;
     width: 100%;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
 }
 
@@ -218,7 +218,13 @@ html {
     color: white;
     font-size: 1rem;
     font-weight: 300;
-    line-height: 1.25;
+    line-height: 1.5;
+}
+
+.footer img {
+    height: 4vh;
+    width: auto;
+    object-fit: contain;
 }
 
 .title-animate {
