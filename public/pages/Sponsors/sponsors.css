@@ -57,14 +57,14 @@ html {
     font-family: "Comfortaa", sans-serif;
     font-size: 1.2rem;
     font-weight: 400;
-    padding: 10px 15px; /* Add padding for better click area */
-    border-radius: 10px; /* Optional rounded corners */
+    padding: 10px 15px;
+    border-radius: 10px;
     transition: transform 0.3s ease, background-color 0.3s ease; 
 }
 
 .nav-links a:hover {
-    background-color: #ffffff58; /* Change background color on hover */
-    color: white; /* Ensure text color remains visible */
+    background-color: #ffffff58;
+    color: white;
     transition: background-color 0.3s ease; 
 }
 
@@ -95,9 +95,9 @@ html {
 
 .sponsor-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 4rem;
-  padding: 0 10%;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  padding: 0 5%;
 }
 
 .sponsor-item {
@@ -110,31 +110,29 @@ html {
   padding: 2rem;
   border-radius: 15px;
   background: rgba(255, 113, 0, 0.1);
+  min-height: 350px;
 }
 
 .sponsor-item:hover {
   transform: translateY(-10px) scale(1.05);
-  background: rgba(#f26d21
+  background: rgba(255, 113, 0, 0.2);
 }
 
 .sponsor-logo {
-  width: 200px;
-  height: 200px;
+  width: 100%;
+  aspect-ratio: 1/1;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1.5rem;
+  padding: 20px;
 }
 
 .sponsor-logo img {
-  max-width: 100%;
-  max-height: 100%;
-  /*filter: grayscale(100%); This makes the website unseemly when */
-  transition: filter 0.3s ease;
-}
-
-.sponsor-item:hover .sponsor-logo img {
-  /*filter: grayscale(0%); This is unecessary if the grayscale is not kept */
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .sponsor-name {
@@ -172,6 +170,7 @@ html {
 
   .sponsor-item {
     padding: 1.5rem;
+    min-height: 300px;
   }
 
   .sponsors-title {
@@ -229,7 +228,6 @@ html {
 }
 
 @media (max-width: 1000px) {
-
     .robot {
         text-align: center;
         margin-left: 0;
@@ -242,9 +240,7 @@ html {
     }
 }
 
-/* Media query for footer */
 @media (max-width: 600px) {
-    /* Adjust the breakpoint and values as needed */
     .footer {
         flex-direction: column;
         padding: 20px 0;
@@ -271,7 +267,6 @@ html {
     }
 }
 
-/* Add this at the end of your CSS file */
 .animate {
   opacity: 0;
   transform: translateY(30px);
