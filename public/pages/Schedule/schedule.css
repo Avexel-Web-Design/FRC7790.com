@@ -87,7 +87,7 @@ html {
 
 .banner img {
     margin-top: 15vh;
-    height: 35vh;
+    height: auto;
     width: 100vw;
     float: center;
     object-fit: cover;
