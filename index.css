@@ -221,24 +221,24 @@ html {
     line-height: 1.25;
 }
 
-.title-animated {
+.title-animate {
     opacity: 0;
-    transform: translate(-50%, 50px); /* Move down initially while keeping horizontal translation */
+    transform: translate(-50%, 30px); /* Move down initially while keeping horizontal translation */
     transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
-.title-animated.visible {
+.title-animate.visible {
     opacity: 1;
     transform: translate(-50%, -50%); /* Move to its original position */
 }
 
-.animated {
-    opacity: 0;
-    transform: translateY(100px); /* Move down initially */
-    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+.animate {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
 }
 
-.animated.visible {
-    opacity: 1;
-    transform: translateY(0); /* Move straight up to its original position */
+.visible {
+  opacity: 1;
+  transform: translateY(0);
 }

@@ -15,14 +15,14 @@ window.addEventListener('scroll', () => {
   lastScrollTop = scrollTop;
 });
 
-// Code to affect when the different robots appear on the screen
+// Code to affect when the different elements appear on the screen
 document.addEventListener('DOMContentLoaded', () => {
-  const robots = document.querySelectorAll('.riptide, .cobalt, .hungry, .footer');
+  const elements = document.querySelectorAll('.riptide, .cobalt, .hungry, .footer h1, .footer h2, .footer p, .footer');
 
   const observerOptions = {
     root: null,
     rootMargin: '0px',
-    threshold: 0.75
+    threshold: 0.01
   };
 
   const observer = new IntersectionObserver((entries, observer) => {
@@ -34,8 +34,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }, observerOptions);
 
-  robots.forEach(robot => {
-    robot.classList.add('robot');
-    observer.observe(robot);
+  elements.forEach(element => {
+    element.classList.add('animate');
+    observer.observe(element);
+  });
+
+  const animatedSections = document.querySelectorAll('.riptide, .cobalt, .hungry, .footer');
+
+  const featureObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        const video = entry.target.querySelector('video');
+        if (video) {
+          video.play();
+        }
+      }
+    });
+  }, {
+    threshold: 0.01
+  });
+
+  animatedSections.forEach(section => {
+    featureObserver.observe(section);
   });
 });

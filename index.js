@@ -14,13 +14,14 @@ window.addEventListener('scroll', () => {
   lastScrollTop = scrollTop;
 });
 
+// Code to affect when the different elements appear on the screen
 document.addEventListener('DOMContentLoaded', () => {
-  const elements = document.querySelectorAll('.title, .subtitle, .video-container, .robot, .robot img, .footer h1, .footer h2, .footer p');
+  const elements = document.querySelectorAll('.title, .subtitle, .video-container, .robot, .robot img, .footer h1, .footer h2, .footer p, .footer');
 
   const observerOptions = {
     root: null,
     rootMargin: '0px',
-    threshold: 0.5
+    threshold: 0.01
   };
 
   const observer = new IntersectionObserver((entries, observer) => {
@@ -33,11 +34,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }, observerOptions);
 
   elements.forEach(element => {
-    if (element.classList.contains('title') || element.classList.contains('subtitle') || element.classList.contains('video-container')) {
-      element.classList.add('title-animated');
-    } else {
-      element.classList.add('animated');
-    }
+    element.classList.add('animate');
     observer.observe(element);
+  });
+
+  const animatedSections = document.querySelectorAll('.title, .subtitle, .video-container, .robot, .footer');
+
+  const featureObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        const video = entry.target.querySelector('video');
+        if (video) {
+          video.play();
+        }
+      }
+    });
+  }, {
+    threshold: 0.01
+  });
+
+  animatedSections.forEach(section => {
+    featureObserver.observe(section);
   });
 });
