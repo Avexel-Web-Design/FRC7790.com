@@ -125,8 +125,8 @@ html {
     position: relative;
     margin-top: 1rem; /* Adjust as needed */
     left: 1rem; /* Adjust as needed */
-    width: 41.5vw; /* Adjust as needed */
-    height: 40vh; /* Maintain aspect ratio */
+    width: 40vw; /* Adjust as needed */
+    height: auto; /* Maintain aspect ratio */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -257,18 +257,40 @@ html {
   transform: translateY(0);
 }
 
+@media (max-width: 1000px) {
+
+    .robot {
+        text-align: center;
+        margin-left: 0;
+    }
+
+    .robot img {
+        float: none;
+        margin: 2rem auto 0;
+        display: block;
+    }
+}
 /* Media query for smaller screens */
 @media (max-width: 600px) {
+    .title-container {
+        top: 55%;
+    }
+
+    .title {
+        top: 1rem;
+        left: 0.5rem;
+        font-size: 4.5rem;
+    }
+
     .subtitle {
-        top: 1rem; /* Adjust as needed */
-        left: 0.5rem; /* Adjust as needed */
-        font-size: 1rem; /* Adjust as needed */
+        top: 1rem;
+        left: 0.5rem;
     }
 
     .video-container {
-        top: 2rem; /* Adjust as needed */
-        left: 0.5rem; /* Adjust as needed */
-        width: 90vw; /* Adjust as needed */
+        top: 2rem;
+        left: 0.5rem;
+        width: 90vw;
     }
 
     .footer {
