@@ -184,13 +184,14 @@ html {
 }
 
 /* Add this at the end of your CSS file */
-.robot {
+.animate {
     opacity: 0;
     transform: translateY(100px);
     transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
+/* Final state for elements when they become visible */
 .visible {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
