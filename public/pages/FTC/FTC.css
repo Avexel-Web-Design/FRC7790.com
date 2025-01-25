@@ -1,0 +1,169 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
+
+@font-face {
+    font-family: 'Anurati';
+    src: url('../../assets/fonts/Anurati-Regular.otf') format('opentype');
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: black;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Comfortaa', sans-serif;
+    font-weight: 400;
+}
+
+html {
+    height: 100%;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 3vh;
+    color: white;
+    padding: 0 50px;
+    position: fixed;
+    top: 5%; 
+    width: calc(100% - 100px); 
+    margin: 0 auto; 
+    z-index: 1000;
+    transition: top 0.3s;
+}
+
+.nav-links {
+    list-style: none;
+    text-align: center;
+    display: flex;
+    gap: 2vw; 
+    margin: auto;
+}
+
+.nav-links li {
+    padding: 8px 12px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-family: "Comfortaa", sans-serif;
+    font-size: 1.2rem;
+    font-weight: 400;
+    padding: 10px 15px; /* Add padding for better click area */
+    border-radius: 10px; /* Optional rounded corners */
+    transition: transform 0.3s ease, background-color 0.3s ease; 
+}
+
+.nav-links a:hover {
+    background-color: #ffffff58; /* Change background color on hover */
+    color: white; /* Ensure text color remains visible */
+    transition: background-color 0.3s ease; 
+}
+
+.nav-links a.current-page {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.navbar img {
+    height: 8vh;
+    width: auto;
+    object-fit: contain;
+}
+
+.footer {
+    background-color: black;
+    font-family: 'Comfortaa', sans-serif;
+    text-align: center;
+    padding: 70px 0;
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer div {
+    flex: 1;
+    text-align: center;
+}
+
+.footer h1 {
+    color: #FF7100;
+    font-size: 3.7rem;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+.footer h2 {
+    color: #FF7100;
+    font-size: 2.2rem;
+    font-weight: 400;
+    line-height: 2;
+}
+
+.footer p {
+    color: white;
+    font-size: 1rem;
+    font-weight: 300;
+    line-height: 1.5;
+}
+
+.footer img {
+    height: 3vh;
+    width: auto;
+    object-fit: contain;
+}
+
+.footer a {
+    text-decoration: none;
+}
+
+/* Media query for footer */
+@media (max-width: 600px) {
+    /* Adjust the breakpoint and values as needed */
+    .footer {
+        flex-direction: column;
+        padding: 20px 0;
+    }
+
+    .footer div {
+        margin-bottom: 20px;
+    }
+
+    .footer h1 {
+        font-size: 2rem;
+    }
+    
+    .footer h2 {
+        font-size: 1.5rem;
+    }
+
+    .footer p {
+        font-size: 0.875rem;
+    }
+
+    .footer img {
+        height: 3vh;
+    }
+}
+
+/* Add this at the end of your CSS file */
+.animate {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
