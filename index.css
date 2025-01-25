@@ -80,18 +80,23 @@ html {
 }
 
 .banner img {
-    height: 115vh;
+    height: 120vh;
     width: 100vw;
     object-fit: cover;
     clip-path: ellipse(100% 90% at 50% 0%);
 }
 
-.title {
+.title-container {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #005AA0;
+    padding-bottom: 3vh;
     font-family: 'Comfortaa', sans-serif;
     font-size: 5.3rem;
     font-weight: 400;
     position: absolute;
-    top: 36%;
+    top: 60%;
     left: 50%;
     transform: translate(-50%, -50%);
     text-align: center;
@@ -99,30 +104,27 @@ html {
     padding-bottom: 3vh;
 }
 
+.title {
+    margin-bottom: 1rem; /* Space between title and subtitle */
+}
+
 .subtitle {
     font-family: 'Comfortaa', sans-serif;
-    position: absolute;
-    text-align: center;
-    margin: auto;
     color: rgba(255, 255, 255, 1);
-    padding-top: 2vh;
-    font-size: 1rem;
-    top: 50%;
+    font-size: 1rem; /* Adjust as needed */
     font-weight: 300;
-    max-width: 40%;
-    left: 50%;
-    transform: translateX(-50%);
+    max-width: 50vw;
     line-height: 1.5;
+    margin: 0; /* Remove default margin */
+    margin-bottom: 1rem; /* Space between subtitle and video container */
 }
 
 .video-container {
-    position: absolute;
-    top: 70%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding-top: 7vh;
-    width: 600px;
-    height: 400px;
+    position: relative;
+    margin-top: 1rem; /* Adjust as needed */
+    left: 1rem; /* Adjust as needed */
+    width: 50vw; /* Adjust as needed */
+    height: auto; /* Maintain aspect ratio */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -247,4 +249,19 @@ html {
 .visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Media query for smaller screens */
+@media (max-width: 600px) {
+    .subtitle {
+        top: 1rem; /* Adjust as needed */
+        left: 0.5rem; /* Adjust as needed */
+        font-size: 1rem; /* Adjust as needed */
+    }
+
+    .video-container {
+        top: 2rem; /* Adjust as needed */
+        left: 0.5rem; /* Adjust as needed */
+        width: 90vw; /* Adjust as needed */
+    }
 }
