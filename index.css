@@ -87,6 +87,8 @@ html {
 }
 
 .title-container {
+    flex-direction: column;
+    display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
@@ -123,8 +125,8 @@ html {
     position: relative;
     margin-top: 1rem; /* Adjust as needed */
     left: 1rem; /* Adjust as needed */
-    width: 50vw; /* Adjust as needed */
-    height: auto; /* Maintain aspect ratio */
+    width: 41.5vw; /* Adjust as needed */
+    height: 40vh; /* Maintain aspect ratio */
     display: flex;
     justify-content: center;
     align-items: center;
