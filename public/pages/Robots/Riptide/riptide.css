@@ -240,16 +240,15 @@ html {
     font-size: 1.2em;
 }
 
-footer {
+.footer {
     background-color: black;
     font-family: 'Comfortaa', sans-serif;
     text-align: center;
-    padding-top: 15vh;
+    padding: 70px 0;
     position: relative;
     width: 100%;
-    padding: 70px 0;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
 }
 
@@ -276,7 +275,17 @@ footer {
     color: white;
     font-size: 1rem;
     font-weight: 300;
-    line-height: 1.25;
+    line-height: 1.5;
+}
+
+.footer img {
+    height: 4vh;
+    width: auto;
+    object-fit: contain;
+}
+
+.footer a {
+    text-decoration: none;
 }
 
 .content {

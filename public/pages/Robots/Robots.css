@@ -264,15 +264,12 @@ html {
     background-color: black;
     font-family: 'Comfortaa', sans-serif;
     text-align: center;
-    margin-top: 15vh;
+    padding: 70px 0;
     position: relative;
     width: 100%;
-    padding: 70px 0;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
-    position: relative;
-    bottom: 0;
 }
 
 .footer div {
@@ -298,7 +295,17 @@ html {
     color: white;
     font-size: 1rem;
     font-weight: 300;
-    line-height: 1.25;
+    line-height: 1.5;
+}
+
+.footer img {
+    height: 4vh;
+    width: auto;
+    object-fit: contain;
+}
+
+.footer a {
+    text-decoration: none;
 }
 
 /* Add this at the end of your CSS file */

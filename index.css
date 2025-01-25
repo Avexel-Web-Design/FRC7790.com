@@ -231,6 +231,10 @@ html {
     object-fit: contain;
 }
 
+.footer a {
+    text-decoration: none;
+}
+
 .title-animate {
     opacity: 0;
     transform: translate(-50%, 30px); /* Move down initially while keeping horizontal translation */
