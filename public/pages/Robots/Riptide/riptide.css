@@ -2,7 +2,7 @@
 
 @font-face {
     font-family: 'Anurati';
-    src: url('../../assets/fonts/Anurati-Regular.otf') format('opentype');
+    src: url('../../../assets/fonts/Anurati-Regular.otf') format('opentype');
 }
 
 * {
