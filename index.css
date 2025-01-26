@@ -123,7 +123,7 @@ html {
 
 .subtitle {
     font-family: 'Comfortaa', sans-serif;
-    color: rgba(255, 255, 255, 1);
+    color: black;
     font-size: 1rem; /* Adjust as needed */
     font-weight: 300;
     max-width: 50vw;
@@ -268,7 +268,47 @@ html {
   transform: translateY(0);
 }
 
+@media (max-width: 1300px) {
+
+    .title {
+        top: 1rem;
+        left: 0.5rem;
+        font-size: 4.5rem;
+    }
+
+    .subtitle {
+        top: 1rem;
+        left: 0.5rem;
+    }
+
+    .video-container {
+        top: 2rem;
+        left: 0.5rem;
+        width: 50vw;
+    }
+}
+
 @media (max-width: 1000px) {
+    .title-container {
+        top: 55%;
+    }
+
+    .title {
+        top: 1rem;
+        left: 0.5rem;
+        font-size: 4.5rem;
+    }
+
+    .subtitle {
+        top: 1rem;
+        left: 0.5rem;
+    }
+
+    .video-container {
+        top: 2rem;
+        left: 0.5rem;
+        width: 60vw;
+    }
 
     .robot {
         text-align: center;
@@ -281,8 +321,8 @@ html {
         display: block;
     }
 }
-/* Media query for smaller screens */
-@media (max-width: 600px) {
+
+@media (max-width: 650px) {
     .title-container {
         top: 55%;
     }
