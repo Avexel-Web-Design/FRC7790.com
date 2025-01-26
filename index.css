@@ -83,7 +83,6 @@ html {
     height: 120vh;
     width: 100vw;
     object-fit: cover;
-    clip-path: ellipse(100% 90% at 50% 0%);
 }
 
 .title-container {
@@ -142,7 +141,7 @@ html {
 .robot {
     font-family: 'Comfortaa', sans-serif;
     text-align: left;
-    margin-top: 5vh;
+    margin-top: 10vh;
     margin-left: 15vw;
 }
 
