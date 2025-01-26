@@ -109,7 +109,7 @@ html {
   transition: transform 0.3s ease;
   padding: 2rem;
   border-radius: 15px;
-  background: rgba(255, 113, 0, 0.1);
+  background: rgba(255, 115, 0, 0.1);
   min-height: 350px;
 }
 
