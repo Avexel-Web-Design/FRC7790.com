@@ -336,6 +336,7 @@ html {
     .subtitle {
         top: 1rem;
         left: 0.5rem;
+        max-width: 90vw;
     }
 
     .video-container {
@@ -367,5 +368,35 @@ html {
 
     .footer img {
         height: 3vh;
+    }
+}
+
+@media (max-width: 500px) {
+    .title-container {
+        top: 50%;
+    }
+
+    .title {
+        font-size: 3.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 350px) {
+    .title-container {
+        top: 45%;
+    }
+
+    .title {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 285px) {
+    .title {
+        font-size: 2.5rem;
     }
 }
