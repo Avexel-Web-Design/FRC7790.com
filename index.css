@@ -44,6 +44,7 @@ html {
 
 .nav-links li {
     padding: 8px 12px;
+    margin: 0 15px;
 }
 
 .nav-links a {
@@ -268,6 +269,20 @@ html {
   transform: translateY(0);
 }
 
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.hamburger div {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    margin: 5px;
+    transition: all 0.3s ease;
+}
+
 @media (max-width: 1300px) {
 
     .title {
@@ -319,6 +334,38 @@ html {
         float: none;
         margin: 2rem auto 0;
         display: block;
+    }
+}
+
+@media (max-width: 1000px) {
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .hamburger {
+        display: flex;
+    }
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .hamburger {
+        display: flex;
     }
 }
 
