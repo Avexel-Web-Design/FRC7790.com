@@ -1,0 +1,45 @@
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+  }
+  
+  .hamburger div {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    margin: 5px;
+    transition: all 0.3s ease;
+  }
+  
+  /* Show hamburger on smaller screens */
+  @media (max-width: 1000px) {
+    .hamburger {
+      display: flex;
+    }
+  }
+  
+  /* Mobile-specific styling for the hamburger lines */
+  @media (max-width: 768px) {
+    .hamburger div {
+      width: 30px;
+      height: 4px;
+      background-color: #000;
+      margin: 6px;
+      transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+    }
+  
+    /* Active state: transform into an "X" */
+    .hamburger.active div {
+      background-color: white;
+    }
+    .hamburger.active div:nth-child(1) {
+      transform: translateY(10px) rotate(45deg);
+    }
+    .hamburger.active div:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger.active div:nth-child(3) {
+      transform: translateY(-10px) rotate(-45deg);
+    }
+  }
