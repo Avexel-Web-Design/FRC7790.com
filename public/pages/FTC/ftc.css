@@ -24,6 +24,7 @@ html {
     height: 100%;
 }
 
+/* Navbar base styling */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -36,15 +37,20 @@ html {
     width: calc(100% - 100px); 
     margin: 0 auto; 
     z-index: 1000;
-
 }
 
+/* Desktop nav-links styling */
 .nav-links {
     list-style: none;
     text-align: center;
     display: flex;
-    gap: 2vw; 
+    gap: 20px; 
     margin: auto;
+}
+
+/* Hide hamburger on larger screens */
+.hamburger {
+    display: none;
 }
 
 .nav-links li {
@@ -274,6 +280,72 @@ html {
 
     .footer img {
         height: 3vh;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    /* Show hamburger on mobile */
+    .hamburger {
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        z-index: 1100;
+    }
+    
+    .hamburger div {
+        width: 25px;
+        height: 3px;
+        background-color: white;
+        margin: 5px;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    
+    /* Hamburger X animation when active */
+    .hamburger.active div:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+    
+    .hamburger.active div:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .hamburger.active div:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
+    
+    /* Mobile nav-links styling */
+    .nav-links {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: black;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 60px; /* Room for navbar header */
+        margin: 0;
+        list-style: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease-out;
+        z-index: 1000;
+    }
+    
+    .nav-links.active {
+        max-height: 100vh;
+    }
+    
+    .nav-links li {
+        margin: 1rem 0;
+    }
+    
+    .nav-links li a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.2rem;
     }
 }
 
