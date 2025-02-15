@@ -192,10 +192,11 @@ html {
   transform: translateY(0);
 }
 
+/* Base hamburger styling (hidden on larger screens) */
 .hamburger {
-    display: none;
-    flex-direction: column;
-    cursor: pointer;
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
 }
 
 .hamburger div {
