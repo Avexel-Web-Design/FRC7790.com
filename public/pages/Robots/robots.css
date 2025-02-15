@@ -234,104 +234,245 @@ html {
     z-index: 1;
 }
 
-/* Media query to handle tinier screens than desktops. */
-@media (max-width: 1400px) {
-    /* Adjust the breakpoint and values as needed */
+.hamburger {
+    display: block;
+    cursor: pointer;
+}
 
-    .riptide, .cobalt, .hungry {
-        text-align: center;
-    }
+/* Optional animated hamburger lines */
+.hamburger div {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    margin: 5px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
 
-    .riptide h1, .riptide h2, .riptide name,
-    .cobalt h1, .cobalt h2, .cobalt name,
-    .hungry h1, .hungry h2, .hungry name {
-        margin: 1rem auto;
-    }
+/* Animate lines when active */
+.hamburger.active div:nth-child(1) {
+    transform: translateY(8px) rotate(45deg);
+}
+.hamburger.active div:nth-child(2) {
+    opacity: 0;
+}
+.hamburger.active div:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg);
+}
 
-    .riptide img, .cobalt img, .hungry img {
-        float: none;
-        display: block;
-        margin: 1rem auto;
-        width: 80%; /* Ensure the image scales down for smaller devices */
-        height: auto;
-    }
+@media (max-width: 768px) {
+/* Navbar links container with black back background sliding down */
+.nav-links {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+background-color: black;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: flex-start;
+padding-top: 60px; /* space for navbar header */
+margin: 0;
+list-style: none;
+max-height: 0;
+overflow: hidden;
+transition: max-height 0.5s ease-out;
+z-index: 1000;
+}
+
+/* When active, the nav expands to full screen height */
+.nav-links.active {
+max-height: 100vh;
+}
+
+.nav-links li {
+margin: 1rem 0;
+}
+
+.nav-links li a {
+color: white;
+text-decoration: none;
+font-size: 1.2rem;
+}
+
+/* Hamburger styling */
+.hamburger {
+display: block;
+cursor: pointer;
+z-index: 1100; /* above the nav-links */
+position: relative;
+}
+
+.hamburger div {
+width: 30px;
+height: 4px;
+background-color: #000;  /* initial hamburger color (black) */
+margin: 6px;
+transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+}
+
+/* When active, turn hamburger lines white and animate into X */
+.hamburger.active div {
+background-color: white;
+}
+
+.hamburger.active div:nth-child(1) {
+transform: translateY(10px) rotate(45deg);
+}
+
+.hamburger.active div:nth-child(2) {
+opacity: 0;
+}
+
+.hamburger.active div:nth-child(3) {
+transform: translateY(-10px) rotate(-45deg);
+}
+}
+
+@media (max-width: 768px) {
+.nav-links {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 60px; /* space for navbar header */
+    margin: 0;
+    list-style: none;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-out; /* Faster animation */
+    z-index: 1000;
+}
+
+.nav-links.active {
+    transform: translateY(0);
+}
+
+.nav-links li {
+    padding: 1rem;
+    text-align: center;
+}
+
+.nav-links li a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.2rem;
+}
+
+.hamburger {
+    display: block;
+    cursor: pointer;
+    z-index: 1100;
+    position: relative;
+}
+
+.hamburger div {
+    width: 30px;
+    height: 4px;
+    background-color: #ffffff;  /* initial hamburger color (white) */
+    margin: 6px;
+    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+}
+
+.hamburger.active div {
+    background-color: white;
+}
+
+.hamburger.active div:nth-child(1) {
+    transform: translateY(10px) rotate(45deg);
+}
+
+.hamburger.active div:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active div:nth-child(3) {
+    transform: translateY(-10px) rotate(-45deg);
+}
+}
+
+@media (max-width: 650px) {
+.title-container {
+    top: 55%;
+}
+
+.title {
+    top: 1rem;
+    left: 0.5rem;
+    font-size: 4.5rem;
+}
+
+.subtitle {
+    top: 1rem;
+    left: 0.5rem;
+    max-width: 90vw;
+}
+
+.video-container {
+    top: 2rem;
+    left: 0.5rem;
+    width: 90vw;
 }
 
 .footer {
-    background-color: black;
-    font-family: 'Comfortaa', sans-serif;
-    text-align: center;
-    padding: 70px 0;
-    position: relative;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    padding: 20px 0;
 }
 
 .footer div {
-    flex: 1;
-    text-align: center;
+    margin-bottom: 20px;
 }
 
 .footer h1 {
-    color: #FF7100;
-    font-size: 3.7rem;
-    font-weight: 400;
-    line-height: 1.25;
+    font-size: 2rem;
 }
 
 .footer h2 {
-    color: #FF7100;
-    font-size: 2.2rem;
-    font-weight: 400;
-    line-height: 2;
+    font-size: 1.5rem;
 }
 
 .footer p {
-    color: white;
-    font-size: 1rem;
-    font-weight: 300;
-    line-height: 1.5;
+    font-size: 0.875rem;
 }
 
 .footer img {
     height: 3vh;
-    width: auto;
-    object-fit: contain;
+}
 }
 
-.footer a {
-    text-decoration: none;
+@media (max-width: 500px) {
+.title-container {
+    top: 50%;
 }
 
-/* Media query for footer */
-@media (max-width: 600px) {
-    /* Adjust the breakpoint and values as needed */
-    .footer {
-        flex-direction: column;
-        padding: 20px 0;
-    }
+.title {
+    font-size: 3.5rem;
+}
 
-    .footer div {
-        margin-bottom: 20px;
-    }
+.subtitle {
+    font-size: 0.875rem;
+}
+}
 
-    .footer h1 {
-        font-size: 2rem;
-    }
-    
-    .footer h2 {
-        font-size: 1.5rem;
-    }
+@media (max-width: 350px) {
+.title-container {
+    top: 45%;
+}
 
-    .footer p {
-        font-size: 0.875rem;
-    }
+.title {
+    font-size: 3rem;
+}
+}
 
-    .footer img {
-        height: 3vh;
-    }
+@media (max-width: 285px) {
+.title {
+    font-size: 2.5rem;
+}
 }
 
 /* Add this at the end of your CSS file */
