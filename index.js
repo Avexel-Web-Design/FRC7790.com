@@ -37,5 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     hamburger.addEventListener('click', () => {
         navLinks.classList.toggle('active');
+        hamburger.classList.toggle('active');
     });
 });
