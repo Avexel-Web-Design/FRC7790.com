@@ -283,8 +283,7 @@ html {
     }
 }
 .hamburger {
-    display: block;
-    cursor: pointer;
+    display: none;
 }
 
 /* Optional animated hamburger lines */
@@ -442,7 +441,7 @@ transform: translateY(-10px) rotate(-45deg);
 .hamburger.active div:nth-child(3) {
     transform: translateY(-10px) rotate(-45deg);
 }
-}
+
 
 @media (max-width: 650px) {
 .title-container {
@@ -520,5 +519,6 @@ transform: translateY(-10px) rotate(-45deg);
 @media (max-width: 285px) {
 .title {
     font-size: 2.5rem;
+}
 }
 }

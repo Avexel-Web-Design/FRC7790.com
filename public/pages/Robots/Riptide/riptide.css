@@ -319,7 +319,7 @@ html {
 }
 
 .hamburger {
-    display: block;
+    display: none;
     cursor: pointer;
 }
 
