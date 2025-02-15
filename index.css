@@ -353,68 +353,57 @@ html {
 
 @media (max-width: 768px) {
     .nav-links {
-        display: none;
-        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
+        height: 100vh; /* Added to encase the entire screen */
+        background-color: black;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 60px; /* space for navbar header */
+        margin: 0;
+        list-style: none;
+        transform: translateY(-100%);
+        transition: transform 0.5s ease-out;
+        z-index: 1000;
     }
-
+  
     .nav-links.active {
-        display: flex;
+        transform: translateY(0);
     }
-
+  
+    .nav-links li {
+        padding: 1rem;
+        text-align: center;
+    }
+  
     .hamburger {
-        display: flex;
+        display: block;
+        cursor: pointer;
     }
-}
-
-/* Mobile Navbar Styles */
-@media (max-width: 768px) {
-  .nav-links {
-    position: absolute;
-    top: 60px; /* below navbar */
-    left: 0;
-    width: 100%;
-    flex-direction: column;
-    background-color: rgba(0, 0, 0, 0.9);
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-out;
-    z-index: 999;
-  }
   
-  .nav-links.active {
-    max-height: 300px; /* Adjust height as needed */
-  }
+    /* Optional animated hamburger lines */
+    .hamburger div {
+        width: 25px;
+        height: 3px;
+        background-color: white;
+        margin: 5px;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+    }
   
-  .nav-links li {
-    padding: 1rem;
-    text-align: center;
-  }
-  
-  .hamburger {
-    display: block;
-    cursor: pointer;
-  }
-  
-  /* Optional animated hamburger lines */
-  .hamburger div {
-    width: 25px;
-    height: 3px;
-    background-color: white;
-    margin: 5px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-  }
-  
-  /* Animate lines when active */
-  .hamburger.active div:nth-child(1) {
-    transform: translateY(8px) rotate(45deg);
-  }
-  .hamburger.active div:nth-child(2) {
-    opacity: 0;
-  }
-  .hamburger.active div:nth-child(3) {
-    transform: translateY(-8px) rotate(-45deg);
-  }
+    /* Animate lines when active */
+    .hamburger.active div:nth-child(1) {
+        transform: translateY(8px) rotate(45deg);
+    }
+    .hamburger.active div:nth-child(2) {
+        opacity: 0;
+    }
+    .hamburger.active div:nth-child(3) {
+        transform: translateY(-8px) rotate(-45deg);
+    }
 }
 
 @media (max-width: 768px) {
@@ -485,6 +474,73 @@ html {
   .hamburger.active div:nth-child(3) {
     transform: translateY(-10px) rotate(-45deg);
   }
+}
+
+@media (max-width: 768px) {
+    .nav-links {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: black;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 60px; /* space for navbar header */
+        margin: 0;
+        list-style: none;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease-out; /* Faster animation */
+        z-index: 1000;
+    }
+  
+    .nav-links.active {
+        transform: translateY(0);
+    }
+  
+    .nav-links li {
+        padding: 1rem;
+        text-align: center;
+    }
+  
+    .nav-links li a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.2rem;
+    }
+  
+    .hamburger {
+        display: block;
+        cursor: pointer;
+        z-index: 1100;
+        position: relative;
+    }
+  
+    .hamburger div {
+        width: 30px;
+        height: 4px;
+        background-color: #000;  /* initial hamburger color (black) */
+        margin: 6px;
+        transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+    }
+  
+    .hamburger.active div {
+        background-color: white;
+    }
+  
+    .hamburger.active div:nth-child(1) {
+        transform: translateY(10px) rotate(45deg);
+    }
+  
+    .hamburger.active div:nth-child(2) {
+        opacity: 0;
+    }
+  
+    .hamburger.active div:nth-child(3) {
+        transform: translateY(-10px) rotate(-45deg);
+    }
 }
 
 @media (max-width: 650px) {
