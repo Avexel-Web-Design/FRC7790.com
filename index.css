@@ -151,32 +151,38 @@ html {
 
 .robot {
     font-family: 'Comfortaa', sans-serif;
-    text-align: left;
-    margin-top: 10vh;
-    margin-left: 15vw;
+    margin: 15vh 15vw;
+    position: relative;
+    display: flex;
+    flex-direction: row; /* Change to row instead of column */
+    justify-content: space-between; /* Space between text and image */
+    align-items: center; /* Center items vertically */
+}
+
+.robot .text-content {
+    flex: 1; /* Allow text to take up available space */
 }
 
 .robot h1 {
     font-size: 5.3rem;
     font-weight: 400;
     color: #FF7100;
+    margin: 0; /* Added to remove default margins */
 }
 
 .robot p {
     font-size: 1rem;
     font-weight: 300;
     color: white;
-    margin-top: 2.5vh;
-    line-height: .5;
+    margin: 2.5vh 0 0 0; /* Adjusted margin to only top */
+    line-height: 1.2; /* Increased from 0.5 for better readability */
 }
 
 .robot img {
     width: 35vw;
     height: auto;
     object-fit: contain;
-    margin-top: -30vh;
-    margin-right: 15vw;
-    float: right;
+    margin-left: 2vw; /* Add space between text and image */
 }
 
 .robot-button {
