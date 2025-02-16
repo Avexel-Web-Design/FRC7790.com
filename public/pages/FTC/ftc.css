@@ -24,18 +24,22 @@ html {
     height: 100%;
 }
 
+/* Default styling for larger screens */
+
 /* Navbar base styling */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 3vh;
+    /* Increase the height for proper visibility */
+    height: 8vh;
     color: white;
+    /* Use a fixed horizontal padding */
     padding: 0 50px;
     position: fixed;
-    top: 5%; 
-    width: calc(100% - 100px); 
-    margin: 0 auto; 
+    /* Position the navbar at the very top */
+    top: 0;
+    width: 100%;
     z-index: 1000;
 }
 
@@ -44,13 +48,8 @@ html {
     list-style: none;
     text-align: center;
     display: flex;
-    gap: 20px; 
+    gap: 20px;
     margin: auto;
-}
-
-/* Hide hamburger on larger screens */
-.hamburger {
-    display: none;
 }
 
 .nav-links li {
@@ -63,15 +62,14 @@ html {
     font-family: "Comfortaa", sans-serif;
     font-size: 1.2rem;
     font-weight: 400;
-    padding: 10px 15px; /* Add padding for better click area */
-    border-radius: 10px; /* Optional rounded corners */
-    transition: transform 0.3s ease, background-color 0.3s ease; 
+    padding: 10px 15px; /* Better clickable area */
+    border-radius: 10px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 .nav-links a:hover {
-    background-color: #ffffff58; /* Change background color on hover */
-    color: white; /* Ensure text color remains visible */
-    transition: background-color 0.3s ease; 
+    background-color: #ffffff58;
+    color: white;
 }
 
 .nav-links a.current-page {
@@ -79,12 +77,14 @@ html {
     text-underline-offset: 4px;
 }
 
+/* Adjust the logo image to fit well within the navbar */
 .navbar img {
     height: 8vh;
     width: auto;
     object-fit: contain;
 }
 
+/* Banner styling */
 .banner {
     width: 100%;
     height: auto;
@@ -93,49 +93,45 @@ html {
 }
 
 .banner img {
+    /* Use a generous width so the image is prominent on larger screens */
+    width: 60vw;
     height: auto;
-    width: 50vw;
     object-fit: cover;
 }
 
+/* Title container styling */
 .title-container {
-    flex-direction: column;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    color: #005AA0;
     padding-bottom: 3vh;
+    margin-top: 5vh;
+    position: relative;
+    color: #005AA0;
     font-family: 'Comfortaa', sans-serif;
     font-size: 5.3rem;
     font-weight: 400;
     text-align: center;
-    color: #005AA0;
-    margin-top: 5vh;
-    position: relative;
 }
 
 .title {
-    margin-bottom: 1rem; /* Space between title and subtitle */
+    margin-bottom: 1rem;
 }
 
 .subtitle {
-    font-family: 'Comfortaa', sans-serif;
     color: rgba(255, 255, 255, 1);
-    font-size: 1rem; /* Adjust as needed */
+    font-size: 1rem;
     font-weight: 300;
     max-width: 50vw;
     line-height: 1.5;
-    margin: 0; /* Remove default margin */
-    margin-bottom: 1rem; /* Space between subtitle and video container */
+    margin-bottom: 1rem;
 }
 
 .video-container {
     position: relative;
-    margin-top: 1rem; /* Adjust as needed */
-    left: 1rem; /* Adjust as needed */
-    width: 40vw; /* Adjust as needed */
-    height: auto; /* Maintain aspect ratio */
+    margin-top: 1rem;
+    width: 40vw;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -166,7 +162,7 @@ html {
     font-weight: 300;
     color: white;
     margin-top: 2.5vh;
-    line-height: .5;
+    line-height: 0.5;
 }
 
 .robot img {
@@ -197,7 +193,6 @@ html {
     font-family: 'Comfortaa', sans-serif;
     text-align: center;
     padding: 70px 0;
-    position: relative;
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -240,23 +235,108 @@ html {
     text-decoration: none;
 }
 
-@media (max-width: 1000px) {
+/* Responsive Styles for Smaller Screens */
+@media (max-width: 768px) {
+    /* Nav-links & Hamburger */
+    .nav-links {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: black;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        padding-top: 60px;
+        margin: 0;
+        list-style: none;
+        transform: translateY(-100%);
+        transition: transform 0.3s ease-out;
+        z-index: 1000;
+    }
 
+    .nav-links.active {
+        transform: translateY(0);
+    }
+
+    .nav-links li {
+        padding: 1rem;
+    }
+
+    .nav-links li a {
+        font-size: 1.2rem;
+    }
+
+    .hamburger {
+        display: block;
+        cursor: pointer;
+        z-index: 1100;
+        position: relative;
+    }
+
+    .hamburger div {
+        width: 30px;
+        height: 4px;
+        background-color: #ffffff;
+        margin: 6px;
+        transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+    }
+
+    .hamburger.active div {
+        background-color: white;
+    }
+
+    .hamburger.active div:nth-child(1) {
+        transform: translateY(10px) rotate(45deg);
+    }
+
+    .hamburger.active div:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger.active div:nth-child(3) {
+        transform: translateY(-10px) rotate(-45deg);
+    }
+
+    /* Adjust navbar padding to reduce horizontal space */
+    .navbar {
+        padding: 0 20px;
+        width: 100%;
+        top: 0;
+    }
+
+    /* Title and subtitle adjustments */
+    .title-container {
+        font-size: 4rem;
+        margin-top: 10vh;
+        padding: 0 1rem;
+    }
+
+    .subtitle {
+        max-width: 90vw;
+        font-size: 1rem;
+    }
+
+    .video-container {
+        width: 90vw;
+        margin-top: 1rem;
+    }
+
+    /* Robot section adjustments */
     .robot {
         text-align: center;
+        margin: 10vh auto;
         margin-left: 0;
     }
 
     .robot img {
         float: none;
         margin: 2rem auto 0;
-        display: block;
+        width: 80%;
     }
-}
 
-/* Media query for footer */
-@media (max-width: 600px) {
-    /* Adjust the breakpoint and values as needed */
+    /* Footer Adjustments */
     .footer {
         flex-direction: column;
         padding: 20px 0;
@@ -269,7 +349,7 @@ html {
     .footer h1 {
         font-size: 2rem;
     }
-    
+
     .footer h2 {
         font-size: 1.5rem;
     }
@@ -282,243 +362,26 @@ html {
         height: 3vh;
     }
 }
-.hamburger {
-    display: none;
-}
 
-/* Optional animated hamburger lines */
-.hamburger div {
-    width: 25px;
-    height: 3px;
-    background-color: white;
-    margin: 5px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-/* Animate lines when active */
-.hamburger.active div:nth-child(1) {
-    transform: translateY(8px) rotate(45deg);
-}
-.hamburger.active div:nth-child(2) {
-    opacity: 0;
-}
-.hamburger.active div:nth-child(3) {
-    transform: translateY(-8px) rotate(-45deg);
-}
-
-@media (max-width: 768px) {
-/* Navbar links container with black back background sliding down */
-.nav-links {
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-background-color: black;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: flex-start;
-padding-top: 60px; /* space for navbar header */
-margin: 0;
-list-style: none;
-max-height: 0;
-overflow: hidden;
-transition: max-height 0.5s ease-out;
-z-index: 1000;
-}
-
-/* When active, the nav expands to full screen height */
-.nav-links.active {
-max-height: 100vh;
-}
-
-.nav-links li {
-margin: 1rem 0;
-}
-
-.nav-links li a {
-color: white;
-text-decoration: none;
-font-size: 1.2rem;
-}
-
-/* Hamburger styling */
-.hamburger {
-display: block;
-cursor: pointer;
-z-index: 1100; /* above the nav-links */
-position: relative;
-}
-
-.hamburger div {
-width: 30px;
-height: 4px;
-background-color: #000;  /* initial hamburger color (black) */
-margin: 6px;
-transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
-}
-
-/* When active, turn hamburger lines white and animate into X */
-.hamburger.active div {
-background-color: white;
-}
-
-.hamburger.active div:nth-child(1) {
-transform: translateY(10px) rotate(45deg);
-}
-
-.hamburger.active div:nth-child(2) {
-opacity: 0;
-}
-
-.hamburger.active div:nth-child(3) {
-transform: translateY(-10px) rotate(-45deg);
-}
-}
-
-@media (max-width: 768px) {
-.nav-links {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background-color: black;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding-top: 60px; /* space for navbar header */
-    margin: 0;
-    list-style: none;
-    transform: translateY(-100%);
-    transition: transform 0.3s ease-out; /* Faster animation */
-    z-index: 1000;
-}
-
-.nav-links.active {
-    transform: translateY(0);
-}
-
-.nav-links li {
-    padding: 1rem;
-    text-align: center;
-}
-
-.nav-links li a {
-    color: white;
-    text-decoration: none;
-    font-size: 1.2rem;
-}
-
-.hamburger {
-    display: block;
-    cursor: pointer;
-    z-index: 1100;
-    position: relative;
-}
-
-.hamburger div {
-    width: 30px;
-    height: 4px;
-    background-color: #ffffff;  /* initial hamburger color (white) */
-    margin: 6px;
-    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
-}
-
-.hamburger.active div {
-    background-color: white;
-}
-
-.hamburger.active div:nth-child(1) {
-    transform: translateY(10px) rotate(45deg);
-}
-
-.hamburger.active div:nth-child(2) {
-    opacity: 0;
-}
-
-.hamburger.active div:nth-child(3) {
-    transform: translateY(-10px) rotate(-45deg);
-}
-
-
-@media (max-width: 650px) {
-.title-container {
-    top: 55%;
-}
-
-.title {
-    top: 1rem;
-    left: 0.5rem;
-    font-size: 4.5rem;
-}
-
-.subtitle {
-    top: 1rem;
-    left: 0.5rem;
-    max-width: 90vw;
-}
-
-.video-container {
-    top: 2rem;
-    left: 0.5rem;
-    width: 90vw;
-}
-
-.footer {
-    flex-direction: column;
-    padding: 20px 0;
-}
-
-.footer div {
-    margin-bottom: 20px;
-}
-
-.footer h1 {
-    font-size: 2rem;
-}
-
-.footer h2 {
-    font-size: 1.5rem;
-}
-
-.footer p {
-    font-size: 0.875rem;
-}
-
-.footer img {
-    height: 3vh;
-}
-}
-
+/* Additional breakpoints if needed */
 @media (max-width: 500px) {
-.title-container {
-    top: 50%;
-}
-
-.title {
-    font-size: 3.5rem;
-}
-
-.subtitle {
-    font-size: 0.875rem;
-}
+    .title-container {
+        font-size: 3.5rem;
+        margin-top: 8vh;
+    }
+    .subtitle {
+        font-size: 0.875rem;
+    }
 }
 
 @media (max-width: 350px) {
-.title-container {
-    top: 45%;
-}
-
-.title {
-    font-size: 3rem;
-}
+    .title-container {
+        font-size: 3rem;
+    }
 }
 
 @media (max-width: 285px) {
-.title {
-    font-size: 2.5rem;
-}
-}
+    .title-container {
+        font-size: 2.5rem;
+    }
 }
