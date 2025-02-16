@@ -24,18 +24,22 @@ html {
     height: 100%;
 }
 
+/* Default styling for larger screens */
+
 /* Navbar base styling */
 .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 3vh;
+    /* Increase the height for proper visibility */
+    height: 8vh;
     color: white;
+    /* Use a fixed horizontal padding */
     padding: 0 50px;
     position: fixed;
-    top: 5%; 
-    width: calc(100% - 100px); 
-    margin: 0 auto; 
+    /* Position the navbar at the very top */
+    top: 0;
+    width: 100%;
     z-index: 1000;
 }
 
@@ -66,7 +70,6 @@ html {
 .nav-links a:hover {
     background-color: #ffffff58;
     color: white;
-    transition: background-color 0.3s ease;
 }
 
 .nav-links a.current-page {
@@ -74,12 +77,14 @@ html {
     text-underline-offset: 4px;
 }
 
+/* Adjust the logo image to fit well within the navbar */
 .navbar img {
     height: 8vh;
     width: auto;
     object-fit: contain;
 }
 
+/* Banner styling */
 .banner {
     width: 100%;
     height: auto;
@@ -88,11 +93,13 @@ html {
 }
 
 .banner img {
+    /* Use a generous width so the image is prominent on larger screens */
+    width: 60vw;
     height: auto;
-    width: 50vw;
     object-fit: cover;
 }
 
+/* Title container styling */
 .title-container {
     display: flex;
     flex-direction: column;
