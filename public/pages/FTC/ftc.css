@@ -13,15 +13,26 @@
 
 body {
     background-color: black;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
-    height: 100%;
+    min-height: 100vh;
     font-family: 'Comfortaa', sans-serif;
     font-weight: 400;
+    overflow-x: hidden;
+    max-width: 100%;
+    color: white; /* Ensure default body text is visible */
 }
 
 html {
     height: 100%;
+    scroll-behavior: smooth;
+}
+
+/* Global image reset for responsiveness */
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
 }
 
 /* Default styling for larger screens */
@@ -31,15 +42,13 @@ html {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* Increase the height for proper visibility */
-    height: 8vh;
+    min-height: 5vh; /* Increased height for better visibility */
     color: white;
-    /* Use a fixed horizontal padding */
     padding: 0 50px;
     position: fixed;
-    /* Position the navbar at the very top */
-    top: 0;
-    width: 100%;
+    top: 5%;
+    width: calc(100% - 100px);
+    margin: 0 auto;
     z-index: 1000;
 }
 
@@ -87,14 +96,14 @@ html {
 /* Banner styling */
 .banner {
     width: 100%;
-    height: auto;
     display: flex;
     justify-content: center;
+    margin-top: 8vh; /* Extra space below navbar */
 }
 
 .banner img {
-    /* Use a generous width so the image is prominent on larger screens */
     width: 60vw;
+    max-width: 100%;
     height: auto;
     object-fit: cover;
 }
@@ -105,14 +114,16 @@ html {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding-top: 15vh; /* Add top padding to account for navbar */
     padding-bottom: 3vh;
-    margin-top: 5vh;
     position: relative;
     color: #005AA0;
     font-family: 'Comfortaa', sans-serif;
     font-size: 5.3rem;
     font-weight: 400;
     text-align: center;
+    margin: 0 auto;
+    max-width: 90vw;
 }
 
 .title {
@@ -144,11 +155,16 @@ html {
     border-radius: 45px;
 }
 
+/* Updated robot section styling */
 .robot {
     font-family: 'Comfortaa', sans-serif;
-    text-align: left;
-    margin-top: 15vh;
-    margin-left: 15vw;
+    text-align: center; /* Center-align text content */
+    margin: 10vh auto; /* Center container horizontally */
+    position: relative;
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center;
+    align-items: center;
 }
 
 .robot h1 {
@@ -162,18 +178,17 @@ html {
     font-weight: 300;
     color: white;
     margin-top: 2.5vh;
-    line-height: 0.5;
+    line-height: 1.2; /* Improved readability */
 }
 
+/* Adjust robot image */
 .robot img {
-    width: 25vw;
-    height: auto;
-    object-fit: contain;
-    margin-top: -30vh;
-    margin-right: 15vw;
-    float: right;
+    width: 80%;
+    max-width: 400px;
+    margin: 2rem 0;
 }
 
+/* Optional: Improve the robot-button spacing */
 .robot-button {
     display: inline-block;
     padding: 22px 36px;
@@ -186,6 +201,10 @@ html {
     font-weight: 300;
     border-radius: 50px;
     transition: background-color 0.3s ease;
+}
+
+.robot-button:hover {
+    background-color: #e66000;
 }
 
 .footer {
