@@ -67,7 +67,8 @@ window.addEventListener('scroll', () => {
 const counters = document.querySelectorAll('.counter');
 
 const runCounter = (counter) => {
-    const target = +counter.dataset.target;
+    // Parse the target as float; default to 0 if invalid
+    const target = parseFloat(counter.dataset.target) || 0;
     let updateCount;
 
     // If target is less than 50, let's animate downward from 100.

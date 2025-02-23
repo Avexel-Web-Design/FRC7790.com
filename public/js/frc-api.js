@@ -8,7 +8,7 @@ const TBA_BASE_URL = 'https://www.thebluealliance.com/api/v3';
 // Fetch current event data - modified for testing
 async function getCurrentEventData() {
     try {
-        const response = await fetch(`${TBA_BASE_URL}/event/2025milac`, {
+        const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc`, {
             headers: {
                 'X-TBA-Auth-Key': TBA_AUTH_KEY
             }
@@ -17,6 +17,28 @@ async function getCurrentEventData() {
         return event;
     } catch (error) {
         console.error('Error fetching event data:', error);
+        return null;
+    }
+}
+
+// New function to calculate the next event automatically
+async function getNextEvent() {
+    try {
+        const response = await fetch(`${TBA_BASE_URL}/team/${FRC_TEAM_KEY}/events/simple`, {
+            headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY }
+        });
+        const events = await response.json();
+        const now = new Date();
+        // Filter for upcoming or currently ongoing events
+        const upcoming = events.filter(event => {
+            const start = new Date(event.start_date);
+            const end = new Date(event.end_date);
+            return start >= now || (start < now && end > now);
+        });
+        upcoming.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+        return upcoming[0];
+    } catch (error) {
+        console.error('Error fetching next event:', error);
         return null;
     }
 }
@@ -75,9 +97,11 @@ async function updateRankings(eventKey) {
         const teamRanking = rankings.rankings.find(r => r.team_key === FRC_TEAM_KEY);
         
         if (teamRanking) {
-            const rankingNumber = document.getElementById('ranking-number');
-            rankingNumber.textContent = teamRanking.rank;
-            rankingNumber.dataset.target = teamRanking.rank;
+            const rankingEl = document.getElementById('ranking-number');
+            rankingEl.textContent = teamRanking.rank;
+            rankingEl.setAttribute('data-target', teamRanking.rank);
+            // Re-trigger counter animation
+            runCounter(rankingEl);
             document.getElementById('total-teams').textContent = `of ${rankings.rankings.length} teams`;
         } else {
             setErrorState('ranking-number', '--');
@@ -113,8 +137,13 @@ async function updateRecord(eventKey) {
             }
         });
         
-        document.getElementById('wins').dataset.target = wins;
-        document.getElementById('losses').dataset.target = losses;
+        const winsEl = document.getElementById('wins');
+        const lossesEl = document.getElementById('losses');
+        winsEl.setAttribute('data-target', wins);
+        lossesEl.setAttribute('data-target', losses);
+        // Re-trigger counter animation
+        runCounter(winsEl);
+        runCounter(lossesEl);
     } catch (error) {
         console.error('Error fetching match record:', error);
     }
@@ -221,25 +250,26 @@ function updateEventCountdown(startDate) {
 // Initialize and update all data with loading states
 async function initializeEventData() {
     setLoadingState(true);
+    const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
     
     try {
-        const currentEvent = await getCurrentEventData();
+        // Use calculated next event instead of a hardcoded one
+        const currentEvent = await getNextEvent();
         if (currentEvent) {
             const now = new Date();
-            const eventStart = new Date(currentEvent.start_date);
-            
-            if (now < eventStart) {
-                // Hide live updates; show countdown instead
+            const adjustedEventStart = new Date(new Date(currentEvent.start_date).getTime() + OFFSET_MS);
+            const adjustedEventEnd = new Date(new Date(currentEvent.end_date).getTime() + OFFSET_MS);
+
+            if (now < adjustedEventStart || now > adjustedEventEnd) {
                 document.getElementById('live-updates').classList.add('hidden');
                 document.getElementById('countdown-section').classList.remove('hidden');
-                
-                // Start the countdown updates every second
-                updateEventCountdown(currentEvent.start_date);
+
+                const targetDate = now < adjustedEventStart ? adjustedEventStart : adjustedEventEnd;
+                updateEventCountdown(targetDate);
                 setInterval(() => {
-                    updateEventCountdown(currentEvent.start_date);
+                    updateEventCountdown(targetDate);
                 }, 1000);
             } else {
-                // Event is ongoing - show live stats
                 document.getElementById('live-updates').classList.remove('hidden');
                 document.getElementById('countdown-section').classList.add('hidden');
 
@@ -249,7 +279,6 @@ async function initializeEventData() {
                     updateNextMatch(currentEvent.key)
                 ]);
                 
-                // Set up periodic updates (every 5 minutes)
                 setInterval(() => {
                     updateRankings(currentEvent.key);
                     updateRecord(currentEvent.key);
