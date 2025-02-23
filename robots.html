@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <!-- Similar head section to index.html -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Robots - Baywatch Robotics | FRC Team 7790</title>
+  <meta name="description" content="Meet the robots of FRC Team 7790 Baywatch Robotics. From CRESCENDO to CHARGED UP, explore our competitive machines.">
+  
+  <!-- Add Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'baywatch-orange': '#FF6B00',
+            'baywatch-dark': '#1A1A1A'
+          },
+          fontFamily: {
+            'poppins': ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link href="public/styles/main.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Add cursor script -->
+  <script defer>
+    document.addEventListener('DOMContentLoaded', function(){
+      // Custom cursor implementation
+      const cursor = document.createElement('div');
+      cursor.classList.add('custom-cursor');
+      document.body.appendChild(cursor);
+
+      document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        
+        // Create a trail element
+        const trail = document.createElement('div');
+        trail.classList.add('cursor-trail');
+        trail.style.left = e.clientX + 'px';
+        trail.style.top = e.clientY + 'px';
+        document.body.appendChild(trail);
+        setTimeout(() => {
+          trail.remove();
+        }, 500);
+      });
+    });
+  </script>
+</head>
+<body class="bg-baywatch-dark text-white font-poppins cursor-none">
+  <!-- Add decorative background elements -->
+  <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <!-- Gradient orbs -->
+    <div class="absolute w-[800px] h-[800px] bg-baywatch-orange/5 rounded-full blur-3xl -top-[400px] -right-[400px] animate-pulse" style="animation-duration: 8s;"></div>
+    <div class="absolute w-[600px] h-[600px] bg-baywatch-orange/10 rounded-full blur-3xl top-[20%] -left-[300px] animate-pulse" style="animation-duration: 6s;"></div>
+    <div class="absolute w-[700px] h-[700px] bg-baywatch-orange/5 rounded-full blur-3xl bottom-[10%] -right-[200px] animate-pulse" style="animation-duration: 7s;"></div>
+    <!-- Noise texture overlay -->
+    <div class="absolute inset-0 bg-[url('/public/assets/images/noise.png')] opacity-[0.03] mix-blend-overlay"></div>
+  </div>
+
+  <!-- Rest of the content needs z-index to appear above background -->
+  <nav class="relative z-50">
+    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <a href="index.html#" class="flex items-center space-x-2">
+          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20">
+        </a>
+      </div>
+      <!-- Desktop Menu -->
+      <ul class="hidden md:flex space-x-8">
+        <li><a href="robots.html" class="hover:text-baywatch-orange transition-colors">Robots</a></li>
+        <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-colors">Sponsors</a></li>
+        <li><a href="schedule.html" class="hover:text-baywatch-orange transition-colors">Schedule</a></li>
+        <li><a href="ftc.html" class="hover:text-baywatch-orange transition-colors">FTC</a></li>
+      </ul>
+      <!-- Mobile Menu Button -->
+      <button id="menu-btn" class="md:hidden">
+        <div class="hamburger-menu">
+          <span class="line bg-baywatch-orange"></span>
+          <span class="line bg-baywatch-orange"></span>
+          <span class="line bg-baywatch-orange"></span>
+        </div>
+      </button>
+    </div>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-baywatch-dark/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
+      <!-- Menu Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-800">
+        <div class="flex items-center space-x-2">
+          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-12 h-12">
+          <span class="text-xl font-bold text-baywatch-orange">
+            Baywatch Robotics
+          </span>
+        </div>
+      </div>
+      <!-- Menu Items -->
+      <nav class="p-6">
+        <ul class="space-y-6">
+          <li>
+            <a href="#team" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-users w-6"></i>
+              <span>Team</span>
+            </a>
+          </li>
+          <li>
+            <a href="#robots" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-robot w-6"></i>
+              <span>Robots</span>
+            </a>
+          </li>
+          <li>
+            <a href="#sponsors" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-handshake w-6"></i>
+              <span>Sponsors</span>
+            </a>
+          </li>
+          <li>
+            <a href="#contact" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-envelope w-6"></i>
+              <span>Contact</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="pt-32 pb-16 relative z-10">
+    <div class="container mx-auto px-6">
+      <h1 class="text-5xl md:text-7xl font-bold text-center">
+        <span class="text-white">Our</span>
+        <span class="text-baywatch-orange glow-orange">Robots</span>
+      </h1>
+      <p class="text-gray-400 text-center mt-4 max-w-2xl mx-auto">
+        Meet the machines that represent Team 7790 in FIRST Robotics Competition.
+        Each robot is crafted with precision, innovation, and dedication.
+      </p>
+    </div>
+  </section>
+
+  <!-- Robots Grid -->
+  <section class="py-16 relative z-10">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- RIPTIDE - 2025 -->
+        <div class="card-gradient rounded-xl overflow-hidden group hover:transform hover:scale-105 transition-all duration-300">
+          <div class="relative bg-black">
+            <img src="public/assets/images/RIPTIDE/short-better.png" alt="RIPTIDE Robot" class="w-full h-64 object-contain">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+          </div>
+          <div class="p-6">
+            <h2 class="text-3xl font-bold font-anurati text-baywatch-orange mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.2s; animation-iteration-count: 1;">R I P T I D E</h2>
+            <p class="text-xl text-white mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.4s; animation-iteration-count: 1;">2025 - REEFSCAPE</p>
+          </div>
+        </div>
+
+        <!-- COBALT - 2024 -->
+        <div class="card-gradient rounded-xl overflow-hidden group hover:transform hover:scale-105 transition-all duration-300">
+          <div class="relative bg-black">
+            <img src="public/assets/images/COBALT/COBALT.png" alt="COBALT Robot" class="w-full h-64 object-contain">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+          </div>
+          <div class="p-6">
+            <h2 class="text-3xl font-bold font-anurati text-baywatch-orange mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.6s; animation-iteration-count: 1;">C O B A L T</h2>
+            <p class="text-xl text-white mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.8s; animation-iteration-count: 1;">2024 - INTO THE DEEP</p>
+          </div>
+        </div>
+
+        <!-- HUNGRY - 2024 -->
+        <div class="card-gradient rounded-xl overflow-hidden group hover:transform hover:scale-105 transition-all duration-300">
+          <div class="relative bg-black"> <!-- Added bg-black here -->
+            <img src="public/assets/images/hungry.png" alt="HUNGRY Robot" class="w-full h-64 object-contain"> <!-- Changed object-cover to object-contain -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+          </div>
+          <div class="p-6">
+            <h2 class="text-3xl font-bold font-anurati text-baywatch-orange mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 1s; animation-iteration-count: 1;">H U N G R Y</h2>
+            <p class="text-xl text-white mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 1.2s; animation-iteration-count: 1;">2024 - CRESCENDO</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Include the same footer as index.html -->
+  <footer class="bg-black py-12 relative">
+    <!-- Add gradient overlay -->
+    <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-baywatch-dark to-black"></div>
+    <!-- Rest of footer content with relative positioning -->
+    <div class="container mx-auto px-6 relative z-10">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex space-x-1 mb-4 md:mb-0">
+          <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700">
+            <i class="fab fa-youtube"></i>
+          </a>
+          <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+        <div class="text-gray-400 text-sm">
+          © 2025 Baywatch Robotics. All rights reserved.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
