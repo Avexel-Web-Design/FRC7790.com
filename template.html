@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avexel - Creative Digital Experiences | Web Design &amp; Development</title>
+  <meta name="description" content="Avexel crafts stunning digital experiences through creative web design and efficient development. Explore our portfolio of innovative, responsive, and dynamic digital solutions.">
+  <meta name="keywords" content="Avexel, web design, digital experiences, creative development, responsive design, portfolio, web development">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="Avexel - Creative Digital Experiences">
+  <meta property="og:description" content="Avexel crafts stunning digital experiences through creative web design and efficient development.">
+  <meta property="og:image" content="src/assets/images/Logo-nobg-sm.png">
+  <meta property="og:url" content="https://yourdomain.com">
+  <meta property="og:type" content="website">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Avexel - Creative Digital Experiences">
+  <meta name="twitter:description" content="Avexel crafts stunning digital experiences through creative web design and efficient development.">
+  <meta name="twitter:image" content="src/assets/images/Logo-nobg-sm.png">
+  
+  <link rel="canonical" href="https://yourdomain.com">
+  
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Avexel",
+    "url": "https://yourdomain.com",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://yourdomain.com/?s={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  
+  <link rel="shortcut icon" type="image/png" href="src/assets/images/Logo-nobg-sm.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link href="public/styles/main.css" rel="stylesheet">
+  <script src="public/js/animations.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      const btn = document.getElementById('menu-btn');
+      const menu = document.getElementById('mobile-menu');
+      btn.addEventListener('click', () => {
+        menu.classList.toggle('hidden');
+      });
+    });
+  </script>
+</head>
+<body class="bg-black text-white overflow-x-hidden">
+
+  <!-- Navigation Bar -->
+  <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-1">
+        <!-- Artistic Logo -->
+        <a href="index.html#" class="flex items-center space-x-1">
+          <div class="relative flex items-center">
+            <img src="src/assets/images/Logo-nobg-sm.png" alt="Avexel Logo" class="w-16 h-16 relative">
+          </div>
+          <div class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            Avexel
+          </div>
+        </a>
+      </div>
+      <!-- Desktop Menu -->
+      <ul class="hidden md:flex space-x-8">
+        <li><a href="index.html#capabilities" class="hover:text-purple-400 transition-colors">Capabilities</a></li>
+        <li><a href="index.html#about" class="hover:text-purple-400 transition-colors">About</a></li>
+        <li><a href="index.html#services" class="hover:text-purple-400 transition-colors">Services</a></li>
+        <li><a href="index.html#work" class="hover:text-purple-400 transition-colors">Portfolio</a></li>
+        <li><a href="index.html#blog" class="hover:text-purple-400 transition-colors">Articles</a></li>
+      </ul>
+      <!-- Mobile Menu Button -->
+      <button id="menu-btn" class="navbar-toggler md:hidden" type="button" data-bs-toggle="collapse" aria-expanded="false" aria-label="Toggle navigation">
+        <div class="hamburger-menu">
+          <span class="line"></span>
+          <span class="line"></span>
+          <span class="line"></span>
+        </div>
+      </button>
+    </div>
+    <!-- Mobile Menu -->
+<!-- Change this part in your index.html -->
+<div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-black/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
+  <!-- Menu Header -->
+  <div class="flex items-center justify-between p-6 border-b border-gray-800">
+    <div class="flex items-center space-x-2">
+      <img src="src/assets/images/Logo-nobg-sm.png" alt="Avexel Logo" class="w-12 h-12">
+      <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+        Avexel
+      </span>
+    </div>
+  </div>
+  <!-- Menu Items -->
+  <nav class="p-6">
+    <ul class="space-y-6">
+      <li>
+        <a href="#capabilities" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
+          <i class="fas fa-chart-bar w-6"></i>
+          <span>Capabilities</span>
+        </a>
+      </li>
+      <li>
+        <a href="#about" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
+          <i class="fas fa-users w-6"></i>
+          <span>About</span>
+        </a>
+      </li>
+      <li>
+        <a href="#services" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
+          <i class="fas fa-code w-6"></i>
+          <span>Services</span>
+        </a>
+      </li>
+      <li>
+        <a href="#work" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
+          <i class="fas fa-briefcase w-6"></i>
+          <span>Portfolio</span>
+        </a>
+      </li>
+      <li>
+        <a href="#blog" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
+          <i class="fas fa-newspaper w-6"></i>
+          <span>Articles</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+  </nav>
+
+  <!-- Banner Section -->
+  <section class="min-h-screen relative overflow-hidden bg-fixed">
+    <div class="absolute inset-0 bg-gradient-to-r from-purple-900/20 to-blue-900/20 animate-pulse" style="animation-duration: 5s;"></div>
+    <div class="container mx-auto px-6 pt-32 relative z-10 flex flex-col md:flex-row items-center justify-between">
+      <!-- Banner Text -->
+      <div class="md:w-1/2">
+        <h1 class="text-6xl md:text-8xl font-bold mb-8">
+          <span class="inline-block animate__animated animate__fadeInUp" style="animation-delay: 0s;">We</span>
+          <span class="inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.5s;">Create</span>
+          <br>
+          <span>
+            </span>
+            <span class="inline-block mr-4 animate__animated animate__fadeInUp bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent leading-normal pb-1" style="animation-delay: 1.25s;">
+              Digital
+            </span>
+            <span class="inline-block animate__animated animate__fadeInUp bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent leading-normal pb-1" style="animation-delay: 1.5s;">
+              Magic
+            </span>
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-400 mb-12 max-w-2xl animate__animated animate__fadeIn" style="animation-delay: 1.75s;">
+          Transforming ideas into stunning digital experiences through creative web design and development.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="#work" class="inline-block px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full text-white font-semibold hover:scale-105 transition-transform animate__animated animate__fadeInUp" style="animation-delay: 2s;">
+            View Our Work
+          </a>
+          <a href="#about" class="inline-block px-8 py-4 border border-purple-500 text-purple-500 rounded-full font-semibold hover:bg-purple-500 hover:text-white transition-colors animate__animated animate__fadeInUp" style="animation-delay: 2.25s;">
+            Learn More
+          </a>
+        </div>
+      </div>
+      <!-- Animated SVG Wireframe -->
+      <div class="md:w-1/2 flex justify-center p-4">
+        <svg viewBox="0 0 400 300" class="w-full h-auto">
+          <defs>
+            <linearGradient id="gradStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+          <!-- Main container -->
+          <path d="M40 20 H360 V280 H40 Z" 
+                fill="none" 
+                stroke="url(#gradStroke)" 
+                stroke-width="2"
+                stroke-dasharray="1400" 
+                stroke-dashoffset="1400"
+                class="draw-path" />
+          <!-- Navigation bar wireframe -->
+          <path d="M40 20 H360 V60 H40 Z M280 30 H340 M200 30 H260 M120 30 H180" 
+                fill="none" 
+                stroke="url(#gradStroke)" 
+                stroke-width="2"
+                stroke-dasharray="1000" 
+                stroke-dashoffset="1000"
+                class="draw-path delay-1" />
+          <!-- Content blocks -->
+          <path d="M60 100 H200 M60 120 H180 M60 140 H160 M60 180 H140 V200 H60 Z M240 90 H340 V190 H240 Z" 
+                fill="none" 
+                stroke="url(#gradStroke)" 
+                stroke-width="2"
+                stroke-dasharray="1200" 
+                stroke-dashoffset="1200"
+                class="draw-path delay-2" />
+          <!-- Decorative elements -->
+          <path d="M70 240 H120 M150 240 H200 M230 240 H280 M60 260 H340" 
+                fill="none" 
+                stroke="url(#gradStroke)" 
+                stroke-width="2"
+                stroke-dasharray="800" 
+                stroke-dashoffset="800"
+                class="draw-path delay-3" />
+          <!-- Button/interactive elements -->
+          <path d="M260 140 H320 V160 H260 Z M280 220 H340 V240 H280 Z" 
+                fill="none" 
+                stroke="url(#gradStroke)" 
+                stroke-width="2"
+                stroke-dasharray="400" 
+                stroke-dashoffset="400"
+                class="draw-path delay-4" />
+        </svg>
+      </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent"></div>
+  </section>
+
+  <!-- Capabilities Section -->
+  <section id="capabilities" class="py-20 bg-black scroll-mt-24">
+      <div class="container mx-auto px-6">
+          <h2 class="text-4xl font-bold mb-16 text-center reveal">Skills & Capabilities</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <!-- Responsive Design Card -->
+              <div class="p-6 bg-gray-800/50 rounded-xl hover:transform hover:scale-105 transition-all duration-300 border border-transparent hover:border-purple-500/50 group">
+                  <div class="flex justify-center mb-6">
+                      <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center group-hover:animate-pulse">
+                          <i class="fas fa-mobile-alt text-2xl"></i>
+                      </div>
+                  </div>
+                  <h3 class="text-xl font-bold text-center mb-4">Responsive Design</h3>
+                  <p class="text-gray-400 text-center">Fluid layouts that adapt seamlessly to any device or screen size</p>
+                  <div class="mt-4 text-center">
+                      <span class="text-3xl font-bold text-purple-500 counter" data-target="100">0</span>
+                      <span class="text-purple-500">% of designs</span>
+                  </div>
+              </div>
+
+              <!-- Customer Satisfaction -->
+              <div class="p-6 bg-gray-800/50 rounded-xl hover:transform hover:scale-105 transition-all duration-300 border border-transparent hover:border-purple-500/50 group">
+                  <div class="flex justify-center mb-6">
+                      <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center group-hover:animate-pulse">
+                          <i class="fas fa-code text-2xl"></i>
+                      </div>
+                  </div>
+                  <h3 class="text-xl font-bold text-center mb-4">Customer Satisfaction</h3>
+                  <p class="text-gray-400 text-center">Designed with the customers goals in mind to perfectly fit expectaions</p>
+                  <div class="mt-4 text-center">
+                      <span class="text-3xl font-bold text-purple-500 counter" data-target="100">0</span>
+                      <span class="text-purple-500">% of customers</span>
+                  </div>
+              </div>
+
+              <!-- Development Speed -->
+              <div class="p-6 bg-gray-800/50 rounded-xl hover:transform hover:scale-105 transition-all duration-300 border border-transparent hover:border-purple-500/50 group">
+                  <div class="flex justify-center mb-6">
+                      <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center group-hover:animate-pulse">
+                          <i class="fas fa-tachometer-alt text-2xl"></i>
+                      </div>
+                  </div>
+                  <h3 class="text-xl font-bold text-center mb-4">Speedy Development</h3>
+                  <p class="text-gray-400 text-center">Fast prototyping and delivery of final product</p>
+                  <div class="mt-4 text-center">
+                      <span class="text-3xl font-bold text-purple-500 counter" data-target="2">0</span>
+                      <span class="text-purple-500">Days</span>
+                  </div>
+              </div>
+
+              <!-- UI/UX Design Card -->
+              <div class="p-6 bg-gray-800/50 rounded-xl hover:transform hover:scale-105 transition-all duration-300 border border-transparent hover:border-purple-500/50 group">
+                  <div class="flex justify-center mb-6">
+                      <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center group-hover:animate-pulse">
+                          <i class="fas fa-paint-brush text-2xl"></i>
+                      </div>
+                  </div>
+                  <h3 class="text-xl font-bold text-center mb-4">UI/UX Design</h3>
+                  <p class="text-gray-400 text-center">Intuitive interfaces with engaging user experiences</p>
+                  <div class="mt-4 text-center">
+                      <span class="text-3xl font-bold text-purple-500 counter" data-target="100">0</span>
+                      <span class="text-purple-500">% of the time</span>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <!-- About Us Section -->
+  <section id="about" class="py-20 bg-gradient-to-b from-black to-gray-900 scroll-mt-24">
+    <div class="container mx-auto px-6">
+      <h2 class="text-4xl font-bold mb-8 text-center">About Us</h2>
+      <p class="text-gray-400 text-lg mb-12 text-center max-w-3xl mx-auto">
+        We're a creative team of high school students dedicated to creating functional, beautiful websites and applications. Our focus on web design, development, and user experience enables us to exceed client expectations.
+        Our team works to create sites that serve to enhance your business, expand your outreach and visibility, and increase your online presence. We are dedicated to providing the best possible service to our clients
+        ensuring that your website works for your business.
+      </p>
+      <!-- Team Members Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div class="text-center">
+          <h3 class="text-xl font-bold">Gavin Moceri</h3>
+          <p class="text-gray-400">Lead Developer</p>
+          <p class="mt-2 text-sm">Description Go Here</p>
+        </div>
+        <div class="text-center">
+          <h3 class="text-xl font-bold">Ryan Latimer</h3>
+          <p class="text-gray-400">Lead Developer</p>
+          <p class="mt-2 text-sm">Description Go Here</p>
+        </div>
+      </div>
+      <!-- Timeline -->
+      <div class="mb-16">
+        <h3 class="text-3xl font-bold text-center mb-8">Our Journey</h3>
+        <div class="relative border-l-2 border-gray-700">
+          <div class="mb-10 ml-6">
+            <span class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-purple-500 rounded-full ring-8 ring-black"></span>
+            <h4 class="font-medium text-lg">Founded in 2024</h4>
+            <p class="text-gray-400">Started our journey with a passion for digital innovation.</p>
+          </div>
+          <div class="mb-10 ml-6">
+            <span class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-purple-500 rounded-full ring-8 ring-black"></span>
+            <h4 class="font-medium text-lg">First Major Project - <span class="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">FRC7790.com</span></h4>
+            <p class="text-gray-400">Created our first website, a side project to build up the online prcesence of our FIRST Robotics team.</p>
+          </div>
+          <div class="ml-6">
+            <span class="absolute -left-3 flex items-center justify-center w-6 h-6 bg-purple-500 rounded-full ring-8 ring-black"></span>
+            <h4 class="font-medium text-lg">Expansion & Growth</h4>
+            <p class="text-gray-400">Expanded our service offerings and reach to a multitude of local businesses.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section id="services" class="py-20 bg-gradient-to-b from-gray-900 to-black scroll-mt-24">
+    <div class="container mx-auto px-6">
+      <h2 class="text-4xl font-bold mb-12 text-center">Our Services & Process</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <!-- Service Card 1 -->
+        <div class="relative group overflow-hidden rounded-lg transition-transform duration-500 hover:scale-105">
+          <!-- Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-75 transition-opacity rounded-lg"></div>
+          <div class="flex gap-6 bg-gray-800 p-6 rounded-lg relative">
+            <div class="flex-shrink-0">
+              <i class="fas fa-laptop-code text-4xl text-purple-500"></i>
+            </div>
+            <div>
+              <h3 class="text-2xl font-bold mb-2">Web Design & Development</h3>
+              <p class="text-gray-400">
+                Creating visually stunning and highly functional websites, from conceptualization to launch.
+                We work directly with our business clients to ensure perfect alignment with their brand and goals.
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- Service Card 2 -->
+        <div class="relative group overflow-hidden rounded-lg transition-transform duration-500 hover:scale-105">
+          <!-- Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-75 transition-opacity rounded-lg"></div>
+          <div class="flex gap-6 bg-gray-800 p-6 rounded-lg relative">
+            <div class="flex-shrink-0">
+              <i class="fas fa-mobile-alt text-4xl text-blue-500"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-2">
+                <h3 class="text-2xl font-bold">Mobile App Development</h3>
+                <span class="inline-block bg-gray-700 text-xs text-white px-2 py-1 rounded">COMING SOON</span>
+              </div>
+              <p class="text-gray-400">
+                Developing intuitive, high-performance mobile applications tailored to your business needs.
+                Engage your customers on the go with seamless and responsive apps.
+                Stay tuned for upcoming features and improvements.
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- Process Description Card -->
+        <div class="md:col-span-2 mt-12 bg-gray-800 p-6 rounded-lg text-center duration-500 hover:scale-105">
+          <h3 class="text-3xl font-bold mb-4">Our Process</h3>
+          <p class="text-gray-400 text-lg max-w-3xl mx-auto">
+            From ideation and design through development and deployment, we work collaboratively with our clients to transform ideas into digital solutions. Our agile process ensures timely delivery and continuous improvement.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Portfolio Section -->
+  <section id="work" class="py-20 bg-black scroll-mt-24">
+    <div class="container mx-auto px-6">
+      <h2 class="text-4xl font-bold mb-12 text-center bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Our Portfolio</h2>
+      <!-- Baywatch Robotics Website -->
+      <div class="max-w-5xl mx-auto mb-20">
+        <div class="relative overflow-hidden rounded-xl bg-gradient-to-r from-purple-900/30 to-blue-900/30 backdrop-blur">
+          <div class="grid md:grid-cols-2 gap-8 p-8">
+            <div class="space-y-6">
+              <h3 class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                Baywatch Robotics
+              </h3>
+              <p class="text-xl text-gray-300 leading-relaxed">
+                We encountered challenges with integrating modern design with advanced robotics technology. Our solution included a complete redesign, improved UX/UI and robust backend integration. The result was increased performance and client satisfaction.
+              </p>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center space-x-2">
+                  <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+                  <span class="text-gray-300">Creative Design</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                  <span class="text-gray-300">Tech Integration</span>
+                </div>
+              </div>
+              <a href="https://FRC7790.com" 
+                 class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg text-white font-semibold hover:scale-105 transition-all">
+                Explore Project
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+            </div>
+            <div class="relative group">
+              <div class="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 group-hover:opacity-75 transition-opacity rounded-xl"></div>
+              <img src="src/assets/images/baywatchLogo.png" alt="Baywatch Robotics" class="w-full h-full object-cover rounded-xl transform group-hover:scale-105 transition-transform duration-500">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog Section -->
+  <section id="blog" class="py-20 bg-black">
+    <div class="container mx-auto px-6">
+      <h2 class="text-4xl font-bold mb-12 text-center">Featured Articles</h2>
+      <!-- Updated Article Previews with Button and Group Hover Scale Effect -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+  <!-- Bootstrap Article -->
+  <a href="bootstrap.html" class="group block">
+    <div class="bg-gray-800 p-6 rounded-lg flex flex-col h-full transform transition-all duration-300 group-hover:scale-105">
+      <div class="mb-4 aspect-w-16 aspect-h-9">
+        <img src="src/assets/images/bootstrap-logo.svg" alt="Bootstrap Article" class="w-full h-48 object-contain rounded transition-transform duration-300 group-hover:scale-105">
+      </div>
+      <div class="flex flex-col flex-grow">
+        <h3 class="text-xl font-bold mb-2">Bootstrap: Block Based Website Creation</h3>
+        <p class="text-gray-400 mb-4 flex-grow">How Bootstrap set the standard for rapid prototyping.</p>
+        <button class="mt-auto inline-flex items-center px-6 py-3 bg-[radial-gradient(circle_at_20%_65%,theme(colors.purple.500)_0%,theme(colors.blue.500)_150%)] rounded-lg text-white font-semibold hover:brightness-110 transition-all duration-300 flowing-gradient">
+          Read More
+        </button>
+      </div>
+    </div>
+  </a>
+
+  <!-- Tailwind Article -->
+  <a href="tailwind.html" class="group block">
+    <div class="bg-gray-800 p-6 rounded-lg flex flex-col h-full transform transition-all duration-300 group-hover:scale-105">
+      <div class="mb-4 aspect-w-16 aspect-h-9">
+        <img src="src/assets/images/Tailwind_CSS_Logo.svg" alt="Tailwind Article" class="w-full h-48 object-contain rounded transition-transform duration-300 group-hover:scale-105">
+      </div>
+      <div class="flex flex-col flex-grow">
+        <h3 class="text-xl font-bold mb-2">Tailwind CSS: Beautiful Customized Websites</h3>
+        <p class="text-gray-400 mb-4 flex-grow">A explanation of the framework powering beautiful websites with powerful creation abilities.</p>
+        <button class="mt-auto inline-flex items-center px-6 py-3 bg-[radial-gradient(circle_at_80%_30%,theme(colors.purple.500)_0%,theme(colors.blue.500)_150%)] rounded-lg text-white font-semibold hover:brightness-110 transition-all duration-300 flowing-gradient">
+          Read More
+        </button>
+      </div>
+    </div>
+  </a>
+
+  <!-- Robotics Article -->
+  <a href="baywatch.html" class="group block">
+    <div class="bg-gray-800 p-6 rounded-lg flex flex-col h-full transform transition-all duration-300 group-hover:scale-105">
+      <div class="mb-4 aspect-w-16 aspect-h-9 flex items-center justify-center">
+        <img src="src/assets/images/baywatchLogo.png" alt="Article 3" class="w-48 h-48 object-contain rounded transition-transform duration-300 group-hover:scale-105">
+      </div>
+      <div class="flex flex-col flex-grow">
+        <h3 class="text-xl font-bold mb-2">Baywatch Robotics</h3>
+        <p class="text-gray-400 mb-4 flex-grow">The work by the Harbor Springs FRC Team in the 2025 Season</p>
+        <button class="mt-auto inline-flex items-center px-6 py-3 bg-[radial-gradient(circle_at_40%_90%,theme(colors.purple.500)_0%,theme(colors.blue.500)_150%)] rounded-lg text-white font-semibold hover:brightness-110 transition-all duration-300 flowing-gradient">
+          Read More
+        </button>
+      </div>
+    </div>
+  </a>
+</div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black py-12">
+    <div class="container mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <!-- Social Media Icons -->
+        <div class="flex space-x-4 mb-4 md:mb-0">
+          <a href="#" class="hover:text-purple-400">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="#" class="hover:text-purple-400">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="#" class="hover:text-purple-400">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="#" class="hover:text-purple-400">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+        </div>
+        <!-- Add copyright info -->
+        <div class="text-gray-400 text-sm">
+          © 2025 Avexel. All rights reserved.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
