@@ -85,11 +85,11 @@
     <div class="container mx-auto px-6 flex flex-col items-center justify-center relative z-10">
       <div class="text-center max-w-4xl mx-auto">
         <h1 class="mb-8">
-          <div class="flex items-center justify-center gap-4 text-6xl md:text-8xl font-bold animate__animated animate__fadeInUp">
+          <div class="flex items-center justify-center gap-4 text-6xl md:text-8xl font-bold animate__animated animate__fadeInUp" style="animation-duration: 3s;">
             <span class="text-white">FRC</span>
             <span class="text-baywatch-orange glow-orange">7790</span>
           </div>
-          <div class="text-5xl md:text-7xl font-bold mt-4 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+          <div class="text-5xl md:text-7xl font-bold mt-4 animate__animated animate__fadeInUp" style="animation-delay: 1s; animation-duration: 3s;">
             <span class="text-white">Baywatch</span>
             <span class="text-baywatch-orange glow-orange">Robotics</span>
           </div>
@@ -190,18 +190,27 @@
     </div>
   </section>
 
+  <!-- Updated Robot Section: Center the robot and display its name above the image -->
+  <section id="robots" class="py-20 bg-black scroll-mt-24">
+    <div class="container mx-auto px-6">
+      <h2 class="text-4xl font-bold mb-4 text-center">Our Robot</h2>
+      <p class="text-gray-400 text-center mb-12">This is our robot for the 2025 FRC season, REEFSCAPE.</p>
+      <div class="flex flex-col items-center justify-center">
+        <h3 class="text-7xl font-bold font-anurati text-orange-500 mb-4">R I P T I D E</h3>
+        <img src="public/assets/images/RIPTIDE/short-better.png" alt="RIPTIDE" class="w-full max-w-md h-auto object-cover rounded">
+      </div>
+    </div>
+  </section>
+
   <!-- Footer -->
   <footer class="bg-black py-12">
     <div class="container mx-auto px-6">
       <div class="flex flex-col md:flex-row justify-between items-center">
         <div class="flex space-x-4 mb-4 md:mb-0">
-          <a href="#" class="text-baywatch-orange hover:text-orange-700">
-            <i class="fab fa-facebook-f"></i>
+          <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700">
+            <i class="fab fa-youtube"></i> <!-- changed icon -->
           </a>
-          <a href="#" class="text-baywatch-orange hover:text-orange-700">
-            <i class="fab fa-twitter"></i>
-          </a>
-          <a href="#" class="text-baywatch-orange hover:text-orange-700">
+          <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700">
             <i class="fab fa-instagram"></i>
           </a>
         </div>

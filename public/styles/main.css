@@ -178,3 +178,16 @@ body {
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
 }
+
+/* Add custom font Anurati */
+@font-face {
+    font-family: 'Anurati';
+    src: url('../assets/fonts/anurati.woff2') format('woff2'),
+         url('../assets/fonts/anurati.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.font-anurati {
+    font-family: 'Anurati', sans-serif;
+}
