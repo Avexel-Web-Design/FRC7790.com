@@ -50,19 +50,6 @@ window.addEventListener('beforeunload', () => {
     sessionStorage.setItem('scrollPos', JSON.stringify(scrollData));
 });
 
-// Navbar background control
-const navbar = document.getElementById('navbar');
-
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-        navbar.classList.add('bg-black/80', 'backdrop-blur-md');
-        navbar.classList.remove('backdrop-blur-sm');
-    } else {
-        navbar.classList.remove('bg-black/80', 'backdrop-blur-md');
-        navbar.classList.add('backdrop-blur-sm');
-    }
-});
-
 // Counter animation
 const counters = document.querySelectorAll('.counter');
 
@@ -150,5 +137,38 @@ document.addEventListener('DOMContentLoaded', function(){
             menu.classList.add('hidden');
             document.body.style.overflow = '';
         }
+    });
+
+    // Custom cursor implementation - simplified version
+    const cursor = document.createElement('div');
+    cursor.classList.add('custom-cursor');
+    document.body.appendChild(cursor);
+
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        
+        // Create a trail element
+        const trail = document.createElement('div');
+        trail.classList.add('cursor-trail');
+        trail.style.left = e.clientX + 'px';
+        trail.style.top = e.clientY + 'px';
+        document.body.appendChild(trail);
+        setTimeout(() => {
+            trail.remove();
+        }, 500);
+    });
+
+    // Add navbar scroll behavior
+    let lastScrollY = window.scrollY;
+
+    window.addEventListener('scroll', () => {
+        const navbar = document.getElementById('navbar');
+        if (window.scrollY > lastScrollY) { // Scrolling down
+            navbar.classList.add('hide');
+        } else { // Scrolling up
+            navbar.classList.remove('hide');
+        }
+        lastScrollY = window.scrollY;
     });
 });

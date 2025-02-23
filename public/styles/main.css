@@ -30,6 +30,25 @@
     }
 }
 
+/* Update flowingGradient keyframes for dynamic movement */
+@keyframes flowingGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    25% {
+        background-position: 50% 0%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    75% {
+        background-position: 50% 100%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
 @keyframes drawComplex {
     0% {
         stroke-dashoffset: 500;
@@ -42,18 +61,6 @@
     100% {
         stroke-dashoffset: 0;
         stroke-width: 3;
-    }
-}
-
-@keyframes flowingGradient {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
     }
 }
 
@@ -177,6 +184,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    cursor: none;
 }
 
 /* Add custom font Anurati */
@@ -190,4 +198,64 @@ body {
 
 .font-anurati {
     font-family: 'Anurati', sans-serif;
+}
+
+/* New fluid gradient card background */
+.card-gradient {
+    background: linear-gradient(135deg, #a74500, #1A1A1A);
+    background-size: 200% 200%;
+    animation: flowingGradient 8s ease infinite;
+    /* Optionally remove borders if desired */
+    border: none;
+}
+
+/* Custom cursor */
+.custom-cursor {
+    pointer-events: none;
+    position: fixed;
+    width: 100px;  /* Keep original size */
+    height: 100px; /* Keep original size */
+    background: radial-gradient(circle, rgba(255,107,0,0.5) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+}
+
+/* Make all interactive elements have larger hit areas */
+a, button, [role="button"], input, select, textarea {
+    cursor: none;
+    position: relative;
+}
+
+/* Add pseudo-element for larger hit area instead of padding */
+a::before, button::before, [role="button"]::before {
+    content: '';
+    position: absolute;
+    top: -1rem;
+    right: -1rem;
+    bottom: -1rem;
+    left: -1rem;
+    z-index: -1;
+}
+
+/* Special handling for footer social icons */
+footer a {
+    padding: 1rem;
+    margin: -1rem;
+}
+
+/* Add new gradient section style */
+.gradient-section {
+    background: linear-gradient(to bottom, #000000, #1A1A1A, #000000);
+}
+
+/* Add navbar transition styles */
+#navbar {
+    transform: translateY(0);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#navbar.hide {
+    transform: translateY(-100%);
+    opacity: 0;
 }

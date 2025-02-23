@@ -53,7 +53,6 @@
       </div>
       <!-- Desktop Menu -->
       <ul class="hidden md:flex space-x-8">
-        <li><a href="#about" class="hover:text-baywatch-orange transition-colors">About</a></li>
         <li><a href="#team" class="hover:text-baywatch-orange transition-colors">Team</a></li>
         <li><a href="#robots" class="hover:text-baywatch-orange transition-colors">Robots</a></li>
         <li><a href="#sponsors" class="hover:text-baywatch-orange transition-colors">Sponsors</a></li>
@@ -80,7 +79,6 @@
     <!-- Animated background elements -->
     <div class="absolute inset-0 overflow-hidden">
       <div class="absolute w-96 h-96 bg-baywatch-orange/10 rounded-full blur-3xl -top-20 -left-20 animate-pulse" style= "animation-duration: 5s;"></div>
-      <div class="absolute w-96 h-96 bg-baywatch-orange/10 rounded-full blur-3xl -bottom-20 -right-20 animate-pulse" style="animation-delay: 1s; animation-duration: 5s;"></div>
     </div>
     <div class="container mx-auto px-6 flex flex-col items-center justify-center relative z-10">
       <div class="text-center max-w-4xl mx-auto">
@@ -101,13 +99,13 @@
   </section>
 
   <!-- Live Event Updates Section -->
-  <section id="live-updates" class="py-20 bg-gradient-to-b from-black to-baywatch-dark scroll-mt-24">
+  <section id="live-updates" class="py-20 gradient-section scroll-mt-24">
     <div class="container mx-auto px-6">
       <h2 class="text-4xl font-bold mb-4 text-center">Competition Updates</h2>
       <p class="text-gray-400 text-center mb-12">Live updates from The Blue Alliance API</p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <!-- Current Ranking -->
-        <div class="p-6 bg-gray-800/50 rounded-xl border border-baywatch-orange/20 hover:border-baywatch-orange/50 transition-all duration-300" data-card="ranking">
+        <div class="p-6 card-gradient rounded-xl transition-all duration-300" data-card="ranking">
           <div class="flex justify-center mb-6">
             <div class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-lg flex items-center justify-center">
               <i class="fas fa-trophy text-2xl text-baywatch-orange"></i>
@@ -125,7 +123,7 @@
         </div>
 
         <!-- Win/Loss Record -->
-        <div class="p-6 bg-gray-800/50 rounded-xl border border-baywatch-orange/20 hover:border-baywatch-orange/50 transition-all duration-300" data-card="record">
+        <div class="p-6 card-gradient rounded-xl transition-all duration-300" data-card="record">
           <div class="flex justify-center mb-6">
             <div class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-lg flex items-center justify-center">
               <i class="fas fa-chart-line text-2xl text-baywatch-orange"></i>
@@ -148,7 +146,7 @@
         </div>
 
         <!-- Next Match -->
-        <div class="p-6 bg-gray-800/50 rounded-xl border border-baywatch-orange/20 hover:border-baywatch-orange/50 transition-all duration-300" data-card="next-match">
+        <div class="p-6 card-gradient rounded-xl transition-all duration-300" data-card="next-match">
           <div class="flex justify-center mb-6">
             <div class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-lg flex items-center justify-center">
               <i class="fas fa-clock text-2xl text-baywatch-orange"></i>
@@ -176,9 +174,9 @@
   </section>
 
   <!-- New Countdown Section Card -->
-  <section id="countdown-section" class="py-20 bg-gradient-to-b from-black to-baywatch-dark scroll-mt-24 hidden">
+  <section id="countdown-section" class="py-20 gradient-section scroll-mt-24 hidden">
     <div class="container mx-auto px-6">
-      <div class="p-6 bg-gray-800/50 rounded-xl border border-baywatch-orange/20 transition-all duration-300">
+      <div class="p-6 card-gradient rounded-xl transition-all duration-300">
         <h2 class="text-4xl font-bold mb-4 text-center">Event Countdown</h2>
         <p class="text-gray-400 text-center mb-4">
           Live match updates will automatically appear when the event starts.
@@ -197,7 +195,7 @@
       <p class="text-gray-400 text-center mb-12">This is our robot for the 2025 FRC season, REEFSCAPE.</p>
       <div class="flex flex-col items-center justify-center">
         <h3 class="text-7xl font-bold font-anurati text-orange-500 mb-4">R I P T I D E</h3>
-        <img src="public/assets/images/RIPTIDE/short-better.png" alt="RIPTIDE" class="w-full max-w-md h-auto object-cover rounded">
+        <img src="public/assets/images/RIPTIDE/short-better.png" alt="RIPTIDE" class="w-auto max-w-md h-full object-cover rounded">
       </div>
     </div>
   </section>
@@ -206,9 +204,9 @@
   <footer class="bg-black py-12">
     <div class="container mx-auto px-6">
       <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="flex space-x-4 mb-4 md:mb-0">
+        <div class="flex space-x-1 mb-4 md:mb-0">
           <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700">
-            <i class="fab fa-youtube"></i> <!-- changed icon -->
+            <i class="fab fa-youtube"></i>
           </a>
           <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700">
             <i class="fab fa-instagram"></i>
