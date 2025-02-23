@@ -203,6 +203,21 @@ function updateCountdown(startDate) {
     });
 }
 
+// New function for event countdown
+function updateEventCountdown(startDate) {
+    const now = new Date().getTime();
+    const eventStart = new Date(startDate).getTime();
+    let timeLeft = eventStart - now;
+    if(timeLeft < 0) timeLeft = 0;
+    
+    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    
+    document.getElementById('countdown-timer').textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
 // Initialize and update all data with loading states
 async function initializeEventData() {
     setLoadingState(true);
@@ -214,38 +229,32 @@ async function initializeEventData() {
             const eventStart = new Date(currentEvent.start_date);
             
             if (now < eventStart) {
-                // Event hasn't started - show countdown
-                updateCountdown(currentEvent.start_date);
+                // Hide live updates; show countdown instead
+                document.getElementById('live-updates').classList.add('hidden');
+                document.getElementById('countdown-section').classList.remove('hidden');
                 
-                // Update countdown every minute
+                // Start the countdown updates every second
+                updateEventCountdown(currentEvent.start_date);
                 setInterval(() => {
-                    updateCountdown(currentEvent.start_date);
-                }, 60000);
-                
-                // Update section titles
-                document.querySelector('#live-updates h2').textContent = 'Event Countdown';
-                document.querySelector('#live-updates p').textContent = 
-                    `Countdown to ${currentEvent.name}`;
-                
-                // Update card titles
-                document.querySelector('[data-card="ranking"] h3').textContent = 'Days Remaining';
-                document.querySelector('[data-card="record"] h3').textContent = 'Time Remaining';
-                document.querySelector('[data-card="next-match"] h3').textContent = 'Event Start';
-                
+                    updateEventCountdown(currentEvent.start_date);
+                }, 1000);
             } else {
                 // Event is ongoing - show live stats
+                document.getElementById('live-updates').classList.remove('hidden');
+                document.getElementById('countdown-section').classList.add('hidden');
+
                 await Promise.all([
                     updateRankings(currentEvent.key),
                     updateRecord(currentEvent.key),
                     updateNextMatch(currentEvent.key)
                 ]);
                 
-                // Set up periodic updates
+                // Set up periodic updates (every 5 minutes)
                 setInterval(() => {
                     updateRankings(currentEvent.key);
                     updateRecord(currentEvent.key);
                     updateNextMatch(currentEvent.key);
-                }, 300000); // 5 minutes
+                }, 300000);
             }
         } else {
             setErrorState('ranking-number', 'No upcoming event');
