@@ -109,9 +109,8 @@ document.addEventListener('DOMContentLoaded', function(){
     btn.addEventListener('click', () => {
         hamburger.classList.toggle('active');
         menu.classList.toggle('active');
-        menu.classList.toggle('hidden');
+        menu.classList.toggle('hidden');  // Add back the hidden toggle
         
-        // Toggle body scroll
         if (menu.classList.contains('active')) {
             document.body.style.overflow = 'hidden';
         } else {
@@ -119,22 +118,20 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     });
     
-    // Close menu when clicking menu items
+    // Update menu item click handlers
     menu.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => {
             hamburger.classList.remove('active');
             menu.classList.remove('active');
-            menu.classList.add('hidden');
             document.body.style.overflow = '';
         });
     });
     
-    // Close menu on escape key
+    // Update escape key handler
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && menu.classList.contains('active')) {
             hamburger.classList.remove('active');
             menu.classList.remove('active');
-            menu.classList.add('hidden');
             document.body.style.overflow = '';
         }
     });

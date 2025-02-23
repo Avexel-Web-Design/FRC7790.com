@@ -68,8 +68,45 @@
       </button>
     </div>
     <!-- Mobile Menu -->
-    <div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-baywatch-dark/95 backdrop-blur-lg transform -translate-y-full z-50 hidden" id="mobile-menu">
-      <!-- Mobile menu content similar to template.html but with baywatch colors -->
+    <div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-baywatch-dark/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
+      <!-- Menu Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-800">
+        <div class="flex items-center space-x-2">
+          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-12 h-12">
+          <span class="text-xl font-bold text-baywatch-orange">
+            Baywatch Robotics
+          </span>
+        </div>
+      </div>
+      <!-- Menu Items -->
+      <nav class="p-6">
+        <ul class="space-y-6">
+          <li>
+            <a href="#team" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-users w-6"></i>
+              <span>Team</span>
+            </a>
+          </li>
+          <li>
+            <a href="#robots" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-robot w-6"></i>
+              <span>Robots</span>
+            </a>
+          </li>
+          <li>
+            <a href="#sponsors" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-handshake w-6"></i>
+              <span>Sponsors</span>
+            </a>
+          </li>
+          <li>
+            <a href="#contact" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-envelope w-6"></i>
+              <span>Contact</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     </div>
   </nav>
 

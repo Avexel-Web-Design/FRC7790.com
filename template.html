@@ -41,101 +41,45 @@
   <link rel="shortcut icon" type="image/png" href="src/assets/images/Logo-nobg-sm.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-  <link href="public/styles/main.css" rel="stylesheet">
-  <script src="public/js/animations.js" defer></script>
+  <link href="src/assets/styles/main.css" rel="stylesheet">
+  <script src="src/js/animations.js" defer></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      const btn = document.getElementById('menu-btn');
-      const menu = document.getElementById('mobile-menu');
-      btn.addEventListener('click', () => {
-        menu.classList.toggle('hidden');
-      });
-    });
-  </script>
 </head>
 <body class="bg-black text-white overflow-x-hidden">
 
-  <!-- Navigation Bar -->
-  <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
+  <!-- New Navigation Bar with Hamburger Mobile Menu -->
+  <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-300 bg-black">
     <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-1">
-        <!-- Artistic Logo -->
-        <a href="index.html#" class="flex items-center space-x-1">
-          <div class="relative flex items-center">
-            <img src="src/assets/images/Logo-nobg-sm.png" alt="Avexel Logo" class="w-16 h-16 relative">
-          </div>
-          <div class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            Avexel
-          </div>
-        </a>
-      </div>
+      <!-- Logo -->
+      <a href="index.html#" class="flex items-center space-x-1">
+        <img src="src/assets/images/Logo-nobg-sm.png" alt="Avexel Logo" class="w-16 h-16">
+        <span class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Avexel</span>
+      </a>
       <!-- Desktop Menu -->
       <ul class="hidden md:flex space-x-8">
-        <li><a href="index.html#capabilities" class="hover:text-purple-400 transition-colors">Capabilities</a></li>
-        <li><a href="index.html#about" class="hover:text-purple-400 transition-colors">About</a></li>
-        <li><a href="index.html#services" class="hover:text-purple-400 transition-colors">Services</a></li>
-        <li><a href="index.html#work" class="hover:text-purple-400 transition-colors">Portfolio</a></li>
-        <li><a href="index.html#blog" class="hover:text-purple-400 transition-colors">Articles</a></li>
+        <li><a href="#capabilities" class="hover:text-purple-400 transition-colors">Capabilities</a></li>
+        <li><a href="#about" class="hover:text-purple-400 transition-colors">About</a></li>
+        <li><a href="#services" class="hover:text-purple-400 transition-colors">Services</a></li>
+        <li><a href="#work" class="hover:text-purple-400 transition-colors">Portfolio</a></li>
+        <li><a href="#blog" class="hover:text-purple-400 transition-colors">Articles</a></li>
       </ul>
-      <!-- Mobile Menu Button -->
-      <button id="menu-btn" class="navbar-toggler md:hidden" type="button" data-bs-toggle="collapse" aria-expanded="false" aria-label="Toggle navigation">
-        <div class="hamburger-menu">
-          <span class="line"></span>
-          <span class="line"></span>
-          <span class="line"></span>
-        </div>
+      <!-- Hamburger Button (visible on mobile) -->
+      <button id="menu-btn" class="md:hidden focus:outline-none text-white">
+        <i class="fas fa-bars text-2xl"></i>
       </button>
     </div>
-    <!-- Mobile Menu -->
-<!-- Change this part in your index.html -->
-<div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-black/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
-  <!-- Menu Header -->
-  <div class="flex items-center justify-between p-6 border-b border-gray-800">
-    <div class="flex items-center space-x-2">
-      <img src="src/assets/images/Logo-nobg-sm.png" alt="Avexel Logo" class="w-12 h-12">
-      <span class="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-        Avexel
-      </span>
-    </div>
-  </div>
-  <!-- Menu Items -->
-  <nav class="p-6">
-    <ul class="space-y-6">
-      <li>
-        <a href="#capabilities" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
-          <i class="fas fa-chart-bar w-6"></i>
-          <span>Capabilities</span>
-        </a>
-      </li>
-      <li>
-        <a href="#about" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
-          <i class="fas fa-users w-6"></i>
-          <span>About</span>
-        </a>
-      </li>
-      <li>
-        <a href="#services" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
-          <i class="fas fa-code w-6"></i>
-          <span>Services</span>
-        </a>
-      </li>
-      <li>
-        <a href="#work" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
-          <i class="fas fa-briefcase w-6"></i>
-          <span>Portfolio</span>
-        </a>
-      </li>
-      <li>
-        <a href="#blog" class="flex items-center space-x-2 text-xl hover:text-purple-400 transition-colors">
-          <i class="fas fa-newspaper w-6"></i>
-          <span>Articles</span>
-        </a>
-      </li>
+  </nav>
+
+  <!-- Add the mobile menu container (initially hidden via scale-0) -->
+  <div id="mobile-menu" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-lg flex flex-col items-center justify-center transform scale-0 transition-transform duration-300">
+    <ul class="text-center space-y-8">
+      <li><a href="#capabilities" class="text-3xl text-white" onclick="toggleMenu()">Capabilities</a></li>
+      <li><a href="#about" class="text-3xl text-white" onclick="toggleMenu()">About</a></li>
+      <li><a href="#services" class="text-3xl text-white" onclick="toggleMenu()">Services</a></li>
+      <li><a href="#work" class="text-3xl text-white" onclick="toggleMenu()">Portfolio</a></li>
+      <li><a href="#blog" class="text-3xl text-white" onclick="toggleMenu()">Articles</a></li>
     </ul>
-  </nav>
-</div>
-  </nav>
+  </div>
 
   <!-- Banner Section -->
   <section class="min-h-screen relative overflow-hidden bg-fixed">
@@ -519,6 +463,17 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    function toggleMenu() {
+      mobileMenu.classList.toggle('scale-0');
+    }
+
+    menuBtn.addEventListener('click', toggleMenu);
+  </script>
 
 </body>
 </html>
