@@ -9,40 +9,48 @@
   <!-- Page Title -->
   <title>Baywatch Robotics</title>
 
-  <!-- CSS Stylesheet -->
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="ftc.css">
+  <link rel="stylesheet" href="../../assets/css/hamburger.css">
 
   <!-- Favicon (Optional) -->
   <link rel="icon" type="image/png" href="../../assets/images/logo.png">
 </head>
 <body>
-  <nav class="navbar" id="navbar">
-    <div class="logo">
-      <a href="../../../index.html">
-        <img src="../../assets/images/logo.png" alt="logo">
-      </a>
+  <nav class="navbar fixed-top" id="navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+      <div class="logo">
+        <a href="../../../index.html">
+          <img src="../../assets/images/logo.png" alt="logo">
+        </a>
+      </div>
+      <ul class="nav-links">
+        <li><a href="../../../index.html">Home</a></li>
+        <li><a href="../Robots/robots.html">Robots</a></li>
+        <li><a href="../Sponsors/sponsors.html">Sponsors</a></li>
+        <li><a href="../Schedule/schedule.html">Schedule</a></li>
+        <li><a href="../FTC/ftc.html" class="current-page">FTC</a></li>
+      </ul>
+      <!-- Custom Hamburger Icon -->
+      <div id="hamburger" class="hamburger">
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
     </div>
-    <ul class="nav-links">
-      <li><a href="../../../index.html">Home</a></li>
-      <li><a href="../Robots/robots.html">Robots</a></li>
-      <li><a href="../Sponsors/sponsors.html">Sponsors</a></li>
-      <li><a href="../Schedule/schedule.html">Schedule</a></li>
-      <li><a href="../FTC/ftc.html" class="current-page">FTC</a></li>
-    </ul>
   </nav>
 
   <div class="banner animate">
     <img src="../../assets/images/ftclogo.jpg" alt="banner">
   </div>
 
-  <div class="title-container">
-    <div class="title animate">
-      <p>
-        This is
-      </p>
-      <p>
-        INTO THE DEEP
-      </p>
+  <div class="container title-container">
+    <div class="title animate text-center">
+      <p>This is</p>
+      <p>INTO THE DEEP</p>
     </div>
     <div class="subtitle animate">
       <p>
@@ -53,7 +61,7 @@
         submersible chambers, while robots rush to ascend before the match ends​.
       </p>
     </div>
-    <div class="video-container animate">
+    <div class="video-container animate text-center">
       <video width="560" height="315" controls style="border-radius: 45px;">
         <source src="../../assets/videos/INTO THE DEEP.mp4" type="video/mp4">
         Your browser does not support the video tag.
@@ -61,37 +69,43 @@
     </div>
   </div>
 
-  <div class="robot animate">
+  <div class="container robot animate text-center">
     <h1>Our</h1>
     <h1>Robot</h1>
     <p>This is our robot for the 2024-25 season,</p>
     <p>COBALT.</p>
-    <img src="../../assets/images/COBALT/COBALT.png" alt="COBALT">
+    <img src="../../assets/images/COBALT/Cobalt-Start-non-metal.png" alt="COBALT">
     <a href="../Robots/robots.html" class="robot-button">See All Robots</a>
   </div>
 
   <footer class="footer animate">
-    <div>
-      <h2>Location</h2>
-      <p>500 Spring Street<br>Harbor Springs, MI 49740</p>
-    </div>
-    <div>
-      <h1>Baywatch</h1>
-      <h1>Robotics</h1>
-    </div>
-    <div>
-      <h2>Contact</h2>
-      <p>baywatch@frc7790.com</p>
-      <a href="https://www.instagram.com/frc7790/" target="_blank" rel="noopener noreferrer">
-        <img src="https://img.icons8.com/?size=100&id=32320&format=png&color=ffffff" alt="Instagram">
-      </a>
-      <a href="https://www.youtube.com/@frc7790/" target="_blank" rel="noopener noreferrer">
-        <img src="https://img.icons8.com/?size=100&id=37325&format=png&color=ffffff" alt="X">
-      </a>
+    <div class="container d-flex flex-md-row flex-column justify-content-between text-center">
+      <div>
+        <h2>Location</h2>
+        <p>500 Spring Street<br>Harbor Springs, MI 49740</p>
+      </div>
+      <div>
+        <h1>Baywatch</h1>
+        <h1>Robotics</h1>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <p>baywatch@frc7790.com</p>
+        <a href="https://www.instagram.com/frc7790/" target="_blank" rel="noopener noreferrer">
+          <img src="https://img.icons8.com/?size=100&id=32320&format=png&color=ffffff" alt="Instagram">
+        </a>
+        <a href="https://www.youtube.com/@frc7790/" target="_blank" rel="noopener noreferrer">
+          <img src="https://img.icons8.com/?size=100&id=37325&format=png&color=ffffff" alt="X">
+        </a>
+      </div>
     </div>
   </footer>
 
-  <!-- JavaScript -->
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Custom JavaScript -->
   <script src="ftc.js"></script>
+  <script src="../../assets/js/hamburger.js"></script>
 </body>
 </html>
