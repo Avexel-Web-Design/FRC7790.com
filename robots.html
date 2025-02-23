@@ -57,41 +57,41 @@
     });
   </script>
 </head>
-<body class="bg-baywatch-dark text-white font-poppins cursor-none">
+<body class="bg-black text-white font-poppins cursor-none"> <!-- Changed from bg-baywatch-dark to bg-black -->
   <!-- Add decorative background elements -->
   <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-    <!-- Gradient orbs -->
-    <div class="absolute w-[800px] h-[800px] bg-baywatch-orange/5 rounded-full blur-3xl -top-[400px] -right-[400px] animate-pulse" style="animation-duration: 8s;"></div>
-    <div class="absolute w-[600px] h-[600px] bg-baywatch-orange/10 rounded-full blur-3xl top-[20%] -left-[300px] animate-pulse" style="animation-duration: 6s;"></div>
-    <div class="absolute w-[700px] h-[700px] bg-baywatch-orange/5 rounded-full blur-3xl bottom-[10%] -right-[200px] animate-pulse" style="animation-duration: 7s;"></div>
-    <!-- Noise texture overlay -->
-    <div class="absolute inset-0 bg-[url('/public/assets/images/noise.png')] opacity-[0.03] mix-blend-overlay"></div>
+    <!-- Gradient orbs with reduced opacity -->
+    <div class="absolute w-[800px] h-[800px] bg-baywatch-orange/3 rounded-full blur-3xl -top-[400px] -right-[400px] animate-pulse" style="animation-duration: 8s;"></div>
+    <div class="absolute w-[600px] h-[600px] bg-baywatch-orange/5 rounded-full blur-3xl top-[20%] -left-[300px] animate-pulse" style="animation-duration: 6s;"></div>
+    <div class="absolute w-[700px] h-[700px] bg-baywatch-orange/3 rounded-full blur-3xl bottom-[10%] -right-[200px] animate-pulse" style="animation-duration: 7s;"></div>
+    <!-- Noise texture overlay with increased opacity -->
+    <div class="absolute inset-0 bg-[url('/public/assets/images/noise.png')] opacity-[0.05] mix-blend-overlay"></div>
   </div>
 
   <!-- Rest of the content needs z-index to appear above background -->
   <nav class="relative z-50">
     <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <a href="index.html#" class="flex items-center space-x-2">
-          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20">
-        </a>
-      </div>
-      <!-- Desktop Menu -->
-      <ul class="hidden md:flex space-x-8">
-        <li><a href="robots.html" class="hover:text-baywatch-orange transition-colors">Robots</a></li>
-        <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-colors">Sponsors</a></li>
-        <li><a href="schedule.html" class="hover:text-baywatch-orange transition-colors">Schedule</a></li>
-        <li><a href="ftc.html" class="hover:text-baywatch-orange transition-colors">FTC</a></li>
-      </ul>
-      <!-- Mobile Menu Button -->
-      <button id="menu-btn" class="md:hidden">
-        <div class="hamburger-menu">
-          <span class="line bg-baywatch-orange"></span>
-          <span class="line bg-baywatch-orange"></span>
-          <span class="line bg-baywatch-orange"></span>
+        <div class="flex items-center space-x-2">
+          <a href="#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300">
+            <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20">
+          </a>
         </div>
-      </button>
-    </div>
+        <!-- Desktop Menu -->
+        <ul class="hidden md:flex space-x-8">
+          <li><a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a></li>
+          <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a></li>
+          <li><a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a></li>
+          <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
+        </ul>
+        <!-- Mobile Menu Button -->
+        <button id="menu-btn" class="md:hidden">
+          <div class="hamburger-menu">
+            <span class="line bg-baywatch-orange"></span>
+            <span class="line bg-baywatch-orange"></span>
+            <span class="line bg-baywatch-orange"></span>
+          </div>
+        </button>
+      </div>
     <!-- Mobile Menu -->
     <div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-baywatch-dark/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
       <!-- Menu Header -->
@@ -155,37 +155,37 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         
         <!-- RIPTIDE - 2025 -->
-        <div class="card-gradient rounded-xl overflow-hidden group hover:transform hover:scale-105 transition-all duration-300">
-          <div class="relative bg-black">
+        <div class="card-gradient rounded-xl overflow-hidden group hover:transform hover:scale-105 transition-all duration-300 flex flex-col">
+          <div class="relative bg-black flex justify-center">
             <img src="public/assets/images/RIPTIDE/short-better.png" alt="RIPTIDE Robot" class="w-full h-64 object-contain">
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
           </div>
-          <div class="p-6">
-            <h2 class="text-3xl font-bold font-anurati text-baywatch-orange mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.2s; animation-iteration-count: 1;">R I P T I D E</h2>
+          <div class="p-6 text-center flex-grow flex flex-col justify-center">
+            <h2 class="text-3xl font-bold font-anurati text-baywatch-orange glow-orange mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.2s; animation-iteration-count: 1;">R I P T I D E</h2>
             <p class="text-xl text-white mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.4s; animation-iteration-count: 1;">2025 - REEFSCAPE</p>
           </div>
         </div>
 
         <!-- COBALT - 2024 -->
-        <div class="card-gradient rounded-xl overflow-hidden group hover:transform hover:scale-105 transition-all duration-300">
-          <div class="relative bg-black">
+        <div class="card-gradient rounded-xl overflow-hidden group hover:transform hover:scale-105 transition-all duration-300 flex flex-col">
+          <div class="relative bg-black flex justify-center">
             <img src="public/assets/images/COBALT/COBALT.png" alt="COBALT Robot" class="w-full h-64 object-contain">
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
           </div>
-          <div class="p-6">
-            <h2 class="text-3xl font-bold font-anurati text-baywatch-orange mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.6s; animation-iteration-count: 1;">C O B A L T</h2>
+          <div class="p-6 text-center flex-grow flex flex-col justify-center">
+            <h2 class="text-3xl font-bold font-anurati text-baywatch-orange glow-orange mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.6s; animation-iteration-count: 1;">C O B A L T</h2>
             <p class="text-xl text-white mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 0.8s; animation-iteration-count: 1;">2024 - INTO THE DEEP</p>
           </div>
         </div>
 
         <!-- HUNGRY - 2024 -->
-        <div class="card-gradient rounded-xl overflow-hidden group hover:transform hover:scale-105 transition-all duration-300">
-          <div class="relative bg-black"> <!-- Added bg-black here -->
-            <img src="public/assets/images/hungry.png" alt="HUNGRY Robot" class="w-full h-64 object-contain"> <!-- Changed object-cover to object-contain -->
+        <div class="card-gradient rounded-xl overflow-hidden group hover:transform hover:scale-105 transition-all duration-300 flex flex-col">  
+          <div class="relative bg-black flex justify-center">
+            <img src="public/assets/images/hungry.png" alt="HUNGRY Robot" class="w-full h-64 object-contain">
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
           </div>
-          <div class="p-6">
-            <h2 class="text-3xl font-bold font-anurati text-baywatch-orange mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 1s; animation-iteration-count: 1;">H U N G R Y</h2>
+          <div class="p-6 text-center flex-grow flex flex-col justify-center">
+            <h2 class="text-3xl font-bold font-anurati text-baywatch-orange glow-orange mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 1s; animation-iteration-count: 1;">H U N G R Y</h2>
             <p class="text-xl text-white mb-2 animate__animated animate__pulse animate__fadeInUp" style="animation-delay: 1.2s; animation-iteration-count: 1;">2024 - CRESCENDO</p>
           </div>
         </div>
@@ -195,17 +195,14 @@
   </section>
 
   <!-- Include the same footer as index.html -->
-  <footer class="bg-black py-12 relative">
-    <!-- Add gradient overlay -->
-    <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-baywatch-dark to-black"></div>
-    <!-- Rest of footer content with relative positioning -->
-    <div class="container mx-auto px-6 relative z-10">
+  <footer class="bg-black py-12">
+    <div class="container mx-auto px-6">
       <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="flex space-x-1 mb-4 md:mb-0">
-          <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700">
+        <div class="flex space-x-4 mb-4 md:mb-0">
+          <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl">
             <i class="fab fa-youtube"></i>
           </a>
-          <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700">
+          <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl">
             <i class="fab fa-instagram"></i>
           </a>
         </div>

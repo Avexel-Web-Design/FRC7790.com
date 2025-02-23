@@ -216,11 +216,37 @@ body {
 
 /* New fluid gradient card background */
 .card-gradient {
-    background: linear-gradient(135deg, #a74500, #1A1A1A);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 107, 0, 0.15) 0%,
+        rgba(26, 26, 26, 0.5) 25%,
+        rgba(255, 107, 0, 0.15) 50%,
+        rgba(26, 26, 26, 0.5) 75%,
+        rgba(255, 107, 0, 0.15) 100%
+    );
+    background-size: 400% 400%;
+    animation: flowingGradient 15s ease-in-out infinite;
+    border: 1px solid rgba(255, 107, 0, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.card-gradient:hover {
     background-size: 200% 200%;
-    animation: flowingGradient 8s ease infinite;
-    /* Optionally remove borders if desired */
-    border: none;
+    animation: flowingGradient 8s ease-in-out infinite;
+    border-color: rgba(255, 107, 0, 0.3);
+}
+
+@keyframes flowingGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 /* Custom cursor */
