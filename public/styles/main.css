@@ -251,7 +251,7 @@ body {
 /* Custom cursor - Add media query */
 @media (hover: hover) and (pointer: fine) {
     body {
-        cursor: none;
+        cursor: auto;
     }
 
     .custom-cursor {
