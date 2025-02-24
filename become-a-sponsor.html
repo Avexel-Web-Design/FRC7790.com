@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Become a Sponsor - Baywatch Robotics | FRC Team 7790</title>
+  <meta name="description" content="Become a sponsor for Baywatch Robotics. Fill out the form below to get in touch with our team.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'baywatch-orange': '#FF6B00',
+            'baywatch-dark': '#1A1A1A'
+          },
+          fontFamily: {
+            'poppins': ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link href="public/styles/main.css" rel="stylesheet">
+  <script src="public/js/animations.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-black text-white font-poppins">
+
+  <!-- Navigation Bar -->
+  <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <a href="index.html#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105">
+          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20">
+        </a>
+      </div>
+      <!-- Desktop Menu -->
+      <ul class="hidden md:flex space-x-8">
+        <li><a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a></li>
+        <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a></li>
+        <li><a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a></li>
+        <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
+      </ul>
+      <!-- Mobile Menu Button -->
+      <button id="menu-btn" class="md:hidden">
+        <div class="hamburger-menu">
+          <span class="line bg-baywatch-orange"></span>
+          <span class="line bg-baywatch-orange"></span>
+          <span class="line bg-baywatch-orange"></span>
+        </div>
+      </button>
+    </div>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-baywatch-dark/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
+      <!-- Menu Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-800">
+        <div class="flex items-center space-x-2">
+          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-12 h-12">
+          <span class="text-xl font-bold text-baywatch-orange">
+            Baywatch Robotics
+          </span>
+        </div>
+      </div>
+      <!-- Menu Items -->
+      <nav class="p-6">
+        <ul class="space-y-6">
+          <li>
+            <a href="#team" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-users w-6"></i>
+              <span>Team</span>
+            </a>
+          </li>
+          <li>
+            <a href="#robots" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-robot w-6"></i>
+              <span>Robots</span>
+            </a>
+          </li>
+          <li>
+            <a href="#sponsors" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-handshake w-6"></i>
+              <span>Sponsors</span>
+            </a>
+          </li>
+          <li>
+            <a href="#contact" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-envelope w-6"></i>
+              <span>Contact</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="pt-32 pb-16 relative z-10">
+    <div class="container mx-auto px-6">
+      <h1 class="text-5xl md:text-7xl font-bold text-center">
+        <span class="text-white inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">Become a</span>
+        <span class="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">Sponsor</span>
+      </h1>
+      <p class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
+        Fill out the form below and we’ll be in touch to discuss how you can support our team!
+      </p>
+    </div>
+  </section>
+
+  <!-- Form Section -->
+  <section class="py-16 relative z-10">
+    <div class="container mx-auto px-6">
+      <div class="max-w-xl mx-auto bg-gray-800 rounded-xl p-8">
+        <form action="https://formsubmit.co/baywatch@frc7790.com" method="POST">
+          <!-- Optional: Disable Captcha 
+          <input type="hidden" name="_captcha" value="false">
+          -->
+          <div class="mb-4">
+            <label for="name" class="block text-lg mb-2">Name</label>
+            <input type="text" id="name" name="name" class="w-full p-3 rounded bg-black border border-gray-600 text-white focus:outline-none focus:border-baywatch-orange" required>
+          </div>
+          <div class="mb-4">
+            <label for="email" class="block text-lg mb-2">Email</label>
+            <input type="email" id="email" name="email" class="w-full p-3 rounded bg-black border border-gray-600 text-white focus:outline-none focus:border-baywatch-orange" required>
+          </div>
+          <div class="mb-4">
+            <label for="message" class="block text-lg mb-2">Message</label>
+            <textarea id="message" name="message" rows="5" class="w-full p-3 rounded bg-black border border-gray-600 text-white focus:outline-none focus:border-baywatch-orange" required></textarea>
+          </div>
+          <button type="submit" class="w-full py-3 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300">
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black py-12">
+    <div class="container mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex space-x-4 mb-4 md:mb-0">
+          <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube">
+            <i class="fab fa-youtube"></i>
+          </a>
+          <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+        <div class="text-gray-400 text-sm">
+          © 2025 Baywatch Robotics. All rights reserved.
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
