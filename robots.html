@@ -68,30 +68,30 @@
     <div class="absolute inset-0 bg-[url('/public/assets/images/noise.png')] opacity-[0.05] mix-blend-overlay"></div>
   </div>
 
-  <!-- Rest of the content needs z-index to appear above background -->
-  <nav class="relative z-50">
+  <!-- Navigation Bar -->
+  <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
     <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <a href="#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300">
-            <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20">
-          </a>
-        </div>
-        <!-- Desktop Menu -->
-        <ul class="hidden md:flex space-x-8">
-          <li><a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a></li>
-          <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a></li>
-          <li><a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a></li>
-          <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
-        </ul>
-        <!-- Mobile Menu Button -->
-        <button id="menu-btn" class="md:hidden">
-          <div class="hamburger-menu">
-            <span class="line bg-baywatch-orange"></span>
-            <span class="line bg-baywatch-orange"></span>
-            <span class="line bg-baywatch-orange"></span>
-          </div>
-        </button>
+      <div class="flex items-center space-x-2">
+        <a href="index.html#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105">
+          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20">
+        </a>
       </div>
+      <!-- Desktop Menu -->
+      <ul class="hidden md:flex space-x-8">
+        <li><a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a></li>
+        <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a></li>
+        <li><a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a></li>
+        <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
+      </ul>
+      <!-- Mobile Menu Button -->
+      <button id="menu-btn" class="md:hidden">
+        <div class="hamburger-menu">
+          <span class="line bg-baywatch-orange"></span>
+          <span class="line bg-baywatch-orange"></span>
+          <span class="line bg-baywatch-orange"></span>
+        </div>
+      </button>
+    </div>
     <!-- Mobile Menu -->
     <div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-baywatch-dark/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
       <!-- Menu Header -->
