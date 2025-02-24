@@ -186,7 +186,7 @@ footer a {
 /* Add navbar transition styles */
 #navbar {
   transform: translateY(0);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 #navbar.hide {

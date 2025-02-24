@@ -135,17 +135,23 @@ document.addEventListener('DOMContentLoaded', function(){
             document.body.style.overflow = '';
         }
     });
+});
 
-    // Add navbar scroll behavior
-    let lastScrollY = window.scrollY;
+// Add navbar hide/show functionality
+let lastScrollY = window.scrollY;
 
-    window.addEventListener('scroll', () => {
-        const navbar = document.getElementById('navbar');
-        if (window.scrollY > lastScrollY) { // Scrolling down
-            navbar.classList.add('hide');
-        } else { // Scrolling up
-            navbar.classList.remove('hide');
-        }
-        lastScrollY = window.scrollY;
-    });
+window.addEventListener('scroll', () => {
+    const navbar = document.getElementById('navbar');
+    const currentScrollY = window.scrollY;
+    
+    // Show/hide navbar based on scroll direction
+    if (currentScrollY > lastScrollY) {
+        // Scrolling down
+        navbar.style.transform = 'translateY(-100%)';
+    } else {
+        // Scrolling up
+        navbar.style.transform = 'translateY(0)';
+    }
+    
+    lastScrollY = currentScrollY;
 });
