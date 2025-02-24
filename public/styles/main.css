@@ -124,32 +124,30 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Better Anurati font handling */
+/* Updated Anurati font handling */
 @font-face {
-  font-family: "Anurati";
-  src: url("../assets/fonts/Anurati-Regular.eot"); /* IE9 Compat Modes */
-  src: url("../assets/fonts/Anurati-Regular.eot?#iefix")
-      format("embedded-opentype"),
-    /* IE6-IE8 */ url("../assets/fonts/Anurati-Regular.woff2") format("woff2"),
-    /* Modern Browsers */ url("../assets/fonts/Anurati-Regular.woff")
-      format("woff"),
-    /* Modern Browsers */ url("../assets/fonts/Anurati-Regular.ttf")
-      format("truetype"),
-    /* Safari, Android, iOS */ url("../assets/fonts/Anurati-Regular.otf")
-      format("opentype"); /* Legacy iOS */
+  font-family: 'Anurati';
+  src: url('../assets/fonts/Anurati-Regular.otf') format('opentype'),
+       url('../assets/fonts/Anurati-Regular.woff2') format('woff2'),
+       url('../assets/fonts/Anurati-Regular.woff') format('woff'),
+       url('../assets/fonts/Anurati-Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
-/* Remove the old .font-anurati class and replace with this */
+/* Update font-anurati class */
 .font-anurati {
-  /* Fallback font stack focused on geometric sans-serifs */
-  font-family: "Anurati", "Microgramma D Extended", "Eurostile", "Orbitron",
-    "Bank Gothic", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Anurati', 'Arial Black', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.25em;
   font-weight: 700;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.font-anurati.font-loaded {
+  opacity: 1;
 }
 
 /* Add a class for pre-load state */

@@ -45,6 +45,24 @@
     />
     <script src="public/js/animations.js" defer></script>
     <!-- Add this line -->
+    <script>
+      // Font loading handler
+      const font = new FontFace('Anurati', 'url(/public/assets/fonts/Anurati-Regular.woff2)');
+      
+      font.load().then(() => {
+        document.fonts.add(font);
+        document.documentElement.classList.add('anurati-loaded');
+        document.querySelectorAll('.font-anurati').forEach(el => {
+          el.classList.add('font-loaded');
+        });
+      }).catch((err) => {
+        console.warn('Anurati font failed to load:', err);
+        // If font fails to load, remove loading class to show fallback
+        document.querySelectorAll('.font-anurati').forEach(el => {
+          el.style.opacity = '1';
+        });
+      });
+    </script>
   </head>
   <body class="bg-black text-white font-poppins overflow-x-hidden">
     <!-- Changed from bg-baywatch-dark to bg-black -->
