@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Sponsors - Baywatch Robotics | FRC Team 7790</title>
+  <meta name="description" content="Meet the amazing sponsors supporting FRC Team 7790 Baywatch Robotics. Their generous support makes our robotics program possible.">
+  
+  <!-- Add Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'baywatch-orange': '#FF6B00',
+            'baywatch-dark': '#1A1A1A'
+          },
+          fontFamily: {
+            'poppins': ['Poppins', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link href="public/styles/main.css" rel="stylesheet">
+  <script src="public/js/animations.js" defer></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-black text-white font-poppins">
+
+  <!-- Navigation Bar -->
+  <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
+    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <a href="index.html#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105">
+          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20">
+        </a>
+      </div>
+      <!-- Desktop Menu -->
+      <ul class="hidden md:flex space-x-8">
+        <li><a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a></li>
+        <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a></li>
+        <li><a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a></li>
+        <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
+      </ul>
+      <!-- Mobile Menu Button -->
+      <button id="menu-btn" class="md:hidden">
+        <div class="hamburger-menu">
+          <span class="line bg-baywatch-orange"></span>
+          <span class="line bg-baywatch-orange"></span>
+          <span class="line bg-baywatch-orange"></span>
+        </div>
+      </button>
+    </div>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-baywatch-dark/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
+      <!-- Menu Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-800">
+        <div class="flex items-center space-x-2">
+          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-12 h-12">
+          <span class="text-xl font-bold text-baywatch-orange">
+            Baywatch Robotics
+          </span>
+        </div>
+      </div>
+      <!-- Menu Items -->
+      <nav class="p-6">
+        <ul class="space-y-6">
+          <li>
+            <a href="#team" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-users w-6"></i>
+              <span>Team</span>
+            </a>
+          </li>
+          <li>
+            <a href="#robots" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-robot w-6"></i>
+              <span>Robots</span>
+            </a>
+          </li>
+          <li>
+            <a href="#sponsors" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-handshake w-6"></i>
+              <span>Sponsors</span>
+            </a>
+          </li>
+          <li>
+            <a href="#contact" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
+              <i class="fas fa-envelope w-6"></i>
+              <span>Contact</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="pt-32 pb-16 relative z-10">
+    <div class="container mx-auto px-6">
+      <h1 class="text-5xl md:text-7xl font-bold text-center">
+        <span class="text-white inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">Our</span>
+        <span class="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">Sponsors</span>
+      </h1>
+      <p class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
+        We are incredibly grateful to our sponsors who make our robotics program possible.
+        Their support enables us to inspire the next generation of engineers and innovators.
+      </p>
+    </div>
+  </section>
+
+  <!-- Sponsors Grid -->
+  <section class="py-16 relative z-10">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- Brown Motors -->
+        <a href="https://brownmotors.com" target="_blank" rel="noopener noreferrer" class="card-gradient rounded-xl p-8 flex flex-col items-center justify-center group hover:scale-105 transition-all duration-300">
+            <div class="bg-white/10 rounded-xl p-6 w-full aspect-square flex items-center justify-center">
+              <img src="public/assets/images/Sponsors/BrownMotors.png" alt="Brown Motors Logo" class="w-full h-full object-contain filter brightness-100 group-hover:brightness-110 transition-all duration-300">
+            </div>
+            <h3 class="text-xl font-bold mt-4 text-baywatch-orange">Brown Motors</h3>
+        </a>
+
+        <!-- Harbor Springs Public Schools -->
+        <a href="https://harborps.org" target="_blank" rel="noopener noreferrer" class="card-gradient rounded-xl p-8 flex flex-col items-center justify-center group hover:scale-105 transition-all duration-300">
+          <div class="bg-white/10 rounded-xl p-6 w-full aspect-square flex items-center justify-center">
+            <img src="public/assets/images/Sponsors/HarborSpringsPublicSchools.png" alt="Harbor Springs Public Schools Logo" class="w-full h-full object-contain filter brightness-100 group-hover:brightness-110 transition-all duration-300">
+          </div>
+          <h3 class="text-xl font-bold mt-4 text-baywatch-orange">Harbor Springs Public Schools</h3>
+        </a>
+
+        <!-- First Community Bank -->
+        <a href="https://firstcb.com" target="_blank" rel="noopener noreferrer" class="card-gradient rounded-xl p-8 flex flex-col items-center justify-center group hover:scale-105 transition-all duration-300">
+          <div class="bg-white/10 rounded-xl p-6 w-full aspect-square flex items-center justify-center">
+            <img src="public/assets/images/Sponsors/FirstCommunityBank.svg" alt="First Community Bank Logo" class="w-full h-full object-contain filter brightness-100 group-hover:brightness-110 transition-all duration-300">
+          </div>
+          <h3 class="text-xl font-bold mt-4 text-baywatch-orange">First Community Bank</h3>
+        </a>
+
+        <!-- North Central Michigan College -->
+        <a href="https://ncmich.edu" target="_blank" rel="noopener noreferrer" class="card-gradient rounded-xl p-8 flex flex-col items-center justify-center group hover:scale-105 transition-all duration-300">
+          <div class="bg-white/10 rounded-xl p-6 w-full aspect-square flex items-center justify-center">
+            <img src="public/assets/images/Sponsors/NCMC.png" alt="North Central Michigan College Logo" class="w-full h-full object-contain filter brightness-100 group-hover:brightness-110 transition-all duration-300">
+          </div>
+          <h3 class="text-xl font-bold mt-4 text-baywatch-orange">North Central Michigan College</h3>
+        </a>
+
+        <!-- Michigan Scientific -->
+        <a href="https://michsci.com" target="_blank" rel="noopener noreferrer" class="card-gradient rounded-xl p-8 flex flex-col items-center justify-center group hover:scale-105 transition-all duration-300">
+          <div class="bg-white/10 rounded-xl p-6 w-full aspect-square flex items-center justify-center">
+            <img src="public/assets/images/Sponsors/MichiganScientific.png" alt="Michigan Scientific Logo" class="w-full h-full object-contain filter brightness-100 group-hover:brightness-110 transition-all duration-300">
+          </div>
+          <h3 class="text-xl font-bold mt-4 text-baywatch-orange">Michigan Scientific</h3>
+        </a>
+
+        <!-- Evening Star Joinery -->
+        <a href="https://eveningstarjoinery.com" target="_blank" rel="noopener noreferrer" class="card-gradient rounded-xl p-8 flex flex-col items-center justify-center group hover:scale-105 transition-all duration-300">
+          <div class="bg-white/10 rounded-xl p-6 w-full aspect-square flex items-center justify-center">
+            <img src="public/assets/images/Sponsors/EveningStarJoinery.png" alt="Evening Star Joinery Logo" class="w-full h-full object-contain filter brightness-100 group-hover:brightness-110 transition-all duration-300">
+          </div>
+          <h3 class="text-xl font-bold mt-4 text-baywatch-orange">Evening Star Joinery</h3>
+        </a>
+
+        <!-- Mastercam -->
+        <a href="https://mastercam.com" target="_blank" rel="noopener noreferrer" class="card-gradient rounded-xl p-8 flex flex-col items-center justify-center group hover:scale-105 transition-all duration-300">
+          <div class="bg-white/10 rounded-xl p-6 w-full aspect-square flex items-center justify-center">
+            <img src="public/assets/images/Sponsors/Mastercam.svg" alt="Mastercam Logo" class="w-full h-full object-contain filter brightness-100 group-hover:brightness-110 transition-all duration-300">
+          </div>
+          <h3 class="text-xl font-bold mt-4 text-baywatch-orange">Mastercam</h3>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="py-16 bg-gradient-to-b from-black to-baywatch-dark">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-3xl font-bold mb-8">Interested in Sponsoring Our Team?</h2>
+      <p class="text-gray-400 mb-8 max-w-2xl mx-auto">
+        Join our growing family of sponsors and help inspire the next generation of engineers and innovators.
+        Your support makes a direct impact on our students' learning and growth.
+      </p>
+      <a href="mailto:contact@frc7790.com" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300 group btn-orange-glow">
+        Contact Us About Sponsorship
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black py-12">
+    <div class="container mx-auto px-6">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex space-x-4 mb-4 md:mb-0">
+          <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube">
+            <i class="fab fa-youtube"></i>
+          </a>
+          <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+        </div>
+        <div class="text-gray-400 text-sm">
+          © 2025 Baywatch Robotics. All rights reserved.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
