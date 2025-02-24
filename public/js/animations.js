@@ -146,6 +146,15 @@ document.addEventListener('DOMContentLoaded', function(){
             cursor.style.left = e.clientX + 'px';
             cursor.style.top = e.clientY + 'px';
         });
+
+        // Add mouse leave/enter handlers
+        document.addEventListener('mouseleave', () => {
+            cursor.style.opacity = '0';
+        });
+
+        document.addEventListener('mouseenter', () => {
+            cursor.style.opacity = '1';
+        });
     }
 
     // Add navbar scroll behavior
