@@ -137,21 +137,27 @@ document.addEventListener('DOMContentLoaded', function(){
     });
 });
 
-// Add navbar hide/show functionality
-let lastScrollY = window.scrollY;
+// Variable to track last scroll position
+let lastScroll = 0;
 
-window.addEventListener('scroll', () => {
+// Function to handle navbar visibility
+function handleNavbarVisibility() {
     const navbar = document.getElementById('navbar');
-    const currentScrollY = window.scrollY;
-    
-    // Show/hide navbar based on scroll direction
-    if (currentScrollY > lastScrollY) {
-        // Scrolling down
-        navbar.style.transform = 'translateY(-100%)';
+    const currentScroll = window.pageYOffset;
+
+    // Only show navbar when at the very top
+    if (currentScroll <= 0) {
+        navbar.classList.remove('hidden-nav');
+        navbar.classList.add('visible-nav');
     } else {
-        // Scrolling up
-        navbar.style.transform = 'translateY(0)';
+        navbar.classList.remove('visible-nav');
+        navbar.classList.add('hidden-nav');
     }
-    
-    lastScrollY = currentScrollY;
-});
+
+    lastScroll = currentScroll;
+}
+
+// Add scroll event listener for navbar
+window.addEventListener('scroll', handleNavbarVisibility);
+// Initial check
+handleNavbarVisibility();

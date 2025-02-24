@@ -240,13 +240,23 @@ footer a {
 
 /* Add navbar transition styles */
 #navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
   transform: translateY(0);
-  transition: all 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
 }
 
-#navbar.hide {
+#navbar.hidden-nav {
   transform: translateY(-100%);
   opacity: 0;
+}
+
+#navbar.visible-nav {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 /* Social Media Icon Glow Effects */
