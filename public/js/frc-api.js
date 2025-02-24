@@ -8,7 +8,7 @@ const TBA_BASE_URL = 'https://www.thebluealliance.com/api/v3';
 // Fetch current event data - modified for testing
 async function getCurrentEventData() {
     try {
-        const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc`, {
+        const response = await fetch(`${TBA_BASE_URL}/event/2025milac`, {
             headers: {
                 'X-TBA-Auth-Key': TBA_AUTH_KEY
             }
