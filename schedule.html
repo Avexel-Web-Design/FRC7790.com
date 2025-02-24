@@ -1,341 +1,550 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Competition Schedule - Baywatch Robotics | FRC Team 7790</title>
-  <meta name="description" content="View our 2025 FRC competition schedule. Join us at upcoming events!">
-  
-  <!-- Add Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'baywatch-orange': '#FF6B00',
-            'baywatch-dark': '#1A1A1A'
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Competition Schedule - Baywatch Robotics | FRC Team 7790</title>
+    <meta
+      name="description"
+      content="View our 2025 FRC competition schedule. Join us at upcoming events!"
+    />
+
+    <!-- Add Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "baywatch-orange": "#FF6B00",
+              "baywatch-dark": "#1A1A1A",
+            },
+            fontFamily: {
+              poppins: ["Poppins", "sans-serif"],
+            },
           },
-          fontFamily: {
-            'poppins': ['Poppins', 'sans-serif']
-          }
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link href="public/styles/main.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="public/js/animations.js" defer></script>
+    <script src="public/js/frc-api.js" defer></script>
+  </head>
+  <body class="bg-black text-white font-poppins overflow-x-hidden text-center">
+    <!-- Navigation Bar -->
+    <nav
+      class="fixed top-0 w-full z-50 transition-all duration-300"
+      id="navbar"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-2">
+          <a
+            href="index.html#"
+            class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
+          >
+            <img
+              src="public/assets/images/logo.png"
+              alt="Baywatch Robotics Logo"
+              class="w-20 h-20"
+            />
+          </a>
+        </div>
+        <!-- Desktop Menu -->
+        <ul class="hidden md:flex space-x-8">
+          <li>
+            <a
+              href="robots.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Robots</a
+            >
+          </li>
+          <li>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
+            >
+          </li>
+          <li>
+            <a
+              href="schedule.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Schedule</a
+            >
+          </li>
+          <li>
+            <a
+              href="ftc.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >FTC</a
+            >
+          </li>
+        </ul>
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button
+            id="mobile-menu-btn"
+            class="focus:outline-none transition-transform duration-300"
+          >
+            <i class="fas fa-bars text-3xl"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Updated Mobile Menu Overlay and Toggle Script for a cooler animated experience -->
+    <!-- Mobile Menu Overlay -->
+    <div
+      id="mobile-menu-overlay"
+      class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
+    >
+      <div class="flex flex-col items-center justify-center h-full space-y-8">
+        <a
+          href="robots.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Robots</a
+        >
+        <a
+          href="sponsors.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Sponsors</a
+        >
+        <a
+          href="schedule.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Schedule</a
+        >
+        <a
+          href="ftc.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >FTC</a
+        >
+      </div>
+    </div>
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+      const menuBtn = document.getElementById("mobile-menu-btn");
+      const mobileMenu = document.getElementById("mobile-menu-overlay");
+      let menuOpen = false;
+
+      menuBtn.addEventListener("click", () => {
+        menuOpen = !menuOpen;
+
+        if (menuOpen) {
+          // Show menu with slide-down effect
+          mobileMenu.classList.remove("hidden");
+          mobileMenu.classList.remove("animate__fadeOutUp");
+          mobileMenu.classList.add("animate__fadeInDown");
+          // Rotate hamburger to X
+          menuBtn.firstElementChild.classList.remove("fa-bars");
+          menuBtn.firstElementChild.classList.add(
+            "fa-times",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+        } else {
+          // Animate hide menu with slide-up effect then hide
+          mobileMenu.classList.remove("animate__fadeInDown");
+          mobileMenu.classList.add("animate__fadeOutUp");
+          // Rotate X back to hamburger
+          menuBtn.firstElementChild.classList.remove(
+            "fa-times",
+            "animate__rotateIn"
+          );
+          menuBtn.firstElementChild.classList.add(
+            "fa-bars",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+          // After animation, add hidden class
+          setTimeout(() => {
+            mobileMenu.classList.add("hidden");
+          }, 500);
         }
-      }
-    }
-  </script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-  <link href="public/styles/main.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script src="public/js/animations.js" defer></script>
-  <script src="public/js/frc-api.js" defer></script>
-</head>
-<body class="bg-black text-white font-poppins overflow-x-hidden text-center">
+      });
+    </script>
 
-  <!-- Navigation Bar -->
-  <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
-    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <a href="index.html#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105">
-          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20">
-        </a>
+    <!-- Hero Section -->
+    <section class="pt-32 pb-16 relative z-10">
+      <div class="container mx-auto px-6">
+        <h1 class="text-5xl md:text-7xl font-bold text-center">
+          <span
+            class="text-white inline-block animate__animated animate__fadeInUp"
+            style="animation-delay: 0.2s"
+            >2025</span
+          >
+          <span
+            class="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp"
+            style="animation-delay: 0.4s"
+            >Schedule</span
+          >
+        </h1>
+        <p
+          class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp"
+          style="animation-delay: 0.6s"
+        >
+          Join us at these exciting FRC events throughout the 2025 season
+        </p>
       </div>
-      <!-- Desktop Menu -->
-      <ul class="hidden md:flex space-x-8">
-        <li><a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a></li>
-        <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a></li>
-        <li><a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a></li>
-        <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
-      </ul>
-      <!-- Mobile Menu Button -->
-      <div class="md:hidden">
-        <button id="mobile-menu-btn" class="focus:outline-none transition-transform duration-300">
-          <i class="fas fa-bars text-3xl"></i>
-        </button>
-      </div>
-    </div>
-  </nav>
+    </section>
 
-  <!-- Updated Mobile Menu Overlay and Toggle Script for a cooler animated experience -->
-  <!-- Mobile Menu Overlay -->
-  <div
-    id="mobile-menu-overlay"
-    class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
-  >
-    <div class="flex flex-col items-center justify-center h-full space-y-8">
-      <a
-        href="robots.html"
-        class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
-        >Robots</a
-      >
-      <a
-        href="sponsors.html"
-        class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
-        >Sponsors</a
-      >
-      <a
-        href="schedule.html"
-        class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
-        >Schedule</a
-      >
-      <a
-        href="ftc.html"
-        class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
-        >FTC</a
-      >
-    </div>
-  </div>
+    <!-- Schedule Timeline Section -->
+    <section
+      class="py-16 relative z-10 animate__animated animate__fadeInUp"
+      style="animation-delay: 1s"
+    >
+      <div class="container mx-auto px-6">
+        <div class="max-w-4xl mx-auto">
+          <!-- Timeline -->
+          <div class="relative">
+            <!-- Vertical Line - Modified gradient opacity -->
+            <div
+              class="absolute left-1/2 transform -translate-x-1/2 w-1 h-[calc(100%-2rem)] bg-gradient-to-b from-baywatch-orange/50 via-baywatch-orange/40 to-baywatch-orange/30 top-0"
+            ></div>
 
-  <!-- Mobile Menu Toggle Script -->
-  <script>
-    const menuBtn = document.getElementById('mobile-menu-btn')
-    const mobileMenu = document.getElementById('mobile-menu-overlay')
-    let menuOpen = false
+            <!-- Starting dot -->
+            <div class="flex items-center justify-center mb-12">
+              <div
+                class="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"
+              ></div>
+            </div>
 
-    menuBtn.addEventListener('click', () => {
-      menuOpen = !menuOpen
+            <!-- Event 1: Lake City Regional - Modified to include live updates -->
+            <div class="relative mb-20 reveal">
+              <!-- Changed from mb-32 to mb-16 -->
+              <a
+                href="https://frc-events.firstinspires.org/2025/MILAC"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block relative z-20"
+              >
+                <div
+                  class="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black"
+                >
+                  <h3
+                    class="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center"
+                  >
+                    Lake City Regional
+                  </h3>
+                  <div class="flex flex-wrap gap-4 mb-4 justify-center">
+                    <span
+                      class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm"
+                    >
+                      <i class="far fa-calendar-alt mr-2"></i>February 28 -
+                      March 2, 2025
+                    </span>
+                    <span
+                      class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm"
+                    >
+                      <i class="fas fa-map-marker-alt mr-2"></i>251 Russell Rd,
+                      Lake City, MI
+                    </span>
+                  </div>
 
-      if (menuOpen) {
-        // Show menu with slide-down effect
-        mobileMenu.classList.remove('hidden')
-        mobileMenu.classList.remove('animate__fadeOutUp')
-        mobileMenu.classList.add('animate__fadeInDown')
-        // Rotate hamburger to X
-        menuBtn.firstElementChild.classList.remove('fa-bars')
-        menuBtn.firstElementChild.classList.add('fa-times', 'animate__animated', 'animate__rotateIn')
-      } else {
-        // Animate hide menu with slide-up effect then hide
-        mobileMenu.classList.remove('animate__fadeInDown')
-        mobileMenu.classList.add('animate__fadeOutUp')
-        // Rotate X back to hamburger
-        menuBtn.firstElementChild.classList.remove('fa-times', 'animate__rotateIn')
-        menuBtn.firstElementChild.classList.add('fa-bars', 'animate__animated', 'animate__rotateIn')
-        // After animation, add hidden class
-        setTimeout(() => {
-          mobileMenu.classList.add('hidden')
-        }, 500)
-      }
-    })
-  </script>
-
-  <!-- Hero Section -->
-  <section class="pt-32 pb-16 relative z-10">
-    <div class="container mx-auto px-6">
-      <h1 class="text-5xl md:text-7xl font-bold text-center">
-        <span class="text-white inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">2025</span>
-        <span class="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">Schedule</span>
-      </h1>
-      <p class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
-        Join us at these exciting FRC events throughout the 2025 season
-      </p>
-    </div>
-  </section>
-
-  <!-- Schedule Timeline Section -->
-  <section class="py-16 relative z-10 animate__animated animate__fadeInUp" style="animation-delay: 1s;">
-    <div class="container mx-auto px-6">
-      <div class="max-w-4xl mx-auto">
-        <!-- Timeline -->
-        <div class="relative">
-          <!-- Vertical Line - Modified gradient opacity -->
-          <div class="absolute left-1/2 transform -translate-x-1/2 w-1 h-[calc(100%-2rem)] bg-gradient-to-b from-baywatch-orange/50 via-baywatch-orange/40 to-baywatch-orange/30 top-0"></div>
-          
-          <!-- Starting dot -->
-          <div class="flex items-center justify-center mb-12">
-            <div class="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"></div>
-          </div>
-
-          <!-- Event 1: Lake City Regional - Modified to include live updates -->
-          <div class="relative mb-20 reveal"> <!-- Changed from mb-32 to mb-16 -->
-            <a href="https://frc-events.firstinspires.org/2025/MILAC" target="_blank" rel="noopener noreferrer" class="block relative z-20">
-              <div class="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
-                <h3 class="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">Lake City Regional</h3>
-                <div class="flex flex-wrap gap-4 mb-4 justify-center">
-                  <span class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                    <i class="far fa-calendar-alt mr-2"></i>February 28 - March 2, 2025
-                  </span>
-                  <span class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                    <i class="fas fa-map-marker-alt mr-2"></i>251 Russell Rd, Lake City, MI
-                  </span>
-                </div>
-
-                <!-- Live Updates Section (Initially Hidden) -->
-                <div id="live-updates" class="mt-6 hidden">
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <!-- Current Ranking -->
-                    <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                      <h4 class="text-lg font-semibold mb-2">Current Ranking</h4>
-                      <div class="flex items-center justify-center gap-2">
-                        <span id="ranking-number" class="text-4xl font-bold text-baywatch-orange counter">--</span>
-                        <span class="text-xl text-gray-400">th</span>
-                      </div>
-                      <span class="text-gray-400 block mt-1" id="total-teams">Loading...</span>
-                    </div>
-
-                    <!-- Win/Loss Record -->
-                    <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                      <h4 class="text-lg font-semibold mb-2">Event Record</h4>
-                      <div class="flex justify-center items-center gap-4">
-                        <div class="text-center">
-                          <span id="wins" class="text-3xl font-bold text-green-500 counter">--</span>
-                          <span class="text-gray-400 block">Wins</span>
+                  <!-- Live Updates Section (Initially Hidden) -->
+                  <div id="live-updates" class="mt-6 hidden">
+                    <div
+                      class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center"
+                    >
+                      <!-- Current Ranking -->
+                      <div
+                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
+                      >
+                        <h4 class="text-lg font-semibold mb-2">
+                          Current Ranking
+                        </h4>
+                        <div class="flex items-center justify-center gap-2">
+                          <span
+                            id="ranking-number"
+                            class="text-4xl font-bold text-baywatch-orange counter"
+                            >--</span
+                          >
+                          <span class="text-xl text-gray-400">th</span>
                         </div>
-                        <span class="text-xl text-gray-400">-</span>
-                        <div class="text-center">
-                          <span id="losses" class="text-3xl font-bold text-red-500 counter">--</span>
-                          <span class="text-gray-400 block">Losses</span>
-                        </div>
+                        <span class="text-gray-400 block mt-1" id="total-teams"
+                          >Loading...</span
+                        >
                       </div>
-                    </div>
 
-                    <!-- Next Match -->
-                    <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                      <h4 class="text-lg font-semibold mb-2">Next Match</h4>
-                      <div class="text-center">
-                        <span id="match-number" class="text-2xl font-bold text-baywatch-orange">Loading...</span>
-                        <div id="match-time" class="text-gray-400 mt-1">--:-- --</div>
-                        <div class="mt-2 flex justify-center gap-2">
-                          <div id="blue-alliance" class="text-xs px-2 py-1 bg-blue-500/20 rounded-full text-blue-400">
-                            Loading...
+                      <!-- Win/Loss Record -->
+                      <div
+                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
+                      >
+                        <h4 class="text-lg font-semibold mb-2">Event Record</h4>
+                        <div class="flex justify-center items-center gap-4">
+                          <div class="text-center">
+                            <span
+                              id="wins"
+                              class="text-3xl font-bold text-green-500 counter"
+                              >--</span
+                            >
+                            <span class="text-gray-400 block">Wins</span>
                           </div>
-                          <div id="red-alliance" class="text-xs px-2 py-1 bg-red-500/20 rounded-full text-red-400">
-                            Loading...
+                          <span class="text-xl text-gray-400">-</span>
+                          <div class="text-center">
+                            <span
+                              id="losses"
+                              class="text-3xl font-bold text-red-500 counter"
+                              >--</span
+                            >
+                            <span class="text-gray-400 block">Losses</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Next Match -->
+                      <div
+                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
+                      >
+                        <h4 class="text-lg font-semibold mb-2">Next Match</h4>
+                        <div class="text-center">
+                          <span
+                            id="match-number"
+                            class="text-2xl font-bold text-baywatch-orange"
+                            >Loading...</span
+                          >
+                          <div id="match-time" class="text-gray-400 mt-1">
+                            --:-- --
+                          </div>
+                          <div class="mt-2 flex justify-center gap-2">
+                            <div
+                              id="blue-alliance"
+                              class="text-xs px-2 py-1 bg-blue-500/20 rounded-full text-blue-400"
+                            >
+                              Loading...
+                            </div>
+                            <div
+                              id="red-alliance"
+                              class="text-xs px-2 py-1 bg-red-500/20 rounded-full text-red-400"
+                            >
+                              Loading...
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Countdown Section -->
-                <div id="countdown-section" class="mt-6 flex flex-col items-center">
-                  <div class="text-center">
-                    <h4 class="text-lg font-semibold mb-2">Event Countdown</h4>
-                    <div id="countdown-timer" class="text-4xl font-bold text-baywatch-orange">
-                      --d --h --m --s
+                  <!-- Countdown Section -->
+                  <div
+                    id="countdown-section"
+                    class="mt-6 flex flex-col items-center"
+                  >
+                    <div class="text-center">
+                      <h4 class="text-lg font-semibold mb-2">
+                        Event Countdown
+                      </h4>
+                      <div
+                        id="countdown-timer"
+                        class="text-4xl font-bold text-baywatch-orange"
+                      >
+                        --d --h --m --s
+                      </div>
+                      <p class="text-gray-400 text-sm mt-2">
+                        Live match updates will appear here when the event
+                        starts
+                      </p>
                     </div>
-                    <p class="text-gray-400 text-sm mt-2">
-                      Live match updates will appear here when the event starts
-                    </p>
+                  </div>
+                  <div
+                    class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors"
+                  >
+                    <i class="fas fa-external-link-alt"></i>
                   </div>
                 </div>
-                <div class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
-                  <i class="fas fa-external-link-alt"></i>
-                </div>
+              </a>
+              <!-- Dot repositioned between events -->
+              <div class="flex items-center justify-center -mb-12 mt-8">
+                <div
+                  class="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"
+                ></div>
               </div>
-            </a>
-            <!-- Dot repositioned between events -->
-            <div class="flex items-center justify-center -mb-12 mt-8">
-              <div class="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"></div>
+            </div>
+
+            <!-- Event 2: Traverse City Regional -->
+            <div class="relative mb-20 reveal">
+              <!-- Changed from mb-32 to mb-16 -->
+              <a
+                href="https://frc-events.firstinspires.org/2025/MITVC"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block relative z-20"
+              >
+                <div
+                  class="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black"
+                >
+                  <h3
+                    class="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center"
+                  >
+                    Traverse City Regional
+                  </h3>
+                  <div class="flex flex-wrap gap-4 mb-4 justify-center">
+                    <span
+                      class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm"
+                    >
+                      <i class="far fa-calendar-alt mr-2"></i>March 13-15, 2025
+                    </span>
+                    <span
+                      class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm"
+                    >
+                      <i class="fas fa-map-marker-alt mr-2"></i>1150 Milliken
+                      Drive, Traverse City, MI
+                    </span>
+                  </div>
+                  <div
+                    class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors"
+                  >
+                    <i class="fas fa-external-link-alt"></i>
+                  </div>
+                </div>
+              </a>
+              <!-- Dot repositioned between events -->
+              <div class="flex items-center justify-center -mb-12 mt-8">
+                <div
+                  class="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Event 3: FIM District Championship -->
+            <div class="relative mb-20 reveal">
+              <!-- Changed from mb-32 to mb-16 -->
+              <a
+                href="https://frc-events.firstinspires.org/2025/MICMP"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block relative z-20"
+              >
+                <div
+                  class="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black"
+                >
+                  <div
+                    class="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange rounded-full text-sm animate-pulse"
+                  >
+                    Qualification Pending
+                  </div>
+                  <h3
+                    class="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center"
+                  >
+                    FIM District Championship
+                  </h3>
+                  <div class="flex flex-wrap gap-4 mb-4 justify-center">
+                    <span
+                      class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm"
+                    >
+                      <i class="far fa-calendar-alt mr-2"></i>April 3-5, 2025
+                    </span>
+                    <span
+                      class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm"
+                    >
+                      <i class="fas fa-map-marker-alt mr-2"></i>7400 Bay Road,
+                      Saginaw, MI
+                    </span>
+                  </div>
+                  <div
+                    class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors"
+                  >
+                    <i class="fas fa-external-link-alt"></i>
+                  </div>
+                </div>
+              </a>
+              <!-- Dot repositioned between events -->
+              <div class="flex items-center justify-center -mb-12 mt-8">
+                <div
+                  class="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Event 4: FIRST Championship -->
+            <div class="relative reveal">
+              <!-- Removed bottom margin since it's the last event -->
+              <a
+                href="https://frc-events.firstinspires.org/2025/CMPTX"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block relative z-20"
+              >
+                <div
+                  class="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black"
+                >
+                  <div
+                    class="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange rounded-full text-sm animate-pulse"
+                  >
+                    Qualification Pending
+                  </div>
+                  <h3
+                    class="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center"
+                  >
+                    FIRST Championship
+                  </h3>
+                  <div class="flex flex-wrap gap-4 mb-4 justify-center">
+                    <span
+                      class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm"
+                    >
+                      <i class="far fa-calendar-alt mr-2"></i>April 16-19, 2025
+                    </span>
+                    <span
+                      class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm"
+                    >
+                      <i class="fas fa-map-marker-alt mr-2"></i>1001 Avenida De
+                      Las Americas, Houston, TX
+                    </span>
+                  </div>
+                  <div
+                    class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors"
+                  >
+                    <i class="fas fa-external-link-alt"></i>
+                  </div>
+                </div>
+              </a>
             </div>
           </div>
-
-          <!-- Event 2: Traverse City Regional -->
-          <div class="relative mb-20 reveal"> <!-- Changed from mb-32 to mb-16 -->
-            <a href="https://frc-events.firstinspires.org/2025/MITVC" target="_blank" rel="noopener noreferrer" class="block relative z-20">
-              <div class="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
-                <h3 class="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">Traverse City Regional</h3>
-                <div class="flex flex-wrap gap-4 mb-4 justify-center">
-                  <span class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                    <i class="far fa-calendar-alt mr-2"></i>March 13-15, 2025
-                  </span>
-                  <span class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                    <i class="fas fa-map-marker-alt mr-2"></i>1150 Milliken Drive, Traverse City, MI
-                  </span>
-                </div>
-                <div class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
-                  <i class="fas fa-external-link-alt"></i>
-                </div>
-              </div>
-            </a>
-            <!-- Dot repositioned between events -->
-            <div class="flex items-center justify-center -mb-12 mt-8">
-              <div class="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"></div>
-            </div>
-          </div>
-
-          <!-- Event 3: FIM District Championship -->
-          <div class="relative mb-20 reveal"> <!-- Changed from mb-32 to mb-16 -->
-            <a href="https://frc-events.firstinspires.org/2025/MICMP" target="_blank" rel="noopener noreferrer" class="block relative z-20">
-              <div class="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
-                <div class="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange rounded-full text-sm animate-pulse">
-                  Qualification Pending
-                </div>
-                <h3 class="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">FIM District Championship</h3>
-                <div class="flex flex-wrap gap-4 mb-4 justify-center">
-                  <span class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                    <i class="far fa-calendar-alt mr-2"></i>April 3-5, 2025
-                  </span>
-                  <span class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                    <i class="fas fa-map-marker-alt mr-2"></i>7400 Bay Road, Saginaw, MI
-                  </span>
-                </div>
-                <div class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
-                  <i class="fas fa-external-link-alt"></i>
-                </div>
-              </div>
-            </a>
-            <!-- Dot repositioned between events -->
-            <div class="flex items-center justify-center -mb-12 mt-8">
-              <div class="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"></div>
-            </div>
-          </div>
-
-          <!-- Event 4: FIRST Championship -->
-          <div class="relative reveal"> <!-- Removed bottom margin since it's the last event -->
-            <a href="https://frc-events.firstinspires.org/2025/CMPTX" target="_blank" rel="noopener noreferrer" class="block relative z-20">
-              <div class="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
-                <div class="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange rounded-full text-sm animate-pulse">
-                  Qualification Pending
-                </div>
-                <h3 class="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">FIRST Championship</h3>
-                <div class="flex flex-wrap gap-4 mb-4 justify-center">
-                  <span class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                    <i class="far fa-calendar-alt mr-2"></i>April 16-19, 2025
-                  </span>
-                  <span class="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                    <i class="fas fa-map-marker-alt mr-2"></i>1001 Avenida De Las Americas, Houston, TX
-                  </span>
-                </div>
-                <div class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
-                  <i class="fas fa-external-link-alt"></i>
-                </div>
-              </div>
-            </a>
-          </div>
-
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Footer -->
-  <footer class="bg-black py-12">
-    <div class="container mx-auto px-6">
-      <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="flex space-x-4 mb-4 md:mb-0">
-          <a
-            href="https://youtube.com/@frc7790"
-            class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube"
-          >
-            <i class="fab fa-youtube"></i>
-          </a>
-          <a
-            href="https://instagram.com/frc7790"
-            class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram"
-          >
-            <i class="fab fa-instagram"></i>
-          </a>
-        </div>
-        <div class="text-gray-400 text-sm">
-          © 2025 Baywatch Robotics. All rights reserved.
+    <!-- Footer -->
+    <footer class="bg-black py-12">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="flex space-x-4 mb-4 md:mb-0">
+            <a
+              href="https://youtube.com/@frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube"
+            >
+              <i class="fab fa-youtube"></i>
+            </a>
+            <a
+              href="https://instagram.com/frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram"
+            >
+              <i class="fab fa-instagram"></i>
+            </a>
+          </div>
+          <div class="text-gray-400 text-sm">
+            © 2025 Baywatch Robotics. All rights reserved.
+          </div>
         </div>
       </div>
-    </div>
-  </footer>
-
-</body>
+    </footer>
+  </body>
 </html>
