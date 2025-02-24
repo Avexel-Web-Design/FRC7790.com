@@ -136,27 +136,6 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     });
 
-    // Only initialize custom cursor if device has a mouse pointer
-    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-        const cursor = document.createElement('div');
-        cursor.classList.add('custom-cursor');
-        document.body.appendChild(cursor);
-
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-        });
-
-        // Add mouse leave/enter handlers
-        document.addEventListener('mouseleave', () => {
-            cursor.style.opacity = '0';
-        });
-
-        document.addEventListener('mouseenter', () => {
-            cursor.style.opacity = '1';
-        });
-    }
-
     // Add navbar scroll behavior
     let lastScrollY = window.scrollY;
 

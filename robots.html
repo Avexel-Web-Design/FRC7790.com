@@ -32,32 +32,8 @@
   <link href="public/styles/main.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Add cursor script -->
-  <script defer>
-    document.addEventListener('DOMContentLoaded', function(){
-      // Custom cursor implementation
-      const cursor = document.createElement('div');
-      cursor.classList.add('custom-cursor');
-      document.body.appendChild(cursor);
-
-      document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-        
-        // Create a trail element
-        const trail = document.createElement('div');
-        trail.classList.add('cursor-trail');
-        trail.style.left = e.clientX + 'px';
-        trail.style.top = e.clientY + 'px';
-        document.body.appendChild(trail);
-        setTimeout(() => {
-          trail.remove();
-        }, 500);
-      });
-    });
-  </script>
 </head>
-<body class="bg-black text-white font-poppins cursor-none"> <!-- Changed from bg-baywatch-dark to bg-black -->
+<body class="bg-black text-white font-poppins"> <!-- Changed from bg-baywatch-dark to bg-black -->
   <!-- Add decorative background elements -->
   <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
     <!-- Gradient orbs with reduced opacity -->
