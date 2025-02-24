@@ -254,6 +254,11 @@ body {
         cursor: none;
     }
 
+    /* Add form elements and labels to cursor-none */
+    a, button, [role="button"], input, select, textarea, label, form, button[type="submit"] {
+        cursor: none;
+    }
+
     .custom-cursor {
         pointer-events: none;
         position: fixed;
@@ -266,7 +271,7 @@ body {
     }
 
     /* Make interactive elements have no cursor on devices with mouse */
-    a, button, [role="button"], input, select, textarea {
+    a, button, [role="button"], input, select, textarea, label, form {
         cursor: none;
     }
 }
@@ -285,7 +290,7 @@ body {
 }
 
 /* Make all interactive elements have larger hit areas */
-a, button, [role="button"], input, select, textarea {
+a, button, [role="button"], input, select, textarea, label, form, button[type="submit"] {
     cursor: none;
     position: relative;
 }
