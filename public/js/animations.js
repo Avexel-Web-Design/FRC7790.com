@@ -136,25 +136,17 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     });
 
-    // Custom cursor implementation - simplified version
-    const cursor = document.createElement('div');
-    cursor.classList.add('custom-cursor');
-    document.body.appendChild(cursor);
+    // Only initialize custom cursor if device has a mouse pointer
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        const cursor = document.createElement('div');
+        cursor.classList.add('custom-cursor');
+        document.body.appendChild(cursor);
 
-    document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-        
-        // Create a trail element
-        const trail = document.createElement('div');
-        trail.classList.add('cursor-trail');
-        trail.style.left = e.clientX + 'px';
-        trail.style.top = e.clientY + 'px';
-        document.body.appendChild(trail);
-        setTimeout(() => {
-            trail.remove();
-        }, 500);
-    });
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+    }
 
     // Add navbar scroll behavior
     let lastScrollY = window.scrollY;
