@@ -31,9 +31,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
   <link href="public/styles/main.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="public/js/animations.js" defer></script>  <!-- Add this line -->
 
 </head>
-<body class="bg-black text-white font-poppins"> <!-- Changed from bg-baywatch-dark to bg-black -->
+<body class="bg-black text-white font-poppins overflow-x-hidden"> <!-- Changed from bg-baywatch-dark to bg-black -->
   <!-- Add decorative background elements -->
   <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
     <!-- Gradient orbs with reduced opacity -->
@@ -145,12 +146,12 @@
   </section>
 
   <!-- Robots Grid -->
-  <section class="py-16 relative z-10">
+  <section class="py-16 relative z-10 overflow-hidden">
     <div class="container mx-auto px-6 max-w-7xl">
       <div class="grid grid-cols-1 gap-12">
         
         <!-- RIPTIDE - 2025 -->
-        <div class="card-gradient rounded-xl overflow-hidden p-8 group hover:transform hover:scale-105 transition-all duration-300">
+        <div class="card-gradient rounded-xl overflow-hidden p-8 group transform-gpu hover:scale-[1.02] transition-all duration-300">
           <div class="grid md:grid-cols-2 gap-8">
             <div class="bg-black rounded-xl overflow-hidden border border-baywatch-orange/20 hover:scale-105 transition-all duration-300">
               <div class="relative aspect-square flex items-center justify-center p-8">
@@ -158,19 +159,23 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               </div>
             </div>
-            <div class="card-gradient rounded-xl p-8 flex flex-col justify-center border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 items-center">
-              <h2 class="text-7xl font-bold font-anurati text-baywatch-orange glow-orange mb-4 tracking-[.25em] animate__animated animate__fadeInUp">RIPTIDE</h2>
-              <p class="text-4xl text-white mb-4 animate__animated animate__fadeInUp">2025 - REEFSCAPE</p>
+            <div class="card-gradient rounded-xl p-8 flex flex-col justify-center border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 items-center w-full">
+              <div class="w-full max-w-[90%]"> <!-- Added container with max-width -->
+                <h2 class="text-[min(5vw,3.5rem)] font-bold font-anurati text-baywatch-orange glow-orange mb-4 tracking-[.2em] animate__animated animate__fadeInUp text-center">RIPTIDE</h2>
+                <p class="text-[min(3vw,2rem)] text-white mb-4 animate__animated animate__fadeInUp text-center">2025 - REEFSCAPE</p>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- COBALT - 2024 -->
-        <div class="card-gradient rounded-xl overflow-hidden p-8 group hover:transform hover:scale-105 transition-all duration-300">
+        <div class="card-gradient rounded-xl overflow-hidden p-8 group transform-gpu hover:scale-[1.02] transition-all duration-300">
           <div class="grid md:grid-cols-2 gap-8">
-            <div class="card-gradient rounded-xl p-8 flex flex-col justify-center border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 order-2 md:order-1 items-center">
-              <h2 class="text-7xl font-bold font-anurati text-baywatch-orange glow-orange mb-4 tracking-[.25em] animate__animated animate__fadeInUp">COBALT</h2>
-              <p class="text-4xl text-white mb-4 animate__animated animate__fadeInUp">2024 - INTO THE DEEP</p>
+            <div class="card-gradient rounded-xl p-8 flex flex-col justify-center border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 order-2 md:order-1 items-center w-full">
+              <div class="w-full max-w-[90%]"> <!-- Added container with max-width -->
+                <h2 class="text-[min(5vw,3.5rem)] font-bold font-anurati text-baywatch-orange glow-orange mb-4 tracking-[.2em] animate__animated animate__fadeInUp text-center">COBALT</h2>
+                <p class="text-[min(3vw,2rem)] text-white mb-4 animate__animated animate__fadeInUp text-center">2024 - INTO THE DEEP</p>
+              </div>
             </div>
             <div class="bg-black rounded-xl overflow-hidden border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 order-1 md:order-2">
               <div class="relative aspect-square flex items-center justify-center p-8">
@@ -182,7 +187,7 @@
         </div>
 
         <!-- HUNGRY - 2024 -->
-        <div class="card-gradient rounded-xl overflow-hidden p-8 group hover:transform hover:scale-105 transition-all duration-300">
+        <div class="card-gradient rounded-xl overflow-hidden p-8 group transform-gpu hover:scale-[1.02] transition-all duration-300">
           <div class="grid md:grid-cols-2 gap-8">
             <div class="bg-black rounded-xl overflow-hidden border border-baywatch-orange/20 hover:scale-105 transition-all duration-300">
               <div class="relative aspect-square flex items-center justify-center p-8">
@@ -190,9 +195,11 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               </div>
             </div>
-            <div class="card-gradient rounded-xl p-8 flex flex-col justify-center border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 items-center">
-              <h2 class="text-7xl font-bold font-anurati text-baywatch-orange glow-orange mb-4 tracking-[.25em] animate__animated animate__fadeInUp">HUNGRY</h2>
-              <p class="text-4xl text-white mb-4 animate__animated animate__fadeInUp">2024 - CRESCENDO</p>
+            <div class="card-gradient rounded-xl p-8 flex flex-col justify-center border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 items-center w-full">
+              <div class="w-full max-w-[90%]"> <!-- Added container with max-width -->
+                <h2 class="text-[min(5vw,3.5rem)] font-bold font-anurati text-baywatch-orange glow-orange mb-4 tracking-[.2em] animate__animated animate__fadeInUp text-center">HUNGRY</h2>
+                <p class="text-[min(3vw,2rem)] text-white mb-4 animate__animated animate__fadeInUp text-center">2024 - CRESCENDO</p>
+              </div>
             </div>
           </div>
         </div>
