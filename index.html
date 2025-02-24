@@ -1,266 +1,449 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FRC Team 7790 - Baywatch Robotics | Harbor Springs, MI</title>
-  <meta name="description" content="FRC Team 7790 Baywatch Robotics from Harbor Springs High School. Inspiring STEM innovation through competitive robotics.">
-  <meta name="keywords" content="FRC, FIRST Robotics, Team 7790, Baywatch Robotics, Harbor Springs, Michigan, High School Robotics">
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:title" content="FRC Team 7790 - Baywatch Robotics">
-  <meta property="og:description" content="Harbor Springs High School's FIRST Robotics Competition Team">
-  <meta property="og:image" content="src/assets/images/baywatchLogo.png">
-  
-  <link rel="shortcut icon" type="image/png" href="src/assets/images/baywatchLogo.png">
-  
-  <!-- Add Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'baywatch-orange': '#FF6B00',
-            'baywatch-dark': '#1A1A1A'
-          },
-          fontFamily: {
-            'poppins': ['Poppins', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-  <link href="public/styles/main.css" rel="stylesheet">
-  <script src="public/js/animations.js" defer></script>
-  <script src="public/js/frc-api.js" defer></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-</head>
-<body class="bg-baywatch-dark text-white overflow-x-hidden font-poppins">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" ="width=device-width, initial-scale=1.0" />
+    <title>FRC Team 7790 - Baywatch Robotics | Harbor Springs, MI</title>
+    <meta
+      name="description"
+      content="FRC Team 7790 Baywatch Robotics from Harbor Springs High School. Inspiring STEM innovation through competitive robotics."
+    />
+    <meta
+      name="keywords"
+      content="FRC, FIRST Robotics, Team 7790, Baywatch Robotics, Harbor Springs, Michigan, High School Robotics"
+    />
+    <link rel="canonical" href="https://www.frc7790.com/" />
+    <meta name="robots" content="index, follow" />
 
-  <!-- Navigation Bar -->
-  <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
-    <div class="container mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <a href="index.html#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105">
-          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20">
-        </a>
-      </div>
-      <!-- Desktop Menu -->
-      <ul class="hidden md:flex space-x-8">
-        <li><a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a></li>
-        <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a></li>
-        <li><a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a></li>
-        <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
-      </ul>
-      <!-- Mobile Menu Button -->
-      <button id="menu-btn" class="md:hidden">
-        <div class="hamburger-menu">
-          <span class="line bg-baywatch-orange"></span>
-          <span class="line bg-baywatch-orange"></span>
-          <span class="line bg-baywatch-orange"></span>
-        </div>
-      </button>
-    </div>
-    <!-- Mobile Menu -->
-    <div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-baywatch-dark/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
-      <!-- Menu Header -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-800">
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="FRC Team 7790 - Baywatch Robotics" />
+    <meta
+      property="og:description"
+      content="Harbor Springs High School's FIRST Robotics Competition Team"
+    />
+    <meta property="og:image" content="https://www.frc7790.com/src/assets/images/baywatchLogo.png" />
+    <meta property="og:url" content="https://www.frc7790.com/" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="FRC Team 7790 - Baywatch Robotics" />
+    <meta name="twitter:description" content="Harbor Springs High School's FIRST Robotics Competition Team" />
+    <meta name="twitter:image" content="https://www.frc7790.com/src/assets/images/baywatchLogo.png" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Baywatch Robotics",
+      "url": "https://www.frc7790.com",
+      "logo": "https://www.frc7790.com/src/assets/images/baywatchLogo.png",
+      "sameAs": [
+        "https://youtube.com/@frc7790",
+        "https://instagram.com/frc7790"
+      ]
+    }
+    </script>
+
+    <!-- Add Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "baywatch-orange": "#FF6B00",
+              "baywatch-dark": "#1A1A1A",
+            },
+            fontFamily: {
+              poppins: ["Poppins", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link href="public/styles/main.css" rel="stylesheet" />
+    <script src="public/js/animations.js" defer></script>
+    <script src="public/js/frc-api.js" defer></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body class="bg-baywatch-dark text-white overflow-x-hidden font-poppins">
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
+      <div class="container mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-2">
-          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-12 h-12">
-          <span class="text-xl font-bold text-baywatch-orange">
-            Baywatch Robotics
-          </span>
+          <a
+            href="index.html#"
+            class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
+          >
+            <img
+              src="public/assets/images/logo.png"
+              alt="Baywatch Robotics Logo"
+              class="w-20 h-20"
+            />
+          </a>
         </div>
-      </div>
-      <!-- Menu Items -->
-      <nav class="p-6">
-        <ul class="space-y-6">
+        <!-- Desktop Menu -->
+        <ul class="hidden md:flex space-x-8">
           <li>
-            <a href="#team" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
-              <i class="fas fa-users w-6"></i>
-              <span>Team</span>
-            </a>
+            <a
+              href="robots.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Robots</a
+            >
           </li>
           <li>
-            <a href="#robots" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
-              <i class="fas fa-robot w-6"></i>
-              <span>Robots</span>
-            </a>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
+            >
           </li>
           <li>
-            <a href="#sponsors" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
-              <i class="fas fa-handshake w-6"></i>
-              <span>Sponsors</span>
-            </a>
+            <a
+              href="schedule.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Schedule</a
+            >
           </li>
           <li>
-            <a href="#contact" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
-              <i class="fas fa-envelope w-6"></i>
-              <span>Contact</span>
-            </a>
+            <a
+              href="ftc.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >FTC</a
+            >
           </li>
         </ul>
-      </nav>
-    </div>
-  </nav>
-
-  <!-- Hero Section -->
-  <section class="min-h-screen relative overflow-hidden pt-12 flex items-center justify-center">
-    <div class="absolute inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-90"></div>
-    <!-- Animated background elements -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute w-96 h-96 bg-baywatch-orange/10 rounded-full blur-3xl -top-20 -left-20 animate-pulse" style="animation-duration: 5s;"></div>
-    </div>
-    <div class="container mx-auto px-6 flex flex-col items-center justify-center relative z-10 -mt-12">
-      <div class="text-center max-w-4xl mx-auto">
-        <h1 class="mb-8">
-          <div class="flex items-center justify-center gap-4 text-6xl md:text-8xl font-bold animate__animated animate__fadeInUp" style="animation-duration: 3s;">
-            <span class="text-white">FRC</span>
-            <span class="text-baywatch-orange glow-orange">7790</span>
-          </div>
-          <div class="text-5xl md:text-7xl font-bold mt-4 animate__animated animate__fadeInUp" style="animation-delay: 1s; animation-duration: 3s;">
-            <span class="text-white">Baywatch</span>
-            <span class="text-baywatch-orange glow-orange">Robotics</span>
-          </div>
-        </h1>
-      </div>
-    </div>
-    <!-- Decorative element -->
-    <div class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent"></div>
-  </section>
-
-  <!-- Live Event Updates Section -->
-  <section id="live-updates" class="py-20 gradient-section scroll-mt-24">
-    <div class="container mx-auto px-6">
-      <h2 class="text-4xl font-bold mb-4 text-center">Competition Updates</h2>
-      <p class="text-gray-400 text-center mb-12">Live updates from The Blue Alliance API</p>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- Current Ranking -->
-        <div class="p-6 card-gradient rounded-xl transition-all duration-300" data-card="ranking">
-          <div class="flex justify-center mb-6">
-            <div class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-lg flex items-center justify-center">
-              <i class="fas fa-trophy text-2xl text-baywatch-orange"></i>
-            </div>
-          </div>
-          <h3 class="text-xl font-bold text-center mb-4">Current Ranking</h3>
-          <div class="text-center">
-            <div class="flex items-center justify-center gap-2">
-              <!-- Removed data-target attribute -->
-              <span id="ranking-number" class="text-5xl font-bold text-baywatch-orange counter">--</span>
-              <span class="text-2xl text-gray-400">th</span>
-            </div>
-            <span class="text-gray-400 block mt-2" id="total-teams">Loading...</span>
-          </div>
-        </div>
-
-        <!-- Win/Loss Record -->
-        <div class="p-6 card-gradient rounded-xl transition-all duration-300" data-card="record">
-          <div class="flex justify-center mb-6">
-            <div class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-lg flex items-center justify-center">
-              <i class="fas fa-chart-line text-2xl text-baywatch-orange"></i>
-            </div>
-          </div>
-          <h3 class="text-xl font-bold text-center mb-4">Event Record</h3>
-          <div class="flex justify-center items-center gap-4">
-            <div class="text-center">
-              <!-- Removed data-target attribute -->
-              <span id="wins" class="text-4xl font-bold text-green-500 counter">--</span>
-              <span class="text-gray-400 block">Wins</span>
-            </div>
-            <span class="text-2xl text-gray-400">-</span>
-            <div class="text-center">
-              <!-- Removed data-target attribute -->
-              <span id="losses" class="text-4xl font-bold text-red-500 counter">--</span>
-              <span class="text-gray-400 block">Losses</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Next Match -->
-        <div class="p-6 card-gradient rounded-xl transition-all duration-300" data-card="next-match">
-          <div class="flex justify-center mb-6">
-            <div class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-lg flex items-center justify-center">
-              <i class="fas fa-clock text-2xl text-baywatch-orange"></i>
-            </div>
-          </div>
-          <h3 class="text-xl font-bold text-center mb-4">Next Match</h3>
-          <div class="text-center" id="next-match-info">
-            <span id="match-number" class="text-3xl font-bold text-baywatch-orange">Loading...</span>
-            <div id="match-time" class="text-gray-400 mt-2">--:-- --</div>
-            <div class="mt-4 flex justify-center gap-4">
-              <div id="blue-alliance" class="text-sm px-3 py-1 bg-blue-500/20 rounded-full text-blue-400">
-                Loading...
-              </div>
-              <div id="red-alliance" class="text-sm px-3 py-1 bg-red-500/20 rounded-full text-red-400">
-                Loading...
-              </div>
-            </div>
-          </div>
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button id="mobile-menu-btn" class="focus:outline-none transition-transform duration-300">
+            <i class="fas fa-bars text-3xl"></i>
+          </button>
         </div>
       </div>
-      <div class="text-center mt-8 text-sm text-gray-500">
-        Data provided by The Blue Alliance | Updates automatically
+    </nav>
+
+    <!-- Updated Mobile Menu Overlay and Toggle Script for a cooler animated experience -->
+    <!-- Mobile Menu Overlay -->
+    <div
+      id="mobile-menu-overlay"
+      class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
+    >
+      <div class="flex flex-col items-center justify-center h-full space-y-8">
+        <a
+          href="robots.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Robots</a
+        >
+        <a
+          href="sponsors.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Sponsors</a
+        >
+        <a
+          href="schedule.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Schedule</a
+        >
+        <a
+          href="ftc.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >FTC</a
+        >
       </div>
     </div>
-  </section>
 
-  <!-- Countdown Section -->
-  <section id="countdown-section" class="py-20 bg-black scroll-mt-24 hidden">
-    <div class="container mx-auto px-6">
-      <div class="p-6 card-gradient rounded-xl transition-all duration-300 glow-orange hover:scale-105">
-        <h2 class="text-4xl font-bold mb-4 text-center">Event Countdown</h2>
-        <p class="text-gray-400 text-center mb-4">
-          Live match updates will automatically appear when the event starts.
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+      const menuBtn = document.getElementById('mobile-menu-btn')
+      const mobileMenu = document.getElementById('mobile-menu-overlay')
+      let menuOpen = false
+
+      menuBtn.addEventListener('click', () => {
+        menuOpen = !menuOpen
+
+        if (menuOpen) {
+          // Show menu with slide-down effect
+          mobileMenu.classList.remove('hidden')
+          mobileMenu.classList.remove('animate__fadeOutUp')
+          mobileMenu.classList.add('animate__fadeInDown')
+          // Rotate hamburger to X
+          menuBtn.firstElementChild.classList.remove('fa-bars')
+          menuBtn.firstElementChild.classList.add('fa-times', 'animate__animated', 'animate__rotateIn')
+        } else {
+          // Animate hide menu with slide-up effect then hide
+          mobileMenu.classList.remove('animate__fadeInDown')
+          mobileMenu.classList.add('animate__fadeOutUp')
+          // Rotate X back to hamburger
+          menuBtn.firstElementChild.classList.remove('fa-times', 'animate__rotateIn')
+          menuBtn.firstElementChild.classList.add('fa-bars', 'animate__animated', 'animate__rotateIn')
+          // After animation, add hidden class
+          setTimeout(() => {
+            mobileMenu.classList.add('hidden')
+          }, 500)
+        }
+      })
+    </script>
+
+    <!-- Hero Section -->
+    <section
+      class="min-h-screen relative overflow-hidden pt-12 flex items-center justify-center"
+    >
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-90"
+      ></div>
+      <!-- Animated background elements -->
+      <div class="absolute inset-0 overflow-hidden">
+        <div
+          class="absolute w-96 h-96 bg-baywatch-orange/10 rounded-full blur-3xl -top-20 -left-20 animate-pulse"
+          style="animation-duration: 5s"
+        ></div>
+      </div>
+      <div
+        class="container mx-auto px-6 flex flex-col items-center justify-center relative z-10 -mt-12"
+      >
+        <div class="text-center max-w-4xl mx-auto">
+          <h1 class="mb-8">
+            <div
+              class="flex items-center justify-center gap-4 text-6xl md:text-8xl font-bold animate__animated animate__fadeInUp"
+              style="animation-duration: 3s"
+            >
+              <span class="text-white">FRC</span>
+              <span class="text-baywatch-orange glow-orange">7790</span>
+            </div>
+            <div
+              class="text-5xl md:text-7xl font-bold mt-4 animate__animated animate__fadeInUp"
+              style="animation-delay: 1s; animation-duration: 3s"
+            >
+              <span class="text-white">Baywatch</span>
+              <span class="text-baywatch-orange glow-orange">Robotics</span>
+            </div>
+          </h1>
+        </div>
+      </div>
+      <!-- Decorative element -->
+      <div
+        class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent"
+      ></div>
+    </section>
+
+    <!-- Live Event Updates Section -->
+    <section id="live-updates" class="py-20 gradient-section scroll-mt-24">
+      <div class="container mx-auto px-6">
+        <h2 class="text-4xl font-bold mb-4 text-center">Competition Updates</h2>
+        <p class="text-gray-400 text-center mb-12">
+          Live updates from The Blue Alliance API
         </p>
-        <div class="text-center">
-          <div id="countdown-timer" class="text-5xl font-bold text-baywatch-orange">--d --h --m --s</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Current Ranking -->
+          <div
+            class="p-6 card-gradient rounded-xl transition-all duration-300"
+            data-card="ranking"
+          >
+            <div class="flex justify-center mb-6">
+              <div
+                class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-trophy text-2xl text-baywatch-orange"></i>
+              </div>
+            </div>
+            <h3 class="text-xl font-bold text-center mb-4">Current Ranking</h3>
+            <div class="text-center">
+              <div class="flex items-center justify-center gap-2">
+                <span
+                  id="ranking-number"
+                  class="text-5xl font-bold text-baywatch-orange counter"
+                  >--</span
+                >
+                <span class="text-2xl text-gray-400">th</span>
+              </div>
+              <span class="text-gray-400 block mt-2" id="total-teams"
+                >Loading...</span
+              >
+            </div>
+          </div>
+
+          <!-- Win/Loss Record -->
+          <div
+            class="p-6 card-gradient rounded-xl transition-all duration-300"
+            data-card="record"
+          >
+            <div class="flex justify-center mb-6">
+              <div
+                class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-chart-line text-2xl text-baywatch-orange"></i>
+              </div>
+            </div>
+            <h3 class="text-xl font-bold text-center mb-4">Event Record</h3>
+            <div class="flex justify-center items-center gap-4">
+              <div class="text-center">
+                <span
+                  id="wins"
+                  class="text-4xl font-bold text-green-500 counter"
+                  >--</span
+                >
+                <span class="text-gray-400 block">Wins</span>
+              </div>
+              <span class="text-2xl text-gray-400">-</span>
+              <div class="text-center">
+                <span
+                  id="losses"
+                  class="text-4xl font-bold text-red-500 counter"
+                  >--</span
+                >
+                <span class="text-gray-400 block">Losses</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Next Match -->
+          <div
+            class="p-6 card-gradient rounded-xl transition-all duration-300"
+            data-card="next-match"
+          >
+            <div class="flex justify-center mb-6">
+              <div
+                class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-clock text-2xl text-baywatch-orange"></i>
+              </div>
+            </div>
+            <h3 class="text-xl font-bold text-center mb-4">Next Match</h3>
+            <div class="text-center" id="next-match-info">
+              <span
+                id="match-number"
+                class="text-3xl font-bold text-baywatch-orange"
+                >Loading...</span
+              >
+              <div id="match-time" class="text-gray-400 mt-2">--:-- --</div>
+              <div class="mt-4 flex justify-center gap-4">
+                <div
+                  id="blue-alliance"
+                  class="text-sm px-3 py-1 bg-blue-500/20 rounded-full text-blue-400"
+                >
+                  Loading...
+                </div>
+                <div
+                  id="red-alliance"
+                  class="text-sm px-3 py-1 bg-red-500/20 rounded-full text-red-400"
+                >
+                  Loading...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-center mt-8 text-sm text-gray-500">
+          Data provided by The Blue Alliance | Updates automatically
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Robot Section -->
-  <section id="robots" class="py-20 bg-black scroll-mt-24">
-    <div class="container mx-auto px-6">
-      <h2 class="text-4xl font-bold mb-4 text-center">Our Robot</h2>
-      <p class="text-gray-400 text-center mb-12">This is our robot for the 2025 FRC season, REEFSCAPE.</p>
-      <div class="flex flex-col items-center justify-center">
-        <h3 class="text-4xl sm:text-5xl md:text-7xl font-bold font-anurati text-orange-500 mb-4 glow-orange tracking-[.25em] text-center">RIPTIDE</h3>
-        <img src="public/assets/images/RIPTIDE/short-better.png" alt="RIPTIDE" class="w-auto max-w-[200px] sm:max-w-[300px] md:max-w-md h-full object-cover rounded mb-8">
-        <a href="robots.html" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_30px_rgba(255,107,0,0.5)] btn-orange-glow">
-          View All Robots
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-          </svg>
-        </a>
+    <!-- Countdown Section -->
+    <section id="countdown-section" class="py-20 bg-black scroll-mt-24 hidden">
+      <div class="container mx-auto px-6">
+        <div
+          class="p-6 card-gradient rounded-xl transition-all duration-300 glow-orange hover:scale-105"
+        >
+          <h2 class="text-4xl font-bold mb-4 text-center">Event Countdown</h2>
+          <p class="text-gray-400 text-center mb-4">
+            Live match updates will automatically appear when the event starts.
+          </p>
+          <div class="text-center">
+            <div
+              id="countdown-timer"
+              class="text-5xl font-bold text-baywatch-orange"
+            >
+              --d --h --m --s
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Footer -->
-  <footer class="bg-black py-12">
-    <div class="container mx-auto px-6">
-      <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="flex space-x-4 mb-4 md:mb-0">
-          <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube">
-            <i class="fab fa-youtube"></i>
+    <!-- Robot Section -->
+    <section id="robots" class="py-20 bg-black scroll-mt-24">
+      <div class="container mx-auto px-6">
+        <h2 class="text-4xl font-bold mb-4 text-center">Our Robot</h2>
+        <p class="text-gray-400 text-center mb-12">
+          This is our robot for the 2025 FRC season, REEFSCAPE.
+        </p>
+        <div class="flex flex-col items-center justify-center">
+          <h3
+            class="text-4xl sm:text-5xl md:text-7xl font-bold font-anurati text-orange-500 mb-4 glow-orange tracking-[.25em] text-center"
+          >
+            RIPTIDE
+          </h3>
+          <img
+            src="public/assets/images/RIPTIDE/short-better.png"
+            alt="RIPTIDE"
+            class="w-auto max-w-[200px] sm:max-w-[300px] md:max-w-md h-full object-cover rounded mb-8"
+          />
+          <a
+            href="robots.html"
+            class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_30px_rgba(255,107,0,0.5)] btn-orange-glow"
+          >
+            View All Robots
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M14 5l7 7m0 0l-7 7m7-7H3"
+              />
+            </svg>
           </a>
-          <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram">
-            <i class="fab fa-instagram"></i>
-          </a>
-        </div>
-        <div class="text-gray-400 text-sm">
-          © 2025 Baywatch Robotics. All rights reserved.
         </div>
       </div>
-    </div>
-  </footer>
+    </section>
 
-</body>
+    <!-- Footer -->
+    <footer class="bg-black py-12">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="flex space-x-4 mb-4 md:mb-0">
+            <a
+              href="https://youtube.com/@frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube"
+            >
+              <i class="fab fa-youtube"></i>
+            </a>
+            <a
+              href="https://instagram.com/frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram"
+            >
+              <i class="fab fa-instagram"></i>
+            </a>
+          </div>
+          <div class="text-gray-400 text-sm">
+            © 2025 Baywatch Robotics. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Removed Mobile Menu JavaScript -->
+  </body>
 </html>

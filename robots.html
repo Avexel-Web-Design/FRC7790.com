@@ -84,56 +84,75 @@
         <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
       </ul>
       <!-- Mobile Menu Button -->
-      <button id="menu-btn" class="md:hidden">
-        <div class="hamburger-menu">
-          <span class="line bg-baywatch-orange"></span>
-          <span class="line bg-baywatch-orange"></span>
-          <span class="line bg-baywatch-orange"></span>
-        </div>
-      </button>
-    </div>
-    <!-- Mobile Menu -->
-    <div class="mobile-menu fixed top-0 left-0 w-full h-screen bg-baywatch-dark/95 backdrop-blur-lg transform transition-all duration-300 -translate-y-full z-50 hidden" id="mobile-menu">
-      <!-- Menu Header -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-800">
-        <div class="flex items-center space-x-2">
-          <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-12 h-12">
-          <span class="text-xl font-bold text-baywatch-orange">
-            Baywatch Robotics
-          </span>
-        </div>
+      <div class="md:hidden">
+        <button id="mobile-menu-btn" class="focus:outline-none transition-transform duration-300">
+          <i class="fas fa-bars text-3xl"></i>
+        </button>
       </div>
-      <!-- Menu Items -->
-      <nav class="p-6">
-        <ul class="space-y-6">
-          <li>
-            <a href="#team" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
-              <i class="fas fa-users w-6"></i>
-              <span>Team</span>
-            </a>
-          </li>
-          <li>
-            <a href="#robots" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
-              <i class="fas fa-robot w-6"></i>
-              <span>Robots</span>
-            </a>
-          </li>
-          <li>
-            <a href="#sponsors" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
-              <i class="fas fa-handshake w-6"></i>
-              <span>Sponsors</span>
-            </a>
-          </li>
-          <li>
-            <a href="#contact" class="flex items-center space-x-2 text-xl hover:text-baywatch-orange transition-colors">
-              <i class="fas fa-envelope w-6"></i>
-              <span>Contact</span>
-            </a>
-          </li>
-        </ul>
-      </nav>
     </div>
   </nav>
+
+  <!-- Updated Mobile Menu Overlay and Toggle Script for a cooler animated experience -->
+  <!-- Mobile Menu Overlay -->
+  <div
+    id="mobile-menu-overlay"
+    class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
+  >
+    <div class="flex flex-col items-center justify-center h-full space-y-8">
+      <a
+        href="robots.html"
+        class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+        >Robots</a
+      >
+      <a
+        href="sponsors.html"
+        class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+        >Sponsors</a
+      >
+      <a
+        href="schedule.html"
+        class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+        >Schedule</a
+      >
+      <a
+        href="ftc.html"
+        class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+        >FTC</a
+      >
+    </div>
+  </div>
+
+  <!-- Mobile Menu Toggle Script -->
+  <script>
+    const menuBtn = document.getElementById('mobile-menu-btn')
+    const mobileMenu = document.getElementById('mobile-menu-overlay')
+    let menuOpen = false
+
+    menuBtn.addEventListener('click', () => {
+      menuOpen = !menuOpen
+
+      if (menuOpen) {
+        // Show menu with slide-down effect
+        mobileMenu.classList.remove('hidden')
+        mobileMenu.classList.remove('animate__fadeOutUp')
+        mobileMenu.classList.add('animate__fadeInDown')
+        // Rotate hamburger to X
+        menuBtn.firstElementChild.classList.remove('fa-bars')
+        menuBtn.firstElementChild.classList.add('fa-times', 'animate__animated', 'animate__rotateIn')
+      } else {
+        // Animate hide menu with slide-up effect then hide
+        mobileMenu.classList.remove('animate__fadeInDown')
+        mobileMenu.classList.add('animate__fadeOutUp')
+        // Rotate X back to hamburger
+        menuBtn.firstElementChild.classList.remove('fa-times', 'animate__rotateIn')
+        menuBtn.firstElementChild.classList.add('fa-bars', 'animate__animated', 'animate__rotateIn')
+        // After animation, add hidden class
+        setTimeout(() => {
+          mobileMenu.classList.add('hidden')
+        }, 500)
+      }
+    })
+  </script>
 
   <!-- Hero Section -->
   <section class="pt-32 pb-16 relative z-10">
