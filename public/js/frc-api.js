@@ -448,8 +448,102 @@ function updateScheduleTable(matches) {
   }).join('');
 }
 
+// Function to update playoff bracket
+async function updatePlayoffBracket(eventKey) {
+  try {
+    const response = await fetch(`${TBA_BASE_URL}/event/${eventKey}/matches`, {
+      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    });
+    
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const matches = await response.json();
+    
+    const playoffMatches = matches.filter(match =>
+      match.comp_level === 'sf' || match.comp_level === 'f'
+    );
+
+    if (!playoffMatches || playoffMatches.length === 0) {
+      const bracketContainer = document.querySelector('.bracket-container');
+      if (bracketContainer) {
+        bracketContainer.innerHTML = '<p class="text-center text-gray-400 p-8">Playoff matches have not started yet.</p>';
+      }
+      return;
+    }
+
+    // Process semifinal matches:
+    const sfMatches = playoffMatches
+      .filter(match => match.comp_level === 'sf')
+      .sort((a, b) => (a.set_number - b.set_number) || (a.match_number - b.match_number));
+
+    sfMatches.forEach((match, index) => {
+      const sequentialNumber = index + 1; // sf match number in order
+      const matchId = `match-sf${sequentialNumber}`;
+      const matchBox = document.getElementById(matchId);
+      if (matchBox) {
+        updateMatchBox(matchBox, match);
+      }
+    });
+
+    // Process finals matches as before
+    const finalMatches = playoffMatches.filter(match => match.comp_level === 'f');
+    finalMatches.forEach(match => {
+      const matchId = `match-f${match.match_number}`;
+      const matchBox = document.getElementById(matchId);
+      if (matchBox) {
+        updateMatchBox(matchBox, match);
+      }
+    });
+
+  } catch (error) {
+    console.error('Error updating playoff bracket:', error);
+    const bracketContainer = document.querySelector('.bracket-container');
+    if (bracketContainer) {
+      bracketContainer.innerHTML = '<p class="text-center text-red-400 p-8">Error loading playoff matches</p>';
+    }
+  }
+}
+
+// Helper function to update a match box
+function updateMatchBox(matchBox, match) {
+  const blueAlliance = matchBox.querySelector('.alliance.blue');
+  const redAlliance = matchBox.querySelector('.alliance.red');
+
+  // Update teams
+  blueAlliance.querySelector('.teams').textContent = match.alliances.blue.team_keys
+    .map(team => team.replace('frc', ''))
+    .join(', ');
+  redAlliance.querySelector('.teams').textContent = match.alliances.red.team_keys
+    .map(team => team.replace('frc', ''))
+    .join(', ');
+
+  // Update scores if available
+  if (match.alliances.blue.score >= 0) {
+    blueAlliance.querySelector('.score').textContent = match.alliances.blue.score;
+    redAlliance.querySelector('.score').textContent = match.alliances.red.score;
+  } else {
+    blueAlliance.querySelector('.score').textContent = '';
+    redAlliance.querySelector('.score').textContent = '';
+  }
+
+  // Reset and update winner styling
+  blueAlliance.classList.remove('winner');
+  redAlliance.classList.remove('winner');
+  
+  if (match.winning_alliance === 'blue') {
+    blueAlliance.classList.add('winner');
+  } else if (match.winning_alliance === 'red') {
+    redAlliance.classList.add('winner');
+  }
+}
+
 // Initialize page data
 if (window.location.pathname.includes('milac.html')) {
   loadEventRankings();
   loadEventSchedule();
+  updatePlayoffBracket('2024mitvc'); // Add this line
+  
+  // Optional: Add periodic updates
+  setInterval(() => {
+    updatePlayoffBracket('2024mitvc');
+  }, 30000); // Update every 30 seconds
 }

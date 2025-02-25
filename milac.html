@@ -239,14 +239,397 @@
     <!-- Playoff Bracket Section -->
     <section class="py-16 relative z-10">
       <div class="container mx-auto px-6">
-        <h2 class="text-3xl font-bold mb-8 text-center">Playoff Bracket</h2>
-        <div class="card-gradient rounded-xl p-6">
-          <div id="playoff-bracket" class="text-center text-gray-300">
-            Loading playoff bracket...
+        <h2 class="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
+        <div class="card-gradient rounded-xl p-6 overflow-x-auto">
+          <!-- Double Elimination Bracket -->
+          <div class="min-w-[1200px] relative">
+            <!-- Winners Bracket -->
+            <div class="bracket-container">
+              <h3 class="text-xl font-bold mb-4 text-baywatch-orange">Winners Bracket</h3>
+              <div class="grid grid-cols-4 gap-8">
+                <!-- First Round -->
+                <div class="space-y-8">
+                  <div class="match-box group" id="match-sf1">
+                    <div class="match-number">Match 1</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="match-box group" id="match-sf2">
+                    <div class="match-number">Match 2</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="match-box group" id="match-sf3">
+                    <div class="match-number">Match 3</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="match-box group" id="match-sf4">
+                    <div class="match-number">Match 4</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Second Round Winners -->
+                <div class="space-y-32 mt-16">
+                  <div class="match-box group" id="match-sf7">
+                    <div class="match-number">Match 7</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Add extra top margin to SF8 so it moves down -->
+                  <div class="match-box group" id="match-sf8" style="margin-top: 3rem;">
+                    <div class="match-number">Match 8</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Third Round Winners -->
+                <div class="mt-32">
+                  <div class="match-box group" id="match-sf11">
+                    <div class="match-number">Match 11</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Finals -->
+                <div class="mt-32">
+                  <div class="match-box group finals-match" id="match-f1">
+                    <div class="match-number">Finals 1</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="match-box group finals-match mt-4" id="match-f2">
+                    <div class="match-number">Finals 2</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="match-box group finals-match mt-4" id="match-f3">
+                    <div class="match-number">Finals 3</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Losers Bracket -->
+            <div class="bracket-container mt-12">
+              <h3 class="text-xl font-bold mb-4 text-red-500">Elimination Bracket</h3>
+              <div class="grid grid-cols-4 gap-8">
+                <!-- First Round Losers -->
+                <div class="space-y-16">
+                  <div class="match-box group" id="match-sf5">
+                    <div class="match-number">Match 5</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="match-box group" id="match-sf6">
+                    <div class="match-number">Match 6</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Second Round Losers: reduce top margin to move SF9 and SF10 up -->
+                <div class="space-y-16" style="margin-top: -8rem;">
+                  <!-- Order remains: SF10 then SF9 as before -->
+                  <div class="match-box group" id="match-sf10">
+                    <div class="match-number">Match 10</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="match-box group" id="match-sf9">
+                    <div class="match-number">Match 9</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Third Round Losers -->
+                <div class="mt-24" style="margin-top: 0rem;">
+                  <div class="match-box group" id="match-sf12">
+                    <div class="match-number">Match 12</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Fourth Round Losers -->
+                <div class="mt-24" style="margin-top: 0rem;">
+                  <div class="match-box group" id="match-sf13">
+                    <div class="match-number">Match 13</div>
+                    <div class="alliance-container">
+                      <div class="alliance blue">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                      <div class="match-divider border-t border-gray-700/50"></div>
+                      <div class="alliance red">
+                        <span class="teams"></span>
+                        <span class="score"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
+
+    <style>
+      .match-box {
+        position: relative;
+        padding: 1.5rem;
+        border-radius: 1rem;
+        background-color: rgba(0, 0, 0, 0.9);
+        border: 1px solid rgba(255, 107, 0, 0.3);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        transition-property: all;
+        transition-duration: 500ms;
+        width: 280px;
+        min-height: 160px;
+      }
+
+      /* Pattern Overlay */
+      .match-box::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        opacity: 0.05;
+        border-radius: 1rem;
+        pointer-events: none;
+        background: radial-gradient(circle at 1px 1px, rgb(255,107,0,0.2) 1px, transparent 0);
+        background-size: 20px 20px;
+      }
+
+      .match-box:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(255, 107, 0, 0.3);
+      }
+
+      .alliance-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        position: relative;
+        z-index: 10;
+      }
+
+      .alliance {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem;
+        border-radius: 0.375rem;
+        transition-property: all;
+        transition-duration: 300ms;
+        width: 100%;
+      }
+
+      .alliance.blue {
+        background-color: rgba(30, 58, 138, 0.3);
+        color: rgb(96, 165, 250);
+      }
+
+      .alliance.red {
+        background-color: rgba(185, 28, 28, 0.3);
+        color: rgb(248, 113, 113);
+      }
+
+      .alliance.blue:hover {
+        background-color: rgba(30, 58, 138, 0.4);
+      }
+
+      .alliance.red:hover {
+        background-color: rgba(185, 28, 28, 0.4);
+      }
+
+      .alliance.winner {
+        font-weight: bold;
+        border: 2px solid transparent;
+      }
+
+      .alliance.blue.winner {
+        border-color: rgba(96, 165, 250, 0.5);
+        box-shadow: 0 0 10px rgba(96, 165, 250, 0.2);
+      }
+
+      .alliance.red.winner {
+        border-color: rgba(248, 113, 113, 0.5);
+        box-shadow: 0 0 10px rgba(248, 113, 113, 0.2);
+      }
+
+      .teams {
+        font-size: 0.875rem;
+      }
+
+      .score {
+        font-size: 1.125rem;
+        font-family: ui-monospace, monospace;
+        font-weight: bold;
+        margin-left: 0.75rem;
+      }
+
+      .match-number {
+        position: absolute;
+        top: -0.75rem;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        background-color: rgba(255, 107, 0, 0.2);
+        color: rgb(255, 107, 0);
+        z-index: 20;
+      }
+
+      .finals-match {
+        border: 2px solid rgba(255, 107, 0, 0.5);
+        box-shadow: 0 0 15px rgba(255, 107, 0, 0.2);
+      }
+    </style>
 
     <!-- Footer -->
     <footer class="bg-black py-12">
