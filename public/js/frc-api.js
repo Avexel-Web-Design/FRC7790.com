@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", initializeEventData);
 // Functions for Lake City Regional page
 async function loadEventRankings() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/rankings`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2023mitvc/rankings`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const data = await response.json();
@@ -351,7 +351,7 @@ async function loadEventRankings() {
 
 async function loadEventSchedule() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/matches`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2023mitvc/matches`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const matches = await response.json();
@@ -363,22 +363,34 @@ async function loadEventSchedule() {
   }
 }
 
+function highlightTeam(text, teamNumber = '7790') {
+  return text.replace(
+    teamNumber,
+    `<span class="text-baywatch-orange font-bold">${teamNumber}</span>`
+  );
+}
+
 function updateRankingsTable(rankings) {
   const tbody = document.querySelector("#rankings-table tbody");
-  tbody.innerHTML = rankings.map(team => `
-    <tr class="border-t border-gray-700">
-      <td class="p-4">${team.rank}</td>
-      <td class="p-4">${team.team_key.replace('frc', '')}</td>
-      <td class="p-4">${team.record.wins}-${team.record.losses}-${team.record.ties}</td>
-      <td class="p-4">${team.sort_orders[0].toFixed(2)}</td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = rankings.map(team => {
+    const teamNumber = team.team_key.replace('frc', '');
+    const isHighlighted = teamNumber === '7790';
+    const rowClass = isHighlighted ? 'bg-baywatch-orange bg-opacity-20' : '';
+    
+    return `
+      <tr class="border-t border-gray-700 ${rowClass}">
+        <td class="p-4">${team.rank}</td>
+        <td class="p-4">${teamNumber}</td>
+        <td class="p-4">${team.record.wins}-${team.record.losses}-${team.record.ties}</td>
+        <td class="p-4">${team.sort_orders[0].toFixed(2)}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 function updateScheduleTable(matches) {
   const tbody = document.querySelector("#schedule-table tbody");
   
-  // Filter for qualification matches only and sort by match number
   const qualMatches = matches
     .filter(match => match.comp_level === 'qm')
     .sort((a, b) => a.match_number - b.match_number);
@@ -389,8 +401,8 @@ function updateScheduleTable(matches) {
       minute: '2-digit',
       hour12: true
     });
-    const blueAlliance = match.alliances.blue.team_keys.map(t => t.replace('frc', '')).join(', ');
-    const redAlliance = match.alliances.red.team_keys.map(t => t.replace('frc', '')).join(', ');
+    const blueAlliance = highlightTeam(match.alliances.blue.team_keys.map(t => t.replace('frc', '')).join(', '));
+    const redAlliance = highlightTeam(match.alliances.red.team_keys.map(t => t.replace('frc', '')).join(', '));
     const score = match.actual_time ? 
       `${match.alliances.blue.score} - ${match.alliances.red.score}` : 
       'Not Played';
