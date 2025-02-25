@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", initializeEventData);
 // Functions for Lake City Regional page
 async function loadEventRankings() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2023mitvc/rankings`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/rankings`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const data = await response.json();
@@ -351,7 +351,7 @@ async function loadEventRankings() {
 
 async function loadEventSchedule() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2023mitvc/matches`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/matches`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const matches = await response.json();
@@ -368,6 +368,33 @@ function highlightTeam(text, teamNumber = '7790') {
     teamNumber,
     `<span class="text-baywatch-orange font-bold">${teamNumber}</span>`
   );
+}
+
+// Helper function to determine winner and apply styling
+function getMatchWinnerStyles(match) {
+  if (!match.actual_time) return { blueStyle: '', redStyle: '', scoreStyle: '' };
+  
+  const blueScore = match.alliances.blue.score;
+  const redScore = match.alliances.red.score;
+  
+  if (blueScore > redScore) {
+    return {
+      blueStyle: 'font-bold',
+      redStyle: '',
+      scoreStyle: 'font-bold text-blue-400'
+    };
+  } else if (redScore > blueScore) {
+    return {
+      blueStyle: '',
+      redStyle: 'font-bold',
+      scoreStyle: 'font-bold text-red-400'
+    };
+  }
+  return {
+    blueStyle: 'font-bold',
+    redStyle: 'font-bold',
+    scoreStyle: 'font-bold'  // Tie case
+  };
 }
 
 function updateRankingsTable(rankings) {
@@ -401,6 +428,8 @@ function updateScheduleTable(matches) {
       minute: '2-digit',
       hour12: true
     });
+    
+    const { blueStyle, redStyle, scoreStyle } = getMatchWinnerStyles(match);
     const blueAlliance = highlightTeam(match.alliances.blue.team_keys.map(t => t.replace('frc', '')).join(', '));
     const redAlliance = highlightTeam(match.alliances.red.team_keys.map(t => t.replace('frc', '')).join(', '));
     const score = match.actual_time ? 
@@ -411,9 +440,9 @@ function updateScheduleTable(matches) {
       <tr class="border-t border-gray-700">
         <td class="p-4">${time}</td>
         <td class="p-4">${match.match_number}</td>
-        <td class="p-4 text-blue-400">${blueAlliance}</td>
-        <td class="p-4 text-red-400">${redAlliance}</td>
-        <td class="p-4">${score}</td>
+        <td class="p-4 text-blue-400 ${blueStyle}">${blueAlliance}</td>
+        <td class="p-4 text-red-400 ${redStyle}">${redAlliance}</td>
+        <td class="p-4 ${scoreStyle}">${score}</td>
       </tr>
     `;
   }).join('');
