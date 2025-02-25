@@ -308,7 +308,7 @@
                 </div>
                 
                 <!-- Second Round Winners -->
-                <div class="space-y-32 mt-16">
+                <div class="mt-28">
                   <div class="match-box group" id="match-sf7">
                     <div class="match-number">Match 7</div>
                     <div class="alliance-container">
@@ -323,8 +323,8 @@
                       </div>
                     </div>
                   </div>
-                  <!-- Add extra top margin to SF8 so it moves down -->
-                  <div class="match-box group" id="match-sf8" style="margin-top: 3rem;">
+                  <!-- Increased margin-top from 3rem to 8rem -->
+                  <div class="match-box group" id="match-sf8" style="margin-top: 16rem;">
                     <div class="match-number">Match 8</div>
                     <div class="alliance-container">
                       <div class="alliance blue">
@@ -341,7 +341,7 @@
                 </div>
                 
                 <!-- Third Round Winners -->
-                <div class="mt-32">
+                <div style="margin-top: 21rem">
                   <div class="match-box group" id="match-sf11">
                     <div class="match-number">Match 11</div>
                     <div class="alliance-container">
@@ -406,9 +406,18 @@
               </div>
             </div>
             
+            <!-- Bracket Divider -->
+            <div class="my-16 relative">
+              <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                <div class="w-full border-t border-gray-700 bg-gradient-to-r from-transparent via-baywatch-orange to-transparent opacity-30"></div>
+              </div>
+              <div class="relative flex justify-center">
+                <span class="px-4 py-1 text-sm text-baywatch-orange bg-black rounded-full border border-baywatch-orange/30">Elimination Bracket</span>
+              </div>
+            </div>
+            
             <!-- Losers Bracket -->
-            <div class="bracket-container mt-12">
-              <h3 class="text-xl font-bold mb-4 text-red-500">Elimination Bracket</h3>
+            <div class="bracket-container mt-48">
               <div class="grid grid-cols-4 gap-8">
                 <!-- First Round Losers -->
                 <div class="space-y-16">
