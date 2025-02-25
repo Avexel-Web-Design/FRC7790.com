@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <link rel="shortcut icon" type="image/png" href="public/assets/images/logo.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lake City Regional - Baywatch Robotics | FRC Team 7790</title>
+    <meta
+      name="description"
+      content="Live updates and results from the 2025 Lake City Regional FRC competition."
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "baywatch-orange": "#FF6B00",
+              "baywatch-dark": "#1A1A1A",
+            },
+            fontFamily: {
+              poppins: ["Poppins", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link href="public/styles/main.css" rel="stylesheet" />
+    <script src="public/js/animations.js" defer></script>
+    <script src="public/js/frc-api.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  </head>
+
+  <body class="bg-black text-white font-poppins">
+    <!-- Navigation Bar -->
+    <nav
+      class="fixed top-0 w-full z-50 transition-all duration-300"
+      id="navbar"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-2">
+          <a
+            href="index.html#"
+            class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
+          >
+            <img
+              src="public/assets/images/logo.png"
+              alt="Baywatch Robotics Logo"
+              class="w-20 h-20"
+            />
+          </a>
+        </div>
+        <!-- Desktop Menu -->
+        <ul class="hidden md:flex space-x-8">
+          <li>
+            <a
+              href="robots.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Robots</a
+            >
+          </li>
+          <li>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
+            >
+          </li>
+          <li>
+            <a
+              href="schedule.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Schedule</a
+            >
+          </li>
+          <li>
+            <a
+              href="ftc.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >FTC</a
+            >
+          </li>
+        </ul>
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button
+            id="mobile-menu-btn"
+            class="focus:outline-none transition-transform duration-300"
+          >
+            <i class="fas fa-bars text-3xl"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div
+      id="mobile-menu-overlay"
+      class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
+    >
+      <div class="flex flex-col items-center justify-center h-full space-y-8">
+        <a
+          href="robots.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Robots</a
+        >
+        <a
+          href="sponsors.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Sponsors</a
+        >
+        <a
+          href="schedule.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Schedule</a
+        >
+        <a
+          href="ftc.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >FTC</a
+        >
+      </div>
+    </div>
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+      const menuBtn = document.getElementById("mobile-menu-btn");
+      const mobileMenu = document.getElementById("mobile-menu-overlay");
+      let menuOpen = false;
+
+      menuBtn.addEventListener("click", () => {
+        menuOpen = !menuOpen;
+
+        if (menuOpen) {
+          // Show menu with slide-down effect
+          mobileMenu.classList.remove("hidden");
+          mobileMenu.classList.remove("animate__fadeOutUp");
+          mobileMenu.classList.add("animate__fadeInDown");
+          // Rotate hamburger to X
+          menuBtn.firstElementChild.classList.remove("fa-bars");
+          menuBtn.firstElementChild.classList.add(
+            "fa-times",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+        } else {
+          // Animate hide menu with slide-up effect then hide
+          mobileMenu.classList.remove("animate__fadeInDown");
+          mobileMenu.classList.add("animate__fadeOutUp");
+          // Rotate X back to hamburger
+          menuBtn.firstElementChild.classList.remove(
+            "fa-times",
+            "animate__rotateIn"
+          );
+          menuBtn.firstElementChild.classList.add(
+            "fa-bars",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+          // After animation, add hidden class
+          setTimeout(() => {
+            mobileMenu.classList.add("hidden");
+          }, 500);
+        }
+      });
+    </script>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-16 relative z-10">
+      <div class="container mx-auto px-6">
+        <h1 class="text-5xl md:text-7xl font-bold text-center">
+          <span class="text-white inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.2s">Lake City</span>
+          <span class="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.4s">Regional</span>
+        </h1>
+        <p class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+          February 28 - March 2, 2025 | Lake City High School
+        </p>
+      </div>
+    </section>
+
+    <!-- Rankings Section -->
+    <section class="py-16 relative z-10">
+      <div class="container mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-center">Team Rankings</h2>
+        <div class="card-gradient rounded-xl p-6">
+          <div class="overflow-x-auto">
+            <table class="min-w-full table-auto" id="rankings-table">
+              <thead>
+                <tr class="text-left">
+                  <th class="p-4 text-baywatch-orange">Rank</th>
+                  <th class="p-4 text-baywatch-orange">Team</th>
+                  <th class="p-4 text-baywatch-orange">Record (W-L-T)</th>
+                  <th class="p-4 text-baywatch-orange">Ranking Points</th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-300">
+                <tr><td colspan="4" class="p-4 text-center">Loading rankings...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Match Schedule Section -->
+    <section class="py-16 relative z-10">
+      <div class="container mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
+        <div class="card-gradient rounded-xl p-6">
+          <div class="overflow-x-auto">
+            <table class="min-w-full table-auto" id="schedule-table">
+              <thead>
+                <tr class="text-left">
+                  <th class="p-4 text-baywatch-orange">Time</th>
+                  <th class="p-4 text-baywatch-orange">Match</th>
+                  <th class="p-4 text-baywatch-orange">Blue Alliance</th>
+                  <th class="p-4 text-baywatch-orange">Red Alliance</th>
+                  <th class="p-4 text-baywatch-orange">Score</th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-300">
+                <tr><td colspan="5" class="p-4 text-center">Loading schedule...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Playoff Bracket Section -->
+    <section class="py-16 relative z-10">
+      <div class="container mx-auto px-6">
+        <h2 class="text-3xl font-bold mb-8 text-center">Playoff Bracket</h2>
+        <div class="card-gradient rounded-xl p-6">
+          <div id="playoff-bracket" class="text-center text-gray-300">
+            Loading playoff bracket...
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-12">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="flex space-x-4 mb-4 md:mb-0">
+            <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl">
+              <i class="fab fa-youtube"></i>
+            </a>
+            <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl">
+              <i class="fab fa-instagram"></i>
+            </a>
+          </div>
+          <div class="text-gray-400 text-sm">
+            © 2025 Baywatch Robotics. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

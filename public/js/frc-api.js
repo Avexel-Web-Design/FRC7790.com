@@ -333,3 +333,82 @@ async function initializeEventData() {
 
 // Start updates when document is loaded
 document.addEventListener("DOMContentLoaded", initializeEventData);
+
+// Functions for Lake City Regional page
+async function loadEventRankings() {
+  try {
+    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/rankings`, {
+      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    });
+    const data = await response.json();
+    updateRankingsTable(data.rankings);
+  } catch (error) {
+    console.error("Error loading rankings:", error);
+    document.querySelector("#rankings-table tbody").innerHTML = 
+      '<tr><td colspan="4" class="p-4 text-center text-red-400">Error loading rankings</td></tr>';
+  }
+}
+
+async function loadEventSchedule() {
+  try {
+    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/matches`, {
+      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    });
+    const matches = await response.json();
+    updateScheduleTable(matches);
+  } catch (error) {
+    console.error("Error loading schedule:", error);
+    document.querySelector("#schedule-table tbody").innerHTML = 
+      '<tr><td colspan="5" class="p-4 text-center text-red-400">Error loading schedule</td></tr>';
+  }
+}
+
+function updateRankingsTable(rankings) {
+  const tbody = document.querySelector("#rankings-table tbody");
+  tbody.innerHTML = rankings.map(team => `
+    <tr class="border-t border-gray-700">
+      <td class="p-4">${team.rank}</td>
+      <td class="p-4">${team.team_key.replace('frc', '')}</td>
+      <td class="p-4">${team.record.wins}-${team.record.losses}-${team.record.ties}</td>
+      <td class="p-4">${team.sort_orders[0].toFixed(2)}</td>
+    </tr>
+  `).join('');
+}
+
+function updateScheduleTable(matches) {
+  const tbody = document.querySelector("#schedule-table tbody");
+  
+  // Filter for qualification matches only and sort by match number
+  const qualMatches = matches
+    .filter(match => match.comp_level === 'qm')
+    .sort((a, b) => a.match_number - b.match_number);
+  
+  tbody.innerHTML = qualMatches.map(match => {
+    const time = new Date(match.predicted_time * 1000).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    const blueAlliance = match.alliances.blue.team_keys.map(t => t.replace('frc', '')).join(', ');
+    const redAlliance = match.alliances.red.team_keys.map(t => t.replace('frc', '')).join(', ');
+    const score = match.actual_time ? 
+      `${match.alliances.blue.score} - ${match.alliances.red.score}` : 
+      'Not Played';
+    
+    return `
+      <tr class="border-t border-gray-700">
+        <td class="p-4">${time}</td>
+        <td class="p-4">${match.match_number}</td>
+        <td class="p-4 text-blue-400">${blueAlliance}</td>
+        <td class="p-4 text-red-400">${redAlliance}</td>
+        <td class="p-4">${score}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Initialize page data
+if (window.location.pathname.includes('milac.html')) {
+  loadEventRankings();
+  loadEventSchedule();
+}
