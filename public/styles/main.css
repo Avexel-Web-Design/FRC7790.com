@@ -22,9 +22,10 @@
 
 /* Reveal animation */
 .reveal {
+  position: relative;
   opacity: 0;
   transform: translateY(30px);
-  transition: all 0.8s ease;
+  transition: all 1s ease;
 }
 
 .reveal.active {
