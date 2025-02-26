@@ -9,7 +9,7 @@ const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 // Fetch current event data - modified for testing
 async function getCurrentEventData() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2025milac`, {
       headers: {
         "X-TBA-Auth-Key": TBA_AUTH_KEY,
       },
@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", initializeEventData);
 // Functions for Lake City Regional page
 async function loadEventRankings() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/rankings`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2025milac/rankings`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const data = await response.json();
@@ -351,7 +351,7 @@ async function loadEventRankings() {
 
 async function loadEventSchedule() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/matches`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2025milac/matches`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const matches = await response.json();
@@ -895,11 +895,11 @@ function initializeBracketWithPlaceholders() {
 if (window.location.pathname.includes('milac.html')) {
   loadEventRankings();
   loadEventSchedule();
-  updatePlayoffBracket('2024mitvc');
+  updatePlayoffBracket('2025milac');
   
   // Optional: Add periodic updates
   setInterval(() => {
-    updatePlayoffBracket('2024mitvc');
+    updatePlayoffBracket('2025milac');
   }, 30000); // Update every 30 seconds
 }
 // Add support for Traverse City event page
@@ -947,7 +947,7 @@ else if (window.location.pathname.includes('mitvc.html')) {
 // Add this new function to handle loading match details
 async function loadMatchDetails(matchKey) {
   try {
-    // Parse event key from match key (e.g., extract "2024mitvc" from "2024mitvc_qm1")
+    // Parse event key from match key (e.g., extract "2025milac" from "2025milac_qm1")
     const eventKey = matchKey.split('_')[0];
     
     // Show loading state
