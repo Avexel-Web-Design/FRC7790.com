@@ -262,5 +262,35 @@
         </div>
       </div>
     </footer>
+
+    <!-- Update the event link generation in the table -->
+    <script>
+      // Update the event link generation in the processEventData function
+      function generateEventLink(eventKey, eventName) {
+        // Extract event code from key (e.g., "2025milac" from "2025milac")
+        // For FRC events, use the event.html page with the event parameter
+        if (eventKey.startsWith('202') && (eventKey.includes('milac') || eventKey.includes('mitvc'))) {
+          return `<a href="event.html?event=${eventKey}" class="hover:text-baywatch-orange transition-colors font-medium">${eventName}</a>`;
+        }
+        // For other events (championships, etc), link to TBA
+        return `<a href="https://www.thebluealliance.com/event/${eventKey}" target="_blank" class="hover:text-baywatch-orange transition-colors font-medium">${eventName}</a>`;
+      }
+      
+      // Update the row generation in loadTeamOverview function where events are displayed
+      // Replace this section in the function:
+      row.innerHTML = `
+        <td class="p-4">
+          ${generateEventLink(event.key, event.name)}
+          ${currentEvent && currentEvent.key === event.key ? 
+            '<span class="ml-2 px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full text-xs">Current</span>' : 
+            (nextEvent && nextEvent.key === event.key ? 
+              '<span class="ml-2 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full text-xs">Next</span>' : '')}
+        </td>
+        <td class="p-4">${dateStr}</td>
+        <td class="p-4">${ranking}</td>
+        <td class="p-4">${record}</td>
+        <td class="p-4">${awards}</td>
+      `;
+    </script>
   </body>
 </html>

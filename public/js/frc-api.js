@@ -6,14 +6,19 @@ const TBA_AUTH_KEY =
 // API Endpoints
 const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 
-// Fetch current event data - modified for testing
-async function getCurrentEventData() {
+// Fetch event data by event code
+async function fetchEventData(eventCode) {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2025milac`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}`, {
       headers: {
         "X-TBA-Auth-Key": TBA_AUTH_KEY,
       },
     });
+    
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: Failed to fetch event data`);
+    }
+    
     const event = await response.json();
     return event;
   } catch (error) {
@@ -35,9 +40,9 @@ async function getNextEvent() {
     const now = new Date();
     // Filter for upcoming or currently ongoing events
     const upcoming = events.filter((event) => {
-      const start = new Date(event.start_date);
-      const end = new Date(event.end_date);
-      return start >= now || (start < now && end > now);
+      const eventEnd = new Date(event.end_date);
+      eventEnd.setDate(eventEnd.getDate() + 1); // Include the end day
+      return eventEnd >= now;
     });
     upcoming.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
     return upcoming[0];
@@ -66,7 +71,7 @@ function setLoadingState(isLoading) {
     },
   };
 
-  if (isLoading) {
+  if (isLoading && loadingElements.ranking.number) {
     loadingElements.ranking.number.textContent = "...";
     loadingElements.ranking.total.textContent = "Fetching data...";
     loadingElements.record.wins.textContent = "...";
@@ -95,7 +100,9 @@ async function updateRankings(eventKey) {
       },
     });
 
-    if (!response.ok) throw new Error("Failed to fetch rankings");
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
 
     const rankings = await response.json();
     const teamRanking = rankings.rankings.find(
@@ -103,17 +110,16 @@ async function updateRankings(eventKey) {
     );
 
     if (teamRanking) {
-      const rankingEl = document.getElementById("ranking-number");
-      rankingEl.textContent = teamRanking.rank;
-      rankingEl.setAttribute("data-target", teamRanking.rank);
-      // Re-trigger counter animation
-      runCounter(rankingEl);
-      document.getElementById(
-        "total-teams"
-      ).textContent = `of ${rankings.rankings.length} teams`;
+      const rankingNumber = document.getElementById("ranking-number");
+      const totalTeams = document.getElementById("total-teams");
+      
+      if (rankingNumber && totalTeams) {
+        rankingNumber.textContent = teamRanking.rank;
+        totalTeams.textContent = `of ${rankings.rankings.length} teams`;
+      }
     } else {
       setErrorState("ranking-number", "--");
-      setErrorState("total-teams", "Not currently ranked");
+      setErrorState("total-teams", "Not ranked yet");
     }
   } catch (error) {
     console.error("Error fetching rankings:", error);
@@ -139,23 +145,32 @@ async function updateRecord(eventKey) {
     let losses = 0;
 
     matches.forEach((match) => {
-      if (match.winning_alliance) {
-        const isBlue = match.alliances.blue.team_keys.includes(FRC_TEAM_KEY);
-        const isWinner =
-          (isBlue && match.winning_alliance === "blue") ||
-          (!isBlue && match.winning_alliance === "red");
-        if (isWinner) wins++;
-        else losses++;
+      if (match.winning_alliance && match.actual_time) {
+        const blueTeams = match.alliances.blue.team_keys;
+        const redTeams = match.alliances.red.team_keys;
+        
+        const isOnBlue = blueTeams.includes(FRC_TEAM_KEY);
+        const isOnRed = redTeams.includes(FRC_TEAM_KEY);
+        
+        if ((isOnBlue && match.winning_alliance === "blue") || 
+            (isOnRed && match.winning_alliance === "red")) {
+          wins++;
+        } else if ((isOnBlue || isOnRed) && match.winning_alliance !== "") {
+          losses++;
+        }
       }
     });
 
     const winsEl = document.getElementById("wins");
     const lossesEl = document.getElementById("losses");
-    winsEl.setAttribute("data-target", wins);
-    lossesEl.setAttribute("data-target", losses);
-    // Re-trigger counter animation
-    runCounter(winsEl);
-    runCounter(lossesEl);
+    
+    if (winsEl && lossesEl) {
+      winsEl.setAttribute("data-target", wins);
+      lossesEl.setAttribute("data-target", losses);
+      // Re-trigger counter animation
+      runCounter(winsEl);
+      runCounter(lossesEl);
+    }
   } catch (error) {
     console.error("Error fetching match record:", error);
   }
@@ -173,7 +188,9 @@ async function updateNextMatch(eventKey) {
       }
     );
 
-    if (!response.ok) throw new Error("Failed to fetch matches");
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
 
     const matches = await response.json();
     const nextMatch = matches.find(
@@ -181,33 +198,49 @@ async function updateNextMatch(eventKey) {
     );
 
     if (nextMatch) {
-      document.getElementById(
-        "match-number"
-      ).textContent = `Match ${nextMatch.match_number}`;
-
-      const matchTime = new Date(nextMatch.predicted_time * 1000);
-      document.getElementById("match-time").textContent =
-        matchTime.toLocaleTimeString("en-US", {
-          hour: "2-digit",
+      // Format match number
+      const matchNumEl = document.getElementById("match-number");
+      if (matchNumEl) {
+        matchNumEl.textContent = `Match ${nextMatch.match_number}`;
+      }
+      
+      // Format match time
+      const matchTimeEl = document.getElementById("match-time");
+      if (matchTimeEl) {
+        const matchTime = new Date(nextMatch.predicted_time * 1000);
+        matchTimeEl.textContent = matchTime.toLocaleTimeString("en-US", {
+          hour: "numeric",
           minute: "2-digit",
-          hour12: true,
         });
+      }
 
-      const blueAlliance = nextMatch.alliances.blue.team_keys
-        .map((team) => team.replace("frc", ""))
-        .join(", ");
-      const redAlliance = nextMatch.alliances.red.team_keys
-        .map((team) => team.replace("frc", ""))
-        .join(", ");
-
-      document.getElementById("blue-alliance").textContent = blueAlliance;
-      document.getElementById("red-alliance").textContent = redAlliance;
+      // Display alliance partners
+      const blueAllianceEl = document.getElementById("blue-alliance");
+      const redAllianceEl = document.getElementById("red-alliance");
+      
+      if (blueAllianceEl && redAllianceEl) {
+        const blueTeams = nextMatch.alliances.blue.team_keys;
+        const redTeams = nextMatch.alliances.red.team_keys;
+        
+        if (blueTeams.includes(FRC_TEAM_KEY)) {
+          blueAllianceEl.textContent = "Our Alliance";
+          blueAllianceEl.classList.add("font-bold");
+          redAllianceEl.textContent = "Opponent Alliance";
+        } else if (redTeams.includes(FRC_TEAM_KEY)) {
+          redAllianceEl.textContent = "Our Alliance";
+          redAllianceEl.classList.add("font-bold");
+          blueAllianceEl.textContent = "Opponent Alliance";
+        } else {
+          blueAllianceEl.textContent = "Blue Alliance";
+          redAllianceEl.textContent = "Red Alliance";
+        }
+      }
     } else {
-      document.getElementById("match-number").textContent =
-        "No upcoming matches";
-      document.getElementById("match-time").textContent = "--:--";
-      document.getElementById("blue-alliance").textContent = "TBD";
-      document.getElementById("red-alliance").textContent = "TBD";
+      // No upcoming matches
+      setErrorState("match-number", "No scheduled matches");
+      setErrorState("match-time", "--:--");
+      setErrorState("blue-alliance", "TBD");
+      setErrorState("red-alliance", "TBD");
     }
   } catch (error) {
     console.error("Error fetching next match:", error);
@@ -231,32 +264,48 @@ function updateCountdown(startDate) {
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
 
   // Update UI with countdown
-  document.getElementById("ranking-number").textContent = days;
-  document.getElementById("total-teams").textContent = "Days until event";
-
-  document.getElementById("wins").textContent = hours;
-  document.getElementById("losses").textContent = minutes;
+  const rankingNumberEl = document.getElementById("ranking-number");
+  const totalTeamsEl = document.getElementById("total-teams");
+  const winsEl = document.getElementById("wins");
+  const lossesEl = document.getElementById("losses");
+  
+  if (rankingNumberEl) rankingNumberEl.textContent = days;
+  if (totalTeamsEl) totalTeamsEl.textContent = "Days until event";
+  if (winsEl) winsEl.textContent = hours;
+  if (lossesEl) lossesEl.textContent = minutes;
 
   // Update labels
-  document.querySelector('[for="wins"]').textContent = "Hours";
-  document.querySelector('[for="losses"]').textContent = "Minutes";
+  const winsLabelEl = document.querySelector('[for="wins"]');
+  const lossesLabelEl = document.querySelector('[for="losses"]');
+  
+  if (winsLabelEl) winsLabelEl.textContent = "Hours";
+  if (lossesLabelEl) lossesLabelEl.textContent = "Minutes";
 
   // Update next match section
-  document.getElementById("match-number").textContent = "Event Starting Soon";
-  document.getElementById("match-time").textContent = new Date(
-    startDate
-  ).toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-  document.getElementById("blue-alliance").textContent = "At";
-  document.getElementById("red-alliance").textContent = new Date(
-    startDate
-  ).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const matchNumberEl = document.getElementById("match-number");
+  const matchTimeEl = document.getElementById("match-time");
+  const blueAllianceEl = document.getElementById("blue-alliance");
+  const redAllianceEl = document.getElementById("red-alliance");
+  
+  if (matchNumberEl) matchNumberEl.textContent = "Event Starting Soon";
+  if (matchTimeEl) {
+    matchTimeEl.textContent = new Date(
+      startDate
+    ).toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+  }
+  if (blueAllianceEl) blueAllianceEl.textContent = "At";
+  if (redAllianceEl) {
+    redAllianceEl.textContent = new Date(
+      startDate
+    ).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
 }
 
 // New function for event countdown
@@ -273,9 +322,10 @@ function updateEventCountdown(startDate) {
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-  document.getElementById(
-    "countdown-timer"
-  ).textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  const countdownEl = document.getElementById("countdown-timer");
+  if (countdownEl) {
+    countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  }
 }
 
 // Initialize and update all data with loading states
@@ -287,39 +337,34 @@ async function initializeEventData() {
     // Use calculated next event instead of a hardcoded one
     const currentEvent = await getNextEvent();
     if (currentEvent) {
-      const now = new Date();
-      const adjustedEventStart = new Date(
-        new Date(currentEvent.start_date).getTime() + OFFSET_MS
-      );
-      const adjustedEventEnd = new Date(
-        new Date(currentEvent.end_date).getTime() + OFFSET_MS
-      );
+      const currentDate = new Date().getTime();
+      const eventStart = new Date(currentEvent.start_date).getTime();
+      const eventEnd = new Date(currentEvent.end_date).getTime() + OFFSET_MS;
 
-      if (now < adjustedEventStart || now > adjustedEventEnd) {
-        document.getElementById("live-updates").classList.add("hidden");
-        document.getElementById("countdown-section").classList.remove("hidden");
-
-        const targetDate =
-          now < adjustedEventStart ? adjustedEventStart : adjustedEventEnd;
-        updateEventCountdown(targetDate);
-        setInterval(() => {
-          updateEventCountdown(targetDate);
-        }, 1000);
-      } else {
-        document.getElementById("live-updates").classList.remove("hidden");
+      if (currentDate >= eventStart && currentDate <= eventEnd) {
+        // We're currently at an event - show live data
+        const eventKey = currentEvent.key;
         document.getElementById("countdown-section").classList.add("hidden");
-
-        await Promise.all([
-          updateRankings(currentEvent.key),
-          updateRecord(currentEvent.key),
-          updateNextMatch(currentEvent.key),
-        ]);
-
-        setInterval(() => {
-          updateRankings(currentEvent.key);
-          updateRecord(currentEvent.key);
-          updateNextMatch(currentEvent.key);
-        }, 300000);
+        document.getElementById("live-updates").classList.remove("hidden");
+        updateRankings(eventKey);
+        updateRecord(eventKey);
+        updateNextMatch(eventKey);
+      } else if (currentDate < eventStart) {
+        // Next event hasn't started yet - show countdown
+        document.getElementById("countdown-section").classList.remove("hidden");
+        document.getElementById("live-updates").classList.add("hidden");
+        updateCountdown(currentEvent.start_date);
+        
+        // Set up a countdown interval
+        const countdownInterval = setInterval(() => {
+          const now = new Date().getTime();
+          if (now >= eventStart) {
+            clearInterval(countdownInterval);
+            initializeEventData();
+          } else {
+            updateEventCountdown(currentEvent.start_date);
+          }
+        }, 1000);
       }
     } else {
       setErrorState("ranking-number", "No upcoming event");
@@ -335,29 +380,29 @@ async function initializeEventData() {
 document.addEventListener("DOMContentLoaded", initializeEventData);
 
 // Functions for Lake City Regional page
-async function loadEventRankings() {
+async function loadEventRankings(eventCode) {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2025milac/rankings`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/rankings`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const data = await response.json();
     updateRankingsTable(data.rankings);
   } catch (error) {
-    console.error("Error loading rankings:", error);
+    console.error(`Error loading rankings for ${eventCode}:`, error);
     document.querySelector("#rankings-table tbody").innerHTML = 
       '<tr><td colspan="4" class="p-4 text-center">No Rankings Available</td></tr>';
   }
 }
 
-async function loadEventSchedule() {
+async function loadEventSchedule(eventCode) {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2025milac/matches`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/matches`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const matches = await response.json();
     updateScheduleTable(matches);
   } catch (error) {
-    console.error("Error loading schedule:", error);
+    console.error(`Error loading schedule for ${eventCode}:`, error);
     document.querySelector("#schedule-table tbody").innerHTML = 
       '<tr><td colspan="5" class="p-4 text-center text-red-400">Error loading schedule</td></tr>';
   }
@@ -518,6 +563,7 @@ function toggleRankings() {
   hideIcon.classList.toggle('hidden');
 }
 
+// Updated function to generate HTML for match schedule with event.html links
 function updateScheduleTable(matches) {
   const tbody = document.querySelector("#schedule-table tbody");
   
@@ -555,7 +601,7 @@ function updateScheduleTable(matches) {
   // Slice the matches we want to display
   const displayMatches = qualMatches.slice(startIndex, endIndex + 1);
   
-  // Generate HTML for visible matches - UPDATED to include match detail links
+  // Generate HTML for visible matches - UPDATED to use event.html instead of match-specific HTML files
   const visibleMatchesHtml = displayMatches.map(match => {
     const { blueStyle, redStyle, scoreStyle } = getMatchWinnerStyles(match);
     const blueAlliance = highlightTeam(match.alliances.blue.team_keys.map(t => t.replace('frc', '')).join(', '));
@@ -563,6 +609,9 @@ function updateScheduleTable(matches) {
     const score = match.actual_time ? 
       `${match.alliances.blue.score} - ${match.alliances.red.score}` : 
       'Not Played';
+    
+    // Extract event code from match key (format: "2025milac_qm1")
+    const eventCode = match.key.split('_')[0];
     
     // Highlight current match
     const isCurrentMatch = match.match_number === qualMatches[currentMatchIndex].match_number;
@@ -618,7 +667,7 @@ function updateScheduleTable(matches) {
   }
 }
 
-// Function to toggle between limited and all matches
+// Function to toggle between limited and all matches (updated for event.html links)
 function toggleAllMatches(qualMatches, currentMatchIndex) {
   const button = document.getElementById('show-all-matches');
   const showText = button.querySelector('.show-text');
@@ -641,6 +690,9 @@ function toggleAllMatches(qualMatches, currentMatchIndex) {
       const score = match.actual_time ? 
         `${match.alliances.blue.score} - ${match.alliances.red.score}` : 
         'Not Played';
+      
+      // Extract event code from match key
+      const eventCode = match.key.split('_')[0];
       
       // Highlight current match
       const isCurrentMatch = match.match_number === qualMatches[currentMatchIndex].match_number;
@@ -900,8 +952,8 @@ function initializeBracketWithPlaceholders() {
 
 // Initialize page data
 if (window.location.pathname.includes('milac.html')) {
-  loadEventRankings();
-  loadEventSchedule();
+  loadEventRankings('2025milac');
+  loadEventSchedule('2025milac');
   updatePlayoffBracket('2025milac');
   
   // Optional: Add periodic updates
@@ -911,38 +963,8 @@ if (window.location.pathname.includes('milac.html')) {
 }
 // Add support for Traverse City event page
 else if (window.location.pathname.includes('mitvc.html')) {
-  // Load Traverse City event data
-  async function loadTraverseCityRankings() {
-    try {
-      const response = await fetch(`${TBA_BASE_URL}/event/2025mitvc/rankings`, {
-        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-      });
-      const data = await response.json();
-      updateRankingsTable(data.rankings);
-    } catch (error) {
-      console.error("Error loading rankings:", error);
-      document.querySelector("#rankings-table tbody").innerHTML = 
-        '<tr><td colspan="4" class="p-4 text-center">No Rankings Available</td></tr>';
-    }
-  }
-  
-  async function loadTraverseCitySchedule() {
-    try {
-      const response = await fetch(`${TBA_BASE_URL}/event/2025mitvc/matches`, {
-        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-      });
-      const matches = await response.json();
-      updateScheduleTable(matches);
-    } catch (error) {
-      console.error("Error loading schedule:", error);
-      document.querySelector("#schedule-table tbody").innerHTML = 
-        '<tr><td colspan="5" class="p-4 text-center text-red-400">Error loading schedule</td></tr>';
-    }
-  }
-
-  // Call the Traverse City specific functions
-  loadTraverseCityRankings();
-  loadTraverseCitySchedule();
+  loadEventRankings('2025mitvc');
+  loadEventSchedule('2025mitvc');
   updatePlayoffBracket('2025mitvc');
   
   // Optional: Add periodic updates
@@ -2359,4 +2381,343 @@ if (window.location.pathname.includes('team-overview.html')) {
   document.addEventListener('DOMContentLoaded', function() {
     loadTeamOverview();
   });
+}
+
+// Add periodic updates for the rankings and schedule on the event page
+// to ensure the data stays current during an active event
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.location.pathname.includes('event.html')) {
+    // Parse URL parameters to get event code
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventCode = urlParams.get('event');
+    
+    if (eventCode) {
+      // Prepare the event page based on whether it has started
+      prepareEventPage(eventCode);
+      
+      // Set up periodic updates for live event data
+      setInterval(() => {
+        // Check if event has started before updating
+        const eventStartDate = localStorage.getItem(`${eventCode}_startDate`);
+        if (eventStartDate && hasEventStarted(eventStartDate)) {
+          loadEventRankings(eventCode);
+          loadEventSchedule(eventCode);
+        }
+      }, 60000); // Update every minute
+    }
+  }
+});
+
+// New function to check if event has started (accounting for 37-hour offset)
+function hasEventStarted(eventStartDate) {
+  const now = new Date();
+  const startDate = new Date(eventStartDate);
+  // Add 37-hour offset to the official start date
+  startDate.setHours(startDate.getHours() + 37);
+  return now >= startDate;
+}
+
+// New function to fetch teams attending an event
+async function fetchEventTeams(eventCode) {
+  try {
+    const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/teams`, {
+      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching teams: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching event teams:', error);
+    return [];
+  }
+}
+
+// Function to display teams list for upcoming events
+async function displayEventTeams(eventCode) {
+  try {
+    const teams = await fetchEventTeams(eventCode);
+    
+    if (!teams || teams.length === 0) {
+      document.getElementById('teams-container').innerHTML = `
+        <div class="card-gradient rounded-xl p-6 text-center">
+          <i class="fas fa-users-slash text-gray-500 text-4xl mb-3"></i>
+          <p class="text-lg text-gray-400">No teams registered yet</p>
+          <p class="text-sm text-gray-500 mt-2">Check back closer to the event date</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Sort teams by team number
+    teams.sort((a, b) => parseInt(a.team_number) - parseInt(b.team_number));
+    
+    // Group teams by first digit of team number
+    const groupedTeams = {};
+    teams.forEach(team => {
+      const firstDigit = Math.floor(team.team_number / 1000);
+      if (!groupedTeams[firstDigit]) {
+        groupedTeams[firstDigit] = [];
+      }
+      groupedTeams[firstDigit].push(team);
+    });
+    
+    // Create HTML for each group - ensure proper ordering of team groups
+    let teamsHTML = '';
+    
+    // Define the order we want the groups to appear in (1000s through 10000s)
+    const orderedGroups = Object.keys(groupedTeams)
+                                .map(Number) // Convert string keys to numbers
+                                .sort((a, b) => a - b); // Sort numerically
+    
+    orderedGroups.forEach(group => {
+      // Format the group header appropriately
+      let groupHeader = group < 10 ? `${group}000s` : `${group}000s`;
+      
+      teamsHTML += `
+        <div class="mb-8">
+          <h3 class="text-xl font-bold mb-4 text-baywatch-orange">${groupHeader}</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      `;
+      
+      groupedTeams[group].forEach(team => {
+        const isHighlighted = team.team_number === 7790;
+        teamsHTML += `
+          <div class="team-card-container">
+            <a href="team-overview.html?team=${team.team_number}" 
+               class="team-card card-gradient rounded-xl p-4 block hover:scale-105 transition-all duration-300 ${isHighlighted ? 'border-2 border-baywatch-orange' : ''}">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br ${isHighlighted ? 'from-baywatch-orange to-orange-600' : 'from-gray-700 to-gray-800'} flex items-center justify-center font-bold text-lg">
+                  ${team.team_number}
+                </div>
+                <div>
+                  <h4 class="font-bold ${isHighlighted ? 'text-baywatch-orange' : 'text-white'} truncate max-w-[180px]">${team.nickname}</h4>
+                  <p class="text-sm text-gray-400 truncate max-w-[180px]">${team.city}, ${team.state_prov}</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        `;
+      });
+      
+      teamsHTML += `
+          </div>
+        </div>
+      `;
+    });
+    
+    // Update teams container with the generated HTML
+    document.getElementById('teams-container').innerHTML = teamsHTML;
+    
+    // Update total teams count
+    document.getElementById('team-count').textContent = teams.length;
+    
+  } catch (error) {
+    console.error('Error displaying event teams:', error);
+    document.getElementById('teams-container').innerHTML = `
+      <div class="card-gradient rounded-xl p-6 text-center">
+        <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-3"></i>
+        <p class="text-lg text-red-400">Error loading teams</p>
+        <p class="text-sm text-gray-400 mt-2">Please try again later</p>
+      </div>
+    `;
+  }
+}
+
+// Function to prepare event page based on whether event has started or not
+async function prepareEventPage(eventCode) {
+  try {
+    // Show loading overlay
+    document.getElementById('loading-overlay').classList.remove('hidden');
+    
+    // Fetch event data
+    const eventData = await fetchEventData(eventCode);
+    
+    if (!eventData) {
+      throw new Error('Event data not available');
+    }
+    
+    // Store event start date in localStorage for future reference
+    localStorage.setItem(`${eventCode}_startDate`, eventData.start_date);
+    
+    // Update page title and header information
+    updateEventPageHeader(eventData);
+    
+    // Check if the event has started (with 37 hour offset)
+    const hasStarted = hasEventStarted(eventData.start_date);
+    
+    if (hasStarted) {
+      // Event has started - show competition data sections
+      document.getElementById('teams-section').classList.add('hidden');
+      
+      // Make competition data container visible
+      const competitionContainer = document.getElementById('competition-data-container');
+      if (competitionContainer) {
+        competitionContainer.classList.remove('hidden');
+      }
+      
+      // Make individual sections visible
+      document.getElementById('rankings-section').classList.remove('hidden');
+      document.getElementById('schedule-section').classList.remove('hidden');
+      document.getElementById('playoff-section').classList.remove('hidden');
+      
+      // Load event competition data
+      loadEventRankings(eventCode);
+      loadEventSchedule(eventCode);
+      updatePlayoffBracket(eventCode);
+    } else {
+      // Event hasn't started - show teams section
+      document.getElementById('teams-section').classList.remove('hidden');
+      
+      // Hide competition data container to ensure proper document flow
+      const competitionContainer = document.getElementById('competition-data-container');
+      if (competitionContainer) {
+        competitionContainer.classList.add('hidden');
+      } else {
+        // If container doesn't exist, hide individual sections
+        document.getElementById('rankings-section').classList.add('hidden');
+        document.getElementById('schedule-section').classList.add('hidden');
+        document.getElementById('playoff-section').classList.add('hidden');
+      }
+      
+      // Display registered teams
+      displayEventTeams(eventCode);
+      
+      // Update countdown timer
+      updateEventCountdownDisplay(eventData.start_date);
+    }
+    
+    // Hide loading overlay
+    document.getElementById('loading-overlay').classList.add('hidden');
+    
+  } catch (error) {
+    console.error('Error preparing event page:', error);
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('error-message').classList.remove('hidden');
+  }
+}
+
+// Update event page header information
+function updateEventPageHeader(eventData) {
+  document.title = `${eventData.name} - Baywatch Robotics | FRC Team 7790`;
+  document.querySelector('meta[name="description"]').content = 
+    `Live results and information for ${eventData.name} - FRC Team 7790 Baywatch Robotics`;
+  
+  // Extract city name and event type from event name
+  const cityName = extractCityName(eventData.name);
+  const eventType = extractEventType(eventData.name);
+  
+  // Update header text
+  document.getElementById('event-city').textContent = cityName;
+  document.getElementById('event-type').textContent = eventType;
+  
+  // Format dates
+  const startDate = new Date(eventData.start_date);
+  const endDate = new Date(eventData.end_date);
+  const dateOptions = { month: 'long', day: 'numeric', year: 'numeric' };
+  const formattedDates = `${startDate.toLocaleDateString('en-US', dateOptions)} - ${endDate.toLocaleDateString('en-US', dateOptions)} | ${eventData.location_name}`;
+  document.getElementById('event-details').textContent = formattedDates;
+  
+  // Set appropriate Twitch link if available
+  const eventCode = eventData.key;
+  const twitchChannels = {
+    '2025milac': 'firstinspires32',
+    '2025mitvc': 'firstinspires34'
+  };
+  
+  if (twitchChannels[eventCode]) {
+    const watchLink = document.getElementById('event-watch-link');
+    watchLink.href = `https://twitch.tv/${twitchChannels[eventCode]}`;
+    watchLink.classList.remove('hidden');
+  } else {
+    // Hide watch link if no channel is available
+    document.getElementById('event-watch-link').classList.add('hidden');
+  }
+}
+
+// Function to update countdown display for upcoming events
+function updateEventCountdownDisplay(startDate) {
+  // Get the countdown container
+  const countdownContainer = document.getElementById('event-countdown');
+  
+  // Calculate time until event starts (with 37 hour offset)
+  const startWithOffset = new Date(startDate);
+  startWithOffset.setHours(startWithOffset.getHours() + 37);
+  
+  // Update initial countdown
+  updateUpcomingEventCountdown(startWithOffset);
+  
+  // Set interval to update countdown every second
+  const countdownInterval = setInterval(() => {
+    // Check if countdown is complete
+    const now = new Date();
+    if (now >= startWithOffset) {
+      clearInterval(countdownInterval);
+      // Reload page to show competition view
+      window.location.reload();
+      return;
+    }
+    
+    updateUpcomingEventCountdown(startWithOffset);
+  }, 1000);
+}
+
+// Function to update the countdown timer
+function updateUpcomingEventCountdown(targetDate) {
+  const now = new Date();
+  const timeLeft = targetDate - now;
+  
+  if (timeLeft <= 0) {
+    document.getElementById('days-value').textContent = '0';
+    document.getElementById('hours-value').textContent = '0';
+    document.getElementById('minutes-value').textContent = '0';
+    document.getElementById('seconds-value').textContent = '0';
+    return;
+  }
+  
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+  
+  document.getElementById('days-value').textContent = days;
+  document.getElementById('hours-value').textContent = hours.toString().padStart(2, '0');
+  document.getElementById('minutes-value').textContent = minutes.toString().padStart(2, '0');
+  document.getElementById('seconds-value').textContent = seconds.toString().padStart(2, '0');
+}
+
+function extractCityName(eventName) {
+  // Logic to extract just city name from full event name
+  // Example: "2025 FIM District Lake City Event" -> "Lake City"
+  
+  // First try to find a match for common patterns
+  const cityPatterns = [
+    /\bDistrict\s+([A-Za-z\s]+?)\s+Event\b/i,
+    /\b([A-Za-z\s]+?)\s+District Event\b/i,
+    /\b([A-Za-z\s]+?)\s+Regional\b/i,
+    /\b([A-Za-z\s]+?)\s+Event\b/i
+  ];
+  
+  for (const pattern of cityPatterns) {
+    const match = eventName.match(pattern);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+  
+  // Fallback: split the event name and take words that aren't common qualifiers
+  const nameParts = eventName.split(' ');
+  const commonWords = ['FIM', 'District', 'Event', 'Regional', '2025'];
+  const cityParts = nameParts.filter(part => 
+    !commonWords.includes(part) && part.length > 1
+  );
+  
+  return cityParts.join(' ') || 'Event';
+}
+
+function extractEventType(eventName) {
+  // Always return empty string regardless of event type
+  return "";
 }

@@ -4,10 +4,10 @@
     <link rel="shortcut icon" type="image/png" href="public/assets/images/logo.png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FRC Event - Loading...</title>
+    <title>Event Details - Baywatch Robotics | FRC Team 7790</title>
     <meta
       name="description"
-      content="Live updates and results from this FRC competition."
+      content="Live results and event details for FRC Team 7790 Baywatch Robotics."
     />
 
     <!-- Google Fonts -->
@@ -23,8 +23,6 @@
             colors: {
               "baywatch-orange": "#FF6B00",
               "baywatch-dark": "#1A1A1A",
-              "blue-alliance": "#0066B3",
-              "red-alliance": "#ED1C24",
             },
             fontFamily: {
               poppins: ["Poppins", "sans-serif"],
@@ -40,49 +38,52 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   </head>
 
-  <body class="bg-black text-white font-poppins">
+  <body class="bg-black text-white font-poppins min-h-screen flex flex-col">
     <!-- Navigation Bar -->
-    <nav
-      class="fixed top-0 w-full z-50 transition-all duration-300"
-      id="navbar"
-    >
+    <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
       <div
         class="container mx-auto px-6 py-4 flex items-center justify-between"
       >
         <div class="flex items-center space-x-2">
           <a
-            href="index.html"
+            href="index.html#"
             class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
           >
             <img
               src="public/assets/images/logo.png"
               alt="Baywatch Robotics Logo"
-              class="w-16 h-16"
+              class="w-20 h-20"
             />
-            <span class="font-bold text-xl">Baywatch Robotics</span>
           </a>
         </div>
         <!-- Desktop Menu -->
         <ul class="hidden md:flex space-x-8">
           <li>
             <a
-              href="index.html"
+              href="robots.html"
               class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
-              >Home</a
+              >Robots</a
+            >
+          </li>
+          <li>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
             >
           </li>
           <li>
             <a
               href="schedule.html"
               class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
-              >Events</a
+              >Schedule</a
             >
           </li>
           <li>
             <a
-              href="team-overview.html?team=7790"
+              href="ftc.html"
               class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
-              >Team 7790</a
+              >FTC</a
             >
           </li>
         </ul>
@@ -90,36 +91,36 @@
         <div class="md:hidden">
           <button
             id="mobile-menu-btn"
-            class="text-white focus:outline-none"
+            class="focus:outline-none transition-transform duration-300"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-            </svg>
+            <i class="fas fa-bars text-3xl"></i>
           </button>
         </div>
       </div>
     </nav>
 
     <!-- Mobile Menu Overlay -->
-    <div
-      id="mobile-menu-overlay"
-      class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
-    >
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated">
       <div class="flex flex-col items-center justify-center h-full space-y-8">
         <a
-          href="index.html"
-          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110"
-          >Home</a
+          href="robots.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Robots</a
+        >
+        <a
+          href="sponsors.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Sponsors</a
         >
         <a
           href="schedule.html"
-          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110"
-          >Events</a
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Schedule</a
         >
         <a
-          href="team-overview.html?team=7790"
-          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110"
-          >Team 7790</a
+          href="ftc.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >FTC</a
         >
       </div>
     </div>
@@ -131,17 +132,38 @@
       let menuOpen = false;
 
       menuBtn.addEventListener("click", () => {
-        if (!menuOpen) {
+        menuOpen = !menuOpen;
+
+        if (menuOpen) {
+          // Show menu with slide-down effect
           mobileMenu.classList.remove("hidden");
-          mobileMenu.classList.add("animate__fadeIn");
-          menuOpen = true;
+          mobileMenu.classList.remove("animate__fadeOutUp");
+          mobileMenu.classList.add("animate__fadeInDown");
+          // Rotate hamburger to X
+          menuBtn.firstElementChild.classList.remove("fa-bars");
+          menuBtn.firstElementChild.classList.add(
+            "fa-times",
+            "animate__animated",
+            "animate__rotateIn"
+          );
         } else {
-          mobileMenu.classList.add("animate__fadeOut");
+          // Animate hide menu with slide-up effect then hide
+          mobileMenu.classList.remove("animate__fadeInDown");
+          mobileMenu.classList.add("animate__fadeOutUp");
+          // Rotate X back to hamburger
+          menuBtn.firstElementChild.classList.remove(
+            "fa-times",
+            "animate__rotateIn"
+          );
+          menuBtn.firstElementChild.classList.add(
+            "fa-bars",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+          // After animation, add hidden class
           setTimeout(() => {
             mobileMenu.classList.add("hidden");
-            mobileMenu.classList.remove("animate__fadeOut");
-          }, 300);
-          menuOpen = false;
+          }, 500);
         }
       });
     </script>
@@ -149,446 +171,675 @@
     <!-- Hero Section -->
     <section class="pt-32 pb-16 relative z-10">
       <div class="container mx-auto px-6">
-        <div id="event-hero" class="text-center animate__animated animate__fadeIn">
-          <div class="text-center mb-6">
-            <span class="inline-block py-1 px-3 bg-baywatch-orange bg-opacity-30 rounded-full text-baywatch-orange text-sm mb-2">
-              <i class="fas fa-spinner fa-spin mr-1"></i> Loading Event Data
-            </span>
-            <h1 class="text-4xl md:text-6xl font-bold mb-4">
-              <span id="event-name" class="text-white">Loading Event Details...</span>
-            </h1>
-            <p id="event-date" class="text-gray-400 text-xl">Please wait...</p>
-          </div>
-          
-          <div id="event-info" class="flex flex-wrap justify-center gap-8 mt-8">
-            <!-- Will be populated by JS -->
-          </div>
+        <h1 class="text-5xl md:text-7xl font-bold text-center">
+          <span id="event-city" class="text-white inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.2s">Loading</span>
+          <span id="event-type" class="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.4s">Event</span>
+        </h1>
+        <p id="event-details" class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+          Loading event information...
+        </p>
+        <div class="flex justify-center mt-6 gap-4">
+          <a id="event-watch-link" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-[#A970FF] bg-[#6441A4]/20 hover:bg-[#6441A4]/30 transition-colors duration-300 px-4 py-2 rounded-lg">
+            <i class="fab fa-twitch mr-2"></i> Watch Live
+          </a>
+          <a href="schedule.html" class="inline-flex items-center text-gray-300 bg-gray-800/50 hover:bg-gray-800/70 transition-colors duration-300 px-4 py-2 rounded-lg">
+            <i class="fas fa-calendar-days mr-2"></i> All Events
+          </a>
         </div>
       </div>
     </section>
 
-    <!-- Rankings Section -->
-    <section class="py-16 relative z-10">
-      <div class="container mx-auto px-6">
-        <h2 class="text-3xl font-bold mb-8">Team Rankings</h2>
-        <div class="card-gradient rounded-xl p-6 overflow-x-auto">
-          <table class="min-w-full" id="rankings-table">
-            <thead>
-              <tr>
-                <th class="p-4 text-left text-baywatch-orange">Rank</th>
-                <th class="p-4 text-left text-baywatch-orange">Team</th>
-                <th class="p-4 text-left text-baywatch-orange">Record</th>
-                <th class="p-4 text-left text-baywatch-orange">Ranking Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colspan="4" class="p-4 text-center">
-                  <div class="flex justify-center items-center">
-                    <i class="fas fa-spinner fa-spin mr-2"></i>
-                    <span>Loading rankings data...</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <!-- Loading Overlay - Shows while event data is loading -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+      <div class="text-center">
+        <div class="w-16 h-16 border-4 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin mx-auto mb-4"></div>
+        <h2 class="text-xl font-bold text-baywatch-orange">Loading Event Data</h2>
+        <p class="text-gray-400 mt-2">Retrieving information from The Blue Alliance</p>
       </div>
-    </section>
+    </div>
 
-    <!-- Match Schedule Section -->
-    <section class="py-16 relative z-10">
-      <div class="container mx-auto px-6">
-        <h2 class="text-3xl font-bold mb-8">Qualification Matches</h2>
-        <div class="card-gradient rounded-xl p-6 overflow-x-auto">
-          <table class="min-w-full" id="schedule-table">
-            <thead>
-              <tr>
-                <th class="p-4 text-left text-baywatch-orange">Match</th>
-                <th class="p-4 text-left text-baywatch-orange">Blue Alliance</th>
-                <th class="p-4 text-left text-baywatch-orange">Red Alliance</th>
-                <th class="p-4 text-left text-baywatch-orange">Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colspan="4" class="p-4 text-center">
-                  <div class="flex justify-center items-center">
-                    <i class="fas fa-spinner fa-spin mr-2"></i>
-                    <span>Loading match schedule...</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+    <!-- Error Message - Initially hidden, shows if event code is invalid -->
+    <div id="error-message" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+      <div class="text-center max-w-md p-6 bg-gray-900 rounded-xl border border-red-500/30">
+        <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
         </div>
+        <h2 class="text-xl font-bold text-red-400">Event Not Found</h2>
+        <p class="text-gray-400 mt-2 mb-6">The event code provided is invalid or the data is not available.</p>
+        <a href="schedule.html" class="inline-flex items-center px-4 py-2 bg-baywatch-orange rounded-lg text-white font-medium hover:bg-baywatch-orange/80 transition-colors">
+          <i class="fas fa-arrow-left mr-2"></i> Return to Schedule
+        </a>
       </div>
-    </section>
+    </div>
 
-    <!-- Playoff Bracket Section -->
-    <section class="py-16 relative z-10" id="playoff-section">
-      <div class="container mx-auto px-6">
-        <h2 class="text-3xl font-bold mb-8">Playoff Bracket</h2>
-        <div class="card-gradient rounded-xl p-6">
-          <div id="bracket-loading" class="text-center py-6">
-            <i class="fas fa-spinner fa-spin mr-2"></i>
-            <span>Loading playoff bracket...</span>
-          </div>
-          
-          <div id="bracket-container" class="hidden">
-            <!-- Semifinal matches -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-              <div class="semifinal-matchup">
-                <h3 class="text-xl font-semibold mb-4">Semifinal 1</h3>
-                <div id="match-sf1" class="match-box">
-                  <div class="match-number">Semifinal Match 1</div>
-                  <div class="alliance-container">
-                    <div class="alliance blue">
-                      <div class="alliance-badge blue-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                    <div class="alliance red">
-                      <div class="alliance-badge red-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div id="match-sf3" class="match-box mt-4">
-                  <div class="match-number">Semifinal Match 3</div>
-                  <div class="alliance-container">
-                    <div class="alliance blue">
-                      <div class="alliance-badge blue-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                    <div class="alliance red">
-                      <div class="alliance-badge red-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                  </div>
-                </div>
+    <!-- Main Content Container - Helps maintain proper document flow -->
+    <main class="flex-grow">
+      <!-- Teams Section (For upcoming events) -->
+      <section id="teams-section" class="py-16 relative z-10 hidden">
+        <!-- Event Countdown Header -->
+        <div id="event-countdown" class="container mx-auto px-6 mb-12">
+          <div class="card-gradient rounded-xl p-6">
+            <h2 class="text-2xl font-bold text-center mb-4">Event Begins In</h2>
+            <div class="flex justify-center gap-4 md:gap-8">
+              <div class="flex flex-col items-center">
+                <div id="days-value" class="text-4xl md:text-6xl font-bold text-baywatch-orange">--</div>
+                <div class="text-gray-400 text-sm md:text-base">Days</div>
               </div>
-              
-              <div class="semifinal-matchup">
-                <h3 class="text-xl font-semibold mb-4">Semifinal 2</h3>
-                <div id="match-sf2" class="match-box">
-                  <div class="match-number">Semifinal Match 2</div>
-                  <div class="alliance-container">
-                    <div class="alliance blue">
-                      <div class="alliance-badge blue-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
+              <div class="text-2xl md:text-4xl text-gray-500 self-center">:</div>
+              <div class="flex flex-col items-center">
+                <div id="hours-value" class="text-4xl md:text-6xl font-bold text-baywatch-orange">--</div>
+                <div class="text-gray-400 text-sm md:text-base">Hours</div>
+              </div>
+              <div class="text-2xl md:text-4xl text-gray-500 self-center">:</div>
+              <div class="flex flex-col items-center">
+                <div id="minutes-value" class="text-4xl md:text-6xl font-bold text-baywatch-orange">--</div>
+                <div class="text-gray-400 text-sm md:text-base">Minutes</div>
+              </div>
+              <div class="text-2xl md:text-4xl text-gray-500 self-center">:</div>
+              <div class="flex flex-col items-center">
+                <div id="seconds-value" class="text-4xl md:text-6xl font-bold text-baywatch-orange">--</div>
+                <div class="text-gray-400 text-sm md:text-base">Seconds</div>
+              </div>
+            </div>
+            <p class="text-center text-gray-400 mt-4 text-sm">Live competition data will be available once the event begins</p>
+          </div>
+        </div>
+        
+        <!-- Teams List -->
+        <div class="container mx-auto px-6 mb-12"> <!-- Added bottom margin -->
+          <h2 class="text-3xl font-bold mb-2 text-center">Registered Teams</h2>
+          <p class="text-gray-400 text-center mb-8">
+            <span id="team-count">0</span> teams competing at this event
+          </p>
+          <div id="teams-container" class="animate__animated animate__fadeIn">
+            <div class="flex justify-center">
+              <div class="w-16 h-16 border-4 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Competition Data Sections Container -->
+      <div id="competition-data-container">
+        <!-- Rankings Section (For active/completed events) -->
+        <section id="rankings-section" class="py-16 relative z-10">
+          <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold mb-8 text-center">Team Rankings</h2>
+            <div class="card-gradient rounded-xl p-6">
+              <div class="overflow-x-auto">
+                <table class="min-w-full table-auto" id="rankings-table">
+                  <thead>
+                    <tr class="text-left">
+                      <th class="p-4 text-baywatch-orange">Rank</th>
+                      <th class="p-4 text-baywatch-orange">Team</th>
+                      <th class="p-4 text-baywatch-orange">Record (W-L-T)</th>
+                      <th class="p-4 text-baywatch-orange">Ranking Points</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-gray-300">
+                    <tr><td colspan="4" class="p-4 text-center">Loading rankings...</td></tr>
+                  </tbody>
+                </table>
+                <!-- The toggle button will be added dynamically by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Match Schedule Section (For active/completed events) -->
+        <section id="schedule-section" class="py-16 relative z-10">
+          <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
+            <div class="card-gradient rounded-xl p-6">
+              <div class="overflow-x-auto">
+                <table class="min-w-full table-auto" id="schedule-table">
+                  <thead>
+                    <tr class="text-left">
+                      <th class="p-4 text-baywatch-orange">Match</th>
+                      <th class="p-4 text-baywatch-orange">Blue Alliance</th>
+                      <th class="p-4 text-baywatch-orange">Red Alliance</th>
+                      <th class="p-4 text-baywatch-orange">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-gray-300">
+                    <tr><td colspan="4" class="p-4 text-center">Loading schedule...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Playoff Bracket Section (For active/completed events) -->
+        <section id="playoff-section" class="py-16 relative z-10">
+          <div class="container mx-auto px-6">
+            <h2 class="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
+            <div class="card-gradient rounded-xl p-6 overflow-x-auto">
+              <!-- Double Elimination Bracket -->
+              <div class="min-w-[1200px] relative">
+                <!-- Winners Bracket -->
+                <div class="bracket-container">
+                  <div class="grid grid-cols-4 gap-8">
+                    <!-- First Round -->
+                    <div class="space-y-8">
+                      <div class="match-box group" id="match-sf1">
+                        <div class="match-number">Match 1</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="match-box group" id="match-sf2">
+                        <div class="match-number">Match 2</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="match-box group" id="match-sf3">
+                        <div class="match-number">Match 3</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="match-box group" id="match-sf4">
+                        <div class="match-number">Match 4</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div class="alliance red">
-                      <div class="alliance-badge red-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
+                    
+                    <!-- Second Round Winners -->
+                    <div style="margin-top: 8rem;">
+                      <div class="match-box group" id="match-sf7">
+                        <div class="match-number">Match 7</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- Increased margin-top from 3rem to 8rem -->
+                      <div class="match-box group" id="match-sf8" style="margin-top: 17rem;">
+                        <div class="match-number">Match 8</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Third Round Winners -->
+                    <div style="margin-top: 23rem">
+                      <div class="match-box group" id="match-sf11">
+                        <div class="match-number">Match 11</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Finals -->
+                    <div style="margin-top: 23rem">
+                      <div class="match-box group finals-match" id="match-f1">
+                        <div class="match-number">Finals 1</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="match-box group finals-match mt-4" id="match-f2">
+                        <div class="match-number">Finals 2</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="match-box group finals-match mt-4" id="match-f3">
+                        <div class="match-number">Finals 3</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 
-                <div id="match-sf4" class="match-box mt-4">
-                  <div class="match-number">Semifinal Match 4</div>
-                  <div class="alliance-container">
-                    <div class="alliance blue">
-                      <div class="alliance-badge blue-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
+                <!-- Bracket Divider -->
+                <div class="my-16 relative">
+                  <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div class="w-full border-t border-gray-700 bg-gradient-to-r from-transparent via-baywatch-orange to-transparent opacity-30"></div>
+                  </div>
+                  <div class="relative flex justify-center">
+                    <span class="px-4 py-1 text-sm text-baywatch-orange bg-black rounded-full border border-baywatch-orange/30">Elimination Bracket</span>
+                  </div>
+                </div>
+                
+                <!-- Losers Bracket -->
+                <div class="bracket-container mt-48">
+                  <div class="grid grid-cols-4 gap-8">
+                    <!-- First Round Losers -->
+                    <div class="space-y-8" style="margin-top: -8rem">
+                      <div class="match-box group" id="match-sf5">
+                        <div class="match-number">Match 5</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="match-box group" id="match-sf6">
+                        <div class="match-number">Match 6</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div class="alliance red">
-                      <div class="alliance-badge red-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
+                    
+                    <!-- Second Round Losers: reduce top margin to move SF9 and SF10 up -->
+                    <div class="space-y-8" style="margin-top: -8rem">
+                      <!-- Order remains: SF10 then SF9 as before -->
+                      <div class="match-box group" id="match-sf10">
+                        <div class="match-number">Match 10</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="match-box group" id="match-sf9">
+                        <div class="match-number">Match 9</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Third Round Losers -->
+                    <div class="mt-24" style="margin-top: 0rem;">
+                      <div class="match-box group" id="match-sf12">
+                        <div class="match-number">Match 12</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Fourth Round Losers -->
+                    <div class="mt-24" style="margin-top: 0rem;">
+                      <div class="match-box group" id="match-sf13">
+                        <div class="match-number">Match 13</div>
+                        <div class="alliance-container">
+                          <div class="alliance blue">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                          <div class="match-divider border-t border-gray-700/50"></div>
+                          <div class="alliance red">
+                            <span class="teams"></span>
+                            <span class="score"></span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            
-            <!-- Finals matches -->
-            <div class="finals-matchup mt-12">
-              <h3 class="text-2xl font-semibold mb-4 text-center">Finals</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div id="match-f1" class="match-box finals-match">
-                  <div class="match-number">Finals 1</div>
-                  <div class="alliance-container">
-                    <div class="alliance blue">
-                      <div class="alliance-badge blue-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                    <div class="alliance red">
-                      <div class="alliance-badge red-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div id="match-f2" class="match-box finals-match">
-                  <div class="match-number">Finals 2</div>
-                  <div class="alliance-container">
-                    <div class="alliance blue">
-                      <div class="alliance-badge blue-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                    <div class="alliance red">
-                      <div class="alliance-badge red-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div id="match-f3" class="match-box finals-match">
-                  <div class="match-number">Finals 3</div>
-                  <div class="alliance-container">
-                    <div class="alliance blue">
-                      <div class="alliance-badge blue-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                    <div class="alliance red">
-                      <div class="alliance-badge red-badge">TBD</div>
-                      <span class="teams">TBD</span>
-                      <span class="score"></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-          
-          <div id="no-playoffs" class="hidden text-center py-8">
-            <i class="fas fa-trophy text-gray-600 text-4xl mb-4"></i>
-            <p class="text-xl">Playoff matches not available yet</p>
-            <p class="text-gray-400 mt-2">Check back during the elimination rounds</p>
-          </div>
-        </div>
+        </section>
       </div>
-    </section>
+    </main>
 
     <style>
       .match-box {
         position: relative;
-        background: rgba(26, 26, 26, 0.5);
-        border-radius: 0.5rem;
-        padding: 1.25rem;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        border-radius: 1rem;
+        background-color: rgba(0, 0, 0, 0.9);
+        border: 1px solid rgba(255, 107, 0, 0.3);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        transition-property: all;
+        transition-duration: 500ms;
+        width: 280px;
+        min-height: 160px;
       }
 
       /* Pattern Overlay */
       .match-box::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.828-1.415 1.415L51.8 0h2.827zM5.373 0l-.83.828L5.96 2.243 8.2 0H5.374zM48.97 0l3.657 3.657-1.414 1.414L46.143 0h2.828zM11.03 0L7.372 3.657 8.787 5.07 13.857 0H11.03zm32.284 0L49.8 6.485 48.384 7.9l-7.9-7.9h2.83zM16.686 0L10.2 6.485 11.616 7.9l7.9-7.9h-2.83zm20.97 0l9.315 9.314-1.414 1.414L34.828 0h2.83zM22.344 0L13.03 9.314l1.414 1.414L25.172 0h-2.83zM32 0l12.142 12.142-1.414 1.414L30 .828 17.272 13.556l-1.414-1.414L28 0h4zM.284 0l28 28-1.414 1.414L0 2.544V0h.284zM0 5.373l25.456 25.455-1.414 1.415L0 8.2V5.374zm0 5.656l22.627 22.627-1.414 1.414L0 13.86v-2.83zm0 5.656l19.8 19.8-1.415 1.413L0 19.514v-2.83zm0 5.657l16.97 16.97-1.414 1.415L0 25.172v-2.83zM0 28l14.142 14.142-1.414 1.414L0 30.828V28zm0 5.657L11.314 44.97 9.9 46.386l-9.9-9.9v-2.828zm0 5.657L8.485 47.8 7.07 49.212 0 42.143v-2.83zm0 5.657l5.657 5.657-1.414 1.415L0 47.8v-2.83zm0 5.657l2.828 2.83-1.414 1.413L0 53.456v-2.83zM54.627 60L30 35.373 5.373 60H8.2L30 38.2 51.8 60h2.827zm-5.656 0L30 41.03 11.03 60h2.828L30 43.858 46.142 60h2.83zm-5.656 0L30 46.686 16.686 60h2.83L30 49.515 40.485 60h2.83zm-5.657 0L30 52.343 22.344 60h2.83L30 55.172 34.828 60h2.83zM32 60l-2-2-2 2h4zM59.716 0l-28 28 1.414 1.414L60 2.544V0h-.284zM60 5.373L34.544 30.828l1.414 1.415L60 8.2V5.374zm0 5.656L37.373 33.656l1.414 1.414L60 13.86v-2.83zm0 5.656l-19.8 19.8 1.415 1.413L60 19.514v-2.83zm0 5.657l-16.97 16.97 1.414 1.415L60 25.172v-2.83zM60 28L45.858 42.142l1.414 1.414L60 30.828V28zm0 5.657L48.686 44.97l1.415 1.415 9.9-9.9v-2.828zm0 5.657L51.515 47.8l1.414 1.413 7.07-7.07v-2.83zm0 5.657l-5.657 5.657 1.414 1.415L60 47.8v-2.83zm0 5.657l-2.828 2.83 1.414 1.413L60 53.456v-2.83zM39.9 16.385l1.414-1.414L30 3.658 18.686 14.97l1.415 1.415 9.9-9.9 9.9 9.9zm-2.83 2.828l1.415-1.414L30 9.313 21.515 17.8l1.414 1.413L30 11.97l7.07 7.07zm-2.827 2.83l1.414-1.416L30 14.97l-5.657 5.657 1.414 1.415L30 17.8l4.243 4.242zm-2.83 2.827l1.415-1.414L30 20.626l-2.828 2.83 1.414 1.414L30 23.456l1.414 1.414zM56.87 59.414L58.284 58 30 29.716 1.716 58l1.414 1.414L30 32.544l26.87 26.87z' fill='%23FF6B00' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        inset: 0;
+        opacity: 0.05;
+        border-radius: 1rem;
+        pointer-events: none;
+        background: radial-gradient(circle at 1px 1px, rgb(255,107,0,0.2) 1px, transparent 0);
+        background-size: 20px 20px;
       }
 
       .match-box:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(255, 107, 0, 0.3);
       }
 
       .alliance-container {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 1rem;
+        position: relative;
+        z-index: 10;
       }
 
       .alliance {
         display: flex;
-        flex-direction: column;
+        align-items: center; /* Changed from flex-start to center */
+        justify-content: space-between;
         padding: 0.75rem;
         border-radius: 0.375rem;
+        transition-property: all;
+        transition-duration: 300ms;
+        width: 100%;
         position: relative;
-        transition: all 0.2s ease;
-        background-color: rgba(0, 0, 0, 0.2);
+        margin-top: 0.75rem;  /* Increased from 0.6rem for more space */
+        padding-top: 0.75rem;
       }
 
       /* Updated alliance badge styles - more transparent and higher position */
       .alliance-badge {
         position: absolute;
-        top: -10px;
+        top: -0.75rem;  /* Moved up from -0.6rem */
         left: 50%;
         transform: translateX(-50%);
-        padding: 0.125rem 0.5rem;
-        border-radius: 0.25rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        z-index: 10;
+        font-size: 0.65rem;
+        font-weight: bold;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.75rem;
+        z-index: 25;
         white-space: nowrap;
-        opacity: 0.9;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        letter-spacing: 0.025em;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
       }
 
       .blue-badge {
-        background-color: rgba(0, 102, 179, 0.2);
-        color: #4d9eff;
+        background-color: rgba(37, 99, 235, 0.4);  /* More transparent */
+        color: white;
+        border: 1px solid rgba(147, 197, 253, 0.4);
       }
 
       .red-badge {
-        background-color: rgba(237, 28, 36, 0.2);
-        color: #ff6b6b;
+        background-color: rgba(220, 38, 38, 0.4);  /* More transparent */
+        color: white;
+        border: 1px solid rgba(252, 165, 165, 0.4);
       }
 
       .alliance.blue {
-        border-left: 3px solid #0066B3;
+        background-color: rgba(30, 58, 138, 0.3);
+        color: rgb(96, 165, 250);
       }
 
       .alliance.red {
-        border-left: 3px solid #ED1C24;
+        background-color: rgba(185, 28, 28, 0.3);
+        color: rgb(248, 113, 113);
       }
 
-      .alliance.blue:hover { background-color: rgba(0, 102, 179, 0.1); }
+      .alliance.blue:hover {
+        background-color: rgba(30, 58, 138, 0.4);
+      }
 
-      .alliance.red:hover { background-color: rgba(237, 28, 36, 0.1); }
+      .alliance.red:hover {
+        background-color: rgba(185, 28, 28, 0.4);
+      }
 
       .alliance.winner {
-        background-color: rgba(255, 200, 0, 0.05);
-        box-shadow: 0 0 8px rgba(255, 200, 0, 0.3);
+        font-weight: bold;
+        border: 2px solid transparent;
       }
 
       .alliance.blue.winner {
-        border-color: #4d9eff;
+        border-color: rgba(96, 165, 250, 0.5);
+        box-shadow: 0 0 10px rgba(96, 165, 250, 0.2);
       }
 
       .alliance.red.winner {
-        border-color: #ff6b6b;
+        border-color: rgba(248, 113, 113, 0.5);
+        box-shadow: 0 0 10px rgba(248, 113, 113, 0.2);
       }
 
       .teams {
         font-size: 0.875rem;
-        line-height: 1.25;
-        margin-top: 0.125rem;
-        margin-bottom: 0.25rem;
+        flex: 1;
+        display: flex; /* Added to vertically center text */
+        align-items: center; /* Added to vertically center text */
       }
 
       .alliance-number {
-        position: absolute;
-        top: 0.25rem;
-        left: 0.25rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 0.125rem 0.375rem;
+        font-weight: bold;
+        padding: 0.1rem 0.25rem;
+        margin-bottom: 0.25rem;
         border-radius: 0.25rem;
-        opacity: 0.9;
-        background-color: rgba(0, 0, 0, 0.5);
+        font-size: 0.7rem;
+        letter-spacing: 0.025em;
+        text-transform: uppercase;
+        display: inline-block;
+        width: fit-content;
       }
       
       .team-numbers {
-        display: flex;
-        gap: 0.5rem;
+        font-size: 0.875rem;
       }
 
       .alliance.blue .alliance-number {
-        color: #4d9eff;
+        background-color: rgba(37, 99, 235, 0.3);
+        color: rgb(147, 197, 253);
       }
 
       .alliance.red .alliance-number {
-        color: #ff6b6b;
+        background-color: rgba(220, 38, 38, 0.3);
+        color: rgb(252, 165, 165);
       }
 
       .score {
-        font-weight: 600;
-        font-size: 1.25rem;
-        position: absolute;
-        right: 0.75rem;
-        top: 50%;
-        transform: translateY(-50%);
+        font-size: 1.125rem;
+        font-family: ui-monospace, monospace;
+        font-weight: bold;
+        margin-left: 0.75rem;
+        display: flex; /* Added to vertically center */
+        align-items: center; /* Added to vertically center */
+        justify-content: center; /* Added for better alignment */
+        min-width: 2rem; /* Added to maintain consistent spacing */
+        text-align: right; /* Keep score right-aligned */
       }
 
       .match-number {
         position: absolute;
         top: -0.75rem;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translateX(-50%); /* Added translateY(50%) to center it vertically */
+        font-size: 0.75rem;
+        font-weight: bold;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
         background-color: rgba(255, 107, 0, 0.2);
-        color: #FF6B00;
-        padding: 0.125rem 0.625rem;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-        z-index: 5;
-        white-space: nowrap;
-        max-width: 80%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        transition: all 0.2s ease;
+        color: rgb(255, 107, 0);
+        z-index: 20;
+        line-height: 1; /* Added to improve vertical centering */
+        display: flex; /* Added to improve alignment */
+        align-items: center; /* Added to improve alignment */
+        justify-content: center; /* Added to improve alignment */
       }
 
       /* New alliance labels in match number area */
       .alliance-labels {
         display: flex;
-        justify-content: space-between;
-        width: 100%;
-        padding: 0 0.5rem;
-        margin-bottom: 0.5rem;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+        font-size: 0.65rem;
       }
 
       .blue-label, .red-label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        padding: 0.125rem 0.375rem;
+        padding: 0.125rem 0.25rem;
         border-radius: 0.25rem;
+        font-weight: bold;
+        letter-spacing: 0.025em;
       }
 
       .blue-label {
-        color: #4d9eff;
+        background-color: rgba(37, 99, 235, 0.3);
+        color: rgb(147, 197, 253);
       }
 
       .red-label {
-        color: #ff6b6b;
+        background-color: rgba(220, 38, 38, 0.3);
+        color: rgb(252, 165, 165);
       }
 
       /* Reset teams style since we removed the alliance number from it */
       .teams {
-        text-align: center;
+        font-size: 0.875rem;
+        flex: 1;
       }
 
       /* Make match number badges wider to accommodate alliance numbers */
       .match-box .match-number {
         width: auto;
-        max-width: 80%;
+        min-width: 100px;
         text-align: center;
+        white-space: nowrap;
       }
 
       .finals-match {
-        margin: 0 auto;
+        border: 2px solid rgba(255, 107, 0, 0.5);
+        box-shadow: 0 0 15px rgba(255, 107, 0, 0.2);
       }
 
       /* Rankings toggle button styling */
       #show-all-rankings {
-        background-color: rgba(255, 107, 0, 0.2);
-        color: #FF6B00;
-        padding: 0.5rem 1.5rem;
-        border-radius: 0.5rem;
-        transition: all 0.3s;
+        transition: all 0.3s ease;
+        font-weight: 500;
       }
       
       #show-all-rankings:hover {
-        background-color: rgba(255, 107, 0, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.2);
       }
       
       .ranking-hidden {
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
+        transition: all 0.5s ease-out;
       }
       
       tr {
-        transition: all 0.3s ease;
+        transition: all 0.5s ease-out;
       }
       
       .hide-text, .show-text, .hide-icon, .show-icon {
@@ -608,22 +859,20 @@
 
       /* Match scheduling styles */
       #show-all-matches {
-        background-color: rgba(255, 107, 0, 0.2);
-        color: #FF6B00;
-        padding: 0.5rem 1.5rem;
-        border-radius: 0.5rem;
-        transition: all 0.3s;
+        transition: all 0.3s ease;
+        font-weight: 500;
       }
       
       #show-all-matches:hover {
-        background-color: rgba(255, 107, 0, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.2);
       }
       
       /* Current match highlight animation - updated to remove border reference */
       @keyframes pulseHighlight {
-        0% { background-color: rgba(255, 107, 0, 0.1); }
-        50% { background-color: rgba(255, 107, 0, 0.2); }
-        100% { background-color: rgba(255, 107, 0, 0.1); }
+        0% { background-color: rgba(255, 107, 0, 0.05); }
+        50% { background-color: rgba(255, 107, 0, 0.15); }
+        100% { background-color: rgba(255, 107, 0, 0.05); }
       }
       
       .current-match {
@@ -656,25 +905,81 @@
           min-width: auto; /* Reset min-width on mobile */
         }
       }
-    </style>
 
-    <!-- Footer -->
-    <footer class="bg-black py-12">
-      <div class="container mx-auto px-6">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-          <div class="flex space-x-4 mb-4 md:mb-0">
-            <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl">
-              <i class="fab fa-youtube"></i>
-            </a>
-            <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl">
-              <i class="fab fa-instagram"></i>
-            </a>
-          </div>
-          <div class="text-gray-400 text-sm">
-            © 2025 Baywatch Robotics. All rights reserved.
-          </div>
-        </div>
-      </div>
-    </footer>
+      /* Additional style to ensure proper layout */
+      html, body {
+        height: 100%;
+      }
+      
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      
+      main {
+        flex: 1 0 auto;
+      }
+      
+      footer {
+        flex-shrink: 0;
+      }
+
+      /* Add team card container styles to prevent overflow on hover */
+      .team-card-container {
+        padding: 5px;
+        transform-origin: center;
+        overflow: visible;
+      }
+      
+      .team-card {
+        transform-origin: center;
+        backface-visibility: hidden;
+        will-change: transform;
+      }
+      
+      /* Ensure grid container has proper padding */
+      #teams-container .grid {
+        padding: 5px;
+      }
+      
+      /* Add media query to ensure cards look good on small screens */
+      @media (max-width: 640px) {
+        .team-card .max-w-180px {
+          max-width: 160px;
+        }
+      }
+    </style>
+    
+    <!-- Event Page Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Parse URL parameters to get event code
+        const urlParams = new URLSearchParams(window.location.search);
+        let eventCode = urlParams.get('event');
+        
+        // Default event codes for direct page access without parameters
+        const currentPath = window.location.pathname;
+        if (!eventCode) {
+          if (currentPath.includes('milac.html')) {
+            eventCode = '2025milac';
+          } else if (currentPath.includes('mitvc.html')) {
+            eventCode = '2025mitvc';
+          } else {
+            // Default fallback if no event specified
+            eventCode = '2025milac';
+          }
+        }
+        
+        // Set page history state for proper back button behavior
+        // This prevents issues when redirecting from legacy URLs
+        if (window.history && window.history.replaceState) {
+          const newUrl = `event.html?event=${eventCode}`;
+          window.history.replaceState({}, '', newUrl);
+        }
+        
+        // Use the prepareEventPage function to load event data appropriately
+        prepareEventPage(eventCode);
+      });
+    </script>
   </body>
 </html>
