@@ -9,7 +9,7 @@ const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 // Fetch current event data - modified for testing
 async function getCurrentEventData() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2025milac`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc`, {
       headers: {
         "X-TBA-Auth-Key": TBA_AUTH_KEY,
       },
@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", initializeEventData);
 // Functions for Lake City Regional page
 async function loadEventRankings() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2025milac/rankings`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/rankings`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const data = await response.json();
@@ -351,7 +351,7 @@ async function loadEventRankings() {
 
 async function loadEventSchedule() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2025milac/matches`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/matches`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const matches = await response.json();
@@ -817,6 +817,17 @@ async function updatePlayoffBracket(eventKey) {
         const matchBox = document.getElementById(matchId);
         if (matchBox) {
           updateMatchBox(matchBox, match, allianceMap);
+          
+          // Add match link to match box for direct access to match details page
+          const matchNumber = matchBox.querySelector('.match-number');
+          if (matchNumber) {
+            matchNumber.innerHTML = `
+              <a href="match-overview.html?match=${match.key}" class="match-link">
+                Match ${sequentialNumber}
+                <i class="fas fa-external-link-alt text-xs ml-1"></i>
+              </a>
+            `;
+          }
         }
       });
 
@@ -827,6 +838,17 @@ async function updatePlayoffBracket(eventKey) {
         const matchBox = document.getElementById(matchId);
         if (matchBox) {
           updateMatchBox(matchBox, match, allianceMap);
+          
+          // Add match link to match box for direct access to match details page
+          const matchNumber = matchBox.querySelector('.match-number');
+          if (matchNumber) {
+            matchNumber.innerHTML = `
+              <a href="match-overview.html?match=${match.key}" class="match-link">
+                Finals ${match.match_number}
+                <i class="fas fa-external-link-alt text-xs ml-1"></i>
+              </a>
+            `;
+          }
         }
       });
     }
@@ -873,11 +895,11 @@ function initializeBracketWithPlaceholders() {
 if (window.location.pathname.includes('milac.html')) {
   loadEventRankings();
   loadEventSchedule();
-  updatePlayoffBracket('2025milac');
+  updatePlayoffBracket('2024mitvc');
   
   // Optional: Add periodic updates
   setInterval(() => {
-    updatePlayoffBracket('2025milac');
+    updatePlayoffBracket('2024mitvc');
   }, 30000); // Update every 30 seconds
 }
 // Add support for Traverse City event page
@@ -925,7 +947,7 @@ else if (window.location.pathname.includes('mitvc.html')) {
 // Add this new function to handle loading match details
 async function loadMatchDetails(matchKey) {
   try {
-    // Parse event key from match key (e.g., extract "2025milac" from "2025milac_qm1")
+    // Parse event key from match key (e.g., extract "2024mitvc" from "2024mitvc_qm1")
     const eventKey = matchKey.split('_')[0];
     
     // Show loading state
@@ -1000,21 +1022,35 @@ function updateMatchOverview(matchData, eventData, teamData) {
   // Update match title
   const matchTypeMap = {
     'qm': 'Qualification',
-    'qf': 'Quarterfinal',
     'sf': 'Semifinal',
     'f': 'Final'
   };
   
   const matchType = matchTypeMap[matchData.comp_level] || 'Match';
   const matchNumber = matchData.match_number;
-  const matchSet = matchData.set_number > 1 ? ` (Set ${matchData.set_number})` : '';
+  let matchTitle = '';
+  
+  // Format title differently based on match type
+  if (matchData.comp_level === 'qm') {
+    matchTitle = `${matchType} ${matchNumber}`;
+  } else if (matchData.comp_level === 'sf') {
+    matchTitle = `${matchType} ${matchData.set_number} Match ${matchNumber}`;
+  } else if (matchData.comp_level === 'f') {
+    matchTitle = `${matchType} ${matchNumber}`;
+  } else {
+    const matchSet = matchData.set_number > 1 ? ` (Set ${matchData.set_number})` : '';
+    matchTitle = `${matchType} ${matchNumber}${matchSet}`;
+  }
   
   document.getElementById('match-title').innerHTML = 
-    `<span class="text-baywatch-orange">${matchType} ${matchNumber}${matchSet}</span>`;
+    `<span class="text-baywatch-orange">${matchTitle}</span>`;
   
-  // Update event info
-  document.getElementById('match-event').textContent = 
-    `${eventData.name} | ${eventData.year}`;
+  // Update event info with playoff indicator for playoff matches
+  let eventInfo = `${eventData.name} | ${eventData.year}`;
+  if (matchData.comp_level !== 'qm') {
+    eventInfo += ' | <span class="bg-baywatch-orange/30 text-baywatch-orange px-2 py-0.5 rounded text-sm">Playoffs</span>';
+  }
+  document.getElementById('match-event').innerHTML = eventInfo;
   
   // Update match time and status
   updateMatchTimeAndStatus(matchData);
@@ -1041,6 +1077,9 @@ function updateMatchTimeAndStatus(matchData) {
   let timeDisplay = 'Time unavailable';
   let statusDisplay = 'Unknown status';
   
+  // Add playoff-specific status information
+  let isPlayoff = matchData.comp_level !== 'qm';
+  
   if (matchData.actual_time) {
     // Match is completed, show when it was played
     const matchDate = new Date(matchData.actual_time * 1000);
@@ -1051,7 +1090,7 @@ function updateMatchTimeAndStatus(matchData) {
       hour: '2-digit',
       minute: '2-digit'
     });
-    statusDisplay = 'Match completed';
+    statusDisplay = isPlayoff ? 'Playoff match completed' : 'Match completed';
     statusElement.classList.add('bg-green-800');
   } 
   else if (matchData.predicted_time) {
@@ -1067,10 +1106,10 @@ function updateMatchTimeAndStatus(matchData) {
     
     const now = new Date();
     if (matchDate > now) {
-      statusDisplay = 'Scheduled';
+      statusDisplay = isPlayoff ? 'Playoff match scheduled' : 'Scheduled';
       statusElement.classList.add('bg-blue-800');
     } else {
-      statusDisplay = 'In progress / recently played';
+      statusDisplay = isPlayoff ? 'Playoff match in progress' : 'In progress / recently played';
       statusElement.classList.add('bg-yellow-800');
     }
   }
@@ -1149,7 +1188,7 @@ function updateMatchScores(matchData, teamData) {
   }
 }
 
-// Update match breakdown section
+// Update match breakdown section with more detailed statistics
 function updateMatchBreakdown(matchData) {
   const breakdownElement = document.getElementById('match-breakdown');
   
@@ -1169,9 +1208,283 @@ function updateMatchBreakdown(matchData) {
   const blueBreakdown = matchData.score_breakdown.blue;
   const redBreakdown = matchData.score_breakdown.red;
   
-  // Create a table with score breakdown
-  // This will need to be customized for each year's game
-  // Here's a generic version that handles most common cases
+  // Create a more detailed table with expanded breakdown
+  // Extract common properties dynamically to handle different years' scoring structures
+  
+  // Auto categories based on the game year - only support 2024 Crescendo and future 2025 Reefscape
+  const autoCategories = [];
+  let gameYear = "unknown";
+  
+  // Detect game by looking at breakdown fields
+  if ('autoSpeakerNoteCount' in blueBreakdown) {
+    // 2024 Crescendo
+    gameYear = "2024";
+    autoCategories.push({ name: 'Auto Speaker Notes', blue: blueBreakdown.autoSpeakerNoteCount || '0', red: redBreakdown.autoSpeakerNoteCount || '0' });
+    autoCategories.push({ name: 'Auto Amp Notes', blue: blueBreakdown.autoAmpNoteCount || '0', red: redBreakdown.autoAmpNoteCount || '0' });
+    autoCategories.push({ name: 'Auto Leave', blue: blueBreakdown.autoLeave ? 'Yes' : 'No', red: redBreakdown.autoLeave ? 'Yes' : 'No' });
+  } 
+  // Add Reefscape pattern for future use (placeholder only, specific fields unknown)
+  else if ('reefscape2025Field' in blueBreakdown) {  // Replace with actual field name when known
+    // 2025 Reefscape - placeholder for future game
+    gameYear = "2025";
+    // Will be populated when the 2025 game details are known
+    autoCategories.push({ name: 'Auto Scoring Detail 1', blue: blueBreakdown.reefscape2025Field || '0', red: redBreakdown.reefscape2025Field || '0' });
+    // Add more fields as needed when game is revealed
+  }
+  
+  // Teleop categories based on the game year
+  const teleopCategories = [];
+  if (gameYear === "2024") {
+    // 2024 Crescendo
+    teleopCategories.push({ name: 'Speaker Notes', blue: blueBreakdown.teleopSpeakerNoteCount || '0', red: redBreakdown.teleopSpeakerNoteCount || '0' });
+    teleopCategories.push({ name: 'Amped Speaker Notes', blue: blueBreakdown.teleopSpeakerNoteAmplifiedCount || '0', red: redBreakdown.teleopSpeakerNoteAmplifiedCount || '0' });
+    teleopCategories.push({ name: 'Amp Notes', blue: blueBreakdown.teleopAmpNoteCount || '0', red: redBreakdown.teleopAmpNoteCount || '0' });
+    if ('coopertitionBonus' in blueBreakdown) {
+      teleopCategories.push({ name: 'Coopertition', blue: blueBreakdown.coopertitionBonus ? 'Yes' : 'No', red: redBreakdown.coopertitionBonus ? 'Yes' : 'No' });
+    }
+  } 
+  // Add Reefscape pattern for future use (placeholder only)
+  else if (gameYear === "2025") {
+    // 2025 Reefscape - placeholder for future game
+    teleopCategories.push({ name: 'Teleop Scoring Detail 1', blue: '0', red: '0' });
+    // Add more fields as needed when game is revealed
+  }
+  
+  // Endgame-specific categories
+  const endgameCategories = [];
+  if (gameYear === "2024") {
+    // 2024 Crescendo
+    const convertEndgameStatus = (status) => {
+      if (status === 'None') return '-';
+      return status || '-';
+    };
+    
+    endgameCategories.push({ 
+      name: 'Robot 1 Endgame', 
+      blue: convertEndgameStatus(blueBreakdown.endGameRobot1 || 'None'), 
+      red: convertEndgameStatus(redBreakdown.endGameRobot1 || 'None')
+    });
+    
+    endgameCategories.push({ 
+      name: 'Robot 2 Endgame', 
+      blue: convertEndgameStatus(blueBreakdown.endGameRobot2 || 'None'), 
+      red: convertEndgameStatus(redBreakdown.endGameRobot2 || 'None')
+    });
+    
+    endgameCategories.push({ 
+      name: 'Robot 3 Endgame', 
+      blue: convertEndgameStatus(blueBreakdown.endGameRobot3 || 'None'), 
+      red: convertEndgameStatus(redBreakdown.endGameRobot3 || 'None')
+    });
+    
+    endgameCategories.push({ 
+      name: 'Trap Notes', 
+      blue: blueBreakdown.trapNotePoints / 5 || '0', 
+      red: redBreakdown.trapNotePoints / 5 || '0'
+    });
+  }
+  // Add Reefscape pattern for future use (placeholder only)
+  else if (gameYear === "2025") {
+    // 2025 Reefscape - placeholder
+    endgameCategories.push({ 
+      name: 'Robot 1 Endgame', 
+      blue: '-', 
+      red: '-'
+    });
+    // Add more fields as needed when game is revealed
+  }
+  
+  // Game-specific bonus points
+  const bonusCategories = [];
+  if (gameYear === "2024") {
+    // 2024 Crescendo
+    bonusCategories.push({ name: 'Center Stage', blue: blueBreakdown.micCenterStage ? 'Yes' : 'No', red: redBreakdown.micCenterStage ? 'Yes' : 'No' });
+    bonusCategories.push({ name: 'Harmony', blue: blueBreakdown.endGameHarmonyPoints > 0 ? 'Yes' : 'No', red: redBreakdown.endGameHarmonyPoints > 0 ? 'Yes' : 'No' });
+    bonusCategories.push({ name: 'Melody', blue: blueBreakdown.melodyPoints || '0', red: redBreakdown.melodyPoints || '0' });
+  }
+  // Add Reefscape pattern for future use (placeholder only)
+  else if (gameYear === "2025") {
+    // 2025 Reefscape - placeholder
+    bonusCategories.push({ name: 'Example Bonus 1', blue: '-', red: '-' });
+    // Add more fields as needed when game is revealed
+  }
+  
+  // Additional ranking point info - only show for qualification matches
+  const rpCategories = [];
+  const isQualMatch = matchData.comp_level === 'qm';
+  
+  if (isQualMatch) {
+    if (gameYear === "2024") {
+      // 2024 Crescendo
+      rpCategories.push({ name: 'Sustainability', blue: blueBreakdown.sustainability ? 'Yes' : 'No', red: redBreakdown.sustainability ? 'Yes' : 'No' });
+      rpCategories.push({ name: 'Activation', blue: blueBreakdown.activation ? 'Yes' : 'No', red: redBreakdown.activation ? 'Yes' : 'No' });
+    }
+    // Add Reefscape pattern for future use (placeholder only)
+    else if (gameYear === "2025") {
+      // 2025 Reefscape - placeholder
+      rpCategories.push({ name: 'RP Bonus 1', blue: '-', red: '-' });
+      rpCategories.push({ name: 'RP Bonus 2', blue: '-', red: '-' });
+      // Add more fields as needed when game is revealed
+    }
+  }
+  
+  // Build rows for the table
+  let rowsHTML = '';
+  
+  
+  // Build Auto section
+  if (autoCategories.length > 0) {
+    rowsHTML += `
+      <tr class="section-header">
+        <td class="score-category" colspan="3">Autonomous Period</td>
+      </tr>
+    `;
+    
+    autoCategories.forEach(category => {
+      rowsHTML += `
+        <tr>
+          <td class="score-category">${category.name}</td>
+          <td class="blue-value">${category.blue}</td>
+          <td class="red-value">${category.red}</td>
+        </tr>
+      `;
+    });
+    
+    rowsHTML += `
+      <tr>
+        <td class="score-category font-semibold">Total Auto Points</td>
+        <td class="blue-value font-semibold">${blueBreakdown.autoPoints || '0'}</td>
+        <td class="red-value font-semibold">${redBreakdown.autoPoints || '0'}</td>
+      </tr>
+    `;
+  }
+  
+  // Build Teleop section
+  if (teleopCategories.length > 0) {
+    rowsHTML += `
+      <tr class="section-header">
+        <td class="score-category" colspan="3">Teleop Period</td>
+      </tr>
+    `;
+    
+    teleopCategories.forEach(category => {
+      rowsHTML += `
+        <tr>
+          <td class="score-category">${category.name}</td>
+          <td class="blue-value">${category.blue}</td>
+          <td class="red-value">${category.red}</td>
+        </tr>
+      `;
+    });
+    
+    rowsHTML += `
+      <tr>
+        <td class="score-category font-semibold">Total Teleop Points</td>
+        <td class="blue-value font-semibold">${blueBreakdown.teleopPoints || '0'}</td>
+        <td class="red-value font-semibold">${redBreakdown.teleopPoints || '0'}</td>
+      </tr>
+    `;
+  }
+  
+  // Build Endgame section
+  if (endgameCategories.length > 0) {
+    rowsHTML += `
+      <tr class="section-header">
+        <td class="score-category" colspan="3">Endgame</td>
+      </tr>
+    `;
+    
+    endgameCategories.forEach(category => {
+      rowsHTML += `
+        <tr>
+          <td class="score-category">${category.name}</td>
+          <td class="blue-value">${category.blue}</td>
+          <td class="red-value">${category.red}</td>
+        </tr>
+      `;
+    });
+    
+    rowsHTML += `
+      <tr>
+        <td class="score-category font-semibold">Total Endgame Points</td>
+        <td class="blue-value font-semibold">${blueBreakdown.endgamePoints || '0'}</td>
+        <td class="red-value font-semibold">${redBreakdown.endgamePoints || '0'}</td>
+      </tr>
+    `;
+  }
+  
+  // Build bonus section
+  if (bonusCategories.length > 0) {
+    rowsHTML += `
+      <tr class="section-header">
+        <td class="score-category" colspan="3">Bonus Points</td>
+      </tr>
+    `;
+    
+    bonusCategories.forEach(category => {
+      rowsHTML += `
+        <tr>
+          <td class="score-category">${category.name}</td>
+          <td class="blue-value">${category.blue}</td>
+          <td class="red-value">${category.red}</td>
+        </tr>
+      `;
+    });
+  }
+  
+  // Add fouls
+  rowsHTML += `
+    <tr class="section-header">
+      <td class="score-category" colspan="3">Penalties</td>
+    </tr>
+    <tr>
+      <td class="score-category">Foul Points</td>
+      <td class="blue-value">${blueBreakdown.foulPoints || '0'}</td>
+      <td class="red-value">${redBreakdown.foulPoints || '0'}</td>
+    </tr>
+  `;
+  
+  // Add total score
+  rowsHTML += `
+    <tr class="total-row">
+      <td class="score-category font-bold">TOTAL SCORE</td>
+      <td class="blue-value font-bold text-lg">${matchData.alliances.blue.score}</td>
+      <td class="red-value font-bold text-lg">${matchData.alliances.red.score}</td>
+    </tr>
+  `;
+  
+  // Add RP section if applicable (only for qualification matches)
+  if (rpCategories.length > 0 && matchData.comp_level === 'qm') {
+    rowsHTML += `
+      <tr class="section-header">
+        <td class="score-category" colspan="3">Ranking Points</td>
+      </tr>
+    `;
+    
+    rpCategories.forEach(category => {
+      rowsHTML += `
+        <tr>
+          <td class="score-category">${category.name}</td>
+          <td class="blue-value">${category.blue}</td>
+          <td class="red-value">${category.red}</td>
+        </tr>
+      `;
+    });
+    
+    // Win/Loss RP
+    rowsHTML += `
+      <tr>
+        <td class="score-category">Match Result RP</td>
+        <td class="blue-value">${matchData.winning_alliance === 'blue' ? '2' : (matchData.winning_alliance === '' ? '1' : '0')}</td>
+        <td class="red-value">${matchData.winning_alliance === 'red' ? '2' : (matchData.winning_alliance === '' ? '1' : '0')}</td>
+      </tr>
+      <tr>
+        <td class="score-category font-semibold">Total Ranking Points</td>
+        <td class="blue-value font-semibold">${blueBreakdown.rp || '0'}</td>
+        <td class="red-value font-semibold">${redBreakdown.rp || '0'}</td>
+      </tr>
+    `;
+  }
   
   const breakdownHTML = `
     <table class="score-table">
@@ -1183,36 +1496,7 @@ function updateMatchBreakdown(matchData) {
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td class="score-category">Auto Points</td>
-          <td class="blue-value">${blueBreakdown.autoPoints || '0'}</td>
-          <td class="red-value">${redBreakdown.autoPoints || '0'}</td>
-        </tr>
-        <tr>
-          <td class="score-category">Teleop Points</td>
-          <td class="blue-value">${blueBreakdown.teleopPoints || '0'}</td>
-          <td class="red-value">${redBreakdown.teleopPoints || '0'}</td>
-        </tr>
-        <tr>
-          <td class="score-category">Endgame Points</td>
-          <td class="blue-value">${blueBreakdown.endgamePoints || '0'}</td>
-          <td class="red-value">${redBreakdown.endgamePoints || '0'}</td>
-        </tr>
-        <tr>
-          <td class="score-category">Fouls</td>
-          <td class="blue-value">-${blueBreakdown.foulPoints || '0'}</td>
-          <td class="red-value">-${redBreakdown.foulPoints || '0'}</td>
-        </tr>
-        <tr>
-          <td class="score-category font-bold">Total Score</td>
-          <td class="blue-value font-bold text-lg">${matchData.alliances.blue.score}</td>
-          <td class="red-value font-bold text-lg">${matchData.alliances.red.score}</td>
-        </tr>
-        <tr>
-          <td class="score-category">Ranking Points</td>
-          <td class="blue-value">${blueBreakdown.rp || '0'}</td>
-          <td class="red-value">${redBreakdown.rp || '0'}</td>
-        </tr>
+        ${rowsHTML}
       </tbody>
     </table>
   `;
@@ -1220,8 +1504,117 @@ function updateMatchBreakdown(matchData) {
   breakdownElement.innerHTML = breakdownHTML;
 }
 
-// Update team details section
-function updateTeamDetails(matchData, teamData) {
+// New function to fetch all playoff matches for a specific event and set
+async function fetchSeriesMatches(eventKey, compLevel, setNumber) {
+  try {
+    // Fetch all matches for this event
+    const response = await fetch(`${TBA_BASE_URL}/event/${eventKey}/matches`, {
+      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    });
+    
+    if (!response.ok) throw new Error('Failed to fetch matches');
+    
+    const matches = await response.json();
+    
+    // Filter to get only this playoff series
+    return matches.filter(match => 
+      match.comp_level === compLevel && 
+      (compLevel === 'f' || match.set_number === setNumber)
+    ).sort((a, b) => a.match_number - b.match_number);
+    
+  } catch (error) {
+    console.error('Error fetching series matches:', error);
+    return [];
+  }
+}
+
+// New function to display playoff series status for a match
+async function updatePlayoffSeriesInfo(matchData) {
+  // Check if this is a playoff match
+  if (matchData.comp_level !== 'sf' && matchData.comp_level !== 'f') return;
+  
+  try {
+    const eventKey = matchData.event_key;
+    const compLevel = matchData.comp_level;
+    const setNumber = matchData.set_number;
+    
+    // Get all matches in this series
+    const seriesMatches = await fetchSeriesMatches(eventKey, compLevel, setNumber);
+    
+    if (seriesMatches.length === 0) return;
+    
+    // Count wins for each alliance
+    let blueWins = 0;
+    let redWins = 0;
+    
+    seriesMatches.forEach(match => {
+      if (match.winning_alliance === 'blue') blueWins++;
+      else if (match.winning_alliance === 'red') redWins++;
+    });
+    
+    // Create series indicator element if it doesn't exist
+    let seriesIndicator = document.getElementById('playoff-series-indicator');
+    if (!seriesIndicator) {
+      const resultBanner = document.getElementById('match-result-banner');
+      
+      seriesIndicator = document.createElement('div');
+      seriesIndicator.id = 'playoff-series-indicator';
+      seriesIndicator.className = 'mt-4 p-4 rounded-lg text-center';
+      
+      // Insert before or after the result banner
+      if (resultBanner) {
+        resultBanner.parentNode.insertBefore(seriesIndicator, resultBanner.nextSibling);
+      } else {
+        document.getElementById('score-container').appendChild(seriesIndicator);
+      }
+    }
+    
+    // Update series indicator content
+    let seriesStatus = '';
+    
+    if (compLevel === 'sf') {
+      seriesStatus = `Semifinal ${setNumber}`;
+    } else {
+      seriesStatus = 'Finals: Best of 3';
+    }
+    
+    const blueLeading = blueWins > redWins;
+    const redLeading = redWins > blueWins;
+    const seriesTied = blueWins === redWins;
+    const seriesOver = blueWins === 2 || redWins === 2;
+    
+    // Format: [Blue] 2 - 1 [Red] (Blue Advances)
+    seriesIndicator.innerHTML = `
+      <div class="text-lg font-semibold mb-2">${seriesStatus}</div>
+      <div class="flex items-center justify-center gap-3">
+        <span class="text-blue-400 font-bold ${blueLeading ? 'text-2xl' : ''}">${blueWins}</span>
+        <span class="text-gray-400">-</span>
+        <span class="text-red-400 font-bold ${redLeading ? 'text-2xl' : ''}">${redWins}</span>
+      </div>
+      
+      ${seriesOver ? `
+        <div class="mt-2 ${blueWins > redWins ? 'text-blue-400' : 'text-red-400'} font-medium">
+          ${blueWins > redWins ? 'Blue Alliance' : 'Red Alliance'} wins series
+        </div>
+      ` : ''}
+    `;
+    
+    // Add styling based on series state
+    seriesIndicator.classList.remove('blue-series-leading', 'red-series-leading', 'series-tied');
+    if (blueLeading) {
+      seriesIndicator.classList.add('blue-series-leading');
+    } else if (redLeading) {
+      seriesIndicator.classList.add('red-series-leading');
+    } else {
+      seriesIndicator.classList.add('series-tied');
+    }
+  } catch (error) {
+    console.error('Error updating playoff series:', error);
+  }
+}
+
+// Update team details section with match-specific playoff data
+async function updateTeamDetails(matchData, teamData) {
   const teamDetailsElement = document.getElementById('team-details');
   
   // Create a map of team keys to team data for quick lookup
@@ -1230,18 +1623,60 @@ function updateTeamDetails(matchData, teamData) {
     teamMap[team.key] = team;
   });
   
+  // Determine if this is a playoff match
+  const isPlayoff = matchData.comp_level !== 'qm';
+  let allianceLabels = {};
+  
+  // For playoff matches, fetch the alliance data
+  if (isPlayoff) {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/event/${matchData.event_key}/alliances`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      
+      if (response.ok) {
+        const alliances = await response.json();
+        // Create mapping of team keys to alliance numbers
+        const allianceMap = {};
+        alliances.forEach((alliance, index) => {
+          const allianceNum = index + 1;
+          alliance.picks.forEach(teamKey => {
+            allianceMap[teamKey] = allianceNum;
+          });
+        });
+        
+        // Set alliance labels based on team lookup
+        const blueFirstTeam = matchData.alliances.blue.team_keys[0];
+        const redFirstTeam = matchData.alliances.red.team_keys[0];
+        allianceLabels = {
+          blue: `Alliance ${allianceMap[blueFirstTeam] || '?'}`,
+          red: `Alliance ${allianceMap[redFirstTeam] || '?'}`
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching alliance data:', error);
+      // Fallback to generic labels if fetch fails
+      allianceLabels = {
+        blue: 'Blue Alliance',
+        red: 'Red Alliance'
+      };
+    }
+  }
+  
   // Create two columns of team info
-  const blueTeamHTML = matchData.alliances.blue.team_keys.map(teamKey => {
+  const blueTeamHTML = matchData.alliances.blue.team_keys.map((teamKey, index) => {
     const team = teamMap[teamKey];
     if (!team) return '';
     
     const teamNumber = teamKey.replace('frc', '');
+    const allianceBadge = isPlayoff ? `<span class="text-xs bg-blue-900/60 px-2 py-1 rounded">${allianceLabels.blue}</span>` : 
+                                     `<span class="text-xs bg-blue-900/30 px-2 py-1 rounded">Blue Alliance</span>`;
     
     return `
       <div class="team-detail-card bg-blue-900/20 p-4 rounded-lg">
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-bold text-blue-400">${teamNumber}</h3>
-          <span class="text-xs bg-blue-900/30 px-2 py-1 rounded">Blue Alliance</span>
+          ${allianceBadge}
         </div>
         <h4 class="font-medium mb-1">${team.nickname}</h4>
         <div class="text-xs text-gray-400 mb-2">${team.city}, ${team.state_prov}${team.country !== 'USA' ? ', ' + team.country : ''}</div>
@@ -1260,17 +1695,19 @@ function updateTeamDetails(matchData, teamData) {
     `;
   }).join('');
   
-  const redTeamHTML = matchData.alliances.red.team_keys.map(teamKey => {
+  const redTeamHTML = matchData.alliances.red.team_keys.map((teamKey, index) => {
     const team = teamMap[teamKey];
     if (!team) return '';
     
     const teamNumber = teamKey.replace('frc', '');
+    const allianceBadge = isPlayoff ? `<span class="text-xs bg-red-900/60 px-2 py-1 rounded">${allianceLabels.red}</span>` : 
+                                     `<span class="text-xs bg-red-900/30 px-2 py-1 rounded">Red Alliance</span>`;
     
     return `
       <div class="team-detail-card bg-red-900/20 p-4 rounded-lg">
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-bold text-red-400">${teamNumber}</h3>
-          <span class="text-xs bg-red-900/30 px-2 py-1 rounded">Red Alliance</span>
+          ${allianceBadge}
         </div>
         <h4 class="font-medium mb-1">${team.nickname}</h4>
         <div class="text-xs text-gray-400 mb-2">${team.city}, ${team.state_prov}${team.country !== 'USA' ? ', ' + team.country : ''}</div>
