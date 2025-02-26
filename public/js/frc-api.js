@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", initializeEventData);
 // Functions for Lake City Regional page
 async function loadEventRankings() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/rankings`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2025milac/rankings`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const data = await response.json();
@@ -345,13 +345,13 @@ async function loadEventRankings() {
   } catch (error) {
     console.error("Error loading rankings:", error);
     document.querySelector("#rankings-table tbody").innerHTML = 
-      '<tr><td colspan="4" class="p-4 text-center text-red-400">Error loading rankings</td></tr>';
+      '<tr><td colspan="4" class="p-4 text-center">No Rankings Available</td></tr>';
   }
 }
 
 async function loadEventSchedule() {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/2024mitvc/matches`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/2025milac/matches`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     const matches = await response.json();
@@ -399,13 +399,18 @@ function getMatchWinnerStyles(match) {
 
 function updateRankingsTable(rankings) {
   const tbody = document.querySelector("#rankings-table tbody");
-  tbody.innerHTML = rankings.map(team => {
+  const team7790Index = rankings.findIndex(team => team.team_key === 'frc7790');
+  
+  // Generate HTML for all rankings
+  const allRowsHtml = rankings.map((team, index) => {
     const teamNumber = team.team_key.replace('frc', '');
     const isHighlighted = teamNumber === '7790';
     const rowClass = isHighlighted ? 'bg-baywatch-orange bg-opacity-20' : '';
+    const hiddenClass = index >= 10 ? 'ranking-hidden hidden' : '';
+    const hiddenStyle = index >= 10 ? 'max-height: 0; opacity: 0;' : '';
     
     return `
-      <tr class="border-t border-gray-700 ${rowClass}">
+      <tr class="border-t border-gray-700 ${rowClass} ${hiddenClass} transition-all duration-300" style="${hiddenStyle}">
         <td class="p-4">${team.rank}</td>
         <td class="p-4">${teamNumber}</td>
         <td class="p-4">${team.record.wins}-${team.record.losses}-${team.record.ties}</td>
@@ -413,6 +418,97 @@ function updateRankingsTable(rankings) {
       </tr>
     `;
   }).join('');
+  
+  // Update the table with all rows
+  tbody.innerHTML = allRowsHtml;
+  
+  // Add special handling for Team 7790 when not in top 10
+  if (team7790Index >= 10) {
+    // Find our team's row
+    const team7790Row = tbody.querySelectorAll('tr')[team7790Index];
+    if (team7790Row) {
+      // Make the row visible
+      team7790Row.classList.remove('hidden', 'ranking-hidden');
+      team7790Row.style.maxHeight = '50px';
+      team7790Row.style.opacity = '1';
+      
+      // Add separator line before Team 7790 row if it's not the first hidden row
+      if (team7790Index > 10) {
+        const separatorRow = document.createElement('tr');
+        separatorRow.className = 'team-7790-separator';
+        separatorRow.innerHTML = `
+          <td colspan="4" class="py-2">
+            <div class="border-t-2 border-dashed border-baywatch-orange border-opacity-30 relative">
+            </div>
+          </td>
+        `;
+        team7790Row.parentNode.insertBefore(separatorRow, team7790Row);
+      }
+    }
+  }
+  
+  // Add "Show All" button after the table if it doesn't exist yet
+  if (!document.getElementById('show-all-rankings')) {
+    const tableContainer = document.querySelector('#rankings-table').parentNode;
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'text-center mt-4';
+    buttonContainer.innerHTML = `
+      <button id="show-all-rankings" class="px-6 py-2 bg-baywatch-orange bg-opacity-20 rounded-lg 
+        hover:bg-opacity-40 transition-all duration-300 text-baywatch-orange">
+        <span class="show-text">Show All Rankings</span>
+        <span class="hide-text hidden">Hide Rankings</span>
+        <i class="fas fa-chevron-down ml-2 show-icon"></i>
+        <i class="fas fa-chevron-up ml-2 hide-icon hidden"></i>
+      </button>
+    `;
+    tableContainer.appendChild(buttonContainer);
+    
+    // Add event listener to the button
+    document.getElementById('show-all-rankings').addEventListener('click', toggleRankings);
+  }
+}
+
+// Function to toggle all rankings visibility
+function toggleRankings() {
+  const hiddenRows = document.querySelectorAll('.ranking-hidden');
+  const separator = document.querySelector('.team-7790-separator');
+  const button = document.getElementById('show-all-rankings');
+  const showText = button.querySelector('.show-text');
+  const hideText = button.querySelector('.hide-text');
+  const showIcon = button.querySelector('.show-icon');
+  const hideIcon = button.querySelector('.hide-icon');
+  
+  const isExpanded = !hiddenRows[0]?.classList.contains('hidden');
+  
+  // Toggle visibility of rows with animation
+  hiddenRows.forEach(row => {
+    if (isExpanded) {
+      // Collapse
+      row.classList.add('hidden');
+      row.style.maxHeight = '0';
+      row.style.opacity = '0';
+    } else {
+      // Expand
+      row.classList.remove('hidden');
+      row.style.maxHeight = '50px'; // Adjust based on row height
+      row.style.opacity = '1';
+    }
+  });
+  
+  // Handle the separator specially
+  if (separator) {
+    if (isExpanded) {
+      separator.style.display = 'table-row'; // Keep it visible when collapsing
+    } else {
+      separator.style.display = 'none'; // Hide when expanding all
+    }
+  }
+  
+  // Update button text and icon
+  showText.classList.toggle('hidden');
+  hideText.classList.toggle('hidden');
+  showIcon.classList.toggle('hidden');
+  hideIcon.classList.toggle('hidden');
 }
 
 function updateScheduleTable(matches) {
@@ -422,13 +518,38 @@ function updateScheduleTable(matches) {
     .filter(match => match.comp_level === 'qm')
     .sort((a, b) => a.match_number - b.match_number);
   
-  tbody.innerHTML = qualMatches.map(match => {
-    const time = new Date(match.predicted_time * 1000).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-    
+  if (qualMatches.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center">No matches available</td></tr>';
+    return;
+  }
+  
+  // Find current match (first unplayed match)
+  const now = Date.now() / 1000; // current time in seconds
+  let currentMatchIndex = qualMatches.findIndex(match => !match.actual_time);
+  
+  // If all matches have been played, set current to the last match
+  if (currentMatchIndex === -1) currentMatchIndex = qualMatches.length - 1;
+  
+  // Determine range of matches to display
+  const totalToShow = 11; // 5 before + current + 5 after
+  let startIndex = Math.max(0, currentMatchIndex - 5);
+  let endIndex = Math.min(qualMatches.length - 1, currentMatchIndex + 5);
+  
+  // If we don't have 5 matches before, show more after
+  if (currentMatchIndex < 5) {
+    endIndex = Math.min(qualMatches.length - 1, startIndex + totalToShow - 1);
+  }
+  
+  // If we don't have 5 matches after, show more before
+  if (qualMatches.length - currentMatchIndex - 1 < 5) {
+    startIndex = Math.max(0, endIndex - totalToShow + 1);
+  }
+  
+  // Slice the matches we want to display
+  const displayMatches = qualMatches.slice(startIndex, endIndex + 1);
+  
+  // Generate HTML for visible matches
+  const visibleMatchesHtml = displayMatches.map(match => {
     const { blueStyle, redStyle, scoreStyle } = getMatchWinnerStyles(match);
     const blueAlliance = highlightTeam(match.alliances.blue.team_keys.map(t => t.replace('frc', '')).join(', '));
     const redAlliance = highlightTeam(match.alliances.red.team_keys.map(t => t.replace('frc', '')).join(', '));
@@ -436,9 +557,12 @@ function updateScheduleTable(matches) {
       `${match.alliances.blue.score} - ${match.alliances.red.score}` : 
       'Not Played';
     
+    // Highlight current match
+    const isCurrentMatch = match.match_number === qualMatches[currentMatchIndex].match_number;
+    const rowClass = isCurrentMatch ? 'bg-baywatch-orange bg-opacity-10 current-match' : '';
+    
     return `
-      <tr class="border-t border-gray-700">
-        <td class="p-4">${time}</td>
+      <tr class="border-t border-gray-700 ${rowClass}">
         <td class="p-4">${match.match_number}</td>
         <td class="p-4 text-blue-400 ${blueStyle}">${blueAlliance}</td>
         <td class="p-4 text-red-400 ${redStyle}">${redAlliance}</td>
@@ -446,78 +570,179 @@ function updateScheduleTable(matches) {
       </tr>
     `;
   }).join('');
+
+  // Generate HTML for total table with show more button
+  const totalMatchCount = qualMatches.length;
+  const visibleMatchCount = displayMatches.length;
+  
+  tbody.innerHTML = visibleMatchesHtml;
+  
+  // Add "Show All Matches" button after the table if it doesn't exist yet
+  if (!document.getElementById('show-all-matches') && totalMatchCount > visibleMatchCount) {
+    const tableContainer = document.querySelector('#schedule-table').parentNode;
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'text-center mt-4';
+    buttonContainer.innerHTML = `
+      <button id="show-all-matches" class="px-6 py-2 bg-baywatch-orange bg-opacity-20 rounded-lg 
+        hover:bg-opacity-40 transition-all duration-300 text-baywatch-orange">
+        <span class="show-text">Show All Matches</span>
+        <span class="hide-text hidden">Show Fewer Matches</span>
+        <i class="fas fa-chevron-down ml-2 show-icon"></i>
+        <i class="fas fa-chevron-up ml-2 hide-icon hidden"></i>
+      </button>
+    `;
+    tableContainer.appendChild(buttonContainer);
+    
+    // Add event listener to the button
+    document.getElementById('show-all-matches').addEventListener('click', function() {
+      toggleAllMatches(qualMatches, currentMatchIndex);
+    });
+  }
 }
 
-// Function to update playoff bracket
-async function updatePlayoffBracket(eventKey) {
+// Function to toggle between limited and all matches
+function toggleAllMatches(qualMatches, currentMatchIndex) {
+  const button = document.getElementById('show-all-matches');
+  const showText = button.querySelector('.show-text');
+  const hideText = button.querySelector('.hide-text');
+  const showIcon = button.querySelector('.show-icon');
+  const hideIcon = button.querySelector('.hide-icon');
+  
+  const isShowingAll = showText.classList.contains('hidden');
+  const tbody = document.querySelector("#schedule-table tbody");
+  
+  if (isShowingAll) {
+    // Switch back to limited view
+    updateScheduleTable(qualMatches); // This will redraw the limited view
+  } else {
+    // Show all matches
+    const allMatchesHtml = qualMatches.map(match => {
+      const { blueStyle, redStyle, scoreStyle } = getMatchWinnerStyles(match);
+      const blueAlliance = highlightTeam(match.alliances.blue.team_keys.map(t => t.replace('frc', '')).join(', '));
+      const redAlliance = highlightTeam(match.alliances.red.team_keys.map(t => t.replace('frc', '')).join(', '));
+      const score = match.actual_time ? 
+        `${match.alliances.blue.score} - ${match.alliances.red.score}` : 
+        'Not Played';
+      
+      // Highlight current match
+      const isCurrentMatch = match.match_number === qualMatches[currentMatchIndex].match_number;
+      const rowClass = isCurrentMatch ? 'bg-baywatch-orange bg-opacity-10 current-match' : '';
+      
+      return `
+        <tr class="border-t border-gray-700 ${rowClass} animate-fade-in" style="animation-duration: 0.5s">
+          <td class="p-4">${match.match_number}</td>
+          <td class="p-4 text-blue-400 ${blueStyle}">${blueAlliance}</td>
+          <td class="p-4 text-red-400 ${redStyle}">${redAlliance}</td>
+          <td class="p-4 ${scoreStyle}">${score}</td>
+        </tr>
+      `;
+    }).join('');
+    
+    tbody.innerHTML = allMatchesHtml;
+  }
+  
+  // Toggle button text/icon
+  showText.classList.toggle('hidden');
+  hideText.classList.toggle('hidden');
+  showIcon.classList.toggle('hidden');
+  hideIcon.classList.toggle('hidden');
+}
+
+// New function to fetch playoff alliances data
+async function fetchAllianceData(eventKey) {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/${eventKey}/matches`, {
+    const response = await fetch(`${TBA_BASE_URL}/event/${eventKey}/alliances`, {
       headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
     });
     
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const matches = await response.json();
-    
-    const playoffMatches = matches.filter(match =>
-      match.comp_level === 'sf' || match.comp_level === 'f'
-    );
-
-    if (!playoffMatches || playoffMatches.length === 0) {
-      const bracketContainer = document.querySelector('.bracket-container');
-      if (bracketContainer) {
-        bracketContainer.innerHTML = '<p class="text-center text-gray-400 p-8">Playoff matches have not started yet.</p>';
-      }
-      return;
-    }
-
-    // Process semifinal matches:
-    const sfMatches = playoffMatches
-      .filter(match => match.comp_level === 'sf')
-      .sort((a, b) => (a.set_number - b.set_number) || (a.match_number - b.match_number));
-
-    sfMatches.forEach((match, index) => {
-      const sequentialNumber = index + 1; // sf match number in order
-      const matchId = `match-sf${sequentialNumber}`;
-      const matchBox = document.getElementById(matchId);
-      if (matchBox) {
-        updateMatchBox(matchBox, match);
-      }
-    });
-
-    // Process finals matches as before
-    const finalMatches = playoffMatches.filter(match => match.comp_level === 'f');
-    finalMatches.forEach(match => {
-      const matchId = `match-f${match.match_number}`;
-      const matchBox = document.getElementById(matchId);
-      if (matchBox) {
-        updateMatchBox(matchBox, match);
-      }
-    });
-
+    return await response.json();
   } catch (error) {
-    console.error('Error updating playoff bracket:', error);
-    const bracketContainer = document.querySelector('.bracket-container');
-    if (bracketContainer) {
-      bracketContainer.innerHTML = '<p class="text-center text-red-400 p-8">Error loading playoff matches</p>';
-    }
+    console.error('Error fetching alliance data:', error);
+    return [];
   }
 }
 
-// Helper function to update a match box
-function updateMatchBox(matchBox, match) {
+// Store alliance mapping globally to avoid repeated fetching
+let allianceMapping = null;
+
+// Helper function to create alliance number mapping
+async function buildAllianceMapping(eventKey) {
+  if (allianceMapping !== null) return allianceMapping;
+  
+  const alliances = await fetchAllianceData(eventKey);
+  allianceMapping = {};
+  
+  // Create a mapping of team keys to their alliance numbers
+  alliances.forEach((alliance, index) => {
+    const allianceNumber = index + 1;
+    alliance.picks.forEach(teamKey => {
+      allianceMapping[teamKey] = allianceNumber;
+    });
+  });
+  
+  return allianceMapping;
+}
+
+// Function to get alliance number for a specific team
+function getAllianceNumber(teamKey, mapping) {
+  return mapping[teamKey] || '?';
+}
+
+// Helper function to update a match box - updated to handle TBD for matches that haven't happened
+function updateMatchBox(matchBox, match, allianceMapping) {
   const blueAlliance = matchBox.querySelector('.alliance.blue');
   const redAlliance = matchBox.querySelector('.alliance.red');
 
-  // Update teams
-  blueAlliance.querySelector('.teams').textContent = match.alliances.blue.team_keys
-    .map(team => team.replace('frc', ''))
-    .join(', ');
-  redAlliance.querySelector('.teams').textContent = match.alliances.red.team_keys
-    .map(team => team.replace('frc', ''))
-    .join(', ');
+  // Check if the match has teams assigned yet
+  const hasTeams = match.alliances.blue.team_keys.length > 0 && match.alliances.red.team_keys.length > 0;
+  
+  if (hasTeams) {
+    // Get the first team from each alliance to look up the alliance number
+    const blueTeamKey = match.alliances.blue.team_keys[0];
+    const redTeamKey = match.alliances.red.team_keys[0];
+    
+    // Look up the alliance numbers
+    const blueAllianceNum = getAllianceNumber(blueTeamKey, allianceMapping);
+    const redAllianceNum = getAllianceNumber(redTeamKey, allianceMapping);
+
+    // Update teams without alliance numbers in the content area
+    const blueTeams = match.alliances.blue.team_keys
+      .map(team => team.replace('frc', ''))
+      .join(', ');
+    const redTeams = match.alliances.red.team_keys
+      .map(team => team.replace('frc', ''))
+      .join(', ');
+      
+    // Add alliance number badges above each alliance
+    blueAlliance.innerHTML = `
+      <div class="alliance-badge blue-badge">Alliance ${blueAllianceNum}</div>
+      <span class="teams">${blueTeams}</span>
+      <span class="score"></span>
+    `;
+    
+    redAlliance.innerHTML = `
+      <div class="alliance-badge red-badge">Alliance ${redAllianceNum}</div>
+      <span class="teams">${redTeams}</span>
+      <span class="score"></span>
+    `;
+  } else {
+    // Show TBD for matches that don't have teams assigned yet
+    blueAlliance.innerHTML = `
+      <div class="alliance-badge blue-badge">TBD</div>
+      <span class="teams">TBD</span>
+      <span class="score"></span>
+    `;
+    
+    redAlliance.innerHTML = `
+      <div class="alliance-badge red-badge">TBD</div>
+      <span class="teams">TBD</span>
+      <span class="score"></span>
+    `;
+  }
 
   // Update scores if available
-  if (match.alliances.blue.score >= 0) {
+  if (hasTeams && match.alliances.blue.score >= 0) {
     blueAlliance.querySelector('.score').textContent = match.alliances.blue.score;
     redAlliance.querySelector('.score').textContent = match.alliances.red.score;
   } else {
@@ -536,14 +761,100 @@ function updateMatchBox(matchBox, match) {
   }
 }
 
+// Function to update playoff bracket
+async function updatePlayoffBracket(eventKey) {
+  try {
+    // First, initialize all bracket positions with placeholder TBD matches
+    // This ensures the bracket displays properly even before data loads
+    initializeBracketWithPlaceholders();
+    
+    // Fetch alliance data first to build the mapping
+    const allianceMap = await buildAllianceMapping(eventKey);
+    
+    // Then fetch match data
+    const response = await fetch(`${TBA_BASE_URL}/event/${eventKey}/matches`, {
+      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    });
+    
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const matches = await response.json();
+    
+    const playoffMatches = matches.filter(match =>
+      match.comp_level === 'sf' || match.comp_level === 'f'
+    );
+
+    if (playoffMatches && playoffMatches.length > 0) {
+      // Process semifinal matches:
+      const sfMatches = playoffMatches
+        .filter(match => match.comp_level === 'sf')
+        .sort((a, b) => (a.set_number - b.set_number) || (a.match_number - b.match_number));
+
+      sfMatches.forEach((match, index) => {
+        const sequentialNumber = index + 1; // sf match number in order
+        const matchId = `match-sf${sequentialNumber}`;
+        const matchBox = document.getElementById(matchId);
+        if (matchBox) {
+          updateMatchBox(matchBox, match, allianceMap);
+        }
+      });
+
+      // Process finals matches
+      const finalMatches = playoffMatches.filter(match => match.comp_level === 'f');
+      finalMatches.forEach(match => {
+        const matchId = `match-f${match.match_number}`;
+        const matchBox = document.getElementById(matchId);
+        if (matchBox) {
+          updateMatchBox(matchBox, match, allianceMap);
+        }
+      });
+    }
+
+  } catch (error) {
+    console.error('Error updating playoff bracket:', error);
+    // Don't replace the bracket with an error message - just log it
+    // The initialized placeholders will remain visible
+  }
+}
+
+// New function to initialize the bracket with TBD placeholders
+function initializeBracketWithPlaceholders() {
+  const matchBoxes = document.querySelectorAll('[id^="match-sf"], [id^="match-f"]');
+  
+  matchBoxes.forEach(matchBox => {
+    // Default placeholder structure
+    const blueAlliance = matchBox.querySelector('.alliance.blue');
+    const redAlliance = matchBox.querySelector('.alliance.red');
+    
+    if (blueAlliance) {
+      blueAlliance.innerHTML = `
+        <div class="alliance-badge blue-badge">TBD</div>
+        <span class="teams">TBD</span>
+        <span class="score"></span>
+      `;
+    }
+    
+    if (redAlliance) {
+      redAlliance.innerHTML = `
+        <div class="alliance-badge red-badge">TBD</div>
+        <span class="teams">TBD</span>
+        <span class="score"></span>
+      `;
+    }
+    
+    // Reset any winner styling
+    blueAlliance?.classList.remove('winner');
+    redAlliance?.classList.remove('winner');
+  });
+}
+
 // Initialize page data
 if (window.location.pathname.includes('milac.html')) {
   loadEventRankings();
   loadEventSchedule();
-  updatePlayoffBracket('2024mitvc'); // Add this line
+  updatePlayoffBracket('2025milac');
   
   // Optional: Add periodic updates
   setInterval(() => {
-    updatePlayoffBracket('2024mitvc');
+    updatePlayoffBracket('2025milac');
   }, 30000); // Update every 30 seconds
 }
