@@ -1685,11 +1685,6 @@ async function updateTeamDetails(matchData, teamData) {
              class="text-xs bg-blue-800/20 hover:bg-blue-800/40 transition-colors py-1 px-2 rounded text-blue-300">
             View on TBA <i class="fas fa-external-link-alt ml-1"></i>
           </a>
-          ${team.website ? `
-          <a href="${team.website}" target="_blank" 
-             class="text-xs bg-gray-800/50 hover:bg-gray-800/80 transition-colors py-1 px-2 rounded text-gray-300">
-            Team Website <i class="fas fa-globe ml-1"></i>
-          </a>` : ''}
         </div>
       </div>
     `;
@@ -1716,11 +1711,6 @@ async function updateTeamDetails(matchData, teamData) {
              class="text-xs bg-red-800/20 hover:bg-red-800/40 transition-colors py-1 px-2 rounded text-red-300">
             View on TBA <i class="fas fa-external-link-alt ml-1"></i>
           </a>
-          ${team.website ? `
-          <a href="${team.website}" target="_blank" 
-             class="text-xs bg-gray-800/50 hover:bg-gray-800/80 transition-colors py-1 px-2 rounded text-gray-300">
-            Team Website <i class="fas fa-globe ml-1"></i>
-          </a>` : ''}
         </div>
       </div>
     `;
