@@ -269,11 +269,8 @@
       function generateEventLink(eventKey, eventName) {
         // Extract event code from key (e.g., "2025milac" from "2025milac")
         // For FRC events, use the event.html page with the event parameter
-        if (eventKey.startsWith('202') && (eventKey.includes('milac') || eventKey.includes('mitvc'))) {
-          return `<a href="event.html?event=${eventKey}" class="hover:text-baywatch-orange transition-colors font-medium">${eventName}</a>`;
-        }
         // For other events (championships, etc), link to TBA
-        return `<a href="https://www.thebluealliance.com/event/${eventKey}" target="_blank" class="hover:text-baywatch-orange transition-colors font-medium">${eventName}</a>`;
+        return `<a href="event.html?event=${eventKey}" target="_blank" class="hover:text-baywatch-orange transition-colors font-medium">${eventName}</a>`;
       }
       
       // Update the row generation in loadTeamOverview function where events are displayed
