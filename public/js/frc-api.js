@@ -548,7 +548,7 @@ function updateScheduleTable(matches) {
   // Slice the matches we want to display
   const displayMatches = qualMatches.slice(startIndex, endIndex + 1);
   
-  // Generate HTML for visible matches
+  // Generate HTML for visible matches - UPDATED to include match detail links
   const visibleMatchesHtml = displayMatches.map(match => {
     const { blueStyle, redStyle, scoreStyle } = getMatchWinnerStyles(match);
     const blueAlliance = highlightTeam(match.alliances.blue.team_keys.map(t => t.replace('frc', '')).join(', '));
@@ -561,9 +561,20 @@ function updateScheduleTable(matches) {
     const isCurrentMatch = match.match_number === qualMatches[currentMatchIndex].match_number;
     const rowClass = isCurrentMatch ? 'bg-baywatch-orange bg-opacity-10 current-match' : '';
     
+    // Create a link to the match details page
+    const matchNumberCell = `
+      <td class="p-4">
+        <a href="match-overview.html?match=${match.key}" 
+           class="flex items-center text-baywatch-orange hover:text-white transition-colors">
+          <span>${match.match_number}</span>
+          <i class="fas fa-external-link-alt text-xs ml-1"></i>
+        </a>
+      </td>
+    `;
+    
     return `
       <tr class="border-t border-gray-700 ${rowClass}">
-        <td class="p-4">${match.match_number}</td>
+        ${matchNumberCell}
         <td class="p-4 text-blue-400 ${blueStyle}">${blueAlliance}</td>
         <td class="p-4 text-red-400 ${redStyle}">${redAlliance}</td>
         <td class="p-4 ${scoreStyle}">${score}</td>
@@ -613,9 +624,9 @@ function toggleAllMatches(qualMatches, currentMatchIndex) {
   
   if (isShowingAll) {
     // Switch back to limited view
-    updateScheduleTable(qualMatches); // This will redraw the limited view
+    updateScheduleTable(qualMatches); // This will redraw the limited view with links
   } else {
-    // Show all matches
+    // Show all matches WITH LINKS
     const allMatchesHtml = qualMatches.map(match => {
       const { blueStyle, redStyle, scoreStyle } = getMatchWinnerStyles(match);
       const blueAlliance = highlightTeam(match.alliances.blue.team_keys.map(t => t.replace('frc', '')).join(', '));
@@ -628,9 +639,20 @@ function toggleAllMatches(qualMatches, currentMatchIndex) {
       const isCurrentMatch = match.match_number === qualMatches[currentMatchIndex].match_number;
       const rowClass = isCurrentMatch ? 'bg-baywatch-orange bg-opacity-10 current-match' : '';
       
+      // Add link to match details
+      const matchNumberCell = `
+        <td class="p-4">
+          <a href="match-overview.html?match=${match.key}" 
+             class="flex items-center text-baywatch-orange hover:text-white transition-colors">
+            <span>${match.match_number}</span>
+            <i class="fas fa-external-link-alt text-xs ml-1"></i>
+          </a>
+        </td>
+      `;
+      
       return `
         <tr class="border-t border-gray-700 ${rowClass} animate-fade-in" style="animation-duration: 0.5s">
-          <td class="p-4">${match.match_number}</td>
+          ${matchNumberCell}
           <td class="p-4 text-blue-400 ${blueStyle}">${blueAlliance}</td>
           <td class="p-4 text-red-400 ${redStyle}">${redAlliance}</td>
           <td class="p-4 ${scoreStyle}">${score}</td>
@@ -899,3 +921,429 @@ else if (window.location.pathname.includes('mitvc.html')) {
     updatePlayoffBracket('2025mitvc');
   }, 30000); // Update every 30 seconds
 }
+
+// Add this new function to handle loading match details
+async function loadMatchDetails(matchKey) {
+  try {
+    // Parse event key from match key (e.g., extract "2025milac" from "2025milac_qm1")
+    const eventKey = matchKey.split('_')[0];
+    
+    // Show loading state
+    document.getElementById('match-title').innerHTML = 
+      '<span class="text-baywatch-orange animate-pulse">Loading match details...</span>';
+    
+    // Fetch match data
+    const matchResponse = await fetch(`${TBA_BASE_URL}/match/${matchKey}`, {
+      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    });
+    
+    if (!matchResponse.ok) throw new Error(`Match data HTTP error: ${matchResponse.status}`);
+    const matchData = await matchResponse.json();
+    
+    // Fetch event data for the event name
+    const eventResponse = await fetch(`${TBA_BASE_URL}/event/${eventKey}`, {
+      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    });
+    
+    if (!eventResponse.ok) throw new Error(`Event data HTTP error: ${eventResponse.status}`);
+    const eventData = await eventResponse.json();
+    
+    // Fetch team data for all teams in the match
+    const allTeamKeys = [
+      ...matchData.alliances.blue.team_keys,
+      ...matchData.alliances.red.team_keys
+    ];
+    
+    const teamPromises = allTeamKeys.map(teamKey => 
+      fetch(`${TBA_BASE_URL}/team/${teamKey}`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      }).then(res => {
+        if (!res.ok) throw new Error(`Team data HTTP error for ${teamKey}: ${res.status}`);
+        return res.json();
+      })
+    );
+    
+    const teamData = await Promise.all(teamPromises);
+    
+    // Update UI with match details
+    updateMatchOverview(matchData, eventData, teamData);
+    
+  } catch (error) {
+    console.error("Error loading match details:", error);
+    
+    // Update UI with error state
+    document.getElementById('match-title').innerHTML = 
+      'Error Loading Match <span class="text-red-400"><i class="fas fa-circle-exclamation"></i></span>';
+    document.getElementById('match-event').textContent = 'Failed to load match details';
+    
+    document.getElementById('match-time').innerHTML = 
+      '<i class="fas fa-circle-exclamation mr-1"></i> Data error';
+    document.getElementById('match-status').innerHTML = 
+      '<i class="fas fa-circle-xmark mr-1"></i> Try again later';
+      
+    document.getElementById('score-container').innerHTML = 
+      '<div class="w-full text-center py-8"><i class="fas fa-robot text-gray-600 text-5xl mb-4"></i><p class="text-gray-400">Match data could not be loaded</p></div>';
+    
+    document.getElementById('match-breakdown').innerHTML = 
+      '<div class="text-center text-gray-400"><i class="fas fa-table-list text-gray-600 text-3xl mb-4"></i><p>Match breakdown unavailable</p></div>';
+      
+    document.getElementById('team-details').innerHTML = 
+      '<div class="text-center text-gray-400"><i class="fas fa-users text-gray-600 text-3xl mb-4"></i><p>Team information unavailable</p></div>';
+      
+    document.getElementById('match-video').innerHTML = 
+      '<div class="text-center text-gray-400"><i class="fas fa-video text-gray-600 text-3xl mb-4"></i><p>No match video available</p></div>';
+  }
+}
+
+// Update match overview UI
+function updateMatchOverview(matchData, eventData, teamData) {
+  // Update match title
+  const matchTypeMap = {
+    'qm': 'Qualification',
+    'qf': 'Quarterfinal',
+    'sf': 'Semifinal',
+    'f': 'Final'
+  };
+  
+  const matchType = matchTypeMap[matchData.comp_level] || 'Match';
+  const matchNumber = matchData.match_number;
+  const matchSet = matchData.set_number > 1 ? ` (Set ${matchData.set_number})` : '';
+  
+  document.getElementById('match-title').innerHTML = 
+    `<span class="text-baywatch-orange">${matchType} ${matchNumber}${matchSet}</span>`;
+  
+  // Update event info
+  document.getElementById('match-event').textContent = 
+    `${eventData.name} | ${eventData.year}`;
+  
+  // Update match time and status
+  updateMatchTimeAndStatus(matchData);
+  
+  // Update alliance and score info
+  updateMatchScores(matchData, teamData);
+  
+  // Update match breakdown
+  updateMatchBreakdown(matchData);
+  
+  // Update team details
+  updateTeamDetails(matchData, teamData);
+  
+  // Check for match video
+  updateMatchVideo(matchData);
+}
+
+// Update match time and status display
+function updateMatchTimeAndStatus(matchData) {
+  const timeElement = document.getElementById('match-time');
+  const statusElement = document.getElementById('match-status');
+  
+  // Determine match time to display
+  let timeDisplay = 'Time unavailable';
+  let statusDisplay = 'Unknown status';
+  
+  if (matchData.actual_time) {
+    // Match is completed, show when it was played
+    const matchDate = new Date(matchData.actual_time * 1000);
+    timeDisplay = matchDate.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    statusDisplay = 'Match completed';
+    statusElement.classList.add('bg-green-800');
+  } 
+  else if (matchData.predicted_time) {
+    // Match has a predicted start time
+    const matchDate = new Date(matchData.predicted_time * 1000);
+    timeDisplay = matchDate.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    const now = new Date();
+    if (matchDate > now) {
+      statusDisplay = 'Scheduled';
+      statusElement.classList.add('bg-blue-800');
+    } else {
+      statusDisplay = 'In progress / recently played';
+      statusElement.classList.add('bg-yellow-800');
+    }
+  }
+  
+  timeElement.innerHTML = `<i class="far fa-clock mr-1"></i> ${timeDisplay}`;
+  statusElement.innerHTML = `<i class="fas fa-circle-info mr-1"></i> ${statusDisplay}`;
+}
+
+// Update alliance and score info
+function updateMatchScores(matchData, teamData) {
+  const blueTeams = document.getElementById('blue-teams');
+  const redTeams = document.getElementById('red-teams');
+  const blueScore = document.getElementById('blue-score');
+  const redScore = document.getElementById('red-score');
+  const resultBanner = document.getElementById('match-result-banner');
+  
+  // Create a map of team keys to team data for quick lookup
+  const teamMap = {};
+  teamData.forEach(team => {
+    teamMap[team.key] = team;
+  });
+  
+  // Display blue alliance teams
+  blueTeams.innerHTML = matchData.alliances.blue.team_keys.map(teamKey => {
+    const team = teamMap[teamKey];
+    const teamNumber = teamKey.replace('frc', '');
+    const teamName = team ? team.nickname : 'Unknown Team';
+    const is7790 = teamNumber === '7790' ? 'team-7790' : '';
+    
+    return `
+      <div class="team-item blue-team ${is7790}">
+        <span class="team-number">${teamNumber}</span>
+        <span class="team-name">${teamName}</span>
+      </div>
+    `;
+  }).join('');
+  
+  // Display red alliance teams
+  redTeams.innerHTML = matchData.alliances.red.team_keys.map(teamKey => {
+    const team = teamMap[teamKey];
+    const teamNumber = teamKey.replace('frc', '');
+    const teamName = team ? team.nickname : 'Unknown Team';
+    const is7790 = teamNumber === '7790' ? 'team-7790' : '';
+    
+    return `
+      <div class="team-item red-team ${is7790}">
+        <span class="team-number">${teamNumber}</span>
+        <span class="team-name">${teamName}</span>
+      </div>
+    `;
+  }).join('');
+  
+  // Display scores if the match is completed
+  if (matchData.alliances.blue.score !== null && matchData.alliances.red.score !== null) {
+    blueScore.textContent = matchData.alliances.blue.score;
+    redScore.textContent = matchData.alliances.red.score;
+    
+    // Show result banner
+    resultBanner.classList.remove('hidden');
+    
+    if (matchData.winning_alliance === 'blue') {
+      resultBanner.classList.add('blue-winner');
+      resultBanner.textContent = 'Blue Alliance Wins!';
+    } 
+    else if (matchData.winning_alliance === 'red') {
+      resultBanner.classList.add('red-winner');
+      resultBanner.textContent = 'Red Alliance Wins!';
+    }
+    else {
+      resultBanner.classList.add('tie');
+      resultBanner.textContent = 'Match Tied!';
+    }
+  } else {
+    blueScore.textContent = '--';
+    redScore.textContent = '--';
+  }
+}
+
+// Update match breakdown section
+function updateMatchBreakdown(matchData) {
+  const breakdownElement = document.getElementById('match-breakdown');
+  
+  // Check if breakdown data is available
+  if (!matchData.score_breakdown || !matchData.alliances.blue.score) {
+    breakdownElement.innerHTML = `
+      <div class="text-center py-4">
+        <i class="fas fa-chart-simple text-gray-600 text-3xl mb-3"></i>
+        <p class="text-gray-400">Match breakdown not available yet</p>
+        <p class="text-xs text-gray-500 mt-2">Detailed scores appear after the match is played</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Get score breakdown
+  const blueBreakdown = matchData.score_breakdown.blue;
+  const redBreakdown = matchData.score_breakdown.red;
+  
+  // Create a table with score breakdown
+  // This will need to be customized for each year's game
+  // Here's a generic version that handles most common cases
+  
+  const breakdownHTML = `
+    <table class="score-table">
+      <thead>
+        <tr>
+          <th class="score-category">Category</th>
+          <th>Blue Alliance</th>
+          <th>Red Alliance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="score-category">Auto Points</td>
+          <td class="blue-value">${blueBreakdown.autoPoints || '0'}</td>
+          <td class="red-value">${redBreakdown.autoPoints || '0'}</td>
+        </tr>
+        <tr>
+          <td class="score-category">Teleop Points</td>
+          <td class="blue-value">${blueBreakdown.teleopPoints || '0'}</td>
+          <td class="red-value">${redBreakdown.teleopPoints || '0'}</td>
+        </tr>
+        <tr>
+          <td class="score-category">Endgame Points</td>
+          <td class="blue-value">${blueBreakdown.endgamePoints || '0'}</td>
+          <td class="red-value">${redBreakdown.endgamePoints || '0'}</td>
+        </tr>
+        <tr>
+          <td class="score-category">Fouls</td>
+          <td class="blue-value">-${blueBreakdown.foulPoints || '0'}</td>
+          <td class="red-value">-${redBreakdown.foulPoints || '0'}</td>
+        </tr>
+        <tr>
+          <td class="score-category font-bold">Total Score</td>
+          <td class="blue-value font-bold text-lg">${matchData.alliances.blue.score}</td>
+          <td class="red-value font-bold text-lg">${matchData.alliances.red.score}</td>
+        </tr>
+        <tr>
+          <td class="score-category">Ranking Points</td>
+          <td class="blue-value">${blueBreakdown.rp || '0'}</td>
+          <td class="red-value">${redBreakdown.rp || '0'}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+  
+  breakdownElement.innerHTML = breakdownHTML;
+}
+
+// Update team details section
+function updateTeamDetails(matchData, teamData) {
+  const teamDetailsElement = document.getElementById('team-details');
+  
+  // Create a map of team keys to team data for quick lookup
+  const teamMap = {};
+  teamData.forEach(team => {
+    teamMap[team.key] = team;
+  });
+  
+  // Create two columns of team info
+  const blueTeamHTML = matchData.alliances.blue.team_keys.map(teamKey => {
+    const team = teamMap[teamKey];
+    if (!team) return '';
+    
+    const teamNumber = teamKey.replace('frc', '');
+    
+    return `
+      <div class="team-detail-card bg-blue-900/20 p-4 rounded-lg">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="font-bold text-blue-400">${teamNumber}</h3>
+          <span class="text-xs bg-blue-900/30 px-2 py-1 rounded">Blue Alliance</span>
+        </div>
+        <h4 class="font-medium mb-1">${team.nickname}</h4>
+        <div class="text-xs text-gray-400 mb-2">${team.city}, ${team.state_prov}${team.country !== 'USA' ? ', ' + team.country : ''}</div>
+        <div class="mt-2 flex justify-between">
+          <a href="https://www.thebluealliance.com/team/${teamNumber}" target="_blank" 
+             class="text-xs bg-blue-800/20 hover:bg-blue-800/40 transition-colors py-1 px-2 rounded text-blue-300">
+            View on TBA <i class="fas fa-external-link-alt ml-1"></i>
+          </a>
+          ${team.website ? `
+          <a href="${team.website}" target="_blank" 
+             class="text-xs bg-gray-800/50 hover:bg-gray-800/80 transition-colors py-1 px-2 rounded text-gray-300">
+            Team Website <i class="fas fa-globe ml-1"></i>
+          </a>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  const redTeamHTML = matchData.alliances.red.team_keys.map(teamKey => {
+    const team = teamMap[teamKey];
+    if (!team) return '';
+    
+    const teamNumber = teamKey.replace('frc', '');
+    
+    return `
+      <div class="team-detail-card bg-red-900/20 p-4 rounded-lg">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="font-bold text-red-400">${teamNumber}</h3>
+          <span class="text-xs bg-red-900/30 px-2 py-1 rounded">Red Alliance</span>
+        </div>
+        <h4 class="font-medium mb-1">${team.nickname}</h4>
+        <div class="text-xs text-gray-400 mb-2">${team.city}, ${team.state_prov}${team.country !== 'USA' ? ', ' + team.country : ''}</div>
+        <div class="mt-2 flex justify-between">
+          <a href="https://www.thebluealliance.com/team/${teamNumber}" target="_blank" 
+             class="text-xs bg-red-800/20 hover:bg-red-800/40 transition-colors py-1 px-2 rounded text-red-300">
+            View on TBA <i class="fas fa-external-link-alt ml-1"></i>
+          </a>
+          ${team.website ? `
+          <a href="${team.website}" target="_blank" 
+             class="text-xs bg-gray-800/50 hover:bg-gray-800/80 transition-colors py-1 px-2 rounded text-gray-300">
+            Team Website <i class="fas fa-globe ml-1"></i>
+          </a>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Combine into a responsive grid
+  teamDetailsElement.innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="space-y-4">
+        ${blueTeamHTML}
+      </div>
+      <div class="space-y-4">
+        ${redTeamHTML}
+      </div>
+    </div>
+  `;
+}
+
+// Update video section with match video if available
+function updateMatchVideo(matchData) {
+  const videoElement = document.getElementById('match-video');
+  
+  // Check if video is available
+  if (matchData.videos && matchData.videos.length > 0) {
+    // Find the first YouTube video
+    const youtubeVideo = matchData.videos.find(v => v.type === 'youtube');
+    
+    if (youtubeVideo) {
+      videoElement.innerHTML = `
+        <div class="video-responsive">
+          <iframe 
+            src="https://www.youtube.com/embed/${youtubeVideo.key}" 
+            title="Match Video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            allowfullscreen>
+          </iframe>
+        </div>
+      `;
+      return;
+    }
+  }
+  
+  // No video available
+  videoElement.innerHTML = `
+    <div class="text-center py-8">
+      <i class="fas fa-video-slash text-gray-600 text-4xl mb-3"></i>
+      <p class="text-gray-400">No match video available yet</p>
+      <p class="text-xs text-gray-500 mt-2">Check back later or watch on <a href="https://www.twitch.tv/firstinspires" class="text-baywatch-orange hover:text-white" target="_blank">FIRST Twitch</a></p>
+    </div>
+  `;
+}
+
+// Check for match details page and initialize if needed
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.location.pathname.includes('match-overview.html')) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const matchKey = urlParams.get('match');
+    
+    if (matchKey) {
+      loadMatchDetails(matchKey);
+    }
+  }
+});
