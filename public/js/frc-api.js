@@ -858,3 +858,44 @@ if (window.location.pathname.includes('milac.html')) {
     updatePlayoffBracket('2025milac');
   }, 30000); // Update every 30 seconds
 }
+// Add support for Traverse City event page
+else if (window.location.pathname.includes('mitvc.html')) {
+  // Load Traverse City event data
+  async function loadTraverseCityRankings() {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/event/2025mitvc/rankings`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      const data = await response.json();
+      updateRankingsTable(data.rankings);
+    } catch (error) {
+      console.error("Error loading rankings:", error);
+      document.querySelector("#rankings-table tbody").innerHTML = 
+        '<tr><td colspan="4" class="p-4 text-center">No Rankings Available</td></tr>';
+    }
+  }
+  
+  async function loadTraverseCitySchedule() {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/event/2025mitvc/matches`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      const matches = await response.json();
+      updateScheduleTable(matches);
+    } catch (error) {
+      console.error("Error loading schedule:", error);
+      document.querySelector("#schedule-table tbody").innerHTML = 
+        '<tr><td colspan="5" class="p-4 text-center text-red-400">Error loading schedule</td></tr>';
+    }
+  }
+
+  // Call the Traverse City specific functions
+  loadTraverseCityRankings();
+  loadTraverseCitySchedule();
+  updatePlayoffBracket('2025mitvc');
+  
+  // Optional: Add periodic updates
+  setInterval(() => {
+    updatePlayoffBracket('2025mitvc');
+  }, 30000); // Update every 30 seconds
+}
