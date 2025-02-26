@@ -108,6 +108,23 @@
             />
           </a>
         </div>
+        
+        <!-- Search Bar (New Addition) -->
+        <div class="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        
         <!-- Desktop Menu -->
         <ul class="hidden md:flex space-x-8">
           <li>
@@ -151,13 +168,30 @@
       </div>
     </nav>
 
-    <!-- Updated Mobile Menu Overlay and Toggle Script for a cooler animated experience -->
     <!-- Mobile Menu Overlay -->
     <div
       id="mobile-menu-overlay"
       class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
     >
-      <div class="flex flex-col items-center justify-center h-full space-y-8">
+      <!-- Mobile Search Bar (New Addition) -->
+      <div class="px-8 pt-32 pb-4">
+        <div class="flex items-center bg-black/50 rounded-lg border border-gray-700 px-3 py-2">
+          <input 
+            type="text" 
+            id="mobile-search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="mobile-search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="flex flex-col items-center justify-center h-full space-y-8 -mt-32">
         <a
           href="robots.html"
           class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
@@ -220,6 +254,79 @@
           setTimeout(() => {
             mobileMenu.classList.add("hidden");
           }, 500);
+        }
+      });
+    </script>
+
+    <!-- Search Functionality (New Addition) -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Handle desktop search
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        
+        // Handle mobile search
+        const mobileSearchInput = document.getElementById('mobile-search-input');
+        const mobileSearchButton = document.getElementById('mobile-search-button');
+        
+        // Function to process search
+        function handleSearch(searchTerm) {
+          if (!searchTerm) return;
+          
+          searchTerm = searchTerm.trim().toLowerCase();
+          
+          // Check if input consists of ONLY digits (team number)
+          if (/^\d+$/.test(searchTerm)) {
+            // It's a team number
+            window.location.href = `team-overview.html?team=${searchTerm}`;
+          } 
+          // If input contains any letters, it's an event code
+          else if (/[a-z]/i.test(searchTerm)) {
+            // Check if input looks like a complete event code with year (e.g. 2025milac)
+            if (/^\d{4}[a-z0-9]+$/.test(searchTerm)) {
+              // It's a complete event code with year
+              window.location.href = `event.html?event=${searchTerm}`;
+            }
+            // Otherwise, it's likely an event code without year (e.g., "milac" or "mike2")
+            else {
+              // Add 2025 as default year
+              window.location.href = `event.html?event=2025${searchTerm}`;
+            }
+          }
+          // If it doesn't match any pattern, default to schedule page
+          else {
+            window.location.href = `schedule.html`;
+          }
+        }
+        
+        // Desktop search listeners
+        if (searchButton) {
+          searchButton.addEventListener('click', function() {
+            handleSearch(searchInput.value);
+          });
+        }
+        
+        if (searchInput) {
+          searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+              handleSearch(searchInput.value);
+            }
+          });
+        }
+        
+        // Mobile search listeners
+        if (mobileSearchButton) {
+          mobileSearchButton.addEventListener('click', function() {
+            handleSearch(mobileSearchInput.value);
+          });
+        }
+        
+        if (mobileSearchInput) {
+          mobileSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+              handleSearch(mobileSearchInput.value);
+            }
+          });
         }
       });
     </script>

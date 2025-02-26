@@ -1967,7 +1967,7 @@ async function loadTeamOverview() {
         
         row.innerHTML = `
           <td class="p-4">
-            <a href="${event.key.includes('milac') ? 'milac.html' : (event.key.includes('mitvc') ? 'mitvc.html' : '#')}" 
+            <a href="event.html?event=${event.key}" 
                class="hover:text-baywatch-orange transition-colors font-medium">
               ${event.name}
               ${currentEvent && currentEvent.key === event.key ? 
