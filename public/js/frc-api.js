@@ -1240,7 +1240,7 @@ function updateMatchBreakdown(matchData) {
   // Create a more detailed table with expanded breakdown
   // Extract common properties dynamically to handle different years' scoring structures
   
-  // Auto categories based on the game year - only support 2024 Crescendo and future 2025 Reefscape
+  // Auto categories based on the game year - support 2024 Crescendo and 2025 Reefscape
   const autoCategories = [];
   let gameYear = "unknown";
   
@@ -1252,13 +1252,39 @@ function updateMatchBreakdown(matchData) {
     autoCategories.push({ name: 'Auto Amp Notes', blue: blueBreakdown.autoAmpNoteCount || '0', red: redBreakdown.autoAmpNoteCount || '0' });
     autoCategories.push({ name: 'Auto Leave', blue: blueBreakdown.autoLeave ? 'Yes' : 'No', red: redBreakdown.autoLeave ? 'Yes' : 'No' });
   } 
-  // Add Reefscape pattern for future use (placeholder only, specific fields unknown)
-  else if ('reefscape2025Field' in blueBreakdown) {  // Replace with actual field name when known
-    // 2025 Reefscape - placeholder for future game
+  // 2025 Reefscape game detection
+  else if ('autoCoralCount' in blueBreakdown) {
     gameYear = "2025";
-    // Will be populated when the 2025 game details are known
-    autoCategories.push({ name: 'Auto Scoring Detail 1', blue: blueBreakdown.reefscape2025Field || '0', red: redBreakdown.reefscape2025Field || '0' });
-    // Add more fields as needed when game is revealed
+    autoCategories.push({ name: 'Auto Coral Nodes', blue: blueBreakdown.autoCoralCount || '0', red: redBreakdown.autoCoralCount || '0' });
+    autoCategories.push({ name: 'Auto Coral Points', blue: blueBreakdown.autoCoralPoints || '0', red: redBreakdown.autoCoralPoints || '0' });
+    
+    // Add robot mobility status in autonomous
+    const blueRobotsAuto = [];
+    const redRobotsAuto = [];
+    
+    for (let i = 1; i <= 3; i++) {
+      blueRobotsAuto.push(blueBreakdown[`autoLineRobot${i}`] || 'No');
+      redRobotsAuto.push(redBreakdown[`autoLineRobot${i}`] || 'No');
+    }
+    
+    autoCategories.push({ 
+      name: 'Auto Mobility', 
+      blue: `${blueRobotsAuto.filter(status => status === 'Yes').length}/3`, 
+      red: `${redRobotsAuto.filter(status => status === 'Yes').length}/3` 
+    });
+    
+    autoCategories.push({ 
+      name: 'Auto Mobility Points', 
+      blue: blueBreakdown.autoMobilityPoints || '0', 
+      red: redBreakdown.autoMobilityPoints || '0' 
+    });
+    
+    // Add Bonus (if applicable)
+    autoCategories.push({ 
+      name: 'Auto Bonus', 
+      blue: blueBreakdown.autoBonusAchieved ? 'Yes' : 'No', 
+      red: redBreakdown.autoBonusAchieved ? 'Yes' : 'No' 
+    });
   }
   
   // Teleop categories based on the game year
@@ -1272,11 +1298,88 @@ function updateMatchBreakdown(matchData) {
       teleopCategories.push({ name: 'Coopertition', blue: blueBreakdown.coopertitionBonus ? 'Yes' : 'No', red: redBreakdown.coopertitionBonus ? 'Yes' : 'No' });
     }
   } 
-  // Add Reefscape pattern for future use (placeholder only)
+  // 2025 Reefscape teleop details
   else if (gameYear === "2025") {
-    // 2025 Reefscape - placeholder for future game
-    teleopCategories.push({ name: 'Teleop Scoring Detail 1', blue: '0', red: '0' });
-    // Add more fields as needed when game is revealed
+    teleopCategories.push({ 
+      name: 'Teleop Coral Nodes', 
+      blue: blueBreakdown.teleopCoralCount || '0', 
+      red: redBreakdown.teleopCoralCount || '0' 
+    });
+    
+    teleopCategories.push({ 
+      name: 'Teleop Coral Points', 
+      blue: blueBreakdown.teleopCoralPoints || '0', 
+      red: redBreakdown.teleopCoralPoints || '0' 
+    });
+    
+    // Add Reef row counts for detailed node placement
+    if (blueBreakdown.teleopReef && redBreakdown.teleopReef) {
+      const blueTopNodes = blueBreakdown.teleopReef.tba_topRowCount || 0;
+      const blueMidNodes = blueBreakdown.teleopReef.tba_midRowCount || 0;
+      const blueBotNodes = blueBreakdown.teleopReef.tba_botRowCount || 0;
+      
+      const redTopNodes = redBreakdown.teleopReef.tba_topRowCount || 0;
+      const redMidNodes = redBreakdown.teleopReef.tba_midRowCount || 0;
+      const redBotNodes = redBreakdown.teleopReef.tba_botRowCount || 0;
+      
+      teleopCategories.push({ 
+        name: 'Top Row Nodes', 
+        blue: blueTopNodes, 
+        red: redTopNodes 
+      });
+      
+      teleopCategories.push({ 
+        name: 'Mid Row Nodes', 
+        blue: blueMidNodes, 
+        red: redMidNodes 
+      });
+      
+      teleopCategories.push({ 
+        name: 'Bottom Row Nodes', 
+        blue: blueBotNodes, 
+        red: redBotNodes 
+      });
+      
+      // Add trough count if available
+      if ('trough' in blueBreakdown.teleopReef && 'trough' in redBreakdown.teleopReef) {
+        teleopCategories.push({ 
+          name: 'Trough', 
+          blue: blueBreakdown.teleopReef.trough || 0, 
+          red: redBreakdown.teleopReef.trough || 0 
+        });
+      }
+    }
+    
+    // Add algae data if available
+    if ('netAlgaeCount' in blueBreakdown && 'netAlgaeCount' in redBreakdown) {
+      teleopCategories.push({ 
+        name: 'Net Algae Count', 
+        blue: blueBreakdown.netAlgaeCount || 0, 
+        red: redBreakdown.netAlgaeCount || 0 
+      });
+      
+      teleopCategories.push({ 
+        name: 'Algae Points', 
+        blue: blueBreakdown.algaePoints || 0, 
+        red: redBreakdown.algaePoints || 0 
+      });
+    }
+    
+    // Add wall algae if available
+    if ('wallAlgaeCount' in blueBreakdown && 'wallAlgaeCount' in redBreakdown) {
+      teleopCategories.push({ 
+        name: 'Wall Algae Count', 
+        blue: blueBreakdown.wallAlgaeCount || 0, 
+        red: redBreakdown.wallAlgaeCount || 0 
+      });
+    }
+    
+    // Add coopertition criteria
+    teleopCategories.push({ 
+      name: 'Coopertition Met', 
+      blue: blueBreakdown.coopertitionCriteriaMet ? 'Yes' : 'No', 
+      red: redBreakdown.coopertitionCriteriaMet ? 'Yes' : 'No' 
+    });
   }
   
   // Endgame-specific categories
@@ -1312,15 +1415,38 @@ function updateMatchBreakdown(matchData) {
       red: redBreakdown.trapNotePoints / 5 || '0'
     });
   }
-  // Add Reefscape pattern for future use (placeholder only)
+  // 2025 Reefscape endgame
   else if (gameYear === "2025") {
-    // 2025 Reefscape - placeholder
+    const convertReefscapeEndgame = (status) => {
+      if (!status || status === 'None') return '-';
+      return status;
+    };
+    
+    // Add robot endgame positions
     endgameCategories.push({ 
       name: 'Robot 1 Endgame', 
-      blue: '-', 
-      red: '-'
+      blue: convertReefscapeEndgame(blueBreakdown.endGameRobot1), 
+      red: convertReefscapeEndgame(redBreakdown.endGameRobot1)
     });
-    // Add more fields as needed when game is revealed
+    
+    endgameCategories.push({ 
+      name: 'Robot 2 Endgame', 
+      blue: convertReefscapeEndgame(blueBreakdown.endGameRobot2), 
+      red: convertReefscapeEndgame(redBreakdown.endGameRobot2)
+    });
+    
+    endgameCategories.push({ 
+      name: 'Robot 3 Endgame', 
+      blue: convertReefscapeEndgame(blueBreakdown.endGameRobot3), 
+      red: convertReefscapeEndgame(redBreakdown.endGameRobot3)
+    });
+    
+    // Add barge points
+    endgameCategories.push({ 
+      name: 'Barge Points', 
+      blue: blueBreakdown.endGameBargePoints || '0', 
+      red: redBreakdown.endGameBargePoints || '0'
+    });
   }
   
   // Game-specific bonus points
@@ -1331,11 +1457,29 @@ function updateMatchBreakdown(matchData) {
     bonusCategories.push({ name: 'Harmony', blue: blueBreakdown.endGameHarmonyPoints > 0 ? 'Yes' : 'No', red: redBreakdown.endGameHarmonyPoints > 0 ? 'Yes' : 'No' });
     bonusCategories.push({ name: 'Melody', blue: blueBreakdown.melodyPoints || '0', red: redBreakdown.melodyPoints || '0' });
   }
-  // Add Reefscape pattern for future use (placeholder only)
+  // 2025 Reefscape bonuses
   else if (gameYear === "2025") {
-    // 2025 Reefscape - placeholder
-    bonusCategories.push({ name: 'Example Bonus 1', blue: '-', red: '-' });
-    // Add more fields as needed when game is revealed
+    bonusCategories.push({ 
+      name: 'Coral Bonus', 
+      blue: blueBreakdown.coralBonusAchieved ? 'Yes' : 'No', 
+      red: redBreakdown.coralBonusAchieved ? 'Yes' : 'No' 
+    });
+    
+    bonusCategories.push({ 
+      name: 'Barge Bonus', 
+      blue: blueBreakdown.bargeBonusAchieved ? 'Yes' : 'No', 
+      red: redBreakdown.bargeBonusAchieved ? 'Yes' : 'No' 
+    });
+    
+    // Adjustment points (if any)
+    if ((blueBreakdown.adjustPoints && blueBreakdown.adjustPoints > 0) || 
+        (redBreakdown.adjustPoints && redBreakdown.adjustPoints > 0)) {
+      bonusCategories.push({ 
+        name: 'Adjustment Points', 
+        blue: blueBreakdown.adjustPoints || '0', 
+        red: redBreakdown.adjustPoints || '0' 
+      });
+    }
   }
   
   // Additional ranking point info - only show for qualification matches
@@ -1348,18 +1492,20 @@ function updateMatchBreakdown(matchData) {
       rpCategories.push({ name: 'Sustainability', blue: blueBreakdown.sustainability ? 'Yes' : 'No', red: redBreakdown.sustainability ? 'Yes' : 'No' });
       rpCategories.push({ name: 'Activation', blue: blueBreakdown.activation ? 'Yes' : 'No', red: redBreakdown.activation ? 'Yes' : 'No' });
     }
-    // Add Reefscape pattern for future use (placeholder only)
+    // 2025 Reefscape ranking points
     else if (gameYear === "2025") {
-      // 2025 Reefscape - placeholder
-      rpCategories.push({ name: 'RP Bonus 1', blue: '-', red: '-' });
-      rpCategories.push({ name: 'RP Bonus 2', blue: '-', red: '-' });
-      // Add more fields as needed when game is revealed
+      // Display Reefscape RPs (based on the provided score breakdown)
+      // This will need to be updated when the actual RP criteria are finalized
+      rpCategories.push({ 
+        name: 'Total RP', 
+        blue: blueBreakdown.rp || '0', 
+        red: redBreakdown.rp || '0' 
+      });
     }
   }
   
   // Build rows for the table
   let rowsHTML = '';
-  
   
   // Build Auto section
   if (autoCategories.length > 0) {
@@ -1432,14 +1578,6 @@ function updateMatchBreakdown(matchData) {
         </tr>
       `;
     });
-    
-    rowsHTML += `
-      <tr>
-        <td class="score-category font-semibold">Total Endgame Points</td>
-        <td class="blue-value font-semibold">${blueBreakdown.endgamePoints || '0'}</td>
-        <td class="red-value font-semibold">${redBreakdown.endgamePoints || '0'}</td>
-      </tr>
-    `;
   }
   
   // Build bonus section
@@ -1461,10 +1599,24 @@ function updateMatchBreakdown(matchData) {
     });
   }
   
-  // Add fouls
+  // Add penalties section
   rowsHTML += `
     <tr class="section-header">
       <td class="score-category" colspan="3">Penalties</td>
+    </tr>
+  `;
+  
+  // Add detailed foul information
+  rowsHTML += `
+    <tr>
+      <td class="score-category">Fouls</td>
+      <td class="blue-value">${blueBreakdown.foulCount || '0'}</td>
+      <td class="red-value">${redBreakdown.foulCount || '0'}</td>
+    </tr>
+    <tr>
+      <td class="score-category">Tech Fouls</td>
+      <td class="blue-value">${blueBreakdown.techFoulCount || '0'}</td>
+      <td class="red-value">${redBreakdown.techFoulCount || '0'}</td>
     </tr>
     <tr>
       <td class="score-category">Foul Points</td>
@@ -1472,6 +1624,34 @@ function updateMatchBreakdown(matchData) {
       <td class="red-value">${redBreakdown.foulPoints || '0'}</td>
     </tr>
   `;
+  
+  // Add 2025-specific penalties if present
+  if (gameYear === "2025") {
+    const blueSpecificPenalties = [];
+    const redSpecificPenalties = [];
+    
+    // Check for specific penalty types
+    if (blueBreakdown.g206Penalty) blueSpecificPenalties.push("G206");
+    if (blueBreakdown.g410Penalty) blueSpecificPenalties.push("G410");
+    if (blueBreakdown.g418Penalty) blueSpecificPenalties.push("G418");
+    if (blueBreakdown.g428Penalty) blueSpecificPenalties.push("G428");
+    
+    if (redBreakdown.g206Penalty) redSpecificPenalties.push("G206");
+    if (redBreakdown.g410Penalty) redSpecificPenalties.push("G410");
+    if (redBreakdown.g418Penalty) redSpecificPenalties.push("G418");
+    if (redBreakdown.g428Penalty) redSpecificPenalties.push("G428");
+    
+    // Only add the row if there are specific penalties
+    if (blueSpecificPenalties.length > 0 || redSpecificPenalties.length > 0) {
+      rowsHTML += `
+        <tr>
+          <td class="score-category">Specific Penalties</td>
+          <td class="blue-value">${blueSpecificPenalties.length > 0 ? blueSpecificPenalties.join(", ") : "None"}</td>
+          <td class="red-value">${redSpecificPenalties.length > 0 ? redSpecificPenalties.join(", ") : "None"}</td>
+        </tr>
+      `;
+    }
+  }
   
   // Add total score
   rowsHTML += `
@@ -1507,14 +1687,10 @@ function updateMatchBreakdown(matchData) {
         <td class="blue-value">${matchData.winning_alliance === 'blue' ? '2' : (matchData.winning_alliance === '' ? '1' : '0')}</td>
         <td class="red-value">${matchData.winning_alliance === 'red' ? '2' : (matchData.winning_alliance === '' ? '1' : '0')}</td>
       </tr>
-      <tr>
-        <td class="score-category font-semibold">Total Ranking Points</td>
-        <td class="blue-value font-semibold">${blueBreakdown.rp || '0'}</td>
-        <td class="red-value font-semibold">${redBreakdown.rp || '0'}</td>
-      </tr>
     `;
   }
   
+  // Create the final table with the generated rows
   const breakdownHTML = `
     <table class="score-table">
       <thead>
@@ -1530,7 +1706,165 @@ function updateMatchBreakdown(matchData) {
     </table>
   `;
   
-  breakdownElement.innerHTML = breakdownHTML;
+  // Generate visual reef representation for Reefscape matches
+  let reefVisualizationHTML = '';
+  if (gameYear === "2025" && blueBreakdown.teleopReef && redBreakdown.teleopReef) {
+    reefVisualizationHTML = generateReefVisualization(blueBreakdown, redBreakdown);
+  }
+  
+  // Combine breakdown table with reef visualization
+  breakdownElement.innerHTML = reefVisualizationHTML + breakdownHTML;
+}
+
+// New function to generate visual representation of reef nodes
+function generateReefVisualization(blueBreakdown, redBreakdown) {
+  // Helper function to generate node visualization for a single alliance
+  const generateAllianceReef = (breakdown, allianceColor) => {
+    const autoReef = breakdown.autoReef || { topRow: {}, midRow: {}, botRow: {} };
+    const teleopReef = breakdown.teleopReef || { topRow: {}, midRow: {}, botRow: {} };
+    
+    // Function to determine node state class
+    const getNodeClass = (row, node) => {
+      const autoState = autoReef[row][node] === true;
+      const teleopState = teleopReef[row][node] === true;
+      
+      if (autoState) return `${allianceColor}-auto-node`;
+      if (teleopState) return `${allianceColor}-teleop-node`;
+      return 'empty-node';
+    };
+    
+    // Generate HTML for all nodes in the reef
+    const generateRowHtml = (rowName, displayName) => {
+      let rowHtml = `<div class="reef-row"><div class="row-label">${displayName}</div>`;
+      
+      // Generate nodes A through L
+      for (let i = 0; i < 12; i++) {
+        const nodeLetter = String.fromCharCode(65 + i); // Convert 0-11 to A-L
+        const nodeId = `node${nodeLetter}`;
+        const nodeClass = getNodeClass(rowName, nodeId);
+        rowHtml += `<div class="reef-node ${nodeClass}"></div>`;
+      }
+      
+      rowHtml += '</div>';
+      return rowHtml;
+    };
+    
+    return `
+      <div class="reef-container ${allianceColor}-reef">
+        <h4 class="reef-title ${allianceColor === 'blue' ? 'text-blue-400' : 'text-red-400'}">${allianceColor.toUpperCase()} ALLIANCE REEF</h4>
+        ${generateRowHtml('topRow', 'Top')}
+        ${generateRowHtml('midRow', 'Mid')}
+        ${generateRowHtml('botRow', 'Bot')}
+      </div>
+    `;
+  };
+  
+  // Combine both alliances
+  return `
+    <div class="reef-visualization mb-8">
+      <h3 class="text-xl font-bold text-baywatch-orange mb-4">Reef Node Placement</h3>
+      <div class="reefs-container">
+        ${generateAllianceReef(blueBreakdown, 'blue')}
+        ${generateAllianceReef(redBreakdown, 'red')}
+      </div>
+      <div class="reef-legend">
+        <div class="legend-item"><span class="legend-swatch blue-auto-node"></span> Auto Coral</div>
+        <div class="legend-item"><span class="legend-swatch blue-teleop-node"></span> Teleop Coral</div>
+        <div class="legend-item"><span class="legend-swatch empty-node"></span> Empty Node</div>
+      </div>
+      <style>
+        .reef-visualization {
+          background: rgba(0,0,0,0.3);
+          border-radius: 0.75rem;
+          padding: 1rem;
+        }
+        .reefs-container {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+          .reefs-container {
+            flex-direction: row;
+            gap: 2rem;
+          }
+        }
+        .reef-container {
+          flex: 1;
+          border-radius: 0.5rem;
+          padding: 0.75rem;
+          background: rgba(0,0,0,0.2);
+        }
+        .blue-reef {
+          border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .red-reef {
+          border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .reef-title {
+          text-align: center;
+          margin-bottom: 0.75rem;
+          font-weight: 600;
+        }
+        .reef-row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 0.5rem;
+        }
+        .row-label {
+          width: 30px;
+          font-size: 0.75rem;
+          color: #aaa;
+        }
+        .reef-node {
+          width: 15px;
+          height: 15px;
+          margin: 0 2px;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+        .empty-node {
+          background-color: rgba(255,255,255,0.05);
+        }
+        .blue-auto-node {
+          background-color: rgba(37, 99, 235, 0.9);
+          border-color: rgba(37, 99, 235, 1);
+        }
+        .blue-teleop-node {
+          background-color: rgba(37, 99, 235, 0.5);
+          border-color: rgba(37, 99, 235, 0.7);
+        }
+        .red-auto-node {
+          background-color: rgba(220, 38, 38, 0.9);
+          border-color: rgba(220, 38, 38, 1);
+        }
+        .red-teleop-node {
+          background-color: rgba(220, 38, 38, 0.5);
+          border-color: rgba(220, 38, 38, 0.7);
+        }
+        .reef-legend {
+          display: flex;
+          justify-content: center;
+          gap: 1rem;
+          margin-top: 1rem;
+          flex-wrap: wrap;
+        }
+        .legend-item {
+          display: flex;
+          align-items: center;
+          font-size: 0.8rem;
+          color: #aaa;
+        }
+        .legend-swatch {
+          display: inline-block;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          margin-right: 0.3rem;
+        }
+      </style>
+    </div>
+  `;
 }
 
 // New function to fetch all playoff matches for a specific event and set
@@ -1702,7 +2036,7 @@ async function updateTeamDetails(matchData, teamData) {
                                      `<span class="text-xs bg-blue-900/30 px-2 py-1 rounded">Blue Alliance</span>`;
     
     return `
-      <div class="team-detail-card bg-blue-900/20 p-4 rounded-lg">
+      <a href="team-overview.html?team=${teamNumber}" class="block team-detail-card bg-blue-900/20 p-4 rounded-lg hover:bg-blue-900/30 transition-all">
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-bold text-blue-400">${teamNumber}</h3>
           ${allianceBadge}
@@ -1710,12 +2044,11 @@ async function updateTeamDetails(matchData, teamData) {
         <h4 class="font-medium mb-1">${team.nickname}</h4>
         <div class="text-xs text-gray-400 mb-2">${team.city}, ${team.state_prov}${team.country !== 'USA' ? ', ' + team.country : ''}</div>
         <div class="mt-2 flex justify-between">
-          <a href="https://www.thebluealliance.com/team/${teamNumber}" target="_blank" 
-             class="text-xs bg-blue-800/20 hover:bg-blue-800/40 transition-colors py-1 px-2 rounded text-blue-300">
-            View on TBA <i class="fas fa-external-link-alt ml-1"></i>
-          </a>
+          <span class="text-xs text-blue-300">
+            <i class="fas fa-external-link-alt mr-1"></i> View team details
+          </span>
         </div>
-      </div>
+      </a>
     `;
   }).join('');
   
@@ -1728,7 +2061,7 @@ async function updateTeamDetails(matchData, teamData) {
                                      `<span class="text-xs bg-red-900/30 px-2 py-1 rounded">Red Alliance</span>`;
     
     return `
-      <div class="team-detail-card bg-red-900/20 p-4 rounded-lg">
+      <a href="team-overview.html?team=${teamNumber}" class="block team-detail-card bg-red-900/20 p-4 rounded-lg hover:bg-red-900/30 transition-all">
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-bold text-red-400">${teamNumber}</h3>
           ${allianceBadge}
@@ -1736,12 +2069,11 @@ async function updateTeamDetails(matchData, teamData) {
         <h4 class="font-medium mb-1">${team.nickname}</h4>
         <div class="text-xs text-gray-400 mb-2">${team.city}, ${team.state_prov}${team.country !== 'USA' ? ', ' + team.country : ''}</div>
         <div class="mt-2 flex justify-between">
-          <a href="https://www.thebluealliance.com/team/${teamNumber}" target="_blank" 
-             class="text-xs bg-red-800/20 hover:bg-red-800/40 transition-colors py-1 px-2 rounded text-red-300">
-            View on TBA <i class="fas fa-external-link-alt ml-1"></i>
-          </a>
+          <span class="text-xs text-red-300">
+            <i class="fas fa-external-link-alt mr-1"></i> View team details
+          </span>
         </div>
-      </div>
+      </a>
     `;
   }).join('');
   
