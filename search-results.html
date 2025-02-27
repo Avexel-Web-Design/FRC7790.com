@@ -434,6 +434,85 @@
         border-radius: 1px;
         background-color: rgba(255, 107, 0, 0.3);
       }
+
+      /* Enhanced filter button styles */
+      .filter-btn {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .filter-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 107, 0, 0.15);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+        z-index: -1;
+        border-radius: 9999px;
+      }
+      
+      .filter-btn:hover::before {
+        transform: scaleX(1);
+      }
+      
+      .active-filter {
+        background-color: rgba(255, 107, 0, 0.3) !important;
+        border-color: rgba(255, 107, 0, 0.8) !important;
+        color: #FF6B00;
+        font-weight: 500;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(255, 107, 0, 0.2);
+      }
+      
+      /* Smooth transitions between filtered views */
+      #search-results {
+        transition: opacity 0.15s ease;
+      }
+      
+      .result-card-container {
+        transition: all 0.3s ease;
+      }
+      
+      /* Better animation for result cards */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      .result-card {
+        animation: cardAppear 0.3s ease forwards;
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      
+      @keyframes cardAppear {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* No results message animation */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      #no-results-message {
+        animation: fadeIn 0.5s ease-in-out;
+      }
     </style>
     
     <!-- Additional Script to Ensure Filter Functionality -->

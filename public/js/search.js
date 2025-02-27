@@ -778,32 +778,46 @@ async function initSearchPage() {
   }
   
   // Show loading state initially
-  document.getElementById('loading-overlay').classList.remove('hidden');
+  const loadingOverlay = document.getElementById('loading-overlay');
+  if (loadingOverlay) {
+    loadingOverlay.classList.remove('hidden');
+  }
   
   // If no query provided, show empty state
   if (!query) {
-    document.getElementById('search-summary').textContent = 'Enter a search term to find results';
-    document.getElementById('loading-overlay').classList.add('hidden');
+    const searchSummary = document.getElementById('search-summary');
+    if (searchSummary) {
+      searchSummary.textContent = 'Enter a search term to find results';
+    }
+    if (loadingOverlay) {
+      loadingOverlay.classList.add('hidden');
+    }
     return;
   }
   
   // Perform search
   try {
-    const results = await searchAllItems(query);
-    
-    // Store results in a global variable for filtering
-    window.searchResults = results;
+    // Store results globally for access by filter functions
+    window.searchResults = await searchAllItems(query);
     
     // Display results
-    await displaySearchResults(results, query);
+    await displaySearchResults(window.searchResults, query);
     
-    // Set up filter buttons
-    setupFilterButtons(results, query);
+    // Set up filter buttons after results are loaded
+    setupFilterButtons(window.searchResults, query);
   } catch (error) {
     console.error("Error performing search:", error);
-    document.getElementById('search-summary').textContent = 'An error occurred while searching';
-    document.getElementById('loading-overlay').classList.add('hidden');
-    document.getElementById('no-results-message').classList.remove('hidden');
+    const searchSummary = document.getElementById('search-summary');
+    if (searchSummary) {
+      searchSummary.textContent = 'An error occurred while searching';
+    }
+    if (loadingOverlay) {
+      loadingOverlay.classList.add('hidden');
+    }
+    const noResultsMessage = document.getElementById('no-results-message');
+    if (noResultsMessage) {
+      noResultsMessage.classList.remove('hidden');
+    }
   }
 }
 
@@ -811,10 +825,19 @@ async function initSearchPage() {
 function setupFilterButtons(allResults, query) {
   const filterButtons = document.querySelectorAll('.filter-btn');
   
+  // First, remove any existing event listeners to prevent duplicates
   filterButtons.forEach(button => {
+    button.replaceWith(button.cloneNode(true));
+  });
+  
+  // Get fresh references after cloning
+  const refreshedButtons = document.querySelectorAll('.filter-btn');
+  
+  // Add event listeners to the refreshed buttons
+  refreshedButtons.forEach(button => {
     button.addEventListener('click', () => {
       // Remove active class from all buttons
-      filterButtons.forEach(btn => btn.classList.remove('active-filter'));
+      refreshedButtons.forEach(btn => btn.classList.remove('active-filter'));
       
       // Add active class to clicked button
       button.classList.add('active-filter');
@@ -825,8 +848,27 @@ function setupFilterButtons(allResults, query) {
       // Filter and display results
       const filteredResults = filterResultsByType(allResults, filterType);
       displayFilteredResults(filteredResults, query);
+      
+      // Update URL with filter type without reloading page
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('filter', filterType);
+      window.history.replaceState({}, '', currentUrl);
     });
   });
+  
+  // Set initial active filter from URL or default to 'all'
+  const urlParams = new URLSearchParams(window.location.search);
+  const activeFilter = urlParams.get('filter') || 'all';
+  
+  // Find and activate the corresponding filter button
+  const activeButton = document.getElementById(`filter-${activeFilter}`);
+  if (activeButton) {
+    activeButton.click();
+  } else {
+    // Default to 'all' if the filter in URL is invalid
+    const allButton = document.getElementById('filter-all');
+    if (allButton) allButton.click();
+  }
 }
 
 // Display filtered results without changing the counters
@@ -834,28 +876,49 @@ function displayFilteredResults(results, query) {
   const resultsContainer = document.getElementById('search-results');
   const noResultsMessage = document.getElementById('no-results-message');
   
-  // Handle empty results
-  if (results.length === 0) {
-    resultsContainer.innerHTML = '';
-    noResultsMessage.classList.remove('hidden');
+  if (!resultsContainer || !noResultsMessage) {
+    console.error('Required DOM elements not found for displaying results');
     return;
   }
   
-  // Show results
+  // Handle empty results
+  if (!results || results.length === 0) {
+    // Fade out existing results first
+    const existingResults = resultsContainer.querySelectorAll('.result-card-container');
+    existingResults.forEach(item => {
+      item.classList.add('animate__fadeOut');
+    });
+    
+    // After fade out, clear results and show no results message
+    setTimeout(() => {
+      resultsContainer.innerHTML = '';
+      noResultsMessage.classList.remove('hidden');
+    }, 300);
+    return;
+  }
+  
+  // Hide no results message if we have results
   noResultsMessage.classList.add('hidden');
   
   // Generate HTML for filtered results
-  resultsContainer.innerHTML = results
+  const resultsHTML = results
     .map((result, index) => {
       // Add a staggered animation delay based on index
       const delay = 0.05 * (index % 10);
       return `
-        <div class="animate__animated animate__fadeInUp" style="animation-delay: ${delay}s;">
+        <div class="result-card-container animate__animated animate__fadeIn" style="animation-delay: ${delay}s;">
           ${renderSearchResult(result)}
         </div>
       `;
     })
     .join('');
+  
+  // Update with new results with transition effect
+  resultsContainer.style.opacity = 0;
+  setTimeout(() => {
+    resultsContainer.innerHTML = resultsHTML;
+    resultsContainer.style.opacity = 1;
+  }, 150);
 }
 
 // Add search functionality to results page search bar
@@ -869,23 +932,35 @@ function setupResultsPageSearch() {
       const query = resultsSearchInput.value.trim();
       if (query) {
         // Show loading state
-        document.getElementById('loading-overlay').classList.remove('hidden');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+          loadingOverlay.classList.remove('hidden');
+        }
         
-        // Update URL to reflect new search
+        // Get current filter type to preserve it
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentFilter = urlParams.get('filter') || 'all';
+        
+        // Update URL to reflect new search but keep filter
         const currentUrl = new URL(window.location.href);
         currentUrl.searchParams.set('q', query);
+        currentUrl.searchParams.set('filter', currentFilter);
         window.history.replaceState({}, '', currentUrl);
         
         // Perform new search
         try {
-          const results = await searchAllItems(query);
-          window.searchResults = results;
-          await displaySearchResults(results, query);
-          setupFilterButtons(results, query);
+          window.searchResults = await searchAllItems(query);
+          await displaySearchResults(window.searchResults, query);
+          setupFilterButtons(window.searchResults, query);
         } catch (error) {
           console.error("Error in search:", error);
-          document.getElementById('search-summary').textContent = 'An error occurred while searching';
-          document.getElementById('loading-overlay').classList.add('hidden');
+          const searchSummary = document.getElementById('search-summary');
+          if (searchSummary) {
+            searchSummary.textContent = 'An error occurred while searching';
+          }
+          if (loadingOverlay) {
+            loadingOverlay.classList.add('hidden');
+          }
         }
       }
     });
