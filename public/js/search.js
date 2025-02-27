@@ -841,7 +841,7 @@ function setupFilterButtons(allResults, query) {
   const eventsButton = document.getElementById('filter-events');
   const pagesButton = document.getElementById('filter-pages');
   
-  // Simple function to filter and display results
+  // Simple function to filter and display results with proper type mapping
   function filterAndDisplay(type) {
     // Remove active class from all buttons
     [allButton, teamsButton, eventsButton, pagesButton].forEach(btn => {
@@ -851,16 +851,16 @@ function setupFilterButtons(allResults, query) {
     // Add active class to clicked button
     const buttonMap = {
       'all': allButton,
-      'teams': teamsButton,
-      'events': eventsButton,
-      'pages': pagesButton
+      'team': teamsButton, // Map singular type to button
+      'event': eventsButton,
+      'page': pagesButton
     };
     
     if (buttonMap[type]) {
       buttonMap[type].classList.add('active-filter');
     }
     
-    // Filter results
+    // Filter results using the singular type name
     let filteredResults;
     if (type === 'all') {
       filteredResults = allResults;
@@ -881,30 +881,43 @@ function setupFilterButtons(allResults, query) {
     }
   }
   
-  // Add click listeners
+  // Add click listeners with proper type mapping
   if (allButton) {
     allButton.onclick = () => filterAndDisplay('all');
   }
   
   if (teamsButton) {
-    teamsButton.onclick = () => filterAndDisplay('team');
+    teamsButton.onclick = () => filterAndDisplay('team'); // Use singular 'team' for filtering
   }
   
   if (eventsButton) {
-    eventsButton.onclick = () => filterAndDisplay('event');
+    eventsButton.onclick = () => filterAndDisplay('event'); // Use singular 'event' for filtering
   }
   
   if (pagesButton) {
-    pagesButton.onclick = () => filterAndDisplay('page');
+    pagesButton.onclick = () => filterAndDisplay('page'); // Use singular 'page' for filtering
   }
   
-  // Set initial active filter from URL
+  // Set initial active filter from URL with proper type mapping
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const activeFilter = urlParams.get('filter') || 'all';
     
-    // Apply the correct filter based on URL parameter
-    switch (activeFilter) {
+    // Map URL parameter values to singular type values
+    const filterMap = {
+      'all': 'all',
+      'teams': 'team',
+      'team': 'team',
+      'events': 'event',
+      'event': 'event',
+      'pages': 'page',
+      'page': 'page'
+    };
+    
+    const normalizedFilter = filterMap[activeFilter] || 'all';
+    
+    // Apply the correct filter based on normalized filter type
+    switch (normalizedFilter) {
       case 'team':
         if (teamsButton) teamsButton.click();
         break;
@@ -1265,14 +1278,14 @@ document.addEventListener('DOMContentLoaded', function() {
 function updateFilterCounters(results) {
   if (!results) return;
   
-  // Count items by type
+  // Count items by type - using singular type names from the result objects
   const counts = {
     team: results.filter(result => result.type === 'team').length,
     event: results.filter(result => result.type === 'event').length,
     page: results.filter(result => result.type === 'page').length
   };
   
-  // Update counter elements
+  // Update counter elements - using plural IDs for the buttons
   const teamCounter = document.querySelector('#filter-teams .counter');
   const eventCounter = document.querySelector('#filter-events .counter');
   const pageCounter = document.querySelector('#filter-pages .counter');
@@ -1410,4 +1423,192 @@ window.addEventListener('load', function() {
       loadingOverlay.classList.add('hidden');
     }
   }, 3000); // 3 seconds after page load
+});
+
+// Fix updateFilterCounters function to properly map button IDs to result types
+function updateFilterCounters(results) {
+  if (!results) return;
+  
+  // Count items by type - using singular type names from the result objects
+  const counts = {
+    team: results.filter(result => result.type === 'team').length,
+    event: results.filter(result => result.type === 'event').length,
+    page: results.filter(result => result.type === 'page').length
+  };
+  
+  // Update counter elements - using plural IDs for the buttons
+  const teamCounter = document.querySelector('#filter-teams .counter');
+  const eventCounter = document.querySelector('#filter-events .counter');
+  const pageCounter = document.querySelector('#filter-pages .counter');
+  
+  if (teamCounter) teamCounter.textContent = counts.team;
+  if (eventCounter) eventCounter.textContent = counts.event;
+  if (pageCounter) pageCounter.textContent = counts.page;
+  
+  // Update total count in "All Results" button
+  const totalCount = results.length;
+  const allResultsCounter = document.querySelector('#filter-all .counter');
+  
+  if (allResultsCounter) {
+    allResultsCounter.textContent = totalCount;
+  } else if (document.querySelector('#filter-all')) {
+    // Create counter if it doesn't exist
+    const counterSpan = document.createElement('span');
+    counterSpan.className = 'counter';
+    counterSpan.textContent = totalCount;
+    document.querySelector('#filter-all').appendChild(counterSpan);
+  }
+}
+
+// Direct and simplified filter button handling to ensure it works reliably
+function setupFilterButtons(allResults, query) {
+  // Get all filter buttons
+  const allButton = document.getElementById('filter-all');
+  const teamsButton = document.getElementById('filter-teams');
+  const eventsButton = document.getElementById('filter-events');
+  const pagesButton = document.getElementById('filter-pages');
+  
+  // Simple function to filter and display results with proper type mapping
+  function filterAndDisplay(type) {
+    // Remove active class from all buttons
+    [allButton, teamsButton, eventsButton, pagesButton].forEach(btn => {
+      if (btn) btn.classList.remove('active-filter');
+    });
+    
+    // Add active class to clicked button
+    const buttonMap = {
+      'all': allButton,
+      'team': teamsButton, // Map singular type to button
+      'event': eventsButton,
+      'page': pagesButton
+    };
+    
+    if (buttonMap[type]) {
+      buttonMap[type].classList.add('active-filter');
+    }
+    
+    // Filter results using the singular type name
+    let filteredResults;
+    if (type === 'all') {
+      filteredResults = allResults;
+    } else {
+      filteredResults = allResults.filter(result => result.type === type);
+    }
+    
+    // Display filtered results
+    displayFilteredResults(filteredResults, query);
+    
+    // Update URL without reloading page
+    try {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('filter', type);
+      window.history.replaceState({}, '', currentUrl);
+    } catch (e) {
+      console.warn('Could not update URL with filter parameter', e);
+    }
+  }
+  
+  // Add click listeners with proper type mapping
+  if (allButton) {
+    allButton.onclick = () => filterAndDisplay('all');
+  }
+  
+  if (teamsButton) {
+    teamsButton.onclick = () => filterAndDisplay('team'); // Use singular 'team' for filtering
+  }
+  
+  if (eventsButton) {
+    eventsButton.onclick = () => filterAndDisplay('event'); // Use singular 'event' for filtering
+  }
+  
+  if (pagesButton) {
+    pagesButton.onclick = () => filterAndDisplay('page'); // Use singular 'page' for filtering
+  }
+  
+  // Set initial active filter from URL with proper type mapping
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeFilter = urlParams.get('filter') || 'all';
+    
+    // Map URL parameter values to singular type values
+    const filterMap = {
+      'all': 'all',
+      'teams': 'team',
+      'team': 'team',
+      'events': 'event',
+      'event': 'event',
+      'pages': 'page',
+      'page': 'page'
+    };
+    
+    const normalizedFilter = filterMap[activeFilter] || 'all';
+    
+    // Apply the correct filter based on normalized filter type
+    switch (normalizedFilter) {
+      case 'team':
+        if (teamsButton) teamsButton.click();
+        break;
+      case 'event':
+        if (eventsButton) eventsButton.click();
+        break;
+      case 'page':
+        if (pagesButton) pagesButton.click();
+        break;
+      default:
+        if (allButton) allButton.click();
+        break;
+    }
+  } catch (e) {
+    // Default to all if there's an error
+    if (allButton) allButton.click();
+  }
+}
+
+// Add this fix to the generic filter button handling
+document.addEventListener('DOMContentLoaded', function() {
+  // Only run this if we're not handling it through setupFilterButtons
+  if (!window.filtersInitialized) {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        let filterType = this.id.replace('filter-', '');
+        
+        // Map plural filter names to singular result types
+        const typeMap = {
+          'all': 'all',
+          'teams': 'team',
+          'events': 'event',
+          'pages': 'page'
+        };
+        
+        // Get the correct singular filter type
+        const mappedType = typeMap[filterType] || filterType;
+        
+        // Remove active class from all buttons
+        filterButtons.forEach(btn => btn.classList.remove('active-filter'));
+        
+        // Add active class to clicked button
+        this.classList.add('active-filter');
+        
+        // Apply filter to search results
+        if (window.searchResults) {
+          const results = window.searchResults;
+          const filteredResults = mappedType === 'all' ? 
+            results : 
+            results.filter(result => result.type === mappedType);
+          
+          // Get search query from URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const query = urlParams.get('q') || '';
+          
+          // Display filtered results
+          displayFilteredResults(filteredResults, query);
+        }
+      });
+    });
+  }
+  
+  // Mark filters as initialized to avoid duplicate event handlers
+  window.filtersInitialized = true;
 });
