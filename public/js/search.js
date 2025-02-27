@@ -432,6 +432,40 @@ function formatEventDate(startDate, endDate) {
   }
 }
 
+// Helper function to parse event dates for comparison
+function parseEventDate(dateStr) {
+  // If no date is provided, set it far in the future to appear at the bottom of the list
+  if (!dateStr || dateStr === "Date TBD") return new Date(9999, 0, 1);
+  
+  try {
+    // Handle date ranges like "Mar 12, 2025 - Mar 14, 2025"
+    if (dateStr.includes('-')) {
+      // Extract the start date (first part before the dash)
+      const startDate = dateStr.split('-')[0].trim();
+      return new Date(startDate);
+    }
+    
+    // Regular date string
+    return new Date(dateStr);
+  } catch (e) {
+    // If parsing fails, return a far future date
+    console.warn(`Failed to parse date: ${dateStr}`, e);
+    return new Date(9999, 0, 1);
+  }
+}
+
+// Helper function to determine if an event is in the past
+function isEventPast(dateStr) {
+  const eventDate = parseEventDate(dateStr);
+  const now = new Date();
+  
+  // Accounting for multi-day events, add 2 days to the event date for comparison
+  const eventEndEstimate = new Date(eventDate);
+  eventEndEstimate.setDate(eventEndEstimate.getDate() + 2);
+  
+  return eventEndEstimate < now;
+}
+
 // Function to perform fuzzy search on text and highlight matches
 function fuzzySearch(text, query) {
   if (!query || !text) return { score: 0, highlighted: text || '' };
@@ -610,8 +644,43 @@ async function searchAllItems(query) {
     });
     
     // Sort by score and return
-    return Array.from(uniqueResults.values())
-      .sort((a, b) => b.score - a.score);
+    const sortedResults = Array.from(uniqueResults.values()).sort((a, b) => {
+      // First sort by type: current/upcoming events at the top for event type
+      if (a.type === 'event' && b.type === 'event') {
+        // Check if one event is past and the other is upcoming
+        const aIsPast = isEventPast(a.date);
+        const bIsPast = isEventPast(b.date);
+        
+        if (!aIsPast && bIsPast) {
+          return -1; // A is upcoming, B is past, so A comes first
+        } else if (aIsPast && !bIsPast) {
+          return 1;  // B is upcoming, A is past, so B comes first
+        }
+        
+        // Both are past or both are upcoming, sort by date
+        const dateA = parseEventDate(a.date);
+        const dateB = parseEventDate(b.date);
+        
+        // For upcoming events (both not past), sort by nearest date first
+        if (!aIsPast && !bIsPast) {
+          return dateA - dateB; 
+        }
+        
+        // For past events, sort by most recent first
+        return dateB - dateA;
+      }
+      
+      // For different result types or non-event results, sort by score
+      if (a.score !== b.score) {
+        return b.score - a.score;
+      }
+      
+      // If scores are identical, prioritize certain result types
+      const typeOrder = { team: 0, event: 1, page: 2 };
+      return typeOrder[a.type] - typeOrder[b.type];
+    });
+
+    return sortedResults;
     
   } catch (error) {
     console.error("Error in API search:", error);
