@@ -689,7 +689,7 @@ async function searchAllItems(query) {
   }
 }
 
-// Generate HTML for a search result
+// Generate HTML for a search result with improved layout
 function renderSearchResult(result) {
   const badgeClass = result.type === 'team' ? 'team-badge' : 
                      result.type === 'event' ? 'event-badge' : 
@@ -700,16 +700,21 @@ function renderSearchResult(result) {
                     'Page';
   
   return `
-    <a href="${result.url}" class="result-card card-gradient rounded-xl p-6 block hover:shadow-lg transition-all">
-      <div class="flex justify-between items-start mb-2">
-        <h3 class="font-bold text-lg search-result-title">${result.nameHighlighted}</h3>
-        <span class="result-type-badge ${badgeClass}">${badgeText}</span>
+    <a href="${result.url}" class="result-card card-gradient rounded-xl p-6 block transition-all group">
+      <div class="result-card-content">
+        <div class="flex justify-between items-start mb-3">
+          <h3 class="font-bold text-lg search-result-title">${result.nameHighlighted}</h3>
+          <span class="result-type-badge ${badgeClass} shrink-0 ml-2">${badgeText}</span>
+        </div>
+        <p class="text-gray-400 text-sm mb-3">${result.descriptionHighlighted}</p>
+        ${result.contentHighlighted ? `<p class="text-gray-500 text-xs mb-3">${result.contentHighlighted}</p>` : ''}
       </div>
-      <p class="text-gray-400 text-sm mb-3">${result.descriptionHighlighted}</p>
-      ${result.contentHighlighted ? `<p class="text-gray-500 text-xs">${result.contentHighlighted}</p>` : ''}
-      <div class="mt-3 flex items-center text-xs text-baywatch-orange">
-        <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">View details</span>
-        <i class="fas fa-arrow-right ml-1 transition-transform group-hover:translate-x-1"></i>
+      
+      <div class="result-card-footer">
+        <span class="text-xs text-baywatch-orange opacity-0 group-hover:opacity-100 transition-all duration-300">
+          View details
+        </span>
+        <i class="fas fa-arrow-right text-baywatch-orange transition-all duration-300 transform group-hover:translate-x-1"></i>
       </div>
     </a>
   `;
@@ -1296,46 +1301,59 @@ document.addEventListener('DOMContentLoaded', function() {
 function updateCountersFromResults(results) {
   if (!results || !Array.isArray(results)) {
     console.warn('Invalid results provided to updateCountersFromResults');
-    return;
+    results = [];
   }
   
-  // Log for debugging
-  console.log(`Updating counters with ${results.length} results`, {
-    teams: results.filter(r => r.type === 'team').length,
-    events: results.filter(r => r.type === 'event').length,
-    pages: results.filter(r => r.type === 'page').length
+  // Get actual counts by type
+  const teamCount = results.filter(r => r.type === 'team').length;
+  const eventCount = results.filter(r => r.type === 'event').length;
+  const pageCount = results.filter(r => r.type === 'page').length;
+  const totalCount = results.length;
+  
+  // Log what we're doing for debugging
+  console.log(`COUNTER UPDATE - Setting filter counters:`, { 
+    all: totalCount, 
+    team: teamCount, 
+    event: eventCount, 
+    page: pageCount 
   });
   
-  // Count items by type
-  const counts = {
-    team: results.filter(r => r.type === 'team').length,
-    event: results.filter(r => r.type === 'event').length,
-    page: results.filter(r => r.type === 'page').length,
-    all: results.length
-  };
-
-  // Update counter elements with animation
-  const updateCounter = (elementId, count) => {
-    const counterElement = document.querySelector(`#${elementId} .counter`);
-    if (counterElement) {
-      // Add animation class
-      counterElement.classList.add('counter-updated');
+  // Get all counter elements
+  const allCounter = document.querySelector('#filter-all .counter');
+  const teamsCounter = document.querySelector('#filter-teams .counter');
+  const eventsCounter = document.querySelector('#filter-events .counter');
+  const pagesCounter = document.querySelector('#filter-pages .counter');
+  
+  // Update function with gentler animation, only if value actually changed
+  const updateCounterElement = (element, value) => {
+    if (!element) return;
+    
+    // Parse current value, default to 0 if not a number
+    const currentValue = parseInt(element.textContent, 10) || 0;
+    
+    // Only animate if value is actually changing
+    if (currentValue !== value) {
+      // Update the text first to prevent layout shift
+      element.textContent = value;
       
-      // Update the text
-      counterElement.textContent = count;
+      // Then add animation class
+      element.classList.add('counter-updated');
       
       // Remove animation class after animation completes
       setTimeout(() => {
-        counterElement.classList.remove('counter-updated');
-      }, 500);
+        element.classList.remove('counter-updated');
+      }, 300); // Match the animation duration
+    } else {
+      // Even if not changing, ensure the text is set correctly
+      element.textContent = value;
     }
   };
   
-  // Update all counters
-  updateCounter('filter-all', counts.all);
-  updateCounter('filter-teams', counts.team);
-  updateCounter('filter-events', counts.event);
-  updateCounter('filter-pages', counts.page);
+  // Update all counters with gentle animation
+  updateCounterElement(allCounter, totalCount);
+  updateCounterElement(teamsCounter, teamCount);
+  updateCounterElement(eventsCounter, eventCount);
+  updateCounterElement(pagesCounter, pageCount);
 }
 
 // Function to display search results

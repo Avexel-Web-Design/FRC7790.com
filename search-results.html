@@ -439,6 +439,12 @@
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+        min-width: 120px; /* Prevent size changes during animation */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25rem 0.75rem;
+        height: 32px; /* Fixed height */
       }
       
       .filter-btn::before {
@@ -499,7 +505,7 @@
         animation: fadeIn 0.5s ease-in-out;
       }
 
-      /* Enhanced counter styling */
+      /* Enhanced counter styling - No animation */
       .filter-btn .counter {
         display: inline-flex;
         align-items: center;
@@ -519,15 +525,89 @@
         color: #fff;
       }
       
-      /* Add animation for counter updates */
+      /* Revised animation for counter updates - less intense */
       .counter-updated {
-        animation: counterPulse 0.5s ease-in-out;
+        animation: counterPulse 0.3s ease-out;
       }
       
       @keyframes counterPulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.3); }
-        100% { transform: scale(1); }
+        0% { transform: scale(1); color: inherit; }
+        50% { transform: scale(1.1); color: #FF6B00; } 
+        100% { transform: scale(1); color: inherit; }
+      }
+
+      /* Add these styles to improve search result cards */
+      .result-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+      
+      .result-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      
+      /* Additional hover effect for result cards */
+      .result-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(to right, #FF6B00, #FF8F00);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+      }
+      
+      .result-card:hover::after {
+        transform: scaleX(1);
+      }
+      
+      /* Remove the default group-hover styles when using animate.css */
+      .animate__fadeIn .result-card .group-hover\:opacity-100,
+      .animate__fadeInUp .result-card .group-hover\:opacity-100 {
+        opacity: 0;
+      }
+      
+      .result-card-container {
+        height: 100%;
+      }
+      
+      .result-card-container > * {
+        height: 100%;
+      }
+
+      /* Result cards with proper flex structure */
+      .result-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+      
+      /* Ensure content area takes up available space, pushing footer to bottom */
+      .result-card-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      /* Footer area with proper spacing */
+      .result-card-footer {
+        margin-top: auto;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
     </style>
     
@@ -699,13 +779,15 @@
             document.querySelector('#filter-events .counter').textContent = eventCount;
             document.querySelector('#filter-pages .counter').textContent = pageCount;
             
-            // Add animation
-            counters.forEach(counter => counter.classList.add('counter-updated'));
-            
-            // Remove animation after it completes
-            setTimeout(() => {
-              counters.forEach(counter => counter.classList.remove('counter-updated'));
-            }, 500);
+            // Add subtle highlight instead of animation for emergency fix
+            counters.forEach(counter => {
+              // Apply a subtle highlight
+              counter.style.color = '#FF6B00';
+              // Return to normal after a short delay
+              setTimeout(() => {
+                counter.style.color = '';
+              }, 1000);
+            });
           }
         }, 1500); // Wait 1.5 seconds after page load
       });
