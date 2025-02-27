@@ -720,43 +720,42 @@ async function displaySearchResults(results, query) {
   const resultsContainer = document.getElementById('search-results');
   const noResultsMessage = document.getElementById('no-results-message');
   const searchSummary = document.getElementById('search-summary');
+  const loadingOverlay = document.getElementById('loading-overlay');
+  
+  // Always ensure loading overlay is hidden
+  if (loadingOverlay) {
+    loadingOverlay.classList.add('hidden');
+  }
   
   // Update counter badges
-  const teamCount = results.filter(r => r.type === 'team').length;
-  const eventCount = results.filter(r => r.type === 'event').length;
-  const pageCount = results.filter(r => r.type === 'page').length;
-  
-  document.querySelector('#filter-teams .counter').textContent = teamCount;
-  document.querySelector('#filter-events .counter').textContent = eventCount;
-  document.querySelector('#filter-pages .counter').textContent = pageCount;
-  
-  // Hide loading overlay
-  document.getElementById('loading-overlay').classList.add('hidden');
+  updateFilterCounters(results);
   
   // Handle empty results
   if (results.length === 0) {
-    resultsContainer.innerHTML = '';
-    noResultsMessage.classList.remove('hidden');
-    searchSummary.textContent = `No results found for "${query}"`;
+    if (resultsContainer) resultsContainer.innerHTML = '';
+    if (noResultsMessage) noResultsMessage.classList.remove('hidden');
+    if (searchSummary) searchSummary.textContent = `No results found for "${query}"`;
     return;
   }
   
   // Show results
-  noResultsMessage.classList.add('hidden');
-  searchSummary.textContent = `Found ${results.length} results for "${query}"`;
+  if (noResultsMessage) noResultsMessage.classList.add('hidden');
+  if (searchSummary) searchSummary.textContent = `Found ${results.length} results for "${query}"`;
   
   // Generate HTML for all results
-  resultsContainer.innerHTML = results
-    .map((result, index) => {
-      // Add a staggered animation delay based on index
-      const delay = 0.1 * (index % 10);
-      return `
-        <div class="animate__animated animate__fadeInUp" style="animation-delay: ${delay}s;">
-          ${renderSearchResult(result)}
-        </div>
-      `;
-    })
-    .join('');
+  if (resultsContainer) {
+    resultsContainer.innerHTML = results
+      .map((result, index) => {
+        // Add a staggered animation delay based on index
+        const delay = 0.1 * (index % 10);
+        return `
+          <div class="animate__animated animate__fadeInUp" style="animation-delay: ${delay}s;">
+            ${renderSearchResult(result)}
+          </div>
+        `;
+      })
+      .join('');
+  }
 }
 
 // Filter results by type
@@ -792,13 +791,22 @@ async function initSearchPage() {
     if (loadingOverlay) {
       loadingOverlay.classList.add('hidden');
     }
+    const noResultsMessage = document.getElementById('no-results-message');
+    if (noResultsMessage) {
+      noResultsMessage.classList.remove('hidden');
+    }
     return;
   }
   
-  // Perform search
+  // Perform search with proper error handling
   try {
     // Store results globally for access by filter functions
     window.searchResults = await searchAllItems(query);
+    
+    // Always hide loading overlay before proceeding
+    if (loadingOverlay) {
+      loadingOverlay.classList.add('hidden');
+    }
     
     // Display results
     await displaySearchResults(window.searchResults, query);
@@ -807,13 +815,17 @@ async function initSearchPage() {
     setupFilterButtons(window.searchResults, query);
   } catch (error) {
     console.error("Error performing search:", error);
+    
+    // Always hide loading overlay on error
+    if (loadingOverlay) {
+      loadingOverlay.classList.add('hidden');
+    }
+    
     const searchSummary = document.getElementById('search-summary');
     if (searchSummary) {
       searchSummary.textContent = 'An error occurred while searching';
     }
-    if (loadingOverlay) {
-      loadingOverlay.classList.add('hidden');
-    }
+    
     const noResultsMessage = document.getElementById('no-results-message');
     if (noResultsMessage) {
       noResultsMessage.classList.remove('hidden');
@@ -1247,4 +1259,155 @@ function debounce(func, wait) {
 // Call setupSearchSuggestions when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
   setupSearchSuggestions();
+});
+
+// Add this function to update filter counters
+function updateFilterCounters(results) {
+  if (!results) return;
+  
+  // Count items by type
+  const counts = {
+    team: results.filter(result => result.type === 'team').length,
+    event: results.filter(result => result.type === 'event').length,
+    page: results.filter(result => result.type === 'page').length
+  };
+  
+  // Update counter elements
+  const teamCounter = document.querySelector('#filter-teams .counter');
+  const eventCounter = document.querySelector('#filter-events .counter');
+  const pageCounter = document.querySelector('#filter-pages .counter');
+  
+  if (teamCounter) teamCounter.textContent = counts.team;
+  if (eventCounter) eventCounter.textContent = counts.event;
+  if (pageCounter) pageCounter.textContent = counts.page;
+  
+  // Update total count in "All Results" button
+  const totalCount = results.length;
+  const allResultsCounter = document.querySelector('#filter-all .counter');
+  
+  if (allResultsCounter) {
+    allResultsCounter.textContent = totalCount;
+  } else if (document.querySelector('#filter-all')) {
+    // Create counter if it doesn't exist
+    const counterSpan = document.createElement('span');
+    counterSpan.className = 'counter';
+    counterSpan.textContent = totalCount;
+    document.querySelector('#filter-all').appendChild(counterSpan);
+  }
+}
+
+// Function to display search results
+function displaySearchResults(results, query) {
+  // Store results globally for filtering
+  window.searchResults = results;
+  
+  // Update the filter counters
+  updateFilterCounters(results);
+  
+  // Rest of the existing display logic
+  // ...
+}
+
+// Function to display filtered results
+function displayFilteredResults(filteredResults, query) {
+  const resultsContainer = document.getElementById('search-results');
+  const noResultsMessage = document.getElementById('no-results-message');
+  
+  if (filteredResults.length === 0) {
+    resultsContainer.innerHTML = '';
+    noResultsMessage.classList.remove('hidden');
+  } else {
+    noResultsMessage.classList.add('hidden');
+    resultsContainer.innerHTML = filteredResults
+      .map(result => `<div class="result-card-container">${renderSearchResult(result, query)}</div>`)
+      .join('');
+  }
+}
+
+// Handle filter button clicks
+document.addEventListener('DOMContentLoaded', function() {
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  
+  filterButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const filterType = this.id.replace('filter-', '');
+      
+      // Remove active class from all buttons
+      filterButtons.forEach(btn => btn.classList.remove('active-filter'));
+      
+      // Add active class to clicked button
+      this.classList.add('active-filter');
+      
+      // Apply filter to search results
+      if (window.searchResults) {
+        const results = window.searchResults;
+        const filteredResults = filterType === 'all' ? 
+          results : 
+          results.filter(result => result.type === filterType);
+        
+        // Get search query from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const query = urlParams.get('q') || '';
+        
+        // Display filtered results
+        displayFilteredResults(filteredResults, query);
+      }
+    });
+  });
+  
+  // Process search query from URL on page load
+  const urlParams = new URLSearchParams(window.location.search);
+  const query = urlParams.get('q') || '';
+  
+  if (query) {
+    // Set search input value
+    document.getElementById('results-search-input').value = query;
+    document.getElementById('search-input').value = query;
+    if (document.getElementById('mobile-search-input')) {
+      document.getElementById('mobile-search-input').value = query;
+    }
+    
+    // Update search summary
+    const searchSummary = document.getElementById('search-summary');
+    if (searchSummary) {
+      searchSummary.textContent = `Showing results for "${query}"`;
+    }
+    
+    // Perform search (implement or call your actual search function)
+    initSearchPage();
+    
+    // Safety timeout to hide loading overlay if search takes too long
+    setTimeout(() => {
+      const loadingOverlay = document.getElementById('loading-overlay');
+      if (loadingOverlay && !loadingOverlay.classList.contains('hidden')) {
+        console.warn('Search taking too long, hiding loading overlay');
+        loadingOverlay.classList.add('hidden');
+      }
+    }, 8000); // 8 second timeout
+  } else {
+    // Hide loading overlay if no query
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay) {
+      loadingOverlay.classList.add('hidden');
+    }
+    // Show no results message
+    const noResultsMessage = document.getElementById('no-results-message');
+    if (noResultsMessage) {
+      noResultsMessage.classList.remove('hidden');
+    }
+  }
+});
+
+// Additional code for search functionality
+// ...
+
+// Add a global failsafe to hide the loading overlay
+window.addEventListener('load', function() {
+  setTimeout(() => {
+    const loadingOverlay = document.getElementById('loading-overlay');
+    if (loadingOverlay && !loadingOverlay.classList.contains('hidden')) {
+      console.warn('Loading overlay still visible after page load, hiding it');
+      loadingOverlay.classList.add('hidden');
+    }
+  }, 3000); // 3 seconds after page load
 });
