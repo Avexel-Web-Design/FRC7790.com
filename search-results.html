@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <link rel="shortcut icon" type="image/png" href="public/assets/images/logo.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search Results - Baywatch Robotics | FRC Team 7790</title>
+    <meta
+      name="description"
+      content="Search results for teams, events, and content related to FRC Team 7790 Baywatch Robotics."
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="public/js/search.js" defer></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "baywatch-orange": "#FF6B00",
+              "baywatch-dark": "#1A1A1A",
+            },
+            fontFamily: {
+              poppins: ["Poppins", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link href="public/styles/main.css" rel="stylesheet" />
+    <script src="public/js/animations.js" defer></script>
+    <script src="public/js/search.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  </head>
+
+  <body class="bg-black text-white font-poppins min-h-screen flex flex-col">
+    <!-- Navigation Bar -->
+    <nav
+      class="fixed top-0 w-full z-50 transition-all duration-300"
+      id="navbar"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-2">
+          <a
+            href="index.html#"
+            class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
+          >
+            <img
+              src="public/assets/images/logo.png"
+              alt="Baywatch Robotics Logo"
+              class="w-20 h-20"
+            />
+          </a>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        
+        <!-- Desktop Menu -->
+        <ul class="hidden md:flex space-x-8">
+          <li>
+            <a
+              href="robots.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Robots</a
+            >
+          </li>
+          <li>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
+            >
+          </li>
+          <li>
+            <a
+              href="schedule.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Schedule</a
+            >
+          </li>
+          <li>
+            <a
+              href="ftc.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >FTC</a
+            >
+          </li>
+        </ul>
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button
+            id="mobile-menu-btn"
+            class="focus:outline-none transition-transform duration-300"
+          >
+            <i class="fas fa-bars text-3xl"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div
+      id="mobile-menu-overlay"
+      class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
+    >
+      <!-- Mobile Search Bar -->
+      <div class="px-8 pt-32 pb-4">
+        <div class="flex items-center bg-black/50 rounded-lg border border-gray-700 px-3 py-2">
+          <input 
+            type="text" 
+            id="mobile-search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="mobile-search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="flex flex-col items-center justify-center h-full space-y-8 -mt-32">
+        <a
+          href="robots.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Robots</a
+        >
+        <a
+          href="sponsors.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Sponsors</a
+        >
+        <a
+          href="schedule.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Schedule</a
+        >
+        <a
+          href="ftc.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >FTC</a
+        >
+      </div>
+    </div>
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+      const menuBtn = document.getElementById("mobile-menu-btn");
+      const mobileMenu = document.getElementById("mobile-menu-overlay");
+      let menuOpen = false;
+
+      menuBtn.addEventListener("click", () => {
+        menuOpen = !menuOpen;
+
+        if (menuOpen) {
+          // Show menu with slide-down effect
+          mobileMenu.classList.remove("hidden");
+          mobileMenu.classList.remove("animate__fadeOutUp");
+          mobileMenu.classList.add("animate__fadeInDown");
+          // Rotate hamburger to X
+          menuBtn.firstElementChild.classList.remove("fa-bars");
+          menuBtn.firstElementChild.classList.add(
+            "fa-times",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+        } else {
+          // Animate hide menu with slide-up effect then hide
+          mobileMenu.classList.remove("animate__fadeInDown");
+          mobileMenu.classList.add("animate__fadeOutUp");
+          // Rotate X back to hamburger
+          menuBtn.firstElementChild.classList.remove(
+            "fa-times",
+            "animate__rotateIn"
+          );
+          menuBtn.firstElementChild.classList.add(
+            "fa-bars",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+          // After animation, add hidden class
+          setTimeout(() => {
+            mobileMenu.classList.add("hidden");
+          }, 500);
+        }
+      });
+    </script>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-16 relative z-10">
+      <div class="container mx-auto px-6">
+        <h1 class="text-5xl md:text-7xl font-bold text-center">
+          <span class="text-white inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.2s">Search</span>
+          <span class="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.4s">Results</span>
+        </h1>
+        <div class="max-w-3xl mx-auto mt-8">
+          <div class="flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-4 py-2">
+            <input 
+              type="text" 
+              id="results-search-input" 
+              placeholder="Search teams, events, or content..." 
+              class="bg-transparent border-none focus:outline-none text-white w-full text-lg"
+              aria-label="Search for team or event">
+            <button 
+              id="results-search-button"
+              class="text-baywatch-orange hover:text-white transition-colors"
+              aria-label="Search">
+              <i class="fas fa-search text-xl"></i>
+            </button>
+          </div>
+          <p id="search-summary" class="text-gray-400 text-center mt-4 animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+            Loading search results...
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading Overlay - Shows while results are loading -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+      <div class="text-center">
+        <div class="w-16 h-16 border-4 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin mx-auto mb-4"></div>
+        <h2 class="text-xl font-bold text-baywatch-orange">Searching</h2>
+        <p class="text-gray-400 mt-2">Finding relevant results for you</p>
+        <!-- Add a manual dismiss button as a failsafe -->
+        <button 
+          id="dismiss-loading" 
+          class="mt-6 px-4 py-2 text-xs text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition-colors"
+          onclick="document.getElementById('loading-overlay').classList.add('hidden')">
+          Dismiss if stuck
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow">
+      <!-- Filter Controls -->
+      <div class="container mx-auto px-6 mb-8">
+        <div class="flex flex-wrap gap-3">
+          <button id="filter-all" class="filter-btn active-filter px-4 py-1 rounded-full text-sm border border-baywatch-orange/50 bg-baywatch-orange/20 hover:bg-baywatch-orange/30 transition-colors">
+            All Results <span class="counter">0</span>
+          </button>
+          <button id="filter-teams" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
+            Teams <span class="counter">0</span>
+          </button>
+          <button id="filter-events" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
+            Events <span class="counter">0</span>
+          </button>
+          <button id="filter-pages" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
+            Pages <span class="counter">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Container -->
+      <div class="container mx-auto px-6 mb-12">
+        <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Results will be inserted here by JavaScript -->
+          <div class="animate-pulse card-gradient rounded-xl p-6">
+            <div class="h-6 bg-gray-700/50 rounded w-3/4 mb-4"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-full mb-2"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-5/6"></div>
+          </div>
+          <div class="animate-pulse card-gradient rounded-xl p-6">
+            <div class="h-6 bg-gray-700/50 rounded w-3/4 mb-4"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-full mb-2"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-5/6"></div>
+          </div>
+          <div class="animate-pulse card-gradient rounded-xl p-6">
+            <div class="h-6 bg-gray-700/50 rounded w-3/4 mb-4"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-full mb-2"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-5/6"></div>
+          </div>
+        </div>
+
+        <!-- No Results Message (initially hidden) -->
+        <div id="no-results-message" class="hidden text-center py-12 empty-state-container">
+          <i class="fas fa-search text-gray-600 text-5xl mb-4 empty-state-icon"></i>
+          <h3 class="text-xl font-bold text-gray-400 mb-2">No results found</h3>
+          <p class="text-gray-500">Try different keywords or check your spelling</p>
+          <a href="index.html" class="inline-block mt-6 px-4 py-2 rounded-lg bg-baywatch-orange/20 text-baywatch-orange hover:bg-baywatch-orange/30 transition-colors">
+            <i class="fas fa-home mr-2"></i>Return to Home
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black py-12">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="flex space-x-4 mb-4 md:mb-0">
+            <a
+              href="https://youtube.com/@frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube"
+            >
+              <i class="fab fa-youtube"></i>
+            </a>
+            <a
+              href="https://instagram.com/frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram"
+            >
+              <i class="fab fa-instagram"></i>
+            </a>
+          </div>
+          <div class="text-gray-400 text-sm">
+            © 2025 Baywatch Robotics. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <style>
+      .filter-btn {
+        transition: all 0.3s ease;
+      }
+      
+      .active-filter {
+        background-color: rgba(255, 107, 0, 0.3) !important;
+        border-color: rgba(255, 107, 0, 0.8) !important;
+        color: #FF6B00;
+        font-weight: 500;
+      }
+      
+      .filter-btn .counter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        margin-left: 4px;
+        background-color: rgba(0,0,0,0.3);
+        border-radius: 10px;
+        font-size: 0.75rem;
+      }
+      
+      .active-filter .counter {
+        background-color: rgba(255, 107, 0, 0.4);
+      }
+      
+      /* Remove hover effects for result cards */
+      
+      /* Result type indicators */
+      .result-type-badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      
+      .team-badge {
+        background-color: rgba(37, 99, 235, 0.2);
+        color: #60a5fa;
+      }
+      
+      .event-badge {
+        background-color: rgba(220, 38, 38, 0.2);
+        color: #f87171;
+      }
+      
+      .page-badge {
+        background-color: rgba(5, 150, 105, 0.2);
+        color: #34d399;
+      }
+      
+      /* Highlight matches in result text */
+      .highlight {
+        color: #FF6B00;
+        font-weight: 500;
+      }
+      
+      /* Empty state styling */
+      #no-results-message {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      /* Add styles for search suggestions */
+      .suggestion-item {
+        transition: all 0.15s ease;
+      }
+      
+      .suggestion-item:hover {
+        background-color: rgba(255, 107, 0, 0.15) !important;
+      }
+      
+      /* Enhanced highlight styling for search results */
+      .highlight {
+        position: relative;
+        color: #FF6B00;
+        font-weight: 500;
+        display: inline-block;
+        padding: 0 2px;
+      }
+      
+      .highlight::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        border-radius: 1px;
+        background-color: rgba(255, 107, 0, 0.3);
+      }
+
+      /* Enhanced filter button styles */
+      .filter-btn {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        min-width: 120px; /* Prevent size changes during animation */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25rem 0.75rem;
+        height: 32px; /* Fixed height */
+      }
+      
+      .filter-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 107, 0, 0.15);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+        z-index: -1;
+        border-radius: 9999px;
+      }
+      
+      .filter-btn:hover::before {
+        transform: scaleX(1);
+      }
+      
+      .active-filter {
+        background-color: rgba(255, 107, 0, 0.3) !important;
+        border-color: rgba(255, 107, 0, 0.8) !important;
+        color: #FF6B00;
+        font-weight: 500;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(255, 107, 0, 0.2);
+      }
+      
+      /* Smooth transitions between filtered views */
+      #search-results {
+        transition: opacity 0.15s ease;
+      }
+      
+      .result-card-container {
+        transition: none !important;
+      }
+      
+      .result-card {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+      
+      /* Override animate.css animations for result cards */
+      .result-card-container.animate__animated,
+      .animate__animated .result-card {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        animation-delay: 0s !important;
+      }
+      
+      /* No results message animation */
+      #no-results-message {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+
+      /* Enhanced counter styling - No animation */
+      .filter-btn .counter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        margin-left: 4px;
+        background-color: rgba(0,0,0,0.3);
+        border-radius: 10px;
+        font-size: 0.75rem;
+        transition: all 0.3s ease;
+      }
+      
+      .active-filter .counter {
+        background-color: rgba(255, 107, 0, 0.4);
+        color: #fff;
+      }
+      
+      /* Revised animation for counter updates - less intense */
+      .counter-updated {
+        animation: counterPulse 0.3s ease-out;
+      }
+      
+      @keyframes counterPulse {
+        0% { transform: scale(1); color: inherit; }
+        50% { transform: scale(1.1); color: #FF6B00; } 
+        100% { transform: scale(1); color: inherit; }
+      }
+
+      /* Add these styles to improve search result cards */
+      .result-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+      
+      .result-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+      
+      /* Additional hover effect for result cards */
+      .result-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(to right, #FF6B00, #FF8F00);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+      }
+      
+      .result-card:hover::after {
+        transform: scaleX(1);
+      }
+      
+      /* Remove the default group-hover styles when using animate.css */
+      .animate__fadeIn .result-card .group-hover\:opacity-100,
+      .animate__fadeInUp .result-card .group-hover\:opacity-100 {
+        opacity: 0;
+      }
+      
+      .result-card-container {
+        height: 100%;
+      }
+      
+      .result-card-container > * {
+        height: 100%;
+      }
+
+      /* Result cards with proper flex structure */
+      .result-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.2s ease;
+      }
+      
+      /* Ensure content area takes up available space, pushing footer to bottom */
+      .result-card-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      /* Footer area with proper spacing */
+      .result-card-footer {
+        margin-top: auto;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+    </style>
+    
+    <!-- Additional Script to Ensure Filter Functionality -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Set up filter button click events if not handled by search.js
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        
+        filterButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const filterType = this.id.replace('filter-', '');
+            
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active-filter'));
+            
+            // Add active class to clicked button
+            this.classList.add('active-filter');
+            
+            // Apply filter if window.searchResults exists
+            if (window.searchResults) {
+              const results = window.searchResults;
+              const filteredResults = filterType === 'all' ? 
+                results : 
+                results.filter(result => result.type === filterType);
+              
+              // Get search query from URL
+              const urlParams = new URLSearchParams(window.location.search);
+              const query = urlParams.get('q') || '';
+              
+              // Display filtered results
+              if (typeof displayFilteredResults === 'function') {
+                displayFilteredResults(filteredResults, query);
+              }
+            }
+          });
+        });
+      });
+    </script>
+
+    <!-- Add this simple script at the end of the body to ensure filter buttons work -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Add direct click handlers for filter buttons as a backup
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        
+        filterButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            // Get filter type from button ID
+            const filterType = this.id.replace('filter-', '');
+            
+            // Apply visual indication immediately
+            filterButtons.forEach(btn => btn.classList.remove('active-filter'));
+            this.classList.add('active-filter');
+            
+            // Filter results if they're available
+            if (window.searchResults) {
+              let filteredResults;
+              if (filterType === 'all') {
+                filteredResults = window.searchResults;
+              } else {
+                filteredResults = window.searchResults.filter(result => result.type === filterType);
+              }
+              
+              // Use the displayFilteredResults function from search.js if available
+              if (typeof displayFilteredResults === 'function') {
+                const urlParams = new URLSearchParams(window.location.search);
+                const query = urlParams.get('q') || '';
+                displayFilteredResults(filteredResults, query);
+              } else {
+                // Fallback direct DOM manipulation if function is not available
+                const resultsContainer = document.getElementById('search-results');
+                const noResultsMessage = document.getElementById('no-results-message');
+                
+                if (filteredResults.length === 0) {
+                  if (resultsContainer) resultsContainer.innerHTML = '';
+                  if (noResultsMessage) noResultsMessage.classList.remove('hidden');
+                } else {
+                  if (noResultsMessage) noResultsMessage.classList.add('hidden');
+                  if (resultsContainer) {
+                    resultsContainer.innerHTML = filteredResults
+                      .map(result => `<div class="result-card-container">${renderSearchResult(result)}</div>`)
+                      .join('');
+                  }
+                }
+              }
+              
+              // After results are rendered, ensure all animations are disabled
+              setTimeout(() => {
+                document.querySelectorAll('.result-card, .result-card-container').forEach(card => {
+                  card.style.animation = 'none';
+                  card.style.transition = 'none';
+                  card.style.transform = 'none';
+                  card.style.opacity = '1';
+                  
+                  // Remove any animation classes added by JS
+                  card.classList.remove('animate__animated', 'animate__fadeIn', 'animate__fadeInUp');
+                });
+              }, 50);
+            }
+          });
+        });
+      });
+    </script>
+
+    <!-- Add a backup script to ensure loading overlay can be hidden -->
+    <script>
+      // This runs immediately on page load
+      document.getElementById('dismiss-loading').addEventListener('click', function() {
+        document.getElementById('loading-overlay').classList.add('hidden');
+      });
+      
+      // Also set a backup timeout
+      setTimeout(function() {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay && !loadingOverlay.classList.contains('hidden')) {
+          loadingOverlay.classList.add('hidden');
+        }
+      }, 10000); // 10 second fallback
+    </script>
+
+    <!-- Add this script right before the closing body tag to ensure counters display correctly -->
+    <script>
+      // Initialize counters to prevent them from showing empty values 
+      document.addEventListener('DOMContentLoaded', function() {
+        // Set initial zero values for counters if they don't have text content
+        const counterElements = document.querySelectorAll('.filter-btn .counter');
+        counterElements.forEach(counter => {
+          if (!counter.textContent || counter.textContent.trim() === '') {
+            counter.textContent = '0';
+          }
+        });
+        
+        // Check if we should forcefully hide the loading overlay after a delay
+        setTimeout(() => {
+          const overlay = document.getElementById('loading-overlay');
+          if (overlay && !overlay.classList.contains('hidden')) {
+            overlay.classList.add('hidden');
+            console.warn('Force-hiding loading overlay after timeout');
+          }
+        }, 5000);
+      });
+    </script>
+
+    <!-- Add this script before closing body tag -->
+    <script>
+      // Last-resort fix for counters if they're all showing 0
+      window.addEventListener('load', function() {
+        // Give everything time to load and initialize
+        setTimeout(function() {
+          // Get all counter elements
+          const counters = document.querySelectorAll('.filter-btn .counter');
+          const allZeros = Array.from(counters).every(counter => 
+            counter.textContent === '0' || !counter.textContent.trim());
+          
+          // If all counters show 0 but we have search results, update them
+          if (allZeros && window.searchResults && window.searchResults.length > 0) {
+            console.log('Emergency counter fix: Counters are showing 0 but we have results');
+            
+            // Direct DOM update of counters
+            const teamCount = window.searchResults.filter(r => r.type === 'team').length;
+            const eventCount = window.searchResults.filter(r => r.type === 'event').length;
+            const pageCount = window.searchResults.filter(r => r.type === 'page').length;
+            const totalCount = window.searchResults.length;
+            
+            // Update the counters directly
+            document.querySelector('#filter-all .counter').textContent = totalCount;
+            document.querySelector('#filter-teams .counter').textContent = teamCount;
+            document.querySelector('#filter-events .counter').textContent = eventCount;
+            document.querySelector('#filter-pages .counter').textContent = pageCount;
+            
+            // Add subtle highlight instead of animation for emergency fix
+            counters.forEach(counter => {
+              // Apply a subtle highlight
+              counter.style.color = '#FF6B00';
+              // Return to normal after a short delay
+              setTimeout(() => {
+                counter.style.color = '';
+              }, 1000);
+            });
+          }
+        }, 1500); // Wait 1.5 seconds after page load
+      });
+      
+      // Add developer console debug function
+      window.checkCounters = function() {
+        const counters = {
+          all: document.querySelector('#filter-all .counter').textContent,
+          teams: document.querySelector('#filter-teams .counter').textContent,
+          events: document.querySelector('#filter-events .counter').textContent,
+          pages: document.querySelector('#filter-pages .counter').textContent
+        };
+        
+        console.log('Current counter values:', counters);
+        
+        if (window.searchResults) {
+          const actualCounts = {
+            all: window.searchResults.length,
+            teams: window.searchResults.filter(r => r.type === 'team').length,
+            events: window.searchResults.filter(r => r.type === 'event').length,
+            pages: window.searchResults.filter(r => r.type === 'page').length
+          };
+          
+          console.log('Actual counts from results:', actualCounts);
+          
+          // Compare and highlight mismatches
+          const mismatches = [];
+          Object.keys(counters).forEach(key => {
+            if (parseInt(counters[key]) !== actualCounts[key]) {
+              mismatches.push(`${key}: counter shows ${counters[key]}, actual is ${actualCounts[key]}`);
+            }
+          });
+          
+          if (mismatches.length > 0) {
+            console.warn('Mismatches detected:', mismatches);
+          } else {
+            console.log('All counters match expected values');
+          }
+        } else {
+          console.log('No search results available to compare');
+        }
+        
+        return { displayed: counters, window_searchResults: window.searchResults };
+      };
+    </script>
+
+  </body>
+</html>
