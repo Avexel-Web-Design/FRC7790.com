@@ -715,7 +715,7 @@ function renderSearchResult(result) {
   `;
 }
 
-// Update the results display with the given results array
+// Update the results display with the given results array - Fix counter updating
 async function displaySearchResults(results, query) {
   const resultsContainer = document.getElementById('search-results');
   const noResultsMessage = document.getElementById('no-results-message');
@@ -727,8 +727,17 @@ async function displaySearchResults(results, query) {
     loadingOverlay.classList.add('hidden');
   }
   
-  // Update counter badges
-  updateFilterCounters(results);
+  // Make sure we have results before continuing
+  if (!results || !Array.isArray(results)) {
+    console.warn('No valid results array to display');
+    results = [];
+  }
+  
+  // Store results globally for later use by filters
+  window.searchResults = results;
+  
+  // Update counters with actual result counts - IMPORTANT: Do this AFTER setting searchResults
+  updateCountersFromResults(results);
   
   // Handle empty results
   if (results.length === 0) {
@@ -808,6 +817,12 @@ async function initSearchPage() {
       loadingOverlay.classList.add('hidden');
     }
     
+    // Log results for debugging
+    console.log(`Search returned ${window.searchResults.length} results`);
+    
+    // Update counters immediately after getting results
+    updateCountersFromResults(window.searchResults);
+    
     // Display results
     await displaySearchResults(window.searchResults, query);
     
@@ -840,6 +855,9 @@ function setupFilterButtons(allResults, query) {
   const teamsButton = document.getElementById('filter-teams');
   const eventsButton = document.getElementById('filter-events');
   const pagesButton = document.getElementById('filter-pages');
+  
+  // Make sure we update counters when we first set up buttons
+  updateCountersFromResults(allResults);
   
   // Simple function to filter and display results with proper type mapping
   function filterAndDisplay(type) {
@@ -1275,38 +1293,49 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Add this function to update filter counters
-function updateFilterCounters(results) {
-  if (!results) return;
+function updateCountersFromResults(results) {
+  if (!results || !Array.isArray(results)) {
+    console.warn('Invalid results provided to updateCountersFromResults');
+    return;
+  }
   
-  // Count items by type - using singular type names from the result objects
+  // Log for debugging
+  console.log(`Updating counters with ${results.length} results`, {
+    teams: results.filter(r => r.type === 'team').length,
+    events: results.filter(r => r.type === 'event').length,
+    pages: results.filter(r => r.type === 'page').length
+  });
+  
+  // Count items by type
   const counts = {
-    team: results.filter(result => result.type === 'team').length,
-    event: results.filter(result => result.type === 'event').length,
-    page: results.filter(result => result.type === 'page').length
+    team: results.filter(r => r.type === 'team').length,
+    event: results.filter(r => r.type === 'event').length,
+    page: results.filter(r => r.type === 'page').length,
+    all: results.length
+  };
+
+  // Update counter elements with animation
+  const updateCounter = (elementId, count) => {
+    const counterElement = document.querySelector(`#${elementId} .counter`);
+    if (counterElement) {
+      // Add animation class
+      counterElement.classList.add('counter-updated');
+      
+      // Update the text
+      counterElement.textContent = count;
+      
+      // Remove animation class after animation completes
+      setTimeout(() => {
+        counterElement.classList.remove('counter-updated');
+      }, 500);
+    }
   };
   
-  // Update counter elements - using plural IDs for the buttons
-  const teamCounter = document.querySelector('#filter-teams .counter');
-  const eventCounter = document.querySelector('#filter-events .counter');
-  const pageCounter = document.querySelector('#filter-pages .counter');
-  
-  if (teamCounter) teamCounter.textContent = counts.team;
-  if (eventCounter) eventCounter.textContent = counts.event;
-  if (pageCounter) pageCounter.textContent = counts.page;
-  
-  // Update total count in "All Results" button
-  const totalCount = results.length;
-  const allResultsCounter = document.querySelector('#filter-all .counter');
-  
-  if (allResultsCounter) {
-    allResultsCounter.textContent = totalCount;
-  } else if (document.querySelector('#filter-all')) {
-    // Create counter if it doesn't exist
-    const counterSpan = document.createElement('span');
-    counterSpan.className = 'counter';
-    counterSpan.textContent = totalCount;
-    document.querySelector('#filter-all').appendChild(counterSpan);
-  }
+  // Update all counters
+  updateCounter('filter-all', counts.all);
+  updateCounter('filter-teams', counts.team);
+  updateCounter('filter-events', counts.event);
+  updateCounter('filter-pages', counts.page);
 }
 
 // Function to display search results
@@ -1315,7 +1344,7 @@ function displaySearchResults(results, query) {
   window.searchResults = results;
   
   // Update the filter counters
-  updateFilterCounters(results);
+  updateCountersFromResults(results);
   
   // Rest of the existing display logic
   // ...
@@ -1426,38 +1455,49 @@ window.addEventListener('load', function() {
 });
 
 // Fix updateFilterCounters function to properly map button IDs to result types
-function updateFilterCounters(results) {
-  if (!results) return;
+function updateCountersFromResults(results) {
+  if (!results || !Array.isArray(results)) {
+    console.warn('Invalid results provided to updateCountersFromResults');
+    return;
+  }
   
-  // Count items by type - using singular type names from the result objects
+  // Log for debugging
+  console.log(`Updating counters with ${results.length} results`, {
+    teams: results.filter(r => r.type === 'team').length,
+    events: results.filter(r => r.type === 'event').length,
+    pages: results.filter(r => r.type === 'page').length
+  });
+  
+  // Count items by type
   const counts = {
-    team: results.filter(result => result.type === 'team').length,
-    event: results.filter(result => result.type === 'event').length,
-    page: results.filter(result => result.type === 'page').length
+    team: results.filter(r => r.type === 'team').length,
+    event: results.filter(r => r.type === 'event').length,
+    page: results.filter(r => r.type === 'page').length,
+    all: results.length
+  };
+
+  // Update counter elements with animation
+  const updateCounter = (elementId, count) => {
+    const counterElement = document.querySelector(`#${elementId} .counter`);
+    if (counterElement) {
+      // Add animation class
+      counterElement.classList.add('counter-updated');
+      
+      // Update the text
+      counterElement.textContent = count;
+      
+      // Remove animation class after animation completes
+      setTimeout(() => {
+        counterElement.classList.remove('counter-updated');
+      }, 500);
+    }
   };
   
-  // Update counter elements - using plural IDs for the buttons
-  const teamCounter = document.querySelector('#filter-teams .counter');
-  const eventCounter = document.querySelector('#filter-events .counter');
-  const pageCounter = document.querySelector('#filter-pages .counter');
-  
-  if (teamCounter) teamCounter.textContent = counts.team;
-  if (eventCounter) eventCounter.textContent = counts.event;
-  if (pageCounter) pageCounter.textContent = counts.page;
-  
-  // Update total count in "All Results" button
-  const totalCount = results.length;
-  const allResultsCounter = document.querySelector('#filter-all .counter');
-  
-  if (allResultsCounter) {
-    allResultsCounter.textContent = totalCount;
-  } else if (document.querySelector('#filter-all')) {
-    // Create counter if it doesn't exist
-    const counterSpan = document.createElement('span');
-    counterSpan.className = 'counter';
-    counterSpan.textContent = totalCount;
-    document.querySelector('#filter-all').appendChild(counterSpan);
-  }
+  // Update all counters
+  updateCounter('filter-all', counts.all);
+  updateCounter('filter-teams', counts.team);
+  updateCounter('filter-events', counts.event);
+  updateCounter('filter-pages', counts.page);
 }
 
 // Direct and simplified filter button handling to ensure it works reliably
@@ -1467,6 +1507,9 @@ function setupFilterButtons(allResults, query) {
   const teamsButton = document.getElementById('filter-teams');
   const eventsButton = document.getElementById('filter-events');
   const pagesButton = document.getElementById('filter-pages');
+  
+  // Make sure we update counters when we first set up buttons
+  updateCountersFromResults(allResults);
   
   // Simple function to filter and display results with proper type mapping
   function filterAndDisplay(type) {

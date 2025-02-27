@@ -648,5 +648,109 @@
         }
       }, 10000); // 10 second fallback
     </script>
+
+    <!-- Add this script right before the closing body tag to ensure counters display correctly -->
+    <script>
+      // Initialize counters to prevent them from showing empty values 
+      document.addEventListener('DOMContentLoaded', function() {
+        // Set initial zero values for counters if they don't have text content
+        const counterElements = document.querySelectorAll('.filter-btn .counter');
+        counterElements.forEach(counter => {
+          if (!counter.textContent || counter.textContent.trim() === '') {
+            counter.textContent = '0';
+          }
+        });
+        
+        // Check if we should forcefully hide the loading overlay after a delay
+        setTimeout(() => {
+          const overlay = document.getElementById('loading-overlay');
+          if (overlay && !overlay.classList.contains('hidden')) {
+            overlay.classList.add('hidden');
+            console.warn('Force-hiding loading overlay after timeout');
+          }
+        }, 5000);
+      });
+    </script>
+
+    <!-- Add this script before closing body tag -->
+    <script>
+      // Last-resort fix for counters if they're all showing 0
+      window.addEventListener('load', function() {
+        // Give everything time to load and initialize
+        setTimeout(function() {
+          // Get all counter elements
+          const counters = document.querySelectorAll('.filter-btn .counter');
+          const allZeros = Array.from(counters).every(counter => 
+            counter.textContent === '0' || !counter.textContent.trim());
+          
+          // If all counters show 0 but we have search results, update them
+          if (allZeros && window.searchResults && window.searchResults.length > 0) {
+            console.log('Emergency counter fix: Counters are showing 0 but we have results');
+            
+            // Direct DOM update of counters
+            const teamCount = window.searchResults.filter(r => r.type === 'team').length;
+            const eventCount = window.searchResults.filter(r => r.type === 'event').length;
+            const pageCount = window.searchResults.filter(r => r.type === 'page').length;
+            const totalCount = window.searchResults.length;
+            
+            // Update the counters directly
+            document.querySelector('#filter-all .counter').textContent = totalCount;
+            document.querySelector('#filter-teams .counter').textContent = teamCount;
+            document.querySelector('#filter-events .counter').textContent = eventCount;
+            document.querySelector('#filter-pages .counter').textContent = pageCount;
+            
+            // Add animation
+            counters.forEach(counter => counter.classList.add('counter-updated'));
+            
+            // Remove animation after it completes
+            setTimeout(() => {
+              counters.forEach(counter => counter.classList.remove('counter-updated'));
+            }, 500);
+          }
+        }, 1500); // Wait 1.5 seconds after page load
+      });
+      
+      // Add developer console debug function
+      window.checkCounters = function() {
+        const counters = {
+          all: document.querySelector('#filter-all .counter').textContent,
+          teams: document.querySelector('#filter-teams .counter').textContent,
+          events: document.querySelector('#filter-events .counter').textContent,
+          pages: document.querySelector('#filter-pages .counter').textContent
+        };
+        
+        console.log('Current counter values:', counters);
+        
+        if (window.searchResults) {
+          const actualCounts = {
+            all: window.searchResults.length,
+            teams: window.searchResults.filter(r => r.type === 'team').length,
+            events: window.searchResults.filter(r => r.type === 'event').length,
+            pages: window.searchResults.filter(r => r.type === 'page').length
+          };
+          
+          console.log('Actual counts from results:', actualCounts);
+          
+          // Compare and highlight mismatches
+          const mismatches = [];
+          Object.keys(counters).forEach(key => {
+            if (parseInt(counters[key]) !== actualCounts[key]) {
+              mismatches.push(`${key}: counter shows ${counters[key]}, actual is ${actualCounts[key]}`);
+            }
+          });
+          
+          if (mismatches.length > 0) {
+            console.warn('Mismatches detected:', mismatches);
+          } else {
+            console.log('All counters match expected values');
+          }
+        } else {
+          console.log('No search results available to compare');
+        }
+        
+        return { displayed: counters, window_searchResults: window.searchResults };
+      };
+    </script>
+
   </body>
 </html>
