@@ -6,6 +6,9 @@ const TBA_AUTH_KEY =
 // API Endpoints
 const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 
+// Constant for the 37-hour offset (in milliseconds)
+const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
+
 // Fetch event data by event code
 async function fetchEventData(eventCode) {
   try {
@@ -308,10 +311,11 @@ function updateCountdown(startDate) {
   }
 }
 
-// New function for event countdown
+// New function for event countdown - Updated to add 37-hour offset
 function updateEventCountdown(startDate) {
   const now = new Date().getTime();
-  const eventStart = new Date(startDate).getTime();
+  // Add the 37-hour offset to the TBA start date to get the actual start time
+  const eventStart = new Date(startDate).getTime() + OFFSET_MS;
   let timeLeft = eventStart - now;
   if (timeLeft < 0) timeLeft = 0;
 
@@ -331,7 +335,6 @@ function updateEventCountdown(startDate) {
 // Initialize and update all data with loading states
 async function initializeEventData() {
   setLoadingState(true);
-  const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
 
   try {
     // Use calculated next event instead of a hardcoded one
@@ -339,9 +342,14 @@ async function initializeEventData() {
     if (currentEvent) {
       const currentDate = new Date().getTime();
       const eventStart = new Date(currentEvent.start_date).getTime();
+      // Add offset to event end date (already present)
       const eventEnd = new Date(currentEvent.end_date).getTime() + OFFSET_MS;
+      
+      // Add offset to event start date for comparison
+      const actualEventStart = eventStart + OFFSET_MS;
 
-      if (currentDate >= eventStart && currentDate <= eventEnd) {
+      // Check against actual start time (with offset) for determining if the event has started
+      if (currentDate >= actualEventStart && currentDate <= eventEnd) {
         // We're currently at an event - show live data
         const eventKey = currentEvent.key;
         document.getElementById("countdown-section").classList.add("hidden");
@@ -349,22 +357,13 @@ async function initializeEventData() {
         updateRankings(eventKey);
         updateRecord(eventKey);
         updateNextMatch(eventKey);
-      } else if (currentDate < eventStart) {
-        // Next event hasn't started yet - show countdown
+      } else if (currentDate < actualEventStart) {
+        // We're before the actual start time - show countdown
         document.getElementById("countdown-section").classList.remove("hidden");
         document.getElementById("live-updates").classList.add("hidden");
-        updateCountdown(currentEvent.start_date);
-        
-        // Set up a countdown interval
-        const countdownInterval = setInterval(() => {
-          const now = new Date().getTime();
-          if (now >= eventStart) {
-            clearInterval(countdownInterval);
-            initializeEventData();
-          } else {
-            updateEventCountdown(currentEvent.start_date);
-          }
-        }, 1000);
+        // Pass the original TBA date - the function will add the offset
+        updateEventCountdown(currentEvent.start_date);
+        setInterval(() => updateEventCountdown(currentEvent.start_date), 1000);
       }
     } else {
       setErrorState("ranking-number", "No upcoming event");
@@ -2226,6 +2225,7 @@ async function loadTeamOverview() {
       let nextEvent = null;
       
       for (const event of eventsData) {
+        // Apply 37-hour offset to start and end dates
         // Apply 37-hour offset to start and end dates
         const startDate = new Date(new Date(event.start_date).getTime() + OFFSET_MS);
         const endDate = new Date(new Date(event.end_date).getTime() + OFFSET_MS);
