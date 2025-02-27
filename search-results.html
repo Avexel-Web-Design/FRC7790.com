@@ -355,15 +355,7 @@
         background-color: rgba(255, 107, 0, 0.4);
       }
       
-      /* Result card hover effects */
-      .result-card {
-        transition: all 0.3s ease;
-      }
-      
-      .result-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px -5px rgba(255, 107, 0, 0.15);
-      }
+      /* Remove hover effects for result cards */
       
       /* Result type indicators */
       .result-type-badge {
@@ -476,40 +468,26 @@
       }
       
       .result-card-container {
-        transition: all 0.3s ease;
-      }
-      
-      /* Better animation for result cards */
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+        transition: none !important;
       }
       
       .result-card {
-        animation: cardAppear 0.3s ease forwards;
-        opacity: 0;
-        transform: translateY(10px);
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
       }
       
-      @keyframes cardAppear {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      /* Override animate.css animations for result cards */
+      .result-card-container.animate__animated,
+      .animate__animated .result-card {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        animation-delay: 0s !important;
       }
       
       /* No results message animation */
-      @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      
       #no-results-message {
         animation: fadeIn 0.5s ease-in-out;
       }
@@ -598,6 +576,19 @@
                   }
                 }
               }
+              
+              // After results are rendered, ensure all animations are disabled
+              setTimeout(() => {
+                document.querySelectorAll('.result-card, .result-card-container').forEach(card => {
+                  card.style.animation = 'none';
+                  card.style.transition = 'none';
+                  card.style.transform = 'none';
+                  card.style.opacity = '1';
+                  
+                  // Remove any animation classes added by JS
+                  card.classList.remove('animate__animated', 'animate__fadeIn', 'animate__fadeInUp');
+                });
+              }, 50);
             }
           });
         });
