@@ -821,89 +821,120 @@ async function initSearchPage() {
   }
 }
 
-// Set up filter button event listeners
+// Direct and simplified filter button handling to ensure it works reliably
 function setupFilterButtons(allResults, query) {
-  const filterButtons = document.querySelectorAll('.filter-btn');
+  // Get all filter buttons
+  const allButton = document.getElementById('filter-all');
+  const teamsButton = document.getElementById('filter-teams');
+  const eventsButton = document.getElementById('filter-events');
+  const pagesButton = document.getElementById('filter-pages');
   
-  // First, remove any existing event listeners to prevent duplicates
-  filterButtons.forEach(button => {
-    button.replaceWith(button.cloneNode(true));
-  });
-  
-  // Get fresh references after cloning
-  const refreshedButtons = document.querySelectorAll('.filter-btn');
-  
-  // Add event listeners to the refreshed buttons
-  refreshedButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      // Remove active class from all buttons
-      refreshedButtons.forEach(btn => btn.classList.remove('active-filter'));
-      
-      // Add active class to clicked button
-      button.classList.add('active-filter');
-      
-      // Get filter type from button ID
-      const filterType = button.id.replace('filter-', '');
-      
-      // Filter and display results
-      const filteredResults = filterResultsByType(allResults, filterType);
-      displayFilteredResults(filteredResults, query);
-      
-      // Update URL with filter type without reloading page
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.set('filter', filterType);
-      window.history.replaceState({}, '', currentUrl);
+  // Simple function to filter and display results
+  function filterAndDisplay(type) {
+    // Remove active class from all buttons
+    [allButton, teamsButton, eventsButton, pagesButton].forEach(btn => {
+      if (btn) btn.classList.remove('active-filter');
     });
-  });
+    
+    // Add active class to clicked button
+    const buttonMap = {
+      'all': allButton,
+      'teams': teamsButton,
+      'events': eventsButton,
+      'pages': pagesButton
+    };
+    
+    if (buttonMap[type]) {
+      buttonMap[type].classList.add('active-filter');
+    }
+    
+    // Filter results
+    let filteredResults;
+    if (type === 'all') {
+      filteredResults = allResults;
+    } else {
+      filteredResults = allResults.filter(result => result.type === type);
+    }
+    
+    // Display filtered results
+    displayFilteredResults(filteredResults, query);
+    
+    // Update URL without reloading page
+    try {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('filter', type);
+      window.history.replaceState({}, '', currentUrl);
+    } catch (e) {
+      console.warn('Could not update URL with filter parameter', e);
+    }
+  }
   
-  // Set initial active filter from URL or default to 'all'
-  const urlParams = new URLSearchParams(window.location.search);
-  const activeFilter = urlParams.get('filter') || 'all';
+  // Add click listeners
+  if (allButton) {
+    allButton.onclick = () => filterAndDisplay('all');
+  }
   
-  // Find and activate the corresponding filter button
-  const activeButton = document.getElementById(`filter-${activeFilter}`);
-  if (activeButton) {
-    activeButton.click();
-  } else {
-    // Default to 'all' if the filter in URL is invalid
-    const allButton = document.getElementById('filter-all');
+  if (teamsButton) {
+    teamsButton.onclick = () => filterAndDisplay('team');
+  }
+  
+  if (eventsButton) {
+    eventsButton.onclick = () => filterAndDisplay('event');
+  }
+  
+  if (pagesButton) {
+    pagesButton.onclick = () => filterAndDisplay('page');
+  }
+  
+  // Set initial active filter from URL
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeFilter = urlParams.get('filter') || 'all';
+    
+    // Apply the correct filter based on URL parameter
+    switch (activeFilter) {
+      case 'team':
+        if (teamsButton) teamsButton.click();
+        break;
+      case 'event':
+        if (eventsButton) eventsButton.click();
+        break;
+      case 'page':
+        if (pagesButton) pagesButton.click();
+        break;
+      default:
+        if (allButton) allButton.click();
+        break;
+    }
+  } catch (e) {
+    // Default to all if there's an error
     if (allButton) allButton.click();
   }
 }
 
-// Display filtered results without changing the counters
+// Clean and simplified filtered results display
 function displayFilteredResults(results, query) {
   const resultsContainer = document.getElementById('search-results');
   const noResultsMessage = document.getElementById('no-results-message');
   
   if (!resultsContainer || !noResultsMessage) {
-    console.error('Required DOM elements not found for displaying results');
+    console.error('Required DOM elements not found');
     return;
   }
   
   // Handle empty results
   if (!results || results.length === 0) {
-    // Fade out existing results first
-    const existingResults = resultsContainer.querySelectorAll('.result-card-container');
-    existingResults.forEach(item => {
-      item.classList.add('animate__fadeOut');
-    });
-    
-    // After fade out, clear results and show no results message
-    setTimeout(() => {
-      resultsContainer.innerHTML = '';
-      noResultsMessage.classList.remove('hidden');
-    }, 300);
+    resultsContainer.innerHTML = '';
+    noResultsMessage.classList.remove('hidden');
     return;
   }
   
-  // Hide no results message if we have results
+  // Hide no results message
   noResultsMessage.classList.add('hidden');
   
-  // Generate HTML for filtered results
-  const resultsHTML = results
+  // Generate HTML for results
+  resultsContainer.innerHTML = results
     .map((result, index) => {
-      // Add a staggered animation delay based on index
       const delay = 0.05 * (index % 10);
       return `
         <div class="result-card-container animate__animated animate__fadeIn" style="animation-delay: ${delay}s;">
@@ -912,13 +943,6 @@ function displayFilteredResults(results, query) {
       `;
     })
     .join('');
-  
-  // Update with new results with transition effect
-  resultsContainer.style.opacity = 0;
-  setTimeout(() => {
-    resultsContainer.innerHTML = resultsHTML;
-    resultsContainer.style.opacity = 1;
-  }, 150);
 }
 
 // Add search functionality to results page search bar

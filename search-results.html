@@ -551,5 +551,57 @@
         });
       });
     </script>
+
+    <!-- Add this simple script at the end of the body to ensure filter buttons work -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Add direct click handlers for filter buttons as a backup
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        
+        filterButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            // Get filter type from button ID
+            const filterType = this.id.replace('filter-', '');
+            
+            // Apply visual indication immediately
+            filterButtons.forEach(btn => btn.classList.remove('active-filter'));
+            this.classList.add('active-filter');
+            
+            // Filter results if they're available
+            if (window.searchResults) {
+              let filteredResults;
+              if (filterType === 'all') {
+                filteredResults = window.searchResults;
+              } else {
+                filteredResults = window.searchResults.filter(result => result.type === filterType);
+              }
+              
+              // Use the displayFilteredResults function from search.js if available
+              if (typeof displayFilteredResults === 'function') {
+                const urlParams = new URLSearchParams(window.location.search);
+                const query = urlParams.get('q') || '';
+                displayFilteredResults(filteredResults, query);
+              } else {
+                // Fallback direct DOM manipulation if function is not available
+                const resultsContainer = document.getElementById('search-results');
+                const noResultsMessage = document.getElementById('no-results-message');
+                
+                if (filteredResults.length === 0) {
+                  if (resultsContainer) resultsContainer.innerHTML = '';
+                  if (noResultsMessage) noResultsMessage.classList.remove('hidden');
+                } else {
+                  if (noResultsMessage) noResultsMessage.classList.add('hidden');
+                  if (resultsContainer) {
+                    resultsContainer.innerHTML = filteredResults
+                      .map(result => `<div class="result-card-container">${renderSearchResult(result)}</div>`)
+                      .join('');
+                  }
+                }
+              }
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>
