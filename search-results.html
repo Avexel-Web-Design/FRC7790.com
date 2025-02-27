@@ -5,10 +5,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Search Results - Baywatch Robotics | FRC Team 7790</title>
-    <meta name="description" content="Search results for FRC teams, events and content from Baywatch Robotics." />
-    <meta name="robots" content="noindex, follow" />
+    <meta
+      name="description"
+      content="Search results for teams, events, and content related to FRC Team 7790 Baywatch Robotics."
+    />
 
-    <!-- Add Google Fonts -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -32,17 +34,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link href="public/styles/main.css" rel="stylesheet" />
     <script src="public/js/animations.js" defer></script>
-    <script src="public/js/frc-api.js" defer></script>
-    <script src="public/js/advanced-search.js" defer></script>
+    <script src="public/js/search.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   </head>
-  <body class="bg-black text-white font-poppins">
+
+  <body class="bg-black text-white font-poppins min-h-screen flex flex-col">
     <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
-      <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+    <nav
+      class="fixed top-0 w-full z-50 transition-all duration-300"
+      id="navbar"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex items-center justify-between"
+      >
         <div class="flex items-center space-x-2">
-          <a href="index.html#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105">
-            <img src="public/assets/images/logo.png" alt="Baywatch Robotics Logo" class="w-20 h-20" />
+          <a
+            href="index.html#"
+            class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
+          >
+            <img
+              src="public/assets/images/logo.png"
+              alt="Baywatch Robotics Logo"
+              class="w-20 h-20"
+            />
           </a>
         </div>
         
@@ -65,21 +79,40 @@
         <!-- Desktop Menu -->
         <ul class="hidden md:flex space-x-8">
           <li>
-            <a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a>
+            <a
+              href="robots.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Robots</a
+            >
           </li>
           <li>
-            <a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
+            >
           </li>
           <li>
-            <a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a>
+            <a
+              href="schedule.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Schedule</a
+            >
           </li>
           <li>
-            <a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a>
+            <a
+              href="ftc.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >FTC</a
+            >
           </li>
         </ul>
         <!-- Mobile Menu Button -->
         <div class="md:hidden">
-          <button id="mobile-menu-btn" class="focus:outline-none transition-transform duration-300">
+          <button
+            id="mobile-menu-btn"
+            class="focus:outline-none transition-transform duration-300"
+          >
             <i class="fas fa-bars text-3xl"></i>
           </button>
         </div>
@@ -87,7 +120,10 @@
     </nav>
 
     <!-- Mobile Menu Overlay -->
-    <div id="mobile-menu-overlay" class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated">
+    <div
+      id="mobile-menu-overlay"
+      class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
+    >
       <!-- Mobile Search Bar -->
       <div class="px-8 pt-32 pb-4">
         <div class="flex items-center bg-black/50 rounded-lg border border-gray-700 px-3 py-2">
@@ -107,10 +143,26 @@
       </div>
       
       <div class="flex flex-col items-center justify-center h-full space-y-8 -mt-32">
-        <a href="robots.html" class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg">Robots</a>
-        <a href="sponsors.html" class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg">Sponsors</a>
-        <a href="schedule.html" class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg">Schedule</a>
-        <a href="ftc.html" class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg">FTC</a>
+        <a
+          href="robots.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Robots</a
+        >
+        <a
+          href="sponsors.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Sponsors</a
+        >
+        <a
+          href="schedule.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Schedule</a
+        >
+        <a
+          href="ftc.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >FTC</a
+        >
       </div>
     </div>
 
@@ -157,156 +209,112 @@
       });
     </script>
 
-    <!-- Search Results Section -->
+    <!-- Hero Section -->
     <section class="pt-32 pb-16 relative z-10">
       <div class="container mx-auto px-6">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-          <h1 class="text-3xl md:text-4xl font-bold">
-            <span class="text-white">Search Results for</span>
-            <span id="search-term" class="text-baywatch-orange glow-orange"></span>
-          </h1>
-          
-          <!-- Refined Search Form -->
-          <div class="flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-4 py-2 w-full md:w-auto">
+        <h1 class="text-5xl md:text-7xl font-bold text-center">
+          <span class="text-white inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.2s">Search</span>
+          <span class="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp" style="animation-delay: 0.4s">Results</span>
+        </h1>
+        <div class="max-w-3xl mx-auto mt-8">
+          <div class="flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-4 py-2">
             <input 
               type="text" 
-              id="refined-search-input" 
-              placeholder="Refine your search..." 
-              class="bg-transparent border-none focus:outline-none text-white w-full"
-              aria-label="Refine search">
+              id="results-search-input" 
+              placeholder="Search teams, events, or content..." 
+              class="bg-transparent border-none focus:outline-none text-white w-full text-lg"
+              aria-label="Search for team or event">
             <button 
-              id="refined-search-button"
-              class="text-gray-400 hover:text-baywatch-orange transition-colors ml-2"
+              id="results-search-button"
+              class="text-baywatch-orange hover:text-white transition-colors"
               aria-label="Search">
-              <i class="fas fa-search"></i>
+              <i class="fas fa-search text-xl"></i>
             </button>
           </div>
-        </div>
-        
-        <!-- Search Options -->
-        <div class="mb-6 flex flex-wrap gap-3">
-          <button id="filter-all" class="px-4 py-2 rounded-full text-sm bg-baywatch-orange text-white search-filter active">All Results</button>
-          <button id="filter-teams" class="px-4 py-2 rounded-full text-sm bg-black/30 border border-gray-700 text-gray-300 search-filter hover:bg-black/50">Teams</button>
-          <button id="filter-events" class="px-4 py-2 rounded-full text-sm bg-black/30 border border-gray-700 text-gray-300 search-filter hover:bg-black/50">Events</button>
-          <button id="filter-year-2025" class="px-4 py-2 rounded-full text-sm bg-black/30 border border-gray-700 text-gray-300 search-filter hover:bg-black/50">2025 Season</button>
-          <button id="filter-year-2024" class="px-4 py-2 rounded-full text-sm bg-black/30 border border-gray-700 text-gray-300 search-filter hover:bg-black/50">2024 Season</button>
-        </div>
-        
-        <!-- Search Stats -->
-        <div class="text-gray-400 mb-8">
-          <p id="result-stats">Searching...</p>
-        </div>
-        
-        <!-- Search Results Container -->
-        <div id="search-results-container" class="space-y-8">
-          <!-- Loading indicator, replaced by results -->
-          <div id="loading-indicator" class="flex justify-center py-16">
-            <div class="w-16 h-16 border-4 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin"></div>
-          </div>
-          
-          <!-- Results will be inserted here by JavaScript -->
-        </div>
-        
-        <!-- Pagination Controls -->
-        <div id="pagination-controls" class="mt-10 flex justify-center items-center gap-4 hidden">
-          <button id="prev-page" class="px-4 py-2 bg-black/30 border border-gray-700 rounded-lg hover:bg-black/50 disabled:opacity-50 disabled:hover:bg-black/30">
-            <i class="fas fa-chevron-left mr-2"></i> Previous
-          </button>
-          <span id="page-info" class="text-gray-400">Page 1 of 1</span>
-          <button id="next-page" class="px-4 py-2 bg-black/30 border border-gray-700 rounded-lg hover:bg-black/50 disabled:opacity-50 disabled:hover:bg-black/30">
-            Next <i class="fas fa-chevron-right ml-2"></i>
-          </button>
+          <p id="search-summary" class="text-gray-400 text-center mt-4 animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+            Loading search results...
+          </p>
         </div>
       </div>
     </section>
-    
-    <!-- No Results Message Template -->
-    <template id="no-results-template">
-      <div class="text-center py-12">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-800 flex items-center justify-center">
-          <i class="fas fa-search text-gray-400 text-2xl"></i>
-        </div>
-        <h2 class="text-2xl font-bold text-gray-300 mb-2">No Results Found</h2>
-        <p class="text-gray-400 max-w-lg mx-auto">We couldn't find anything matching your search. Try different keywords or check the spelling.</p>
-        <div class="mt-6">
-          <p class="text-sm text-gray-500 mb-2">Suggestions:</p>
-          <ul class="text-sm text-gray-400 space-y-1">
-            <li>• Check your spelling</li>
-            <li>• Try more general keywords</li>
-            <li>• Try searching for a specific team number (e.g., "7790")</li>
-            <li>• Try searching for an event code (e.g., "milac")</li>
-          </ul>
+
+    <!-- Loading Overlay - Shows while results are loading -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+      <div class="text-center">
+        <div class="w-16 h-16 border-4 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin mx-auto mb-4"></div>
+        <h2 class="text-xl font-bold text-baywatch-orange">Searching</h2>
+        <p class="text-gray-400 mt-2">Finding relevant results for you</p>
+      </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow">
+      <!-- Filter Controls -->
+      <div class="container mx-auto px-6 mb-8">
+        <div class="flex flex-wrap gap-3">
+          <button id="filter-all" class="filter-btn active-filter px-4 py-1 rounded-full text-sm border border-baywatch-orange/50 bg-baywatch-orange/20 hover:bg-baywatch-orange/30 transition-colors">
+            All Results
+          </button>
+          <button id="filter-teams" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
+            Teams <span class="counter">0</span>
+          </button>
+          <button id="filter-events" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
+            Events <span class="counter">0</span>
+          </button>
+          <button id="filter-pages" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
+            Pages <span class="counter">0</span>
+          </button>
         </div>
       </div>
-    </template>
-    
-    <!-- API Error Message Template -->
-    <template id="api-error-template">
-      <div class="text-center py-12">
-        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-900/30 flex items-center justify-center">
-          <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+
+      <!-- Results Container -->
+      <div class="container mx-auto px-6 mb-12">
+        <div id="search-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Results will be inserted here by JavaScript -->
+          <div class="animate-pulse card-gradient rounded-xl p-6">
+            <div class="h-6 bg-gray-700/50 rounded w-3/4 mb-4"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-full mb-2"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-5/6"></div>
+          </div>
+          <div class="animate-pulse card-gradient rounded-xl p-6">
+            <div class="h-6 bg-gray-700/50 rounded w-3/4 mb-4"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-full mb-2"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-5/6"></div>
+          </div>
+          <div class="animate-pulse card-gradient rounded-xl p-6">
+            <div class="h-6 bg-gray-700/50 rounded w-3/4 mb-4"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-full mb-2"></div>
+            <div class="h-4 bg-gray-700/30 rounded w-5/6"></div>
+          </div>
         </div>
-        <h2 class="text-2xl font-bold text-red-400 mb-2">Search Error</h2>
-        <p class="text-gray-400 max-w-lg mx-auto">We encountered an error while searching. Please try again later.</p>
-        <p id="error-details" class="text-sm text-gray-500 mt-4"></p>
-        <button id="retry-search" class="mt-6 px-6 py-2 bg-baywatch-orange/30 hover:bg-baywatch-orange/50 rounded-lg text-baywatch-orange transition-all">
-          <i class="fas fa-rotate-right mr-2"></i> Try Again
-        </button>
+
+        <!-- No Results Message (initially hidden) -->
+        <div id="no-results-message" class="hidden text-center py-12 empty-state-container">
+          <i class="fas fa-search text-gray-600 text-5xl mb-4 empty-state-icon"></i>
+          <h3 class="text-xl font-bold text-gray-400 mb-2">No results found</h3>
+          <p class="text-gray-500">Try different keywords or check your spelling</p>
+          <a href="index.html" class="inline-block mt-6 px-4 py-2 rounded-lg bg-baywatch-orange/20 text-baywatch-orange hover:bg-baywatch-orange/30 transition-colors">
+            <i class="fas fa-home mr-2"></i>Return to Home
+          </a>
+        </div>
       </div>
-    </template>
-    
-    <!-- Team Card Template -->
-    <template id="team-card-template">
-      <a href="" class="team-card block card-gradient rounded-xl p-4 hover:scale-105 transition-all duration-300 animate-fade-in">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-12 h-12 rounded-full bg-baywatch-orange/20 flex items-center justify-center">
-            <i class="fas fa-robot text-baywatch-orange"></i>
-          </div>
-          <div>
-            <h3 class="font-bold text-lg"></h3>
-            <div class="team-location text-gray-400 text-sm"></div>
-          </div>
-        </div>
-        <div class="flex justify-between items-center">
-          <div class="text-sm">
-            <div class="team-rookie text-gray-400"></div>
-          </div>
-          <span class="text-baywatch-orange text-xs">
-            View team <i class="fas fa-arrow-right ml-1"></i>
-          </span>
-        </div>
-      </a>
-    </template>
-    
-    <!-- Event Card Template -->
-    <template id="event-card-template">
-      <a href="" class="event-card block card-gradient rounded-xl p-4 hover:scale-105 transition-all duration-300 animate-fade-in">
-        <div class="flex flex-col mb-3">
-          <div class="flex justify-between items-start">
-            <h3 class="font-bold text-lg"></h3>
-            <span class="event-year text-sm px-2 py-1 rounded bg-baywatch-orange/20 text-baywatch-orange"></span>
-          </div>
-          <div class="event-dates text-gray-400 text-sm mt-1"></div>
-        </div>
-        <div class="event-location text-gray-400 text-sm mb-3"></div>
-        <div class="flex justify-between items-center">
-          <div class="event-type text-xs px-2 py-1 rounded bg-black/30 text-gray-300"></div>
-          <span class="text-baywatch-orange text-xs">
-            View event <i class="fas fa-arrow-right ml-1"></i>
-          </span>
-        </div>
-      </a>
-    </template>
+    </main>
 
     <!-- Footer -->
     <footer class="bg-black py-12">
       <div class="container mx-auto px-6">
         <div class="flex flex-col md:flex-row justify-between items-center">
           <div class="flex space-x-4 mb-4 md:mb-0">
-            <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube">
+            <a
+              href="https://youtube.com/@frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube"
+            >
               <i class="fab fa-youtube"></i>
             </a>
-            <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram">
+            <a
+              href="https://instagram.com/frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram"
+            >
               <i class="fab fa-instagram"></i>
             </a>
           </div>
@@ -316,783 +324,151 @@
         </div>
       </div>
     </footer>
-    
-    <!-- Search Script - Include directly for simplicity -->
-    <script>
-      // TBA API constants
-      const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
-      const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf"; // Replace with your actual API key
+
+    <style>
+      .filter-btn {
+        transition: all 0.3s ease;
+      }
       
+      .active-filter {
+        background-color: rgba(255, 107, 0, 0.3) !important;
+        border-color: rgba(255, 107, 0, 0.8) !important;
+        color: #FF6B00;
+        font-weight: 500;
+      }
+      
+      .filter-btn .counter {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        margin-left: 4px;
+        background-color: rgba(0,0,0,0.3);
+        border-radius: 10px;
+        font-size: 0.75rem;
+      }
+      
+      .active-filter .counter {
+        background-color: rgba(255, 107, 0, 0.4);
+      }
+      
+      /* Result card hover effects */
+      .result-card {
+        transition: all 0.3s ease;
+      }
+      
+      .result-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(255, 107, 0, 0.15);
+      }
+      
+      /* Result type indicators */
+      .result-type-badge {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      
+      .team-badge {
+        background-color: rgba(37, 99, 235, 0.2);
+        color: #60a5fa;
+      }
+      
+      .event-badge {
+        background-color: rgba(220, 38, 38, 0.2);
+        color: #f87171;
+      }
+      
+      .page-badge {
+        background-color: rgba(5, 150, 105, 0.2);
+        color: #34d399;
+      }
+      
+      /* Highlight matches in result text */
+      .highlight {
+        color: #FF6B00;
+        font-weight: 500;
+      }
+      
+      /* Empty state styling */
+      #no-results-message {
+        animation: fadeIn 0.5s ease-in-out;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      /* Add styles for search suggestions */
+      .suggestion-item {
+        transition: all 0.15s ease;
+      }
+      
+      .suggestion-item:hover {
+        background-color: rgba(255, 107, 0, 0.15) !important;
+      }
+      
+      /* Enhanced highlight styling for search results */
+      .highlight {
+        position: relative;
+        color: #FF6B00;
+        font-weight: 500;
+        display: inline-block;
+        padding: 0 2px;
+      }
+      
+      .highlight::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        border-radius: 1px;
+        background-color: rgba(255, 107, 0, 0.3);
+      }
+    </style>
+    
+    <!-- Additional Script to Ensure Filter Functionality -->
+    <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // Handle regular search box functionality
-        initializeSearch('search-input', 'search-button');
-        initializeSearch('mobile-search-input', 'mobile-search-button');
-        initializeSearch('refined-search-input', 'refined-search-button');
+        // Set up filter button click events if not handled by search.js
+        const filterButtons = document.querySelectorAll('.filter-btn');
         
-        // Initialize search parameters from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const searchQuery = urlParams.get('q');
-        
-        // Display search term
-        const searchTermElement = document.getElementById('search-term');
-        if (searchTermElement && searchQuery) {
-          searchTermElement.textContent = ` "${searchQuery}"`;
-        }
-        
-        // Global variables for search state
-        let currentSearch = searchQuery || '';
-        let currentPage = 1;
-        let currentFilter = 'all';
-        let currentYear = null;
-        let searchResults = {
-          teams: [],
-          events: []
-        };
-        
-        // Perform search if we have a query
-        if (searchQuery) {
-          performSearch(searchQuery);
-        } else {
-          displayNoResults('No search query provided. Please enter a search term.');
-        }
-        
-        // Event listeners for filter buttons
-        document.querySelectorAll('.search-filter').forEach(button => {
+        filterButtons.forEach(button => {
           button.addEventListener('click', function() {
-            // Reset all filter buttons to inactive state
-            document.querySelectorAll('.search-filter').forEach(btn => {
-              btn.classList.remove('active', 'bg-baywatch-orange', 'text-white');
-              btn.classList.add('bg-black/30', 'text-gray-300');
-            });
+            const filterType = this.id.replace('filter-', '');
             
-            // Set this button to active state
-            this.classList.remove('bg-black/30', 'text-gray-300');
-            this.classList.add('active', 'bg-baywatch-orange', 'text-white');
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active-filter'));
             
-            // Determine which filter was clicked
-            if (this.id === 'filter-teams') {
-              currentFilter = 'teams';
-              currentYear = null;
-            } else if (this.id === 'filter-events') {
-              currentFilter = 'events';
-              currentYear = null;
-            } else if (this.id === 'filter-year-2025') {
-              currentYear = 2025;
-              currentFilter = 'all';
-            } else if (this.id === 'filter-year-2024') {
-              currentYear = 2024;
-              currentFilter = 'all';
-            } else {
-              currentFilter = 'all';
-              currentYear = null;
+            // Add active class to clicked button
+            this.classList.add('active-filter');
+            
+            // Apply filter if window.searchResults exists
+            if (window.searchResults) {
+              const results = window.searchResults;
+              const filteredResults = filterType === 'all' ? 
+                results : 
+                results.filter(result => result.type === filterType);
+              
+              // Get search query from URL
+              const urlParams = new URLSearchParams(window.location.search);
+              const query = urlParams.get('q') || '';
+              
+              // Display filtered results
+              if (typeof displayFilteredResults === 'function') {
+                displayFilteredResults(filteredResults, query);
+              }
             }
-            
-            // Reset pagination
-            currentPage = 1;
-            
-            // Apply filters and display results
-            displayFilteredResults();
           });
         });
-        
-        // Pagination controls
-        document.getElementById('prev-page').addEventListener('click', function() {
-          if (currentPage > 1) {
-            currentPage--;
-            displayFilteredResults();
-          }
-        });
-        
-        document.getElementById('next-page').addEventListener('click', function() {
-          currentPage++;
-          displayFilteredResults();
-        });
-        
-        // Retry search button
-        document.addEventListener('click', function(e) {
-          if (e.target && e.target.id === 'retry-search') {
-            performSearch(currentSearch);
-          }
-        });
-        
-        // Initialize search functionality for input/button pairs
-        function initializeSearch(inputId, buttonId) {
-          const input = document.getElementById(inputId);
-          const button = document.getElementById(buttonId);
-          
-          if (input && button) {
-            // Handle search button click
-            button.addEventListener('click', function() {
-              handleSearch(input.value);
-            });
-            
-            // Handle Enter key in search input
-            input.addEventListener('keypress', function(e) {
-              if (e.key === 'Enter') {
-                handleSearch(input.value);
-              }
-            });
-          }
-        }
-        
-        // Process search input
-        function handleSearch(searchTerm) {
-          if (!searchTerm) return;
-          
-          searchTerm = searchTerm.trim().toLowerCase();
-          
-          // Check if input consists of ONLY digits (team number)
-          if (/^\d+$/.test(searchTerm)) {
-            // It's a team number
-            window.location.href = `team-overview.html?team=${searchTerm}`;
-          } 
-          // If input matches an exact event code pattern
-          else if (/^\d{4}[a-z0-9]+$/.test(searchTerm)) {
-            // It's a complete event code with year
-            window.location.href = `event.html?event=${searchTerm}`;
-          }
-          // Otherwise, perform a search
-          else {
-            window.location.href = `search-results.html?q=${encodeURIComponent(searchTerm)}`;
-          }
-        }
-        
-        // Main search function - uses The Blue Alliance API
-        async function performSearch(query) {
-          try {
-            console.log("Starting search for:", query);
-            
-            // Show loading indicator
-            document.getElementById('loading-indicator').classList.remove('hidden');
-            document.getElementById('result-stats').textContent = 'Searching...';
-            document.getElementById('search-results-container').innerHTML = '';
-            
-            // Save current search term
-            currentSearch = query;
-            
-            // Reset search results
-            searchResults = {
-              teams: [],
-              events: []
-            };
-            
-            // Check if we can use the advanced search functions
-            if (typeof window.advancedTeamSearch === 'function' && typeof window.advancedEventSearch === 'function') {
-              console.log("Using advanced search functions");
-              try {
-                // Fetch team results using advanced search
-                console.log("Fetching team results...");
-                const teamResults = await window.advancedTeamSearch(query);
-                console.log(`Found ${teamResults.length} teams`);
-                searchResults.teams = teamResults;
-                
-                // Fetch event results using advanced search
-                console.log("Fetching event results...");
-                const eventResults = await window.advancedEventSearch(query);
-                console.log(`Found ${eventResults.length} events`);
-                searchResults.events = eventResults;
-                
-                // Display the combined results
-                console.log("Displaying search results...");
-                displayFilteredResults();
-              } catch (apiError) {
-                console.warn('Advanced search failed, falling back to basic search', apiError);
-                await performBasicSearch(query);
-              }
-            } else {
-              console.log("Advanced search functions not available, using basic search");
-              await performBasicSearch(query);
-            }
-          } catch (error) {
-            console.error('Search error:', error);
-            displayApiError(error);
-          }
-        }
-        
-        // Fallback to basic search when advanced search is not available
-        async function performBasicSearch(query) {
-          try {
-            console.log("Starting basic search...");
-            
-            const teamResults = await searchTeamsBasic(query);
-            console.log(`Found ${teamResults.length} teams using basic search`);
-            searchResults.teams = teamResults;
-            
-            const eventResults = await searchEventsBasic(query);
-            console.log(`Found ${eventResults.length} events using basic search`);
-            searchResults.events = eventResults;
-            
-            console.log("Displaying basic search results...");
-            displayFilteredResults();
-          } catch (error) {
-            console.error('Basic search failed:', error);
-            displayApiError(error);
-          }
-        }
-        
-        // Basic fallback search for teams when API fails
-        async function searchTeamsBasic(query) {
-          console.log("searchTeamsBasic:", query);
-          
-          // Try direct API first
-          try {
-            const results = await searchTeams(query);
-            console.log("Direct API team search returned:", results.length, "results");
-            return results;
-          } catch (error) {
-            console.warn('API team search failed, using fallback data', error);
-            
-            // Fallback to hardcoded popular teams
-            const fallbackTeams = [
-              {team_number: 7790, nickname: "Baywatch Robotics", city: "Harbor Springs", state_prov: "MI", country: "USA", rookie_year: 2019},
-              {team_number: 2767, nickname: "Stryke Force", city: "Kalamazoo", state_prov: "MI", country: "USA", rookie_year: 2009},
-              {team_number: 27, nickname: "Team RUSH", city: "Clarkston", state_prov: "MI", country: "USA", rookie_year: 1996},
-              {team_number: 254, nickname: "The Cheesy Poofs", city: "San Jose", state_prov: "CA", country: "USA", rookie_year: 1999},
-              {team_number: 7016, nickname: "Cyberstangs", city: "Plainwell", state_prov: "MI", country: "USA", rookie_year: 2018},
-              {team_number: 3452, nickname: "GreengineerZ", city: "Traverse City", state_prov: "MI", country: "USA", rookie_year: 2010}
-            ];
-            
-            // Filter the fallback teams to match query
-            const lowercaseQuery = query.toLowerCase();
-            const filteredTeams = fallbackTeams.filter(team => {
-              return team.team_number.toString().includes(lowercaseQuery) || 
-                     (team.nickname && team.nickname.toLowerCase().includes(lowercaseQuery)) ||
-                     (team.city && team.city.toLowerCase().includes(lowercaseQuery)) ||
-                     (team.state_prov && team.state_prov.toLowerCase().includes(lowercaseQuery));
-            });
-            
-            console.log("Using fallback teams data:", filteredTeams.length, "results");
-            return filteredTeams;
-          }
-        }
-        
-        // Basic fallback search for events when API fails
-        async function searchEventsBasic(query) {
-          console.log("searchEventsBasic:", query);
-          
-          // Try direct API first
-          try {
-            const results = await searchEvents(query);
-            console.log("Direct API event search returned:", results.length, "results");
-            return results;
-          } catch (error) {
-            console.warn('API event search failed, using fallback data', error);
-            
-            // Fallback to hardcoded upcoming events
-            const fallbackEvents = [
-              {key: "2025milac", name: "FIM Lake City District", year: 2025, city: "Lake City", state_prov: "MI", country: "USA", start_date: "2025-03-15", end_date: "2025-03-17", event_type: 1},
-              {key: "2025mitvc", name: "FIM Traverse City District", year: 2025, city: "Traverse City", state_prov: "MI", country: "USA", start_date: "2025-04-05", end_date: "2025-04-07", event_type: 1},
-              {key: "2025micmp", name: "FIRST Championship - Michigan State Championship", year: 2025, city: "Detroit", state_prov: "MI", country: "USA", start_date: "2025-04-29", end_date: "2025-05-02", event_type: 3},
-              {key: "2024milsu", name: "FIM Lake Superior District Event", year: 2024, city: "Escanaba", state_prov: "MI", country: "USA", start_date: "2024-03-08", end_date: "2024-03-10", event_type: 1}
-            ];
-            
-            // Filter the fallback events to match query
-            const lowercaseQuery = query.toLowerCase();
-            const filteredEvents = fallbackEvents.filter(event => {
-              return event.key.includes(lowercaseQuery) || 
-                     event.name.toLowerCase().includes(lowercaseQuery) ||
-                     (event.city && event.city.toLowerCase().includes(lowercaseQuery)) ||
-                     (event.state_prov && event.state_prov.toLowerCase().includes(lowercaseQuery));
-            });
-            
-            console.log("Using fallback events data:", filteredEvents.length, "results");
-            return filteredEvents;
-          }
-        }
-        
-        // Direct TBA API team search
-        async function searchTeams(query) {
-          console.log("Performing direct API team search:", query);
-          
-          // Special case for searching by team number
-          if (/^\d+$/.test(query)) {
-            try {
-              const teamNumber = query;
-              const teamKey = `frc${teamNumber}`;
-              
-              console.log(`Looking up team ${teamKey} directly...`);
-              
-              const response = await fetch(`${TBA_BASE_URL}/team/${teamKey}`, {
-                headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-              });
-              
-              if (!response.ok) {
-                if (response.status === 404) {
-                  console.log("Team not found:", teamKey);
-                  return []; // Team not found
-                }
-                throw new Error(`API error: ${response.status}`);
-              }
-              
-              const teamData = await response.json();
-              console.log("Found team:", teamData);
-              return [teamData];
-            } catch (error) {
-              console.error("Error fetching team:", error);
-              throw error;
-            }
-          }
-          
-          // Otherwise, search through team list
-          // TBA doesn't have a search API, so we'll fetch pages of teams and filter
-          try {
-            console.log("Fetching teams page for filtering...");
-            
-            // Limit to just one page for faster results
-            const response = await fetch(`${TBA_BASE_URL}/teams/0`, {
-              headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-            });
-            
-            if (!response.ok) {
-              throw new Error(`API error: ${response.status}`);
-            }
-            
-            const teams = await response.json();
-            console.log(`Got ${teams.length} teams for filtering`);
-            
-            // Filter teams based on search term
-            const lowercaseQuery = query.toLowerCase();
-            const filteredTeams = teams.filter(team => {
-              // Match against various team properties
-              const teamNumber = team.team_number.toString();
-              const teamName = (team.nickname || '').toLowerCase();
-              const teamLocation = `${team.city || ''} ${team.state_prov || ''} ${team.country || ''}`.toLowerCase();
-              
-              return teamNumber.includes(lowercaseQuery) || 
-                     teamName.includes(lowercaseQuery) ||
-                     teamLocation.includes(lowercaseQuery);
-            });
-            
-            console.log(`Filtered to ${filteredTeams.length} matching teams`);
-            return filteredTeams;
-          } catch (error) {
-            console.error("Error searching teams:", error);
-            throw error;
-          }
-        }
-        
-        // Direct TBA API event search
-        async function searchEvents(query) {
-          console.log("Performing direct API event search:", query);
-          
-          try {
-            // Get events from the current and next year (for upcoming events)
-            const currentYear = new Date().getFullYear();
-            
-            console.log(`Fetching events for years ${currentYear} and ${currentYear + 1}...`);
-            
-            const [currentYearResponse, nextYearResponse] = await Promise.all([
-              fetch(`${TBA_BASE_URL}/events/${currentYear}`, {
-                headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-              }),
-              fetch(`${TBA_BASE_URL}/events/${currentYear + 1}`, {
-                headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-              })
-            ]);
-            
-            if (!currentYearResponse.ok) {
-              throw new Error(`API error: ${currentYearResponse.status}`);
-            }
-            
-            const currentYearEvents = await currentYearResponse.json();
-            let nextYearEvents = [];
-            
-            // Next year might return 404 if no events are available yet
-            if (nextYearResponse.ok) {
-              nextYearEvents = await nextYearResponse.json();
-            }
-            
-            const allEvents = [...currentYearEvents, ...nextYearEvents];
-            console.log(`Got ${allEvents.length} events for filtering`);
-            
-            // Filter events based on search term
-            const lowercaseQuery = query.toLowerCase();
-            const filteredEvents = allEvents.filter(event => {
-              // Match against various event properties
-              const eventName = (event.name || '').toLowerCase();
-              const eventKey = (event.key || '').toLowerCase();
-              const eventLocation = `${event.city || ''} ${event.state_prov || ''} ${event.country || ''}`.toLowerCase();
-              
-              return eventName.includes(lowercaseQuery) || 
-                     eventKey.includes(lowercaseQuery) || 
-                     eventLocation.includes(lowercaseQuery);
-            });
-            
-            console.log(`Filtered to ${filteredEvents.length} matching events`);
-            return filteredEvents;
-          } catch (error) {
-            console.error("Error searching events:", error);
-            throw error;
-          }
-        }
-        
-        // Apply filters and display results
-        function displayFilteredResults() {
-          console.log("Applying filters to results:", currentFilter, currentYear);
-          console.log("Total results before filtering:", searchResults.teams.length, "teams,", searchResults.events.length, "events");
-          
-          // Apply filters
-          let filteredResults = {
-            teams: [...searchResults.teams],
-            events: [...searchResults.events]
-          };
-          
-          // Apply year filter if selected
-          if (currentYear) {
-            filteredResults.events = filteredResults.events.filter(event => event.year === currentYear);
-          }
-          
-          // Apply content type filter
-          if (currentFilter === 'teams') {
-            filteredResults.events = [];
-          } else if (currentFilter === 'events') {
-            filteredResults.teams = [];
-          }
-          
-          // Calculate total results count
-          const totalTeams = filteredResults.teams.length;
-          const totalEvents = filteredResults.events.length;
-          const totalResults = totalTeams + totalEvents;
-          
-          console.log("Filtered results:", totalTeams, "teams,", totalEvents, "events");
-          
-          // Update results stats
-          document.getElementById('result-stats').textContent = 
-            `Found ${totalResults} result${totalResults !== 1 ? 's' : ''} for "${currentSearch}"`;
-          
-          // Hide loading indicator
-          document.getElementById('loading-indicator').classList.add('hidden');
-          
-          // Check if no results match the current filters
-          if (totalResults === 0) {
-            if (currentFilter !== 'all' || currentYear !== null) {
-              // No results for current filter - show message with option to clear filters
-              console.log("No results for current filters");
-              const noResultsTemplate = document.getElementById('no-results-template').content.cloneNode(true);
-              const messageElement = noResultsTemplate.querySelector('p');
-              messageElement.textContent = 'No matches found for your current filters. Try different filter options.';
-              
-              const suggestionsElement = noResultsTemplate.querySelector('.mt-6');
-              const clearFiltersButton = document.createElement('button');
-              clearFiltersButton.className = 'mt-4 px-4 py-2 bg-baywatch-orange/20 text-baywatch-orange hover:bg-baywatch-orange/30 rounded-lg transition-colors';
-              clearFiltersButton.innerHTML = '<i class="fas fa-filter-circle-xmark mr-2"></i> Clear All Filters';
-              clearFiltersButton.addEventListener('click', function() {
-                // Reset filters to defaults and trigger All Results button click
-                document.getElementById('filter-all').click();
-              });
-              
-              suggestionsElement.appendChild(clearFiltersButton);
-              document.getElementById('search-results-container').innerHTML = '';
-              document.getElementById('search-results-container').appendChild(noResultsTemplate);
-              
-              // Hide pagination
-              document.getElementById('pagination-controls').classList.add('hidden');
-              return;
-            } else {
-              // No results at all for this search
-              console.log("No results for search query");
-              displayNoResults(`No matches found for "${currentSearch}". Try different keywords or check the spelling.`);
-              return;
-            }
-          }
-          
-          // Pagination settings
-          const resultsPerPage = 9;
-          const teamsStartIndex = (currentPage - 1) * Math.floor(resultsPerPage / 2);
-          const eventsStartIndex = (currentPage - 1) * Math.floor(resultsPerPage / 2);
-          
-          // Calculate total pages based on filtered results
-          let totalPages = 1;
-          if (currentFilter === 'all') {
-            // For "all" filter, divide the results evenly (half teams, half events)
-            const halfPerPage = Math.floor(resultsPerPage / 2);
-            const teamPages = Math.ceil(totalTeams / halfPerPage);
-            const eventPages = Math.ceil(totalEvents / halfPerPage);
-            totalPages = Math.max(teamPages, eventPages);
-          } else if (currentFilter === 'teams') {
-            totalPages = Math.ceil(totalTeams / resultsPerPage);
-          } else if (currentFilter === 'events') {
-            totalPages = Math.ceil(totalEvents / resultsPerPage);
-          }
-          
-          console.log("Pagination:", currentPage, "of", totalPages);
-          
-          // Update pagination controls
-          const paginationControls = document.getElementById('pagination-controls');
-          const pageInfo = document.getElementById('page-info');
-          const prevButton = document.getElementById('prev-page');
-          const nextButton = document.getElementById('next-page');
-          
-          if (totalPages <= 1) {
-            paginationControls.classList.add('hidden');
-          } else {
-            paginationControls.classList.remove('hidden');
-            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-            prevButton.disabled = currentPage <= 1;
-            nextButton.disabled = currentPage >= totalPages;
-          }
-          
-          // Create results container
-          const resultsContainer = document.createElement('div');
-          resultsContainer.className = 'search-results';
-          let resultCount = 0;
-          
-          // Add teams section if we have teams to display
-          if (filteredResults.teams.length > 0) {
-            console.log("Rendering team results section");
-            
-            const teamsSection = document.createElement('div');
-            teamsSection.className = 'result-section mb-10';
-            
-            // Create header
-            const teamHeader = document.createElement('h2');
-            teamHeader.className = 'text-2xl font-bold mb-4 text-baywatch-orange';
-            teamHeader.textContent = 'Teams';
-            teamsSection.appendChild(teamHeader);
-            
-            // Create team cards container
-            const teamsContainer = document.createElement('div');
-            teamsContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4';
-            
-            // Calculate how many teams to show on this page
-            let teamsToShow;
-            if (currentFilter === 'all') {
-              // For "all" view, we show half the results per page as teams
-              teamsToShow = filteredResults.teams.slice(teamsStartIndex, teamsStartIndex + Math.floor(resultsPerPage / 2));
-            } else {
-              // For teams-only view, we show full results per page
-              teamsToShow = filteredResults.teams.slice(teamsStartIndex, teamsStartIndex + resultsPerPage);
-            }
-            
-            console.log(`Rendering ${teamsToShow.length} team cards`);
-            
-            // Add team cards
-            teamsToShow.forEach((team, index) => {
-              // Get and clone the template
-              const teamCardTemplate = document.getElementById('team-card-template');
-              if (!teamCardTemplate) {
-                console.error("Team card template not found!");
-                return;
-              }
-              
-              const teamCard = teamCardTemplate.content.cloneNode(true);
-              const cardElement = teamCard.querySelector('.team-card');
-              
-              if (!cardElement) {
-                console.error("Team card element not found in template!");
-                return;
-              }
-              
-              // Set animation delay for staggered appearance
-              cardElement.style.animationDelay = `${index * 0.05}s`;
-              
-              // Update card content
-              cardElement.href = `team-overview.html?team=${team.team_number}`;
-              
-              const titleElement = cardElement.querySelector('h3');
-              if (titleElement) {
-                titleElement.textContent = `Team ${team.team_number} - ${team.nickname || 'Unknown Team'}`;
-              }
-              
-              // Format location
-              const locationElement = cardElement.querySelector('.team-location');
-              if (locationElement) {
-                const location = [team.city, team.state_prov, team.country].filter(Boolean).join(', ');
-                locationElement.textContent = location || 'Location unknown';
-              }
-              
-              // Add rookie year if available
-              const rookieYearElement = cardElement.querySelector('.team-rookie');
-              if (rookieYearElement) {
-                if (team.rookie_year) {
-                  rookieYearElement.textContent = `Rookie Year: ${team.rookie_year}`;
-                } else {
-                  rookieYearElement.textContent = '';
-                }
-              }
-              
-              teamsContainer.appendChild(teamCard);
-              resultCount++;
-            });
-            
-            teamsSection.appendChild(teamsContainer);
-            resultsContainer.appendChild(teamsSection);
-          }
-          
-          // Add events section if we have events to display
-          if (filteredResults.events.length > 0) {
-            console.log("Rendering event results section");
-            
-            const eventsSection = document.createElement('div');
-            eventsSection.className = 'result-section mt-8';
-            
-            // Create header
-            const eventHeader = document.createElement('h2');
-            eventHeader.className = 'text-2xl font-bold mb-4 text-baywatch-orange';
-            eventHeader.textContent = 'Events';
-            eventsSection.appendChild(eventHeader);
-            
-            // Create event cards container
-            const eventsContainer = document.createElement('div');
-            eventsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
-            
-            // Calculate how many events to show on this page
-            let eventsToShow;
-            if (currentFilter === 'all') {
-              // For "all" view, we show half the results per page as events
-              eventsToShow = filteredResults.events.slice(eventsStartIndex, eventsStartIndex + Math.floor(resultsPerPage / 2));
-            } else {
-              // For events-only view, we show full results per page
-              eventsToShow = filteredResults.events.slice(eventsStartIndex, eventsStartIndex + resultsPerPage);
-            }
-            
-            console.log(`Rendering ${eventsToShow.length} event cards`);
-            
-            // Add event cards
-            eventsToShow.forEach((event, index) => {
-              // Get and clone the template
-              const eventCardTemplate = document.getElementById('event-card-template');
-              if (!eventCardTemplate) {
-                console.error("Event card template not found!");
-                return;
-              }
-              
-              const eventCard = eventCardTemplate.content.cloneNode(true);
-              const cardElement = eventCard.querySelector('.event-card');
-              
-              if (!cardElement) {
-                console.error("Event card element not found in template!");
-                return;
-              }
-              
-              // Set animation delay for staggered appearance
-              cardElement.style.animationDelay = `${index * 0.05}s`;
-              
-              // Update card content
-              cardElement.href = `event.html?event=${event.key}`;
-              
-              const titleElement = cardElement.querySelector('h3');
-              if (titleElement) {
-                titleElement.textContent = event.name || 'Unknown Event';
-              }
-              
-              // Add year badge
-              const yearElement = cardElement.querySelector('.event-year');
-              if (yearElement) {
-                yearElement.textContent = event.year || 'N/A';
-              }
-              
-              // Format dates
-              const datesElement = cardElement.querySelector('.event-dates');
-              if (datesElement) {
-                let dateDisplay = 'Dates unknown';
-                if (event.start_date && event.end_date) {
-                  const startDate = new Date(event.start_date);
-                  const endDate = new Date(event.end_date);
-                  const options = { month: 'short', day: 'numeric' };
-                  
-                  if (startDate.getMonth() === endDate.getMonth()) {
-                    dateDisplay = `${startDate.toLocaleDateString('en-US', options)} - ${endDate.getDate()}, ${startDate.getFullYear()}`;
-                  } else {
-                    dateDisplay = `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}, ${startDate.getFullYear()}`;
-                  }
-                }
-                datesElement.textContent = dateDisplay;
-              }
-              
-              // Format location
-              const locationElement = cardElement.querySelector('.event-location');
-              if (locationElement) {
-                const location = [event.city, event.state_prov, event.country].filter(Boolean).join(', ');
-                locationElement.textContent = location || 'Location unknown';
-              }
-              
-              // Format event type
-              const eventTypeElement = cardElement.querySelector('.event-type');
-              if (eventTypeElement) {
-                const eventType = getEventTypeLabel(event.event_type);
-                eventTypeElement.textContent = eventType;
-              }
-              
-              eventsContainer.appendChild(eventCard);
-              resultCount++;
-            });
-            
-            eventsSection.appendChild(eventsContainer);
-            resultsContainer.appendChild(eventsSection);
-          }
-          
-          console.log(`Total rendered results: ${resultCount}`);
-          
-          // Replace results container
-          const searchResultsContainer = document.getElementById('search-results-container');
-          searchResultsContainer.innerHTML = '';
-          searchResultsContainer.appendChild(resultsContainer);
-        }
-        
-        // Helper function to map TBA event type codes to human-readable labels
-        function getEventTypeLabel(eventTypeCode) {
-          const eventTypes = {
-            0: 'Regional',
-            1: 'District',
-            2: 'District Championship',
-            3: 'Championship Division',
-            4: 'Championship Finals',
-            5: 'District Championship Division',
-            6: 'Festival of Champions',
-            99: 'Off-Season',
-            100: 'Preseason',
-            "-1": 'Event'
-          };
-          
-          return eventTypes[eventTypeCode] || 'Event';
-        }
-        
-        // Display no results message
-        function displayNoResults(message) {
-          console.log("Displaying 'no results' message:", message);
-          
-          document.getElementById('loading-indicator').classList.add('hidden');
-          
-          const noResultsTemplate = document.getElementById('no-results-template').content.cloneNode(true);
-          const messageElement = noResultsTemplate.querySelector('p');
-          messageElement.textContent = message;
-          
-          document.getElementById('search-results-container').innerHTML = '';
-          document.getElementById('search-results-container').appendChild(noResultsTemplate);
-          
-          document.getElementById('result-stats').textContent = 'No results';
-          document.getElementById('pagination-controls').classList.add('hidden');
-        }
-        
-        // Display API error message
-        function displayApiError(error) {
-          console.log("Displaying API error message:", error);
-          
-          document.getElementById('loading-indicator').classList.add('hidden');
-          
-          const errorTemplate = document.getElementById('api-error-template').content.cloneNode(true);
-          const errorDetailsElement = errorTemplate.querySelector('#error-details');
-          
-          // Provide more detailed error information if available
-          if (error.message) {
-            if (error.message.includes('429')) {
-              errorDetailsElement.textContent = 'The search API is experiencing high traffic. Please try again in a few minutes.';
-            } else if (error.message.includes('401') || error.message.includes('403')) {
-              errorDetailsElement.textContent = 'API authentication error. Please check your API key configuration.';
-            } else {
-              errorDetailsElement.textContent = `Error details: ${error.message}`;
-            }
-          } else {
-            errorDetailsElement.textContent = 'Unable to connect to The Blue Alliance API. Please check your internet connection.';
-          }
-          
-          document.getElementById('search-results-container').innerHTML = '';
-          document.getElementById('search-results-container').appendChild(errorTemplate);
-          
-          document.getElementById('result-stats').textContent = 'Search error';
-          document.getElementById('pagination-controls').classList.add('hidden');
-        }
       });
     </script>
   </body>
