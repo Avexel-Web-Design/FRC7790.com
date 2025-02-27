@@ -263,7 +263,7 @@
       });
     </script>
 
-    <!-- Search Functionality (New Addition) -->
+    <!-- Search Functionality (Updated) -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         // Handle desktop search
@@ -285,22 +285,14 @@
             // It's a team number
             window.location.href = `team-overview.html?team=${searchTerm}`;
           } 
-          // If input contains any letters, it's an event code
-          else if (/[a-z]/i.test(searchTerm)) {
-            // Check if input looks like a complete event code with year (e.g. 2025milac)
-            if (/^\d{4}[a-z0-9]+$/.test(searchTerm)) {
-              // It's a complete event code with year
-              window.location.href = `event.html?event=${searchTerm}`;
-            }
-            // Otherwise, it's likely an event code without year (e.g., "milac" or "mike2")
-            else {
-              // Add 2025 as default year
-              window.location.href = `event.html?event=2025${searchTerm}`;
-            }
+          // If input matches an exact event code pattern
+          else if (/^\d{4}[a-z0-9]+$/.test(searchTerm)) {
+            // It's a complete event code with year
+            window.location.href = `event.html?event=${searchTerm}`;
           }
-          // If it doesn't match any pattern, default to schedule page
+          // Otherwise, perform a search
           else {
-            window.location.href = `schedule.html`;
+            window.location.href = `search-results.html?q=${encodeURIComponent(searchTerm)}`;
           }
         }
         
