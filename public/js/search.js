@@ -1,5 +1,10 @@
-// Search database - teams, events, and page content
-const searchDatabase = {
+// Search configuration and API settings
+const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
+const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
+const API_CACHE_DURATION = 3600000; // 1 hour in milliseconds
+
+// Local database for frequently accessed content and pages
+const localSearchDatabase = {
   teams: [
     { 
       id: "7790", 
@@ -8,6 +13,8 @@ const searchDatabase = {
       type: "team",
       url: "team-overview.html?team=7790" 
     },
+    // Keep a small number of key teams for instant results - less than before
+    // The rest will be loaded from TBA API
     { 
       id: "254", 
       name: "The Cheesy Poofs", 
@@ -16,68 +23,12 @@ const searchDatabase = {
       url: "team-overview.html?team=254" 
     },
     { 
-      id: "2767", 
-      name: "Stryke Force", 
-      location: "Kalamazoo, MI",
-      type: "team",
-      url: "team-overview.html?team=2767" 
-    },
-    { 
-      id: "217", 
-      name: "ThunderChickens", 
-      location: "Sterling Heights, MI",
-      type: "team",
-      url: "team-overview.html?team=217" 
-    },
-    { 
-      id: "27", 
-      name: "Team RUSH", 
-      location: "Clarkston, MI",
-      type: "team",
-      url: "team-overview.html?team=27" 
-    },
-    { 
       id: "33", 
       name: "Killer Bees", 
       location: "Auburn Hills, MI",
       type: "team",
       url: "team-overview.html?team=33" 
     },
-    { 
-      id: "1918", 
-      name: "NC GEARS", 
-      location: "Harbor Springs, MI",
-      type: "team",
-      url: "team-overview.html?team=1918" 
-    },
-    { 
-      id: "3538", 
-      name: "RoboJackets", 
-      location: "Flint, MI",
-      type: "team",
-      url: "team-overview.html?team=3538" 
-    },
-    { 
-      id: "4004", 
-      name: "M.A.R.S. Rovers", 
-      location: "Harbor Beach, MI",
-      type: "team",
-      url: "team-overview.html?team=4004" 
-    },
-    { 
-      id: "5676", 
-      name: "SPARTRONICS", 
-      location: "Traverse City, MI",
-      type: "team",
-      url: "team-overview.html?team=5676" 
-    },
-    {
-      id: "302",
-      name: "The Dragons",
-      location: "Lake Orion, MI",
-      type: "team",
-      url: "team-overview.html?team=302"
-    }
   ],
   events: [
     {
@@ -96,46 +47,6 @@ const searchDatabase = {
       type: "event",
       url: "event.html?event=2025mitvc"
     },
-    {
-      id: "2025mirec",
-      name: "FIM District Recycle Rush District",
-      location: "Recycle City, Michigan",
-      date: "April 2-4, 2025",
-      type: "event",
-      url: "event.html?event=2025mirec"
-    },
-    {
-      id: "2025mike2",
-      name: "FIM District Kentwood Event",
-      location: "Kentwood, Michigan",
-      date: "April 9-11, 2025",
-      type: "event", 
-      url: "event.html?event=2025mike2"
-    },
-    {
-      id: "2025miket",
-      name: "FIM District Kettering University Event",
-      location: "Flint, Michigan",
-      date: "April 16-18, 2025",
-      type: "event",
-      url: "event.html?event=2025miket"
-    },
-    {
-      id: "2025micmp",
-      name: "FIM State Championship",
-      location: "Saginaw, Michigan",
-      date: "April 23-26, 2025",
-      type: "event",
-      url: "event.html?event=2025micmp"
-    },
-    {
-      id: "2025cmptx",
-      name: "FIRST Championship - Houston",
-      location: "Houston, Texas",
-      date: "May 20-23, 2025",
-      type: "event",
-      url: "event.html?event=2025cmptx"
-    }
   ],
   pages: [
     {
@@ -181,9 +92,349 @@ const searchDatabase = {
   ]
 };
 
+// In-memory cache for API results
+const apiCache = {
+  teams: new Map(),
+  teamSearch: new Map(),
+  events: new Map(),
+  eventSearch: new Map(),
+  lastTeamFetch: 0,
+  lastEventFetch: 0,
+  pendingQueries: new Map() // Track active API requests to prevent duplicates
+};
+
+// Rate limiting to avoid excessive API calls
+let requestCount = 0;
+const MAX_REQUESTS_PER_MINUTE = 30; // TBA recommends not exceeding 30 requests/minute
+const REQUEST_RESET_INTERVAL = 60000; // 1 minute in milliseconds
+
+// Reset request count every minute
+setInterval(() => {
+  requestCount = 0;
+}, REQUEST_RESET_INTERVAL);
+
+// Function to fetch data from The Blue Alliance API
+async function fetchFromTBA(endpoint) {
+  // Check rate limiting
+  if (requestCount >= MAX_REQUESTS_PER_MINUTE) {
+    console.warn(`Rate limit reached: ${requestCount}/${MAX_REQUESTS_PER_MINUTE} requests this minute`);
+    throw new Error("API rate limit reached. Please try again later.");
+  }
+  
+  // Check if this exact request is already in progress
+  const cacheKey = `request-${endpoint}`;
+  if (apiCache.pendingQueries.has(cacheKey)) {
+    // Return the existing promise instead of making a duplicate request
+    return apiCache.pendingQueries.get(cacheKey);
+  }
+  
+  try {
+    // Create a promise for this request
+    const requestPromise = new Promise(async (resolve, reject) => {
+      try {
+        requestCount++;
+        
+        const response = await fetch(`${TBA_BASE_URL}${endpoint}`, {
+          headers: {
+            "X-TBA-Auth-Key": TBA_AUTH_KEY,
+            "Accept": "application/json"
+          }
+        });
+        
+        if (!response.ok) {
+          console.error(`TBA API Error: ${response.status} on ${endpoint}`);
+          reject(new Error(`API returned ${response.status}: ${response.statusText}`));
+          return;
+        }
+        
+        const data = await response.json();
+        resolve(data);
+      } catch (error) {
+        console.error(`Error fetching from TBA: ${error.message}`);
+        reject(error);
+      } finally {
+        // Remove this request from pending queries regardless of success/failure
+        setTimeout(() => {
+          apiCache.pendingQueries.delete(cacheKey);
+        }, 100); // Small delay to prevent race conditions
+      }
+    });
+    
+    // Store the promise in the pending queries
+    apiCache.pendingQueries.set(cacheKey, requestPromise);
+    
+    return requestPromise;
+  } catch (error) {
+    console.error(`Error setting up TBA fetch: ${error.message}`);
+    throw error;
+  }
+}
+
+// Search for teams via TBA API
+async function searchTeamsWithTBA(query) {
+  // Check cache first
+  const cacheKey = query.toLowerCase();
+  if (apiCache.teamSearch.has(cacheKey) && 
+      Date.now() - apiCache.lastTeamFetch < API_CACHE_DURATION) {
+    return apiCache.teamSearch.get(cacheKey);
+  }
+
+  try {
+    // Exact team number match (fast path)
+    if (/^\d+$/.test(query)) {
+      const team = await fetchFromTBA(`/team/frc${query}`);
+      if (team) {
+        const formattedTeam = {
+          id: team.team_number.toString(),
+          name: team.nickname || `Team ${team.team_number}`,
+          location: `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
+          type: "team",
+          url: `team-overview.html?team=${team.team_number}`
+        };
+        
+        // Cache this team
+        apiCache.teams.set(team.team_number.toString(), formattedTeam);
+        apiCache.teamSearch.set(cacheKey, [formattedTeam]);
+        apiCache.lastTeamFetch = Date.now();
+        
+        return [formattedTeam];
+      }
+    }
+    
+    // Full text search for team name/location
+    if (query.length >= 2) {
+      // Fetch a batch of teams
+      const PAGE_SIZE = 500;
+      let allTeams = [];
+      let currentPage = 0;
+      
+      // If we haven't fetched teams in a while, get fresh data
+      if (Date.now() - apiCache.lastTeamFetch > API_CACHE_DURATION || apiCache.teams.size === 0) {
+        while (true) {
+          try {
+            const teams = await fetchFromTBA(`/teams/${currentPage}`);
+            if (!teams || teams.length === 0) break;
+            allTeams = [...allTeams, ...teams];
+            currentPage++;
+            // Limit to 1000 teams for performance
+            if (allTeams.length > 1000) break;
+          } catch (error) {
+            // If we hit rate limits, use what we have so far
+            if (error.message.includes("rate limit")) {
+              console.warn("Hit rate limit while fetching teams, using partial results");
+              break;
+            }
+            throw error; // Re-throw other errors
+          }
+        }
+        
+        // Cache all fetched teams
+        allTeams.forEach(team => {
+          const formattedTeam = {
+            id: team.team_number.toString(),
+            name: team.nickname || `Team ${team.team_number}`,
+            location: `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
+            type: "team",
+            url: `team-overview.html?team=${team.team_number}`
+          };
+          apiCache.teams.set(team.team_number.toString(), formattedTeam);
+        });
+        
+        apiCache.lastTeamFetch = Date.now();
+      } else {
+        // Use cached teams
+        allTeams = Array.from(apiCache.teams.values());
+      }
+      
+      // Filter teams based on search query
+      const queryLower = query.toLowerCase();
+      const filteredTeams = allTeams.filter(team => {
+        // Check if we have a formatted version
+        const formattedTeam = apiCache.teams.get(team.team_number?.toString()) || team;
+        
+        // We might have both formatted and raw - check fields in both
+        const teamNumber = (formattedTeam.id || team.team_number || '').toString();
+        const teamName = (formattedTeam.name || team.nickname || '').toLowerCase();
+        const teamLocation = (formattedTeam.location || `${team.city || ''} ${team.state_prov || ''} ${team.country || ''}`).toLowerCase();
+        
+        return teamNumber.includes(queryLower) || 
+               teamName.includes(queryLower) || 
+               teamLocation.includes(queryLower);
+      });
+      
+      // Format results
+      const results = filteredTeams.map(team => {
+        // Use cached formatted team if available
+        if (team.team_number && apiCache.teams.has(team.team_number.toString())) {
+          return apiCache.teams.get(team.team_number.toString());
+        }
+        
+        // Otherwise format on the fly
+        return {
+          id: team.team_number ? team.team_number.toString() : team.id,
+          name: team.nickname || team.name || `Team ${team.team_number || team.id}`,
+          location: team.location || `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
+          type: "team",
+          url: `team-overview.html?team=${team.team_number || team.id}`
+        };
+      });
+      
+      // Cache the search results
+      apiCache.teamSearch.set(cacheKey, results);
+      return results;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error("Error searching teams with TBA:", error);
+    return [];
+  }
+}
+
+// Search for events via TBA API
+async function searchEventsWithTBA(query) {
+  // Check cache first
+  const cacheKey = query.toLowerCase();
+  if (apiCache.eventSearch.has(cacheKey) && 
+      Date.now() - apiCache.lastEventFetch < API_CACHE_DURATION) {
+    return apiCache.eventSearch.get(cacheKey);
+  }
+
+  try {
+    // Exact event key match (fast path)
+    if (/^\d{4}[a-z0-9]+$/.test(query)) {
+      const event = await fetchFromTBA(`/event/${query}`);
+      if (event) {
+        const formattedEvent = {
+          id: event.key,
+          name: event.name,
+          location: `${event.city || ''}, ${event.state_prov || ''}${event.country ? ', ' + event.country : ''}`,
+          date: formatEventDate(event.start_date, event.end_date),
+          type: "event",
+          url: `event.html?event=${event.key}`
+        };
+        
+        // Cache this event
+        apiCache.events.set(event.key, formattedEvent);
+        apiCache.eventSearch.set(cacheKey, [formattedEvent]);
+        apiCache.lastEventFetch = Date.now();
+        
+        return [formattedEvent];
+      }
+    }
+    
+    // Full text search for event name/location
+    if (query.length >= 2) {
+      // Current year and nearby years for relevance
+      const currentYear = new Date().getFullYear();
+      const yearRange = [currentYear - 1, currentYear, currentYear + 1];
+      let allEvents = [];
+      
+      // If we haven't fetched events in a while, get fresh data
+      if (Date.now() - apiCache.lastEventFetch > API_CACHE_DURATION || apiCache.events.size === 0) {
+        // Fetch events for the year range
+        for (const year of yearRange) {
+          try {
+            const events = await fetchFromTBA(`/events/${year}`);
+            if (events && events.length > 0) {
+              allEvents = [...allEvents, ...events];
+            }
+          } catch (error) {
+            // If we hit rate limits, use what we have so far
+            if (error.message.includes("rate limit")) {
+              console.warn(`Hit rate limit while fetching events for ${year}, using partial results`);
+              continue; // Try the next year
+            }
+            throw error; // Re-throw other errors
+          }
+        }
+        
+        // Cache all fetched events
+        allEvents.forEach(event => {
+          const formattedEvent = {
+            id: event.key,
+            name: event.name,
+            location: `${event.city || ''}, ${event.state_prov || ''}${event.country ? ', ' + event.country : ''}`,
+            date: formatEventDate(event.start_date, event.end_date),
+            type: "event",
+            url: `event.html?event=${event.key}`
+          };
+          apiCache.events.set(event.key, formattedEvent);
+        });
+        
+        apiCache.lastEventFetch = Date.now();
+      } else {
+        // Use cached events
+        allEvents = Array.from(apiCache.events.values());
+      }
+      
+      // Filter events based on search query
+      const queryLower = query.toLowerCase();
+      const filteredEvents = allEvents.filter(event => {
+        // Check if we have a formatted version
+        const formattedEvent = event.key ? apiCache.events.get(event.key) : event;
+        
+        // We might have both formatted and raw - check fields in both
+        const eventKey = (formattedEvent?.id || event.key || '').toLowerCase();
+        const eventName = (formattedEvent?.name || event.name || '').toLowerCase();
+        const eventLocation = (formattedEvent?.location || 
+                              `${event.city || ''} ${event.state_prov || ''} ${event.country || ''}`).toLowerCase();
+        
+        return eventKey.includes(queryLower) || 
+               eventName.includes(queryLower) || 
+               eventLocation.includes(queryLower);
+      });
+      
+      // Format results
+      const results = filteredEvents.map(event => {
+        // Use cached formatted event if available
+        if (event.key && apiCache.events.has(event.key)) {
+          return apiCache.events.get(event.key);
+        }
+        
+        // Otherwise format on the fly
+        return {
+          id: event.key || event.id,
+          name: event.name,
+          location: event.location || `${event.city || ''}, ${event.state_prov || ''}${event.country ? ', ' + event.country : ''}`,
+          date: formatEventDate(event.start_date, event.end_date) || event.date,
+          type: "event",
+          url: `event.html?event=${event.key || event.id}`
+        };
+      });
+      
+      // Cache the search results
+      apiCache.eventSearch.set(cacheKey, results);
+      return results;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error("Error searching events with TBA:", error);
+    return [];
+  }
+}
+
+// Helper function to format event dates
+function formatEventDate(startDate, endDate) {
+  if (!startDate) return "Date TBD";
+  
+  try {
+    const options = { month: 'short', day: 'numeric', year: 'numeric' };
+    const start = new Date(startDate).toLocaleDateString('en-US', options);
+    
+    if (!endDate) return start;
+    
+    const end = new Date(endDate).toLocaleDateString('en-US', options);
+    return `${start} - ${end}`;
+  } catch (e) {
+    return startDate;
+  }
+}
+
 // Function to perform fuzzy search on text and highlight matches
 function fuzzySearch(text, query) {
-  if (!query) return { score: 0, highlighted: text };
+  if (!query || !text) return { score: 0, highlighted: text || '' };
   
   // Normalize both strings for better matching
   const textLower = text.toLowerCase();
@@ -252,18 +503,19 @@ function fuzzySearch(text, query) {
   return { score: Math.min(score, 1.0), highlighted };
 }
 
-// Search all items in the database and return results with scores
-function searchAllItems(query) {
+// Modified search function that combines local and API results
+async function searchAllItems(query) {
   if (!query || query.trim() === '') return [];
   
-  const allItems = [
-    ...searchDatabase.teams,
-    ...searchDatabase.events,
-    ...searchDatabase.pages
+  // Search local content first for immediate results
+  const localItems = [
+    ...localSearchDatabase.teams,
+    ...localSearchDatabase.events,
+    ...localSearchDatabase.pages
   ];
   
-  // Search each item
-  const results = allItems.map(item => {
+  // Process local results while waiting for API
+  const localResults = localItems.map(item => {
     // Create a combined text string to search
     let searchableText;
     let nameMatch, descriptionMatch, contentMatch;
@@ -299,12 +551,73 @@ function searchAllItems(query) {
       descriptionHighlighted: descriptionMatch.highlighted,
       contentHighlighted: contentMatch.highlighted
     };
-  });
+  }).filter(item => item.score > 0.05); // Minimum threshold
   
-  // Sort results by score and return those with non-zero scores
-  return results
-    .filter(item => item.score > 0.05) // Minimum threshold to consider a match
-    .sort((a, b) => b.score - a.score);
+  // Start API searches - run in parallel
+  const apiPromises = [
+    searchTeamsWithTBA(query),
+    searchEventsWithTBA(query)
+  ];
+  
+  try {
+    const [tbaTeams, tbaEvents] = await Promise.all(apiPromises);
+    
+    // Process TBA team results
+    const teamResults = tbaTeams.map(team => {
+      const nameMatch = fuzzySearch(`${team.id} - ${team.name}`, query);
+      const descriptionMatch = fuzzySearch(team.location, query);
+      
+      return {
+        ...team,
+        score: 0.7, // Give API results good but not perfect score
+        nameHighlighted: nameMatch.highlighted,
+        descriptionHighlighted: descriptionMatch.highlighted,
+        contentHighlighted: ''
+      };
+    });
+    
+    // Process TBA event results
+    const eventResults = tbaEvents.map(event => {
+      const nameMatch = fuzzySearch(event.name, query);
+      const descriptionMatch = fuzzySearch(`${event.location} - ${event.date}`, query);
+      const contentMatch = fuzzySearch(event.id, query);
+      
+      return {
+        ...event,
+        score: 0.7, // Give API results good but not perfect score
+        nameHighlighted: nameMatch.highlighted,
+        descriptionHighlighted: descriptionMatch.highlighted,
+        contentHighlighted: contentMatch.highlighted
+      };
+    });
+    
+    // Combine all results
+    let allResults = [
+      ...localResults,
+      ...teamResults,
+      ...eventResults
+    ];
+    
+    // Remove duplicates by ID
+    const uniqueResults = new Map();
+    allResults.forEach(result => {
+      const key = `${result.type}-${result.id || result.title}`;
+      
+      // Keep the result with the higher score
+      if (!uniqueResults.has(key) || uniqueResults.get(key).score < result.score) {
+        uniqueResults.set(key, result);
+      }
+    });
+    
+    // Sort by score and return
+    return Array.from(uniqueResults.values())
+      .sort((a, b) => b.score - a.score);
+    
+  } catch (error) {
+    console.error("Error in API search:", error);
+    // Fall back to local results if API fails
+    return localResults.sort((a, b) => b.score - a.score);
+  }
 }
 
 // Generate HTML for a search result
@@ -320,7 +633,7 @@ function renderSearchResult(result) {
   return `
     <a href="${result.url}" class="result-card card-gradient rounded-xl p-6 block hover:shadow-lg transition-all">
       <div class="flex justify-between items-start mb-2">
-        <h3 class="font-bold text-lg">${result.nameHighlighted}</h3>
+        <h3 class="font-bold text-lg search-result-title">${result.nameHighlighted}</h3>
         <span class="result-type-badge ${badgeClass}">${badgeText}</span>
       </div>
       <p class="text-gray-400 text-sm mb-3">${result.descriptionHighlighted}</p>
@@ -334,7 +647,7 @@ function renderSearchResult(result) {
 }
 
 // Update the results display with the given results array
-function displaySearchResults(results, query) {
+async function displaySearchResults(results, query) {
   const resultsContainer = document.getElementById('search-results');
   const noResultsMessage = document.getElementById('no-results-message');
   const searchSummary = document.getElementById('search-summary');
@@ -384,7 +697,7 @@ function filterResultsByType(results, type) {
 }
 
 // Initialize the search results page
-function initSearchPage() {
+async function initSearchPage() {
   // Get search query from URL
   const urlParams = new URLSearchParams(window.location.search);
   const query = urlParams.get('q');
@@ -406,18 +719,23 @@ function initSearchPage() {
   }
   
   // Perform search
-  setTimeout(() => {
-    const results = searchAllItems(query);
+  try {
+    const results = await searchAllItems(query);
     
     // Store results in a global variable for filtering
     window.searchResults = results;
     
     // Display results
-    displaySearchResults(results, query);
+    await displaySearchResults(results, query);
     
     // Set up filter buttons
     setupFilterButtons(results, query);
-  }, 500); // Small delay for visual feedback
+  } catch (error) {
+    console.error("Error performing search:", error);
+    document.getElementById('search-summary').textContent = 'An error occurred while searching';
+    document.getElementById('loading-overlay').classList.add('hidden');
+    document.getElementById('no-results-message').classList.remove('hidden');
+  }
 }
 
 // Set up filter button event listeners
@@ -478,7 +796,7 @@ function setupResultsPageSearch() {
   
   if (resultsSearchButton && resultsSearchInput) {
     // Handle button click
-    resultsSearchButton.addEventListener('click', () => {
+    resultsSearchButton.addEventListener('click', async () => {
       const query = resultsSearchInput.value.trim();
       if (query) {
         // Show loading state
@@ -490,12 +808,16 @@ function setupResultsPageSearch() {
         window.history.replaceState({}, '', currentUrl);
         
         // Perform new search
-        setTimeout(() => {
-          const results = searchAllItems(query);
+        try {
+          const results = await searchAllItems(query);
           window.searchResults = results;
-          displaySearchResults(results, query);
+          await displaySearchResults(results, query);
           setupFilterButtons(results, query);
-        }, 300);
+        } catch (error) {
+          console.error("Error in search:", error);
+          document.getElementById('search-summary').textContent = 'An error occurred while searching';
+          document.getElementById('loading-overlay').classList.add('hidden');
+        }
       }
     });
     
@@ -515,8 +837,8 @@ function addDynamicSearchData() {
     const recentTeams = JSON.parse(localStorage.getItem('recentlyViewedTeams') || '[]');
     recentTeams.forEach(team => {
       // Check if team is already in database to avoid duplicates
-      if (!searchDatabase.teams.some(t => t.id === team.id)) {
-        searchDatabase.teams.push({
+      if (!localSearchDatabase.teams.some(t => t.id === team.id)) {
+        localSearchDatabase.teams.push({
           id: team.id,
           name: team.name,
           location: team.location || "Unknown location",
@@ -530,8 +852,8 @@ function addDynamicSearchData() {
     const recentEvents = JSON.parse(localStorage.getItem('recentlyViewedEvents') || '[]');
     recentEvents.forEach(event => {
       // Check if event is already in database to avoid duplicates
-      if (!searchDatabase.events.some(e => e.id === event.id)) {
-        searchDatabase.events.push({
+      if (!localSearchDatabase.events.some(e => e.id === event.id)) {
+        localSearchDatabase.events.push({
           id: event.id,
           name: event.name,
           location: event.location || "Unknown location",
