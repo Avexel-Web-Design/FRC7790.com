@@ -154,7 +154,7 @@ async function fetchFromTBA(endpoint) {
   }
 }
 
-// Search for teams via TBA API
+// Search for teams via TBA API - MODIFIED to prioritize teams in 2025 events
 async function searchTeamsWithTBA(query) {
   // Check cache first
   const cacheKey = query.toLowerCase();
@@ -175,6 +175,13 @@ async function searchTeamsWithTBA(query) {
           type: "team",
           url: `team.html?team=${team.team_number}`
         };
+        
+        // Check if team is participating in 2025 events
+        const events2025 = await fetchFromTBA(`/team/frc${query}/events/2025`).catch(() => []);
+        if (events2025 && events2025.length > 0) {
+          formattedTeam.in2025 = true;
+          formattedTeam.eventCount2025 = events2025.length;
+        }
         
         // Cache this team
         apiCache.teams.set(team.team_number.toString(), formattedTeam);
@@ -212,17 +219,53 @@ async function searchTeamsWithTBA(query) {
           }
         }
         
-        // Cache all fetched teams
-        allTeams.forEach(team => {
-          const formattedTeam = {
-            id: team.team_number.toString(),
-            name: team.nickname || `Team ${team.team_number}`,
-            location: `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
-            type: "team",
-            url: `team.html?team=${team.team_number}`
-          };
-          apiCache.teams.set(team.team_number.toString(), formattedTeam);
-        });
+        // Now, fetch 2025 event participation information for prioritization
+        try {
+          // Fetch the list of teams in 2025 events
+          const teams2025Response = await fetchFromTBA(`/events/2025/teams/keys`);
+          if (teams2025Response && teams2025Response.length > 0) {
+            // Create a set of team keys for quick lookup
+            const teams2025Set = new Set(teams2025Response.map(key => key.replace('frc', '')));
+            
+            // Cache all teams with 2025 participation flag
+            allTeams.forEach(team => {
+              const formattedTeam = {
+                id: team.team_number.toString(),
+                name: team.nickname || `Team ${team.team_number}`,
+                location: `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
+                type: "team",
+                url: `team.html?team=${team.team_number}`,
+                in2025: teams2025Set.has(team.team_number.toString())
+              };
+              apiCache.teams.set(team.team_number.toString(), formattedTeam);
+            });
+          } else {
+            // Cache all teams without 2025 info if we couldn't get it
+            allTeams.forEach(team => {
+              const formattedTeam = {
+                id: team.team_number.toString(),
+                name: team.nickname || `Team ${team.team_number}`,
+                location: `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
+                type: "team",
+                url: `team.html?team=${team.team_number}`
+              };
+              apiCache.teams.set(team.team_number.toString(), formattedTeam);
+            });
+          }
+        } catch (error) {
+          console.warn("Error fetching 2025 team participation:", error);
+          // Cache all teams without 2025 info if we encountered an error
+          allTeams.forEach(team => {
+            const formattedTeam = {
+              id: team.team_number.toString(),
+              name: team.nickname || `Team ${team.team_number}`,
+              location: `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
+              type: "team",
+              url: `team.html?team=${team.team_number}`
+            };
+            apiCache.teams.set(team.team_number.toString(), formattedTeam);
+          });
+        }
         
         apiCache.lastTeamFetch = Date.now();
       } else {
@@ -246,8 +289,8 @@ async function searchTeamsWithTBA(query) {
                teamLocation.includes(queryLower);
       });
       
-      // Format results
-      const results = filteredTeams.map(team => {
+      // Format results and prioritize 2025 teams
+      let results = filteredTeams.map(team => {
         // Use cached formatted team if available
         if (team.team_number && apiCache.teams.has(team.team_number.toString())) {
           return apiCache.teams.get(team.team_number.toString());
@@ -259,8 +302,19 @@ async function searchTeamsWithTBA(query) {
           name: team.nickname || team.name || `Team ${team.team_number || team.id}`,
           location: team.location || `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
           type: "team",
-          url: `team.html?team=${team.team_number || team.id}`
+          url: `team.html?team=${team.team_number || team.id}`,
+          in2025: team.in2025 || false
         };
+      });
+      
+      // Sort results to prioritize teams in 2025
+      results.sort((a, b) => {
+        // First, prioritize 2025 teams
+        if (a.in2025 && !b.in2025) return -1;
+        if (!a.in2025 && b.in2025) return 1;
+        
+        // If both or neither are in 2025, default to no additional sorting
+        return 0;
       });
       
       // Cache the search results
@@ -275,7 +329,7 @@ async function searchTeamsWithTBA(query) {
   }
 }
 
-// Search for events via TBA API
+// Search for events via TBA API - MODIFIED to focus on 2025
 async function searchEventsWithTBA(query) {
   // Check cache first
   const cacheKey = query.toLowerCase();
@@ -287,50 +341,51 @@ async function searchEventsWithTBA(query) {
   try {
     // Exact event key match (fast path)
     if (/^\d{4}[a-z0-9]+$/.test(query)) {
-      const event = await fetchFromTBA(`/event/${query}`);
-      if (event) {
-        const formattedEvent = {
-          id: event.key,
-          name: event.name,
-          location: `${event.city || ''}, ${event.state_prov || ''}${event.country ? ', ' + event.country : ''}`,
-          date: formatEventDate(event.start_date, event.end_date),
-          type: "event",
-          url: `event.html?event=${event.key}`
-        };
-        
-        // Cache this event
-        apiCache.events.set(event.key, formattedEvent);
-        apiCache.eventSearch.set(cacheKey, [formattedEvent]);
-        apiCache.lastEventFetch = Date.now();
-        
-        return [formattedEvent];
+      // Only fetch if it's a 2025 event
+      if (query.startsWith('2025')) {
+        const event = await fetchFromTBA(`/event/${query}`);
+        if (event) {
+          const formattedEvent = {
+            id: event.key,
+            name: event.name,
+            location: `${event.city || ''}, ${event.state_prov || ''}${event.country ? ', ' + event.country : ''}`,
+            date: formatEventDate(event.start_date, event.end_date),
+            type: "event",
+            url: `event.html?event=${event.key}`
+          };
+          
+          // Cache this event
+          apiCache.events.set(event.key, formattedEvent);
+          apiCache.eventSearch.set(cacheKey, [formattedEvent]);
+          apiCache.lastEventFetch = Date.now();
+          
+          return [formattedEvent];
+        }
+      } else {
+        // Not a 2025 event, return empty results
+        return [];
       }
     }
     
-    // Full text search for event name/location
+    // Full text search for event name/location - ONLY FOR 2025
     if (query.length >= 2) {
-      // Current year and nearby years for relevance
-      const currentYear = new Date().getFullYear();
-      const yearRange = [currentYear - 1, currentYear, currentYear + 1];
+      // Only fetch 2025 events
+      const year = 2025;
       let allEvents = [];
       
       // If we haven't fetched events in a while, get fresh data
       if (Date.now() - apiCache.lastEventFetch > API_CACHE_DURATION || apiCache.events.size === 0) {
-        // Fetch events for the year range
-        for (const year of yearRange) {
-          try {
-            const events = await fetchFromTBA(`/events/${year}`);
-            if (events && events.length > 0) {
-              allEvents = [...allEvents, ...events];
-            }
-          } catch (error) {
-            // If we hit rate limits, use what we have so far
-            if (error.message.includes("rate limit")) {
-              console.warn(`Hit rate limit while fetching events for ${year}, using partial results`);
-              continue; // Try the next year
-            }
-            throw error; // Re-throw other errors
+        try {
+          const events = await fetchFromTBA(`/events/${year}`);
+          if (events && events.length > 0) {
+            allEvents = [...events];
           }
+        } catch (error) {
+          // If we hit rate limits, use what we have so far
+          if (error.message.includes("rate limit")) {
+            console.warn(`Hit rate limit while fetching events for ${year}, using partial results`);
+          }
+          throw error; // Re-throw other errors
         }
         
         // Cache all fetched events
@@ -348,8 +403,10 @@ async function searchEventsWithTBA(query) {
         
         apiCache.lastEventFetch = Date.now();
       } else {
-        // Use cached events
-        allEvents = Array.from(apiCache.events.values());
+        // Use cached events but filter for 2025 events only
+        allEvents = Array.from(apiCache.events.values()).filter(event => 
+          event.id && event.id.startsWith('2025')
+        );
       }
       
       // Filter events based on search query
@@ -357,6 +414,11 @@ async function searchEventsWithTBA(query) {
       const filteredEvents = allEvents.filter(event => {
         // Check if we have a formatted version
         const formattedEvent = event.key ? apiCache.events.get(event.key) : event;
+        
+        // Only process 2025 events
+        if (formattedEvent?.id && !formattedEvent.id.startsWith('2025')) {
+          return false;
+        }
         
         // We might have both formatted and raw - check fields in both
         const eventKey = (formattedEvent?.id || event.key || '').toLowerCase();
@@ -450,13 +512,19 @@ function isEventPast(dateStr) {
   return eventEndEstimate < now;
 }
 
-// Function to perform fuzzy search on text and highlight matches
+// Function to perform fuzzy search on text and highlight matches - ADD YEAR HIGHLIGHTING
 function fuzzySearch(text, query) {
   if (!query || !text) return { score: 0, highlighted: text || '' };
   
   // Normalize both strings for better matching
   const textLower = text.toLowerCase();
   const queryLower = query.toLowerCase();
+  
+  // Special case: Highlight "2025" explicitly since we're focusing on 2025 data
+  if (text.includes('2025')) {
+    const highlighted = text.replace(/(2025)/g, '<span class="highlight">$1</span>');
+    return { score: 0.8, highlighted };
+  }
   
   if (textLower.includes(queryLower)) {
     // Exact substring match
@@ -521,14 +589,14 @@ function fuzzySearch(text, query) {
   return { score: Math.min(score, 1.0), highlighted };
 }
 
-// Modified search function that combines local and API results
+// Modified search function that combines local and API results - ADD 2025 FOCUS
 async function searchAllItems(query) {
   if (!query || query.trim() === '') return [];
   
   // Search local content first for immediate results
   const localItems = [
     ...localSearchDatabase.teams,
-    ...localSearchDatabase.events,
+    ...localSearchDatabase.events.filter(event => event.id.startsWith('2025')), // Only 2025 events
     ...localSearchDatabase.pages
   ];
   
@@ -587,14 +655,15 @@ async function searchAllItems(query) {
       
       return {
         ...team,
-        score: 0.7, // Give API results good but not perfect score
+        // Give teams in 2025 a higher score
+        score: team.in2025 ? 0.9 : 0.6,
         nameHighlighted: nameMatch.highlighted,
         descriptionHighlighted: descriptionMatch.highlighted,
         contentHighlighted: ''
       };
     });
     
-    // Process TBA event results
+    // Process TBA event results - all are 2025 events due to our filter
     const eventResults = tbaEvents.map(event => {
       const nameMatch = fuzzySearch(event.name, query);
       const descriptionMatch = fuzzySearch(`${event.location} - ${event.date}`, query);
@@ -602,7 +671,7 @@ async function searchAllItems(query) {
       
       return {
         ...event,
-        score: 0.7, // Give API results good but not perfect score
+        score: 0.9, // Give 2025 events a higher score
         nameHighlighted: nameMatch.highlighted,
         descriptionHighlighted: descriptionMatch.highlighted,
         contentHighlighted: contentMatch.highlighted
@@ -627,8 +696,18 @@ async function searchAllItems(query) {
       }
     });
     
-    // Sort by score and return
-    const sortedResults = Array.from(uniqueResults.values()).sort((a, b) => {
+    // Filter to keep only 2025 events (but keep all teams and pages)
+    const filteredResults = Array.from(uniqueResults.values()).filter(result => {
+      if (result.type === 'event') {
+        // Only keep events for 2025
+        return result.id.startsWith('2025');
+      }
+      // Keep all teams and pages
+      return true;
+    });
+    
+    // Sort results - prioritizing 2025 events and teams
+    return filteredResults.sort((a, b) => {
       // First sort by type: current/upcoming events at the top for event type
       if (a.type === 'event' && b.type === 'event') {
         // Check if one event is past and the other is upcoming
@@ -654,18 +733,24 @@ async function searchAllItems(query) {
         return dateB - dateA;
       }
       
+      // If different result types, prioritize 2025 events
+      if (a.type === 'event' && a.id.startsWith('2025')) return -1;
+      if (b.type === 'event' && b.id.startsWith('2025')) return 1;
+      
+      // Then prioritize teams in 2025
+      if (a.type === 'team' && a.in2025 && (!b.in2025 || b.type !== 'team')) return -1;
+      if (b.type === 'team' && b.in2025 && (!a.in2025 || a.type !== 'team')) return 1;
+      
       // For different result types or non-event results, sort by score
       if (a.score !== b.score) {
         return b.score - a.score;
       }
       
       // If scores are identical, prioritize certain result types
-      const typeOrder = { team: 0, event: 1, page: 2 };
+      const typeOrder = { team: 1, event: 0, page: 2 };
       return typeOrder[a.type] - typeOrder[b.type];
     });
 
-    return sortedResults;
-    
   } catch (error) {
     console.error("Error in API search:", error);
     // Fall back to local results if API fails
@@ -679,8 +764,8 @@ function renderSearchResult(result) {
                      result.type === 'event' ? 'event-badge' : 
                      'page-badge';
   
-  const badgeText = result.type === 'team' ? 'Team' : 
-                    result.type === 'event' ? 'Event' : 
+  const badgeText = result.type === 'team' ? (result.in2025 ? '2025 Team' : 'Team') : 
+                    result.type === 'event' ? '2025 Event' : 
                     'Page';
   
   return `
@@ -1048,19 +1133,22 @@ function addDynamicSearchData() {
       }
     });
     
-    // Add recently viewed events if stored in localStorage
+    // Add recently viewed events if stored in localStorage - FILTER FOR 2025
     const recentEvents = JSON.parse(localStorage.getItem('recentlyViewedEvents') || '[]');
     recentEvents.forEach(event => {
-      // Check if event is already in database to avoid duplicates
-      if (!localSearchDatabase.events.some(e => e.id === event.id)) {
-        localSearchDatabase.events.push({
-          id: event.id,
-          name: event.name,
-          location: event.location || "Unknown location",
-          date: event.date || "TBD",
-          type: "event",
-          url: `event.html?event=${event.id}`
-        });
+      // Only add 2025 events
+      if (event.id.startsWith('2025')) {
+        // Check if event is already in database to avoid duplicates
+        if (!localSearchDatabase.events.some(e => e.id === event.id)) {
+          localSearchDatabase.events.push({
+            id: event.id,
+            name: event.name,
+            location: event.location || "Unknown location",
+            date: event.date || "TBD",
+            type: "event",
+            url: `event.html?event=${event.id}`
+          });
+        }
       }
     });
   } catch (error) {
