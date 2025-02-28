@@ -6,9 +6,6 @@ const TBA_AUTH_KEY =
 // API Endpoints
 const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 
-// Constant for the 37-hour offset (in milliseconds)
-const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
-
 // Fetch event data by event code
 async function fetchEventData(eventCode) {
   try {
@@ -311,11 +308,10 @@ function updateCountdown(startDate) {
   }
 }
 
-// New function for event countdown - Updated to add 37-hour offset
+// New function for event countdown
 function updateEventCountdown(startDate) {
   const now = new Date().getTime();
-  // Add the 37-hour offset to the TBA start date to get the actual start time
-  const eventStart = new Date(startDate).getTime() + OFFSET_MS;
+  const eventStart = new Date(startDate).getTime();
   let timeLeft = eventStart - now;
   if (timeLeft < 0) timeLeft = 0;
 
@@ -335,6 +331,7 @@ function updateEventCountdown(startDate) {
 // Initialize and update all data with loading states
 async function initializeEventData() {
   setLoadingState(true);
+  const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
 
   try {
     // Use calculated next event instead of a hardcoded one
@@ -342,14 +339,9 @@ async function initializeEventData() {
     if (currentEvent) {
       const currentDate = new Date().getTime();
       const eventStart = new Date(currentEvent.start_date).getTime();
-      // Add offset to event end date (already present)
       const eventEnd = new Date(currentEvent.end_date).getTime() + OFFSET_MS;
-      
-      // Add offset to event start date for comparison
-      const actualEventStart = eventStart + OFFSET_MS;
 
-      // Check against actual start time (with offset) for determining if the event has started
-      if (currentDate >= actualEventStart && currentDate <= eventEnd) {
+      if (currentDate >= eventStart && currentDate <= eventEnd) {
         // We're currently at an event - show live data
         const eventKey = currentEvent.key;
         document.getElementById("countdown-section").classList.add("hidden");
@@ -357,13 +349,22 @@ async function initializeEventData() {
         updateRankings(eventKey);
         updateRecord(eventKey);
         updateNextMatch(eventKey);
-      } else if (currentDate < actualEventStart) {
-        // We're before the actual start time - show countdown
+      } else if (currentDate < eventStart) {
+        // Next event hasn't started yet - show countdown
         document.getElementById("countdown-section").classList.remove("hidden");
         document.getElementById("live-updates").classList.add("hidden");
-        // Pass the original TBA date - the function will add the offset
-        updateEventCountdown(currentEvent.start_date);
-        setInterval(() => updateEventCountdown(currentEvent.start_date), 1000);
+        updateCountdown(currentEvent.start_date);
+        
+        // Set up a countdown interval
+        const countdownInterval = setInterval(() => {
+          const now = new Date().getTime();
+          if (now >= eventStart) {
+            clearInterval(countdownInterval);
+            initializeEventData();
+          } else {
+            updateEventCountdown(currentEvent.start_date);
+          }
+        }, 1000);
       }
     } else {
       setErrorState("ranking-number", "No upcoming event");
@@ -411,7 +412,7 @@ function highlightTeam(text, teamNumber = '7790') {
   const teams = text.split(', ');
   return teams.map(team => {
     const isTeam7790 = team === teamNumber;
-    return `<a href="team.html?team=${team}" 
+    return `<a href="team-overview.html?team=${team}" 
               class="transition-colors ${isTeam7790 ? 'text-baywatch-orange hover:text-white' : 'hover:text-baywatch-orange'}">${team}</a>`;
   }).join(', ');
 }
@@ -459,7 +460,7 @@ function updateRankingsTable(rankings) {
       <tr class="border-t border-gray-700 ${rowClass} ${hiddenClass} transition-all duration-300" style="${hiddenStyle}">
         <td class="p-4">${team.rank}</td>
         <td class="p-4">
-          <a href="team.html?team=${teamNumber}" 
+          <a href="team-overview.html?team=${teamNumber}" 
              class="text-baywatch-orange hover:text-white transition-colors">
             ${teamNumber}
           </a>
@@ -619,7 +620,7 @@ function updateScheduleTable(matches) {
     // Create a link to the match details page
     const matchNumberCell = `
       <td class="p-4">
-        <a href="match.html?match=${match.key}" 
+        <a href="match-overview.html?match=${match.key}" 
            class="flex items-center text-baywatch-orange hover:text-white transition-colors">
           <span>${match.match_number}</span>
           <i class="fas fa-external-link-alt text-xs ml-1"></i>
@@ -700,7 +701,7 @@ function toggleAllMatches(qualMatches, currentMatchIndex) {
       // Add link to match details
       const matchNumberCell = `
         <td class="p-4">
-          <a href="match.html?match=${match.key}" 
+          <a href="match-overview.html?match=${match.key}" 
              class="flex items-center text-baywatch-orange hover:text-white transition-colors">
             <span>${match.match_number}</span>
             <i class="fas fa-external-link-alt text-xs ml-1"></i>
@@ -880,7 +881,7 @@ async function updatePlayoffBracket(eventKey) {
           const matchNumber = matchBox.querySelector('.match-number');
           if (matchNumber) {
             matchNumber.innerHTML = `
-              <a href="match.html?match=${match.key}" class="match-link">
+              <a href="match-overview.html?match=${match.key}" class="match-link">
                 Match ${sequentialNumber}
                 <i class="fas fa-external-link-alt text-xs ml-1"></i>
               </a>
@@ -901,7 +902,7 @@ async function updatePlayoffBracket(eventKey) {
           const matchNumber = matchBox.querySelector('.match-number');
           if (matchNumber) {
             matchNumber.innerHTML = `
-              <a href="match.html?match=${match.key}" class="match-link">
+              <a href="match-overview.html?match=${match.key}" class="match-link">
                 Finals ${match.match_number}
                 <i class="fas fa-external-link-alt text-xs ml-1"></i>
               </a>
@@ -2035,7 +2036,7 @@ async function updateTeamDetails(matchData, teamData) {
                                      `<span class="text-xs bg-blue-900/30 px-2 py-1 rounded">Blue Alliance</span>`;
     
     return `
-      <a href="team.html?team=${teamNumber}" class="block team-detail-card bg-blue-900/20 p-4 rounded-lg hover:bg-blue-900/30 transition-all">
+      <a href="team-overview.html?team=${teamNumber}" class="block team-detail-card bg-blue-900/20 p-4 rounded-lg hover:bg-blue-900/30 transition-all">
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-bold text-blue-400">${teamNumber}</h3>
           ${allianceBadge}
@@ -2060,7 +2061,7 @@ async function updateTeamDetails(matchData, teamData) {
                                      `<span class="text-xs bg-red-900/30 px-2 py-1 rounded">Red Alliance</span>`;
     
     return `
-      <a href="team.html?team=${teamNumber}" class="block team-detail-card bg-red-900/20 p-4 rounded-lg hover:bg-red-900/30 transition-all">
+      <a href="team-overview.html?team=${teamNumber}" class="block team-detail-card bg-red-900/20 p-4 rounded-lg hover:bg-red-900/30 transition-all">
         <div class="flex justify-between items-center mb-2">
           <h3 class="font-bold text-red-400">${teamNumber}</h3>
           ${allianceBadge}
@@ -2125,7 +2126,7 @@ function updateMatchVideo(matchData) {
 
 // Check for match details page and initialize if needed
 document.addEventListener('DOMContentLoaded', function() {
-  if (window.location.pathname.includes('match.html')) {
+  if (window.location.pathname.includes('match-overview.html')) {
     const urlParams = new URLSearchParams(window.location.search);
     const matchKey = urlParams.get('match');
     
@@ -2225,7 +2226,6 @@ async function loadTeamOverview() {
       let nextEvent = null;
       
       for (const event of eventsData) {
-        // Apply 37-hour offset to start and end dates
         // Apply 37-hour offset to start and end dates
         const startDate = new Date(new Date(event.start_date).getTime() + OFFSET_MS);
         const endDate = new Date(new Date(event.end_date).getTime() + OFFSET_MS);
@@ -2447,7 +2447,7 @@ async function loadTeamOverview() {
                         <span>${upcomingMatch.alliances.red.team_keys.map(t => t.replace('frc', '')).join(', ')}</span>
                       </div>
                     </div>
-                    <a href="match.html?match=${upcomingMatch.key}" class="block mt-3 text-center text-xs bg-baywatch-orange/30 hover:bg-baywatch-orange/50 transition-colors py-1 rounded text-white">
+                    <a href="match-overview.html?match=${upcomingMatch.key}" class="block mt-3 text-center text-xs bg-baywatch-orange/30 hover:bg-baywatch-orange/50 transition-colors py-1 rounded text-white">
                       View Match Details
                     </a>
                   </div>
@@ -2707,8 +2707,8 @@ function updateTeamSocialLinks(teamNumber) {
   }
 }
 
-// Add initialization for team.html page
-if (window.location.pathname.includes('team.html')) {
+// Add initialization for team-overview.html page
+if (window.location.pathname.includes('team-overview.html')) {
   // Initialize Team Overview page
   document.addEventListener('DOMContentLoaded', function() {
     loadTeamOverview();
@@ -2818,7 +2818,7 @@ async function displayEventTeams(eventCode) {
         const isHighlighted = team.team_number === 7790;
         teamsHTML += `
           <div class="team-card-container">
-            <a href="team.html?team=${team.team_number}" 
+            <a href="team-overview.html?team=${team.team_number}" 
                class="team-card card-gradient rounded-xl p-4 block hover:scale-105 transition-all duration-300 ${isHighlighted ? 'border-2 border-baywatch-orange' : ''}">
               <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br ${isHighlighted ? 'from-baywatch-orange to-orange-600' : 'from-gray-700 to-gray-800'} flex items-center justify-center font-bold text-lg">
