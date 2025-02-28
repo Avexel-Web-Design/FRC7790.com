@@ -16,7 +16,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="public/js/search.js" defer></script>
     <script>
       tailwind.config = {
         theme: {
@@ -36,7 +35,6 @@
     <link href="public/styles/main.css" rel="stylesheet" />
     <script src="public/js/animations.js" defer></script>
     <script src="public/js/frc-api.js" defer></script>
-    <script src="public/js/search.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   </head>
 
@@ -233,17 +231,22 @@
             // It's a team number
             window.location.href = `team.html?team=${searchTerm}`;
           } 
-          // If input contains letters and looks like an event code
-          else {
+          // If input contains any letters, it's an event code
+          else if (/[a-z]/i.test(searchTerm)) {
             // Check if input looks like a complete event code with year (e.g. 2025milac)
             if (/^\d{4}[a-z0-9]+$/.test(searchTerm)) {
               // It's a complete event code with year
               window.location.href = `event.html?event=${searchTerm}`;
             }
+            // Otherwise, it's likely an event code without year (e.g., "milac" or "mike2")
             else {
-              // Search query - redirect to search page
-              window.location.href = `search-results.html?q=${encodeURIComponent(searchTerm)}`;
+              // Add 2025 as default year
+              window.location.href = `event.html?event=2025${searchTerm}`;
             }
+          }
+          // If it doesn't match any pattern, default to schedule page
+          else {
+            window.location.href = `schedule.html`;
           }
         }
         
