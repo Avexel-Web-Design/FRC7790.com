@@ -11,7 +11,7 @@ const localSearchDatabase = {
       name: "Baywatch Robotics", 
       location: "Harbor Springs, MI",
       type: "team",
-      url: "team-overview.html?team=7790" 
+      url: "team.html?team=7790" 
     },
     // Keep a small number of key teams for instant results - less than before
     // The rest will be loaded from TBA API
@@ -20,14 +20,14 @@ const localSearchDatabase = {
       name: "The Cheesy Poofs", 
       location: "San Jose, CA",
       type: "team",
-      url: "team-overview.html?team=254" 
+      url: "team.html?team=254" 
     },
     { 
       id: "33", 
       name: "Killer Bees", 
       location: "Auburn Hills, MI",
       type: "team",
-      url: "team-overview.html?team=33" 
+      url: "team.html?team=33" 
     },
   ],
   events: [
@@ -189,7 +189,7 @@ async function searchTeamsWithTBA(query) {
           name: team.nickname || `Team ${team.team_number}`,
           location: `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
           type: "team",
-          url: `team-overview.html?team=${team.team_number}`
+          url: `team.html?team=${team.team_number}`
         };
         
         // Cache this team
@@ -235,7 +235,7 @@ async function searchTeamsWithTBA(query) {
             name: team.nickname || `Team ${team.team_number}`,
             location: `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
             type: "team",
-            url: `team-overview.html?team=${team.team_number}`
+            url: `team.html?team=${team.team_number}`
           };
           apiCache.teams.set(team.team_number.toString(), formattedTeam);
         });
@@ -275,7 +275,7 @@ async function searchTeamsWithTBA(query) {
           name: team.nickname || team.name || `Team ${team.team_number || team.id}`,
           location: team.location || `${team.city || ''}, ${team.state_prov || ''}${team.country ? ', ' + team.country : ''}`,
           type: "team",
-          url: `team-overview.html?team=${team.team_number || team.id}`
+          url: `team.html?team=${team.team_number || team.id}`
         };
       });
       
@@ -1059,7 +1059,7 @@ function addDynamicSearchData() {
           name: team.name,
           location: team.location || "Unknown location",
           type: "team",
-          url: `team-overview.html?team=${team.id}`
+          url: `team.html?team=${team.id}`
         });
       }
     });
@@ -1117,7 +1117,7 @@ function setupGlobalSearch() {
     
     // Check if input matches a team number pattern (all digits)
     if (/^\d+$/.test(searchTerm)) {
-      window.location.href = `team-overview.html?team=${searchTerm}`;
+      window.location.href = `team.html?team=${searchTerm}`;
       return;
     }
     
