@@ -259,75 +259,67 @@
       });
     </script>
 
-    <!-- Search Functionality (New Addition) -->
+    <!-- Search Functionality -->
     <script>
+      // This script will be replaced by search.js functionality
+      // Keeping it as a fallback until search.js fully loads
       document.addEventListener('DOMContentLoaded', function() {
-        // Handle desktop search
-        const searchInput = document.getElementById('search-input');
-        const searchButton = document.getElementById('search-button');
-        
-        // Handle mobile search
-        const mobileSearchInput = document.getElementById('mobile-search-input');
-        const mobileSearchButton = document.getElementById('mobile-search-button');
-        
-        // Function to process search
-        function handleSearch(searchTerm) {
-          if (!searchTerm) return;
+        // Check if search.js has initialized
+        if (typeof setupGlobalSearch !== 'function') {
+          // Handle desktop search
+          const searchInput = document.getElementById('search-input');
+          const searchButton = document.getElementById('search-button');
           
-          searchTerm = searchTerm.trim().toLowerCase();
+          // Handle mobile search
+          const mobileSearchInput = document.getElementById('mobile-search-input');
+          const mobileSearchButton = document.getElementById('mobile-search-button');
           
-          // Check if input consists of ONLY digits (team number)
-          if (/^\d+$/.test(searchTerm)) {
-            // It's a team number
-            window.location.href = `team-overview.html?team=${searchTerm}`;
-          } 
-          // If input contains any letters, it's an event code
-          else if (/[a-z]/i.test(searchTerm)) {
-            // Check if input looks like a complete event code with year (e.g. 2025milac)
-            if (/^\d{4}[a-z0-9]+$/.test(searchTerm)) {
-              // It's a complete event code with year
-              window.location.href = `event.html?event=${searchTerm}`;
-            }
-            // Otherwise, it's likely an event code without year (e.g., "milac" or "mike2")
+          // Function to process search
+          function handleSearch(searchTerm) {
+            if (!searchTerm) return;
+            
+            searchTerm = searchTerm.trim().toLowerCase();
+            
+            // Check if input consists of ONLY digits (team number)
+            if (/^\d+$/.test(searchTerm)) {
+              // It's a team number
+              window.location.href = `team.html?team=${searchTerm}`;
+            } 
+            // Otherwise, perform a search
             else {
-              // Add 2025 as default year
-              window.location.href = `event.html?event=2025${searchTerm}`;
+              window.location.href = `search-results.html?q=${encodeURIComponent(searchTerm)}`;
             }
           }
-          // If it doesn't match any pattern, default to schedule page
-          else {
-            window.location.href = `schedule.html`;
-          }
-        }
-        
-        // Desktop search listeners
-        if (searchButton) {
-          searchButton.addEventListener('click', function() {
-            handleSearch(searchInput.value);
-          });
-        }
-        
-        if (searchInput) {
-          searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+          
+          // Desktop search listeners
+          if (searchButton) {
+            searchButton.addEventListener('click', function() {
               handleSearch(searchInput.value);
-            }
-          });
-        }
-        
-        // Mobile search listeners
-        if (mobileSearchButton) {
-          mobileSearchButton.addEventListener('click', function() {
-            handleSearch(mobileSearchInput.value);
-          });
-        }
-        
-        if (mobileSearchInput) {
-          mobileSearchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+            });
+          }
+          
+          if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+              if (e.key === 'Enter') {
+                handleSearch(searchInput.value);
+              }
+            });
+          }
+          
+          // Mobile search listeners
+          if (mobileSearchButton) {
+            mobileSearchButton.addEventListener('click', function() {
               handleSearch(mobileSearchInput.value);
-            }
-          });
+            });
+          }
+          
+          if (mobileSearchInput) {
+            mobileSearchInput.addEventListener('keypress', function(e) {
+              if (e.key === 'Enter') {
+                handleSearch(mobileSearchInput.value);
+              }
+            });
+          }
         }
       });
     </script>

@@ -263,7 +263,7 @@
       });
     </script>
 
-    <!-- Search Functionality (Updated) -->
+    <!-- Search Functionality -->
     <script>
       // This script will be replaced by search.js functionality
       // Keeping it as a fallback until search.js fully loads
@@ -289,11 +289,6 @@
               // It's a team number
               window.location.href = `team.html?team=${searchTerm}`;
             } 
-            // If input matches an exact event code pattern
-            else if (/^\d{4}[a-z0-9]+$/.test(searchTerm)) {
-              // It's a complete event code with year
-              window.location.href = `event.html?event=${searchTerm}`;
-            }
             // Otherwise, perform a search
             else {
               window.location.href = `search-results.html?q=${encodeURIComponent(searchTerm)}`;

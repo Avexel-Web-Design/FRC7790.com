@@ -210,6 +210,71 @@
       });
     </script>
 
+    <!-- Search Functionality -->
+    <script>
+      // This script will be replaced by search.js functionality
+      // Keeping it as a fallback until search.js fully loads
+      document.addEventListener('DOMContentLoaded', function() {
+        // Check if search.js has initialized
+        if (typeof setupGlobalSearch !== 'function') {
+          // Handle desktop search
+          const searchInput = document.getElementById('search-input');
+          const searchButton = document.getElementById('search-button');
+          
+          // Handle mobile search
+          const mobileSearchInput = document.getElementById('mobile-search-input');
+          const mobileSearchButton = document.getElementById('mobile-search-button');
+          
+          // Function to process search
+          function handleSearch(searchTerm) {
+            if (!searchTerm) return;
+            
+            searchTerm = searchTerm.trim().toLowerCase();
+            
+            // Check if input consists of ONLY digits (team number)
+            if (/^\d+$/.test(searchTerm)) {
+              // It's a team number
+              window.location.href = `team.html?team=${searchTerm}`;
+            } 
+            // Otherwise, perform a search
+            else {
+              window.location.href = `search-results.html?q=${encodeURIComponent(searchTerm)}`;
+            }
+          }
+          
+          // Desktop search listeners
+          if (searchButton) {
+            searchButton.addEventListener('click', function() {
+              handleSearch(searchInput.value);
+            });
+          }
+          
+          if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+              if (e.key === 'Enter') {
+                handleSearch(searchInput.value);
+              }
+            });
+          }
+          
+          // Mobile search listeners
+          if (mobileSearchButton) {
+            mobileSearchButton.addEventListener('click', function() {
+              handleSearch(mobileSearchInput.value);
+            });
+          }
+          
+          if (mobileSearchInput) {
+            mobileSearchInput.addEventListener('keypress', function(e) {
+              if (e.key === 'Enter') {
+                handleSearch(mobileSearchInput.value);
+              }
+            });
+          }
+        }
+      });
+    </script>
+
     <!-- Hero Section -->
     <section class="pt-32 pb-16 relative z-10">
       <div class="container mx-auto px-6">
@@ -250,7 +315,7 @@
           id="dismiss-loading" 
           class="mt-6 px-4 py-2 text-xs text-gray-400 hover:text-white border border-gray-700 rounded-lg hover:border-gray-500 transition-colors"
           onclick="document.getElementById('loading-overlay').classList.add('hidden')">
-          Dismiss if stuck
+          Dismiss
         </button>
       </div>
     </div>

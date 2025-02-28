@@ -13,29 +13,13 @@ const localSearchDatabase = {
       type: "team",
       url: "team.html?team=7790" 
     },
-    // Keep a small number of key teams for instant results - less than before
-    // The rest will be loaded from TBA API
-    { 
-      id: "254", 
-      name: "The Cheesy Poofs", 
-      location: "San Jose, CA",
-      type: "team",
-      url: "team.html?team=254" 
-    },
-    { 
-      id: "33", 
-      name: "Killer Bees", 
-      location: "Auburn Hills, MI",
-      type: "team",
-      url: "team.html?team=33" 
-    },
   ],
   events: [
     {
       id: "2025milac",
       name: "FIM District Lake City Event",
       location: "Lake City, Michigan",
-      date: "March 12-14, 2025",
+      date: "February 28 - March 2, 2025",
       type: "event",
       url: "event.html?event=2025milac"
     },
@@ -43,7 +27,7 @@ const localSearchDatabase = {
       id: "2025mitvc",
       name: "FIM District Traverse City Event",
       location: "Traverse City, Michigan",
-      date: "March 26-28, 2025",
+      date: "March 13-15, 2025",
       type: "event",
       url: "event.html?event=2025mitvc"
     },
@@ -59,9 +43,9 @@ const localSearchDatabase = {
     },
     {
       id: "robots",
-      title: "Our Robots", 
+      title: "Robots", 
       description: "View all robots built by Team 7790 Baywatch Robotics",
-      content: "See our robot RIPTIDE for the 2025 REEFSCAPE season and past competition robots like SURGE and FLUID.",
+      content: "See our robot RIPTIDE for the 2025 REEFSCAPE season and past competition robots like.",
       type: "page",
       url: "robots.html"
     },
@@ -69,21 +53,21 @@ const localSearchDatabase = {
       id: "sponsors",
       title: "Sponsors", 
       description: "Organizations and individuals supporting Team 7790",
-      content: "Learn about the generous sponsors and partners that make our team possible. Become a sponsor to support STEM education.",
+      content: "Learn about the generous sponsors and partners that make our team possible.",
       type: "page",
       url: "sponsors.html"
     },
     {
       id: "schedule",
-      title: "Competition Schedule", 
+      title: "Schedule", 
       description: "FRC competition schedule for Team 7790",
-      content: "See our upcoming competitions including Lake City, Traverse City, and Championship events.",
+      content: "See our upcoming competitions.",
       type: "page",
       url: "schedule.html"
     },
     {
       id: "ftc",
-      title: "FTC Team", 
+      title: "FTC", 
       description: "Our middle school FIRST Tech Challenge team",
       content: "Information about our middle school robotics program and FTC team.",
       type: "page",
@@ -411,7 +395,7 @@ async function searchTeamsWithTBA(query) {
   }
 }
 
-// Search for events via TBA API - MODIFIED to be more comprehensive
+// Search for events via TBA API - COMPLETELY REMOVE 2025 FOCUS
 async function searchEventsWithTBA(query) {
   // Check cache first
   const cacheKey = query.toLowerCase();
@@ -423,72 +407,54 @@ async function searchEventsWithTBA(query) {
   try {
     // Exact event key match (fast path)
     if (/^\d{4}[a-z0-9]+$/.test(query)) {
-      // Only fetch if it's a 2025 event
-      if (query.startsWith('2025')) {
-        const event = await fetchFromTBA(`/event/${query}`);
-        if (event) {
-          const formattedEvent = {
-            id: event.key,
-            name: event.name,
-            location: `${event.city || ''}, ${event.state_prov || ''}${event.country ? ', ' + event.country : ''}`,
-            date: formatEventDate(event.start_date, event.end_date),
-            type: "event",
-            url: `event.html?event=${event.key}`
-          };
-          
-          // Cache this event
-          apiCache.events.set(event.key, formattedEvent);
-          apiCache.eventSearch.set(cacheKey, [formattedEvent]);
-          apiCache.lastEventFetch = Date.now();
-          
-          return [formattedEvent];
-        }
-      } else {
-        // Not a 2025 event, but we'll fetch it anyway for caching purposes
-        // We'll filter out non-2025 events later
-        try {
-          const event = await fetchFromTBA(`/event/${query}`);
-          if (event) {
-            const formattedEvent = {
-              id: event.key,
-              name: event.name,
-              location: `${event.city || ''}, ${event.state_prov || ''}${event.country ? ', ' + event.country : ''}`,
-              date: formatEventDate(event.start_date, event.end_date),
-              type: "event",
-              url: `event.html?event=${event.key}`
-            };
-            
-            // Cache the event but return empty array since we only want 2025 events
-            apiCache.events.set(event.key, formattedEvent);
-          }
-        } catch (error) {
-          // Just ignore errors for non-2025 events
-          console.warn(`Error fetching non-2025 event ${query}:`, error);
-        }
+      const event = await fetchFromTBA(`/event/${query}`);
+      if (event) {
+        const formattedEvent = {
+          id: event.key,
+          name: event.name,
+          location: `${event.city || ''}, ${event.state_prov || ''}${event.country ? ', ' + event.country : ''}`,
+          date: formatEventDate(event.start_date, event.end_date),
+          type: "event",
+          url: `event.html?event=${event.key}`
+        };
         
-        return [];
+        // Cache this event
+        apiCache.events.set(event.key, formattedEvent);
+        apiCache.eventSearch.set(cacheKey, [formattedEvent]);
+        apiCache.lastEventFetch = Date.now();
+        
+        return [formattedEvent];
       }
+      return []; // Event not found
     }
     
-    // Full text search for event name/location - ONLY FOR 2025
+    // Full text search for event name/location - FETCH ALL EVENTS, NOT JUST 2025
     if (query.length >= 1) { // Reduced minimum query length to 1 character
-      const year = 2025;
+      const currentYear = new Date().getFullYear();
       let allEvents = [];
       
       // If we haven't fetched events in a while, get fresh data
-      if (Date.now() - apiCache.lastEventFetch > API_CACHE_DURATION || 
-          !apiCache.events.size || 
-          !Array.from(apiCache.events.keys()).some(key => key.startsWith('2025'))) {
+      if (Date.now() - apiCache.lastEventFetch > API_CACHE_DURATION || !apiCache.events.size) {
         try {
-          console.log(`Fetching events for ${year}`);
-          const events = await fetchFromTBA(`/events/${year}`);
-          if (events && events.length > 0) {
-            allEvents = [...events];
+          console.log(`Fetching events for ${currentYear} and ${currentYear + 1}`);
+          
+          // Fetch events for current year and next year
+          const [eventsCurrentYear, eventsNextYear] = await Promise.all([
+            fetchFromTBA(`/events/${currentYear}`).catch(() => []),
+            fetchFromTBA(`/events/${currentYear + 1}`).catch(() => [])
+          ]);
+          
+          if (eventsCurrentYear && eventsCurrentYear.length > 0) {
+            allEvents = [...eventsCurrentYear];
+          }
+          
+          if (eventsNextYear && eventsNextYear.length > 0) {
+            allEvents = [...allEvents, ...eventsNextYear];
           }
         } catch (error) {
           // If we hit rate limits, use what we have so far
           if (error.message.includes("rate limit")) {
-            console.warn(`Hit rate limit while fetching events for ${year}, using partial results`);
+            console.warn(`Hit rate limit while fetching events, using partial results`);
           } else {
             throw error; // Re-throw other errors
           }
@@ -511,10 +477,8 @@ async function searchEventsWithTBA(query) {
         
         apiCache.lastEventFetch = Date.now();
       } else {
-        // Use cached events but filter for 2025 events only
-        allEvents = Array.from(apiCache.events.values()).filter(event => 
-          event.id && event.id.startsWith('2025')
-        );
+        // Use cached events - DON'T filter for specific year
+        allEvents = Array.from(apiCache.events.values());
       }
       
       // More lenient filtering for events
@@ -522,10 +486,7 @@ async function searchEventsWithTBA(query) {
       const queryTerms = queryLower.split(/\s+/).filter(term => term.length > 0);
       
       const filteredEvents = allEvents.filter(event => {
-        // Only process 2025 events
-        if (event.key && !event.key.startsWith('2025')) {
-          return false;
-        }
+        // Don't filter by year anymore - accept all events that match the query
         
         // Check if we have a formatted version
         const formattedEvent = event.key ? 
@@ -533,11 +494,6 @@ async function searchEventsWithTBA(query) {
                               event;
         
         if (!formattedEvent) return false;
-        
-        // Reject if not a 2025 event
-        if (formattedEvent.id && !formattedEvent.id.startsWith('2025')) {
-          return false;
-        }
         
         // We might have both formatted and raw - check fields in both
         const eventKey = (formattedEvent?.id || event.key || '').toLowerCase();
@@ -554,8 +510,10 @@ async function searchEventsWithTBA(query) {
         if (eventName.includes(queryLower)) return true;
         if (eventLocation.includes(queryLower)) return true;
         
-        // Check for short event code matches (e.g., "milac" should match "2025milac")
-        if (eventKey.includes(queryLower.replace(/\s+/g, ''))) return true;
+        // Check for short event code matches without year prefix
+        // For example, if searching for "milac", match "2025milac", "2024milac", etc.
+        const shortCode = eventKey.substring(4); // Remove year prefix
+        if (shortCode === queryLower) return true;
         
         // If we have multiple terms, check if all terms appear somewhere in the event data
         if (queryTerms.length > 1) {
@@ -668,7 +626,7 @@ function isEventPast(dateStr) {
   return eventEndEstimate < now;
 }
 
-// Function to perform fuzzy search on text and highlight matches - ADD YEAR HIGHLIGHTING
+// Function to perform fuzzy search on text and highlight matches - REMOVE YEAR HIGHLIGHTING
 function fuzzySearch(text, query) {
   if (!query || !text) return { score: 0, highlighted: text || '' };
   
@@ -676,11 +634,8 @@ function fuzzySearch(text, query) {
   const textLower = text.toLowerCase();
   const queryLower = query.toLowerCase();
   
-  // Special case: Highlight "2025" explicitly since we're focusing on 2025 data
-  if (text.includes('2025')) {
-    const highlighted = text.replace(/(2025)/g, '<span class="highlight">$1</span>');
-    return { score: 0.8, highlighted };
-  }
+  // Remove special handling of "2025" that was causing irrelevant results
+  // We'll let normal matching handle it if the user specifically searches for 2025
   
   if (textLower.includes(queryLower)) {
     // Exact substring match
@@ -732,27 +687,19 @@ function fuzzySearch(text, query) {
         }
       }
     }
-    
-    // Location or event name matches
-    const commonTerms = ["michigan", "event", "district", "championship", "regional", "first"];
-    for (const term of commonTerms) {
-      if (queryLower.includes(term) && textLower.includes(term)) {
-        score += 0.2;
-      }
-    }
   }
   
   return { score: Math.min(score, 1.0), highlighted };
 }
 
-// Modified search function that combines local and API results - ADD 2025 FOCUS
+// Modified search function that combines local and API results - COMPLETELY REMOVE 2025 FOCUS
 async function searchAllItems(query) {
   if (!query || query.trim() === '') return [];
   
-  // Search local content first for immediate results
+  // Search local content first for immediate results - DO NOT FILTER BY 2025
   const localItems = [
     ...localSearchDatabase.teams,
-    ...localSearchDatabase.events.filter(event => event.id.startsWith('2025')), // Only 2025 events
+    ...localSearchDatabase.events, // Include ALL events regardless of year
     ...localSearchDatabase.pages
   ];
   
@@ -811,15 +758,15 @@ async function searchAllItems(query) {
       
       return {
         ...team,
-        // Give teams in 2025 a higher score
-        score: team.in2025 ? 0.9 : 0.6,
+        // Use match quality for scoring, not 2025 participation
+        score: nameMatch.score * 0.7 + descriptionMatch.score * 0.3,
         nameHighlighted: nameMatch.highlighted,
         descriptionHighlighted: descriptionMatch.highlighted,
         contentHighlighted: ''
       };
     });
     
-    // Process TBA event results - all are 2025 events due to our filter
+    // Process TBA event results
     const eventResults = tbaEvents.map(event => {
       const nameMatch = fuzzySearch(event.name, query);
       const descriptionMatch = fuzzySearch(`${event.location} - ${event.date}`, query);
@@ -827,7 +774,8 @@ async function searchAllItems(query) {
       
       return {
         ...event,
-        score: 0.9, // Give 2025 events a higher score
+        // Score based on match quality
+        score: nameMatch.score * 0.6 + descriptionMatch.score * 0.3 + contentMatch.score * 0.1,
         nameHighlighted: nameMatch.highlighted,
         descriptionHighlighted: descriptionMatch.highlighted,
         contentHighlighted: contentMatch.highlighted
@@ -852,17 +800,10 @@ async function searchAllItems(query) {
       }
     });
     
-    // Filter to keep only 2025 events (but keep all teams and pages)
-    const filteredResults = Array.from(uniqueResults.values()).filter(result => {
-      if (result.type === 'event') {
-        // Only keep events for 2025
-        return result.id.startsWith('2025');
-      }
-      // Keep all teams and pages
-      return true;
-    });
+    // Get all results without 2025 filtering
+    const filteredResults = Array.from(uniqueResults.values());
     
-    // Sort results - prioritizing 2025 events and teams
+    // Sort results by score, not by 2025 priority
     return filteredResults.sort((a, b) => {
       // First sort by type: current/upcoming events at the top for event type
       if (a.type === 'event' && b.type === 'event') {
@@ -889,14 +830,6 @@ async function searchAllItems(query) {
         return dateB - dateA;
       }
       
-      // If different result types, prioritize 2025 events
-      if (a.type === 'event' && a.id.startsWith('2025')) return -1;
-      if (b.type === 'event' && b.id.startsWith('2025')) return 1;
-      
-      // Then prioritize teams in 2025
-      if (a.type === 'team' && a.in2025 && (!b.in2025 || b.type !== 'team')) return -1;
-      if (b.type === 'team' && b.in2025 && (!a.in2025 || a.type !== 'team')) return 1;
-      
       // For different result types or non-event results, sort by score
       if (a.score !== b.score) {
         return b.score - a.score;
@@ -920,8 +853,9 @@ function renderSearchResult(result) {
                      result.type === 'event' ? 'event-badge' : 
                      'page-badge';
   
-  const badgeText = result.type === 'team' ? (result.in2025 ? '2025 Team' : 'Team') : 
-                    result.type === 'event' ? '2025 Event' : 
+  // Don't mention 2025 in the badge text
+  const badgeText = result.type === 'team' ? 'Team' : 
+                    result.type === 'event' ? 'Event' : 
                     'Page';
   
   return `
@@ -1289,22 +1223,19 @@ function addDynamicSearchData() {
       }
     });
     
-    // Add recently viewed events if stored in localStorage - FILTER FOR 2025
+    // Add recently viewed events if stored in localStorage - ACCEPT ALL EVENTS
     const recentEvents = JSON.parse(localStorage.getItem('recentlyViewedEvents') || '[]');
     recentEvents.forEach(event => {
-      // Only add 2025 events
-      if (event.id.startsWith('2025')) {
-        // Check if event is already in database to avoid duplicates
-        if (!localSearchDatabase.events.some(e => e.id === event.id)) {
-          localSearchDatabase.events.push({
-            id: event.id,
-            name: event.name,
-            location: event.location || "Unknown location",
-            date: event.date || "TBD",
-            type: "event",
-            url: `event.html?event=${event.id}`
-          });
-        }
+      // Add all events, not just 2025 events
+      if (!localSearchDatabase.events.some(e => e.id === event.id)) {
+        localSearchDatabase.events.push({
+          id: event.id,
+          name: event.name,
+          location: event.location || "Unknown location",
+          date: event.date || "TBD",
+          type: "event",
+          url: `event.html?event=${event.id}`
+        });
       }
     });
     
@@ -1332,8 +1263,12 @@ function addDynamicSearchData() {
       }
     });
     
-    // Add Michigan regional events
-    const michiganEvents = [
+    // Include additional events from other years, not just 2025
+    const additionalEvents = [
+      // Previous years events - adding a few examples
+      { id: "2024milac", name: "FIM District Lake City Event", location: "Lake City, Michigan", date: "March 5-7, 2024" },
+      { id: "2024mitvc", name: "FIM District Traverse City Event", location: "Traverse City, Michigan", date: "March 19-21, 2024" },
+      // 2025 events
       { id: "2025milac", name: "FIM District Lake City Event", location: "Lake City, Michigan", date: "March 12-14, 2025" },
       { id: "2025mitvc", name: "FIM District Traverse City Event", location: "Traverse City, Michigan", date: "March 26-28, 2025" },
       { id: "2025midet", name: "FIM District Detroit Event", location: "Detroit, Michigan", date: "April 2-4, 2025" },
@@ -1343,7 +1278,7 @@ function addDynamicSearchData() {
       { id: "2025mimid", name: "FIM District Midland Event", location: "Midland, Michigan", date: "April 2-4, 2025" }
     ];
     
-    michiganEvents.forEach(event => {
+    additionalEvents.forEach(event => {
       if (!localSearchDatabase.events.some(e => e.id === event.id)) {
         localSearchDatabase.events.push({
           ...event,
@@ -2006,3 +1941,335 @@ document.addEventListener('DOMContentLoaded', function() {
   // Mark filters as initialized to avoid duplicate event handlers
   window.filtersInitialized = true;
 });
+
+// Global constants for search functionality
+const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
+const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
+
+// Set up search functionality when the document loads
+document.addEventListener('DOMContentLoaded', setupGlobalSearch);
+
+// Main function to set up search across all pages
+function setupGlobalSearch() {
+  // Handle desktop search
+  const searchInput = document.getElementById('search-input');
+  const searchButton = document.getElementById('search-button');
+  
+  // Handle mobile search
+  const mobileSearchInput = document.getElementById('mobile-search-input');
+  const mobileSearchButton = document.getElementById('mobile-search-button');
+  
+  // Function to process search
+  function handleSearch(searchTerm) {
+    if (!searchTerm) return;
+    
+    searchTerm = searchTerm.trim().toLowerCase();
+    
+    // Check if input consists of ONLY digits (team number)
+    if (/^\d+$/.test(searchTerm)) {
+      // It's a team number
+      window.location.href = `team.html?team=${searchTerm}`;
+    }
+    // For all other searches, go to search results page with the exact term
+    else {
+      window.location.href = `search-results.html?q=${encodeURIComponent(searchTerm)}`;
+    }
+  }
+  
+  // Desktop search listeners
+  if (searchButton) {
+    searchButton.addEventListener('click', function() {
+      handleSearch(searchInput.value);
+    });
+  }
+  
+  if (searchInput) {
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        handleSearch(searchInput.value);
+      }
+    });
+  }
+  
+  // Mobile search listeners
+  if (mobileSearchButton) {
+    mobileSearchButton.addEventListener('click', function() {
+      handleSearch(mobileSearchInput.value);
+    });
+  }
+  
+  if (mobileSearchInput) {
+    mobileSearchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        handleSearch(mobileSearchInput.value);
+      }
+    });
+  }
+  
+  // Initialize search-specific page functionality if applicable
+  if (window.location.pathname.includes('search-results.html')) {
+    initializeSearchResults();
+  }
+}
+
+// Function to handle search results page
+function initializeSearchResults() {
+  // Get the query parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchQuery = urlParams.get('q');
+  
+  // Update the page with the search query
+  const searchQueryElement = document.getElementById('search-query');
+  const searchInputElement = document.getElementById('search-input');
+  const mobileSearchInputElement = document.getElementById('mobile-search-input');
+  
+  if (searchQueryElement) {
+    searchQueryElement.textContent = searchQuery || 'No search term';
+  }
+  
+  // Update search inputs with the current query
+  if (searchInputElement) {
+    searchInputElement.value = searchQuery || '';
+  }
+  
+  if (mobileSearchInputElement) {
+    mobileSearchInputElement.value = searchQuery || '';
+  }
+  
+  // Perform the search if there's a query
+  if (searchQuery) {
+    performSearch(searchQuery);
+  } else {
+    displayNoSearchResults();
+  }
+}
+
+// Function to perform search
+async function performSearch(query) {
+  const resultsContainer = document.getElementById('search-results');
+  if (!resultsContainer) return;
+  
+  // Show loading state
+  resultsContainer.innerHTML = `
+    <div class="flex justify-center items-center py-12">
+      <div class="w-12 h-12 border-4 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin"></div>
+    </div>
+  `;
+  
+  try {
+    // Search for teams
+    const teams = await searchTeams(query);
+    
+    // Search for events
+    const events = await searchEvents(query);
+    
+    // Generate HTML for results
+    let resultsHtml = '';
+    
+    // Add team results
+    if (teams.length > 0) {
+      resultsHtml += `
+        <div class="mb-8">
+          <h2 class="text-xl font-bold mb-4 text-baywatch-orange">Teams (${teams.length})</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            ${teams.map(team => generateTeamCard(team)).join('')}
+          </div>
+        </div>
+      `;
+    }
+    
+    // Add event results
+    if (events.length > 0) {
+      resultsHtml += `
+        <div class="mb-8">
+          <h2 class="text-xl font-bold mb-4 text-baywatch-orange">Events (${events.length})</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${events.map(event => generateEventCard(event)).join('')}
+          </div>
+        </div>
+      `;
+    }
+    
+    // Update the results container
+    if (teams.length === 0 && events.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="text-center py-12">
+          <div class="w-20 h-20 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-search text-gray-500 text-3xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-400 mb-2">No Results Found</h3>
+          <p class="text-gray-500">Try different search terms or check the spelling</p>
+        </div>
+      `;
+    } else {
+      resultsContainer.innerHTML = resultsHtml;
+    }
+    
+  } catch (error) {
+    console.error('Error performing search:', error);
+    resultsContainer.innerHTML = `
+      <div class="text-center py-12">
+        <div class="w-20 h-20 bg-red-800/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-exclamation-triangle text-red-500 text-3xl"></i>
+        </div>
+        <h3 class="text-xl font-bold text-red-400 mb-2">Error</h3>
+        <p class="text-gray-400">There was a problem processing your search. Please try again later.</p>
+      </div>
+    `;
+  }
+}
+
+// Function to search for teams
+async function searchTeams(query) {
+  try {
+    // Fetch all teams (up to page 10) - this is a limitation of TBA API
+    const teams = [];
+    for (let page = 0; page < 10; page++) {
+      const response = await fetch(`${TBA_BASE_URL}/teams/${page}/simple`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      
+      if (!response.ok) {
+        break;
+      }
+      
+      const pageTeams = await response.json();
+      teams.push(...pageTeams);
+      
+      // Break if we got less than expected (reached the end)
+      if (pageTeams.length < 500) {
+        break;
+      }
+    }
+    
+    // Filter teams based on query
+    return teams.filter(team => {
+      const teamNumber = team.team_number.toString();
+      const teamName = team.nickname.toLowerCase();
+      const teamKey = team.key.replace('frc', '');
+      
+      return teamNumber.includes(query) || 
+             teamName.includes(query.toLowerCase()) ||
+             teamKey === query;
+    });
+    
+  } catch (error) {
+    console.error('Error searching teams:', error);
+    return [];
+  }
+}
+
+// Function to search for events
+async function searchEvents(query) {
+  try {
+    // Get events for current year and next year
+    const currentYear = new Date().getFullYear();
+    const yearResponses = await Promise.all([
+      fetch(`${TBA_BASE_URL}/events/${currentYear}/simple`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      }),
+      fetch(`${TBA_BASE_URL}/events/${currentYear + 1}/simple`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      })
+    ]);
+    
+    // Combine events from both years
+    const events = [];
+    for (const response of yearResponses) {
+      if (response.ok) {
+        const yearEvents = await response.json();
+        events.push(...yearEvents);
+      }
+    }
+    
+    // Filter events based on query without automatically adding year prefix
+    return events.filter(event => {
+      // Extract relevant fields for searching
+      const eventName = event.name.toLowerCase();
+      const eventKey = event.key.toLowerCase();
+      const shortName = eventKey.substring(4); // Remove the year prefix (e.g., "2025") for matching
+      const eventLocation = `${event.city} ${event.state_prov} ${event.country}`.toLowerCase();
+      
+      // Check if any field contains the query string
+      return eventName.includes(query.toLowerCase()) || 
+             eventKey.includes(query.toLowerCase()) ||
+             shortName.includes(query.toLowerCase()) ||
+             eventLocation.includes(query.toLowerCase());
+    });
+    
+  } catch (error) {
+    console.error('Error searching events:', error);
+    return [];
+  }
+}
+
+// Function to generate HTML for team card
+function generateTeamCard(team) {
+  const teamNumber = team.team_number;
+  
+  return `
+    <a href="team.html?team=${teamNumber}" class="team-card-container block">
+      <div class="team-card p-4 card-gradient rounded-lg hover:scale-105 transition-all duration-300">
+        <h3 class="text-xl font-bold text-baywatch-orange">${teamNumber}</h3>
+        <p class="font-medium text-white">${team.nickname}</p>
+        <p class="text-sm text-gray-400">${team.city}, ${team.state_prov}</p>
+      </div>
+    </a>
+  `;
+}
+
+// Function to generate HTML for event card
+function generateEventCard(event) {
+  const eventDates = formatEventDates(event.start_date, event.end_date);
+  
+  return `
+    <a href="event.html?event=${event.key}" class="block">
+      <div class="p-4 card-gradient rounded-lg hover:scale-105 transition-all duration-300">
+        <div class="flex gap-4 items-start">
+          <div class="rounded-lg bg-baywatch-orange/20 p-2 flex flex-col items-center justify-center text-center min-w-[60px]">
+            <span class="text-xs text-gray-400">${new Date(event.start_date).toLocaleString('default', { month: 'short' })}</span>
+            <span class="text-2xl font-bold text-baywatch-orange">${new Date(event.start_date).getDate()}</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-white">${event.name}</h3>
+            <p class="text-sm text-gray-400">${event.city}, ${event.state_prov}</p>
+            <p class="text-xs text-baywatch-orange mt-2">${eventDates}</p>
+          </div>
+        </div>
+      </div>
+    </a>
+  `;
+}
+
+// Function to format event dates
+function formatEventDates(startDate, endDate) {
+  if (!startDate) return "Date TBD";
+  
+  try {
+    const options = { month: 'short', day: 'numeric', year: 'numeric' };
+    const start = new Date(startDate).toLocaleDateString('en-US', options);
+    
+    if (!endDate) return start;
+    
+    const end = new Date(endDate).toLocaleDateString('en-US', options);
+    return `${start} - ${end}`;
+  } catch (e) {
+    return startDate;
+  }
+}
+
+// Function to display no search results
+function displayNoSearchResults() {
+  const resultsContainer = document.getElementById('search-results');
+  if (!resultsContainer) return;
+  
+  resultsContainer.innerHTML = `
+    <div class="text-center py-12">
+      <div class="w-20 h-20 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-search text-gray-500 text-3xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-400 mb-2">Enter Search Terms</h3>
+      <p class="text-gray-500">Type a team number or event name to search</p>
+    </div>
+  `;
+}
