@@ -703,18 +703,18 @@ function renderSearchResult(result) {
     <a href="${result.url}" class="result-card card-gradient rounded-xl p-6 block transition-all group">
       <div class="result-card-content">
         <div class="flex justify-between items-start mb-3">
-          <h3 class="font-bold text-lg search-result-title">${result.nameHighlighted}</h3>
+          <h3 class="font-bold text-lg search-result-title text-white group-hover:text-white">${result.nameHighlighted}</h3>
           <span class="result-type-badge ${badgeClass} shrink-0 ml-2">${badgeText}</span>
         </div>
-        <p class="text-gray-400 text-sm mb-3">${result.descriptionHighlighted}</p>
-        ${result.contentHighlighted ? `<p class="text-gray-500 text-xs mb-3">${result.contentHighlighted}</p>` : ''}
+        <p class="text-gray-400 text-sm mb-3 group-hover:text-gray-300">${result.descriptionHighlighted}</p>
+        ${result.contentHighlighted ? `<p class="text-gray-500 text-xs mb-3 group-hover:text-gray-400">${result.contentHighlighted}</p>` : ''}
       </div>
       
-      <div class="result-card-footer">
-        <span class="text-xs text-baywatch-orange opacity-0 group-hover:opacity-100 transition-all duration-300">
+      <div class="result-card-footer flex items-center justify-end">
+        <span class="text-xs text-baywatch-orange mr-1 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
           View details
         </span>
-        <i class="fas fa-arrow-right text-baywatch-orange transition-all duration-300 transform group-hover:translate-x-1"></i>
+        <i class="fas fa-arrow-right text-baywatch-orange transition-transform duration-300 transform group-hover:translate-x-1"></i>
       </div>
     </a>
   `;
