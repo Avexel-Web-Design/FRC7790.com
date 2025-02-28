@@ -13,22 +13,6 @@ const localSearchDatabase = {
       type: "team",
       url: "team.html?team=7790" 
     },
-    // Keep a small number of key teams for instant results - less than before
-    // The rest will be loaded from TBA API
-    { 
-      id: "254", 
-      name: "The Cheesy Poofs", 
-      location: "San Jose, CA",
-      type: "team",
-      url: "team.html?team=254" 
-    },
-    { 
-      id: "33", 
-      name: "Killer Bees", 
-      location: "Auburn Hills, MI",
-      type: "team",
-      url: "team.html?team=33" 
-    },
   ],
   events: [
     {
@@ -59,7 +43,7 @@ const localSearchDatabase = {
     },
     {
       id: "robots",
-      title: "Our Robots", 
+      title: "Robots", 
       description: "View all robots built by Team 7790 Baywatch Robotics",
       content: "See our robot RIPTIDE for the 2025 REEFSCAPE season and past competition robots like SURGE and FLUID.",
       type: "page",
@@ -75,7 +59,7 @@ const localSearchDatabase = {
     },
     {
       id: "schedule",
-      title: "Competition Schedule", 
+      title: "Schedule", 
       description: "FRC competition schedule for Team 7790",
       content: "See our upcoming competitions including Lake City, Traverse City, and Championship events.",
       type: "page",
@@ -83,7 +67,7 @@ const localSearchDatabase = {
     },
     {
       id: "ftc",
-      title: "FTC Team", 
+      title: "FTC", 
       description: "Our middle school FIRST Tech Challenge team",
       content: "Information about our middle school robotics program and FTC team.",
       type: "page",
