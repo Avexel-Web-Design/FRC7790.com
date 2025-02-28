@@ -61,22 +61,6 @@
           </a>
         </div>
         
-        <!-- Search Bar -->
-        <div class="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
-          <input 
-            type="text" 
-            id="search-input" 
-            placeholder="Search team # or event code..." 
-            class="bg-transparent border-none focus:outline-none text-white w-full"
-            aria-label="Search for team or event">
-          <button 
-            id="search-button"
-            class="text-gray-400 hover:text-baywatch-orange transition-colors"
-            aria-label="Search">
-            <i class="fas fa-search"></i>
-          </button>
-        </div>
-        
         <!-- Desktop Menu -->
         <ul class="hidden md:flex space-x-8">
           <li>
@@ -210,71 +194,6 @@
       });
     </script>
 
-    <!-- Search Functionality -->
-    <script>
-      // This script will be replaced by search.js functionality
-      // Keeping it as a fallback until search.js fully loads
-      document.addEventListener('DOMContentLoaded', function() {
-        // Check if search.js has initialized
-        if (typeof setupGlobalSearch !== 'function') {
-          // Handle desktop search
-          const searchInput = document.getElementById('search-input');
-          const searchButton = document.getElementById('search-button');
-          
-          // Handle mobile search
-          const mobileSearchInput = document.getElementById('mobile-search-input');
-          const mobileSearchButton = document.getElementById('mobile-search-button');
-          
-          // Function to process search
-          function handleSearch(searchTerm) {
-            if (!searchTerm) return;
-            
-            searchTerm = searchTerm.trim().toLowerCase();
-            
-            // Check if input consists of ONLY digits (team number)
-            if (/^\d+$/.test(searchTerm)) {
-              // It's a team number
-              window.location.href = `team.html?team=${searchTerm}`;
-            } 
-            // Otherwise, perform a search
-            else {
-              window.location.href = `search-results.html?q=${encodeURIComponent(searchTerm)}`;
-            }
-          }
-          
-          // Desktop search listeners
-          if (searchButton) {
-            searchButton.addEventListener('click', function() {
-              handleSearch(searchInput.value);
-            });
-          }
-          
-          if (searchInput) {
-            searchInput.addEventListener('keypress', function(e) {
-              if (e.key === 'Enter') {
-                handleSearch(searchInput.value);
-              }
-            });
-          }
-          
-          // Mobile search listeners
-          if (mobileSearchButton) {
-            mobileSearchButton.addEventListener('click', function() {
-              handleSearch(mobileSearchInput.value);
-            });
-          }
-          
-          if (mobileSearchInput) {
-            mobileSearchInput.addEventListener('keypress', function(e) {
-              if (e.key === 'Enter') {
-                handleSearch(mobileSearchInput.value);
-              }
-            });
-          }
-        }
-      });
-    </script>
-
     <!-- Hero Section -->
     <section class="pt-32 pb-16 relative z-10">
       <div class="container mx-auto px-6">
@@ -297,9 +216,6 @@
               <i class="fas fa-search text-xl"></i>
             </button>
           </div>
-          <p id="search-summary" class="text-gray-400 text-center mt-4 animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
-            Loading search results...
-          </p>
         </div>
       </div>
     </section>
