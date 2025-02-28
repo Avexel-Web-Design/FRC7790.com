@@ -1,10 +1,16 @@
-// FRC API Configuration
-const FRC_TEAM_KEY = "frc7790";
-const TBA_AUTH_KEY =
-  "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf"; // You'll need to get this from The Blue Alliance
+// FRC API Configuration - Check if constants are already defined (from search.js)
+if (typeof TBA_AUTH_KEY === 'undefined') {
+  const TBA_AUTH_KEY =
+    "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
+}
 
-// API Endpoints
-const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
+if (typeof TBA_BASE_URL === 'undefined') {
+  const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
+}
+
+// Use window-scoped variables to ensure consistent access across modules
+window.TBA_AUTH_KEY = window.TBA_AUTH_KEY || "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
+window.TBA_BASE_URL = window.TBA_BASE_URL || "https://www.thebluealliance.com/api/v3";
 
 // Constant for the 37-hour offset (in milliseconds)
 const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
@@ -12,21 +18,37 @@ const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
 // Fetch event data by event code
 async function fetchEventData(eventCode) {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}`, {
+    const response = await fetch(`${window.TBA_BASE_URL}/event/${eventCode}`, {
       headers: {
-        "X-TBA-Auth-Key": TBA_AUTH_KEY,
+        "X-TBA-Auth-Key": window.TBA_AUTH_KEY,
       },
     });
     
     if (!response.ok) {
-      throw new Error(`Error ${response.status}: Failed to fetch event data`);
+      throw new Error(`Error fetching event: ${response.status}`);
     }
     
-    const event = await response.json();
-    return event;
+    return await response.json();
   } catch (error) {
     console.error("Error fetching event data:", error);
     return null;
+  }
+}
+
+// Helper function to format event dates
+function formatEventDate(startDate, endDate) {
+  if (!startDate) return "Date TBD";
+  
+  try {
+    const options = { month: 'short', day: 'numeric', year: 'numeric' };
+    const start = new Date(startDate).toLocaleDateString('en-US', options);
+    
+    if (!endDate) return start;
+    
+    const end = new Date(endDate).toLocaleDateString('en-US', options);
+    return `${start} - ${end}`;
+  } catch (e) {
+    return startDate;
   }
 }
 

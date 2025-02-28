@@ -105,37 +105,41 @@ counters.forEach((counter) => observer.observe(counter));
 document.addEventListener("DOMContentLoaded", function () {
   const btn = document.getElementById("menu-btn");
   const menu = document.getElementById("mobile-menu");
-  const hamburger = btn.querySelector(".hamburger-menu");
+  
+  // Add null checks to prevent errors
+  if (btn && menu) {
+    const hamburger = btn.querySelector(".hamburger-menu");
 
-  btn.addEventListener("click", () => {
-    hamburger.classList.toggle("active");
-    menu.classList.toggle("active");
-    menu.classList.toggle("hidden"); // Add back the hidden toggle
+    btn.addEventListener("click", () => {
+      hamburger.classList.toggle("active");
+      menu.classList.toggle("active");
+      menu.classList.toggle("hidden"); // Add back the hidden toggle
 
-    if (menu.classList.contains("active")) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-  });
-
-  // Update menu item click handlers
-  menu.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      hamburger.classList.remove("active");
-      menu.classList.remove("active");
-      document.body.style.overflow = "";
+      if (menu.classList.contains("active")) {
+        document.body.style.overflow = "hidden";
+      } else {
+        document.body.style.overflow = "";
+      }
     });
-  });
 
-  // Update escape key handler
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && menu.classList.contains("active")) {
-      hamburger.classList.remove("active");
-      menu.classList.remove("active");
-      document.body.style.overflow = "";
-    }
-  });
+    // Update menu item click handlers
+    menu.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        hamburger.classList.remove("active");
+        menu.classList.remove("active");
+        document.body.style.overflow = "";
+      });
+    });
+
+    // Update escape key handler
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && menu.classList.contains("active")) {
+        hamburger.classList.remove("active");
+        menu.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    });
+  }
 });
 
 // Variable to track last scroll position

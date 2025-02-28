@@ -1,6 +1,6 @@
 // Search configuration and API settings
-const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
-const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
+window.TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
+window.TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
 const API_CACHE_DURATION = 3600000; // 1 hour in milliseconds
 
 // Local database for frequently accessed content and pages
