@@ -11,6 +11,7 @@ if (typeof TBA_BASE_URL === 'undefined') {
 // Use window-scoped variables to ensure consistent access across modules
 window.TBA_AUTH_KEY = window.TBA_AUTH_KEY || "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
 window.TBA_BASE_URL = window.TBA_BASE_URL || "https://www.thebluealliance.com/api/v3";
+window.FRC_TEAM_KEY = window.FRC_TEAM_KEY || "frc7790"; // Add team key definition
 
 // Constant for the 37-hour offset (in milliseconds)
 const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
@@ -56,19 +57,26 @@ function formatEventDate(startDate, endDate) {
 async function getNextEvent() {
   try {
     const response = await fetch(
-      `${TBA_BASE_URL}/team/${FRC_TEAM_KEY}/events/simple`,
+      `${window.TBA_BASE_URL}/team/${window.FRC_TEAM_KEY}/events/simple`,
       {
-        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY },
+        headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY },
       }
     );
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
     const events = await response.json();
     const now = new Date();
+    
     // Filter for upcoming or currently ongoing events
     const upcoming = events.filter((event) => {
       const eventEnd = new Date(event.end_date);
       eventEnd.setDate(eventEnd.getDate() + 1); // Include the end day
       return eventEnd >= now;
     });
+    
     upcoming.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
     return upcoming[0];
   } catch (error) {
@@ -128,10 +136,10 @@ async function updateRankings(eventKey) {
     if (!response.ok) {
       throw new Error(`HTTP error ${response.status}`);
     }
-
+    
     const rankings = await response.json();
     const teamRanking = rankings.rankings.find(
-      (r) => r.team_key === FRC_TEAM_KEY
+      (r) => r.team_key === window.FRC_TEAM_KEY
     );
 
     if (teamRanking) {
@@ -157,10 +165,10 @@ async function updateRankings(eventKey) {
 async function updateRecord(eventKey) {
   try {
     const response = await fetch(
-      `${TBA_BASE_URL}/team/${FRC_TEAM_KEY}/event/${eventKey}/matches`,
+      `${window.TBA_BASE_URL}/team/${window.FRC_TEAM_KEY}/event/${eventKey}/matches`,
       {
         headers: {
-          "X-TBA-Auth-Key": TBA_AUTH_KEY,
+          "X-TBA-Auth-Key": window.TBA_AUTH_KEY,
         },
       }
     );
@@ -174,8 +182,8 @@ async function updateRecord(eventKey) {
         const blueTeams = match.alliances.blue.team_keys;
         const redTeams = match.alliances.red.team_keys;
         
-        const isOnBlue = blueTeams.includes(FRC_TEAM_KEY);
-        const isOnRed = redTeams.includes(FRC_TEAM_KEY);
+        const isOnBlue = blueTeams.includes(window.FRC_TEAM_KEY);
+        const isOnRed = redTeams.includes(window.FRC_TEAM_KEY);
         
         if ((isOnBlue && match.winning_alliance === "blue") || 
             (isOnRed && match.winning_alliance === "red")) {
@@ -205,10 +213,10 @@ async function updateRecord(eventKey) {
 async function updateNextMatch(eventKey) {
   try {
     const response = await fetch(
-      `${TBA_BASE_URL}/team/${FRC_TEAM_KEY}/event/${eventKey}/matches`,
+      `${window.TBA_BASE_URL}/team/${window.FRC_TEAM_KEY}/event/${eventKey}/matches`,
       {
         headers: {
-          "X-TBA-Auth-Key": TBA_AUTH_KEY,
+          "X-TBA-Auth-Key": window.TBA_AUTH_KEY,
         },
       }
     );
@@ -247,11 +255,11 @@ async function updateNextMatch(eventKey) {
         const blueTeams = nextMatch.alliances.blue.team_keys;
         const redTeams = nextMatch.alliances.red.team_keys;
         
-        if (blueTeams.includes(FRC_TEAM_KEY)) {
+        if (blueTeams.includes(window.FRC_TEAM_KEY)) {
           blueAllianceEl.textContent = "Our Alliance";
           blueAllianceEl.classList.add("font-bold");
           redAllianceEl.textContent = "Opponent Alliance";
-        } else if (redTeams.includes(FRC_TEAM_KEY)) {
+        } else if (redTeams.includes(window.FRC_TEAM_KEY)) {
           redAllianceEl.textContent = "Our Alliance";
           redAllianceEl.classList.add("font-bold");
           blueAllianceEl.textContent = "Opponent Alliance";
@@ -357,14 +365,17 @@ function updateEventCountdown(startDate) {
 // Initialize and update all data with loading states
 async function initializeEventData() {
   setLoadingState(true);
+  console.log("Initializing event data...");
 
   try {
     // Use calculated next event instead of a hardcoded one
+    console.log("Fetching next event with team key:", window.FRC_TEAM_KEY);
     const currentEvent = await getNextEvent();
+    console.log("Next event data:", currentEvent);
+    
     if (currentEvent) {
       const currentDate = new Date().getTime();
       const eventStart = new Date(currentEvent.start_date).getTime();
-      // Add offset to event end date (already present)
       const eventEnd = new Date(currentEvent.end_date).getTime() + OFFSET_MS;
       
       // Add offset to event start date for comparison
@@ -388,12 +399,31 @@ async function initializeEventData() {
         setInterval(() => updateEventCountdown(currentEvent.start_date), 1000);
       }
     } else {
+      console.error("No upcoming events found");
       setErrorState("ranking-number", "No upcoming event");
       setErrorState("total-teams", "Check back later");
+      
+      // Use a hard-coded date for Lake City event as fallback
+      const fallbackDate = "2025-04-03";
+      console.log("Using fallback date:", fallbackDate);
+      
+      document.getElementById("countdown-section").classList.remove("hidden");
+      document.getElementById("live-updates").classList.add("hidden");
+      updateEventCountdown(fallbackDate);
+      setInterval(() => updateEventCountdown(fallbackDate), 1000);
     }
   } catch (error) {
     console.error("Error initializing data:", error);
     setErrorState("ranking-number", "Error loading data");
+    
+    // Use a hard-coded date for Lake City event as fallback
+    const fallbackDate = "2025-04-03";
+    console.log("Using fallback date due to error:", fallbackDate);
+    
+    document.getElementById("countdown-section").classList.remove("hidden");
+    document.getElementById("live-updates").classList.add("hidden");
+    updateEventCountdown(fallbackDate);
+    setInterval(() => updateEventCountdown(fallbackDate), 1000);
   }
 }
 
@@ -403,8 +433,8 @@ document.addEventListener("DOMContentLoaded", initializeEventData);
 // Functions for Lake City Regional page
 async function loadEventRankings(eventCode) {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/rankings`, {
-      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    const response = await fetch(`${window.TBA_BASE_URL}/event/${eventCode}/rankings`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
     });
     const data = await response.json();
     updateRankingsTable(data.rankings);
@@ -417,8 +447,8 @@ async function loadEventRankings(eventCode) {
 
 async function loadEventSchedule(eventCode) {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/matches`, {
-      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    const response = await fetch(`${window.TBA_BASE_URL}/event/${eventCode}/matches`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
     });
     const matches = await response.json();
     updateScheduleTable(matches);
@@ -753,8 +783,8 @@ function toggleAllMatches(qualMatches, currentMatchIndex) {
 // New function to fetch playoff alliances data
 async function fetchAllianceData(eventKey) {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/${eventKey}/alliances`, {
-      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    const response = await fetch(`${window.TBA_BASE_URL}/event/${eventKey}/alliances`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
     });
     
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -874,8 +904,8 @@ async function updatePlayoffBracket(eventKey) {
     const allianceMap = await buildAllianceMapping(eventKey);
     
     // Then fetch match data
-    const response = await fetch(`${TBA_BASE_URL}/event/${eventKey}/matches`, {
-      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    const response = await fetch(`${window.TBA_BASE_URL}/event/${eventKey}/matches`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
     });
     
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -1005,16 +1035,16 @@ async function loadMatchDetails(matchKey) {
       '<span class="text-baywatch-orange animate-pulse">Loading match details...</span>';
     
     // Fetch match data
-    const matchResponse = await fetch(`${TBA_BASE_URL}/match/${matchKey}`, {
-      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    const matchResponse = await fetch(`${window.TBA_BASE_URL}/match/${matchKey}`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
     });
     
     if (!matchResponse.ok) throw new Error(`Match data HTTP error: ${matchResponse.status}`);
     const matchData = await matchResponse.json();
     
     // Fetch event data for the event name
-    const eventResponse = await fetch(`${TBA_BASE_URL}/event/${eventKey}`, {
-      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    const eventResponse = await fetch(`${window.TBA_BASE_URL}/event/${eventKey}`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
     });
     
     if (!eventResponse.ok) throw new Error(`Event data HTTP error: ${eventResponse.status}`);
@@ -1027,8 +1057,8 @@ async function loadMatchDetails(matchKey) {
     ];
     
     const teamPromises = allTeamKeys.map(teamKey => 
-      fetch(`${TBA_BASE_URL}/team/${teamKey}`, {
-        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      fetch(`${window.TBA_BASE_URL}/team/${teamKey}`, {
+        headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
       }).then(res => {
         if (!res.ok) throw new Error(`Team data HTTP error for ${teamKey}: ${res.status}`);
         return res.json();
@@ -1892,8 +1922,8 @@ function generateReefVisualization(blueBreakdown, redBreakdown) {
 async function fetchSeriesMatches(eventKey, compLevel, setNumber) {
   try {
     // Fetch all matches for this event
-    const response = await fetch(`${TBA_BASE_URL}/event/${eventKey}/matches`, {
-      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    const response = await fetch(`${window.TBA_BASE_URL}/event/${eventKey}/matches`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
     });
     
     if (!response.ok) throw new Error('Failed to fetch matches');
@@ -2014,8 +2044,8 @@ async function updateTeamDetails(matchData, teamData) {
   // For playoff matches, fetch the alliance data
   if (isPlayoff) {
     try {
-      const response = await fetch(`${TBA_BASE_URL}/event/${matchData.event_key}/alliances`, {
-        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      const response = await fetch(`${window.TBA_BASE_URL}/event/${matchData.event_key}/alliances`, {
+        headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
       });
       
       if (response.ok) {
@@ -2178,9 +2208,9 @@ async function loadTeamOverview() {
     document.getElementById("win-rate").textContent = "Loading...";
     
     // Fetch team data from TBA API
-    const teamResponse = await fetch(`${TBA_BASE_URL}/team/${teamKey}`, {
+    const teamResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}`, {
       headers: {
-        'X-TBA-Auth-Key': TBA_AUTH_KEY
+        'X-TBA-Auth-Key': window.TBA_AUTH_KEY
       }
     });
     
@@ -2213,9 +2243,9 @@ async function loadTeamOverview() {
     
     // Fetch current year events (using 2024 since we're in early 2024, will need update later)
     const currentYear = new Date().getFullYear();
-    const eventsResponse = await fetch(`${TBA_BASE_URL}/team/${teamKey}/events/${currentYear}`, {
+    const eventsResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/events/${currentYear}`, {
       headers: {
-        'X-TBA-Auth-Key': TBA_AUTH_KEY
+        'X-TBA-Auth-Key': window.TBA_AUTH_KEY
       }
     });
     
@@ -2272,9 +2302,9 @@ async function loadTeamOverview() {
         
         try {
           // Get team status (includes ranking)
-          const statusResponse = await fetch(`${TBA_BASE_URL}/team/${teamKey}/event/${event.key}/status`, {
+          const statusResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/event/${event.key}/status`, {
             headers: {
-              'X-TBA-Auth-Key': TBA_AUTH_KEY
+              'X-TBA-Auth-Key': window.TBA_AUTH_KEY
             }
           });
           
@@ -2290,9 +2320,9 @@ async function loadTeamOverview() {
           }
           
           // Get awards
-          const awardsResponse = await fetch(`${TBA_BASE_URL}/team/${teamKey}/event/${event.key}/awards`, {
+          const awardsResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/event/${event.key}/awards`, {
             headers: {
-              'X-TBA-Auth-Key': TBA_AUTH_KEY
+              'X-TBA-Auth-Key': window.TBA_AUTH_KEY
             }
           });
           
@@ -2347,9 +2377,9 @@ async function loadTeamOverview() {
       
       for (const event of eventsData) {
         try {
-          const statusResponse = await fetch(`${TBA_BASE_URL}/team/${teamKey}/event/${event.key}/status`, {
+          const statusResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/event/${event.key}/status`, {
             headers: {
-              'X-TBA-Auth-Key': TBA_AUTH_KEY
+              'X-TBA-Auth-Key': window.TBA_AUTH_KEY
             }
           });
           
@@ -2395,9 +2425,9 @@ async function loadTeamOverview() {
         
         // Get team status at current event
         try {
-          const statusResponse = await fetch(`${TBA_BASE_URL}/team/${teamKey}/event/${currentEvent.key}/status`, {
+          const statusResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/event/${currentEvent.key}/status`, {
             headers: {
-              'X-TBA-Auth-Key': TBA_AUTH_KEY
+              'X-TBA-Auth-Key': window.TBA_AUTH_KEY
             }
           });
           
@@ -2433,9 +2463,9 @@ async function loadTeamOverview() {
             }
             
             // Get next match
-            const matchesResponse = await fetch(`${TBA_BASE_URL}/team/${teamKey}/event/${currentEvent.key}/matches`, {
+            const matchesResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/event/${currentEvent.key}/matches`, {
               headers: {
-                'X-TBA-Auth-Key': TBA_AUTH_KEY
+                'X-TBA-Auth-Key': window.TBA_AUTH_KEY
               }
             });
             
@@ -2565,9 +2595,9 @@ async function loadTeamOverview() {
       const teamHistoryElement = document.getElementById("team-history");
       
       // Fetch all historical events
-      const allEventsResponse = await fetch(`${TBA_BASE_URL}/team/${teamKey}/events`, {
+      const allEventsResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/events`, {
         headers: {
-          'X-TBA-Auth-Key': TBA_AUTH_KEY
+          'X-TBA-Auth-Key': window.TBA_AUTH_KEY
         }
       });
       
@@ -2606,9 +2636,9 @@ async function loadTeamOverview() {
             // Try to fetch awards for this event
             let awardsHTML = '';
             try {
-              const awardsResponse = await fetch(`${TBA_BASE_URL}/team/${teamKey}/event/${event.key}/awards`, {
+              const awardsResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/event/${event.key}/awards`, {
                 headers: {
-                  'X-TBA-Auth-Key': TBA_AUTH_KEY
+                  'X-TBA-Auth-Key': window.TBA_AUTH_KEY
                 }
               });
               
@@ -2774,8 +2804,8 @@ function hasEventStarted(eventStartDate) {
 // New function to fetch teams attending an event
 async function fetchEventTeams(eventCode) {
   try {
-    const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/teams`, {
-      headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+    const response = await fetch(`${window.TBA_BASE_URL}/event/${eventCode}/teams`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
     });
     
     if (!response.ok) {
@@ -3053,6 +3083,7 @@ function extractCityName(eventName) {
     /\b([A-Za-z\s]+?)\s+Regional\b/i,
     /\b([A-Za-z\s]+?)\s+Event\b/i
   ];
+
   
   for (const pattern of cityPatterns) {
     const match = eventName.match(pattern);
@@ -3069,6 +3100,11 @@ function extractCityName(eventName) {
   );
   
   return cityParts.join(' ') || 'Event';
+}
+
+function extractEventType(eventName) {
+  // Always return empty string regardless of event type
+  return "";
 }
 
 function extractEventType(eventName) {
