@@ -499,76 +499,124 @@ function updateRankingsTable(rankings) {
   const tbody = document.querySelector("#rankings-table tbody");
   const team7790Index = rankings.findIndex(team => team.team_key === 'frc7790');
   
-  // Generate HTML for all rankings
-  const allRowsHtml = rankings.map((team, index) => {
-    const teamNumber = team.team_key.replace('frc', '');
-    const isHighlighted = teamNumber === '7790';
-    const rowClass = isHighlighted ? 'bg-baywatch-orange bg-opacity-20' : '';
-    const hiddenClass = index >= 10 ? 'ranking-hidden hidden' : '';
-    const hiddenStyle = index >= 10 ? 'max-height: 0; opacity: 0;' : '';
-    
-    return `
-      <tr class="border-t border-gray-700 ${rowClass} ${hiddenClass} transition-all duration-300" style="${hiddenStyle}">
-        <td class="p-4">${team.rank}</td>
-        <td class="p-4">
-          <a href="team.html?team=${teamNumber}" 
-             class="text-baywatch-orange hover:text-white transition-colors">
-            ${teamNumber}
-          </a>
-        </td>
-        <td class="p-4">${team.record.wins}-${team.record.losses}-${team.record.ties}</td>
-        <td class="p-4">${team.sort_orders[0].toFixed(2)}</td>
-      </tr>
-    `;
-  }).join('');
+  // First, fetch team names for all teams in the rankings
+  const teamKeys = rankings.map(team => team.team_key);
   
-  // Update the table with all rows
-  tbody.innerHTML = allRowsHtml;
-  
-  // Add special handling for Team 7790 when not in top 10
-  if (team7790Index >= 10) {
-    // Find our team's row
-    const team7790Row = tbody.querySelectorAll('tr')[team7790Index];
-    if (team7790Row) {
-      // Make the row visible
-      team7790Row.classList.remove('hidden', 'ranking-hidden');
-      team7790Row.style.maxHeight = '50px';
-      team7790Row.style.opacity = '1';
+  // Function to fetch team names
+  async function fetchTeamNames(teamKeys) {
+    try {
+      // Create a map to store team names
+      const teamNames = {};
       
-      // Add separator line before Team 7790 row if it's not the first hidden row
-      if (team7790Index > 10) {
-        const separatorRow = document.createElement('tr');
-        separatorRow.className = 'team-7790-separator';
-        separatorRow.innerHTML = `
-          <td colspan="4" class="py-2">
-            <div class="border-t-2 border-dashed border-baywatch-orange border-opacity-30 relative">
-            </div>
-          </td>
-        `;
-        team7790Row.parentNode.insertBefore(separatorRow, team7790Row);
-      }
+      // Fetch data for each team (could be optimized with a batch API call if available)
+      const teamPromises = teamKeys.map(teamKey => 
+        fetch(`${window.TBA_BASE_URL}/team/${teamKey}`, {
+          headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+        })
+        .then(res => res.ok ? res.json() : { nickname: "Unknown" })
+        .then(data => {
+          teamNames[teamKey] = data.nickname || "Unknown";
+        })
+        .catch(err => {
+          console.error(`Error fetching team name for ${teamKey}:`, err);
+          teamNames[teamKey] = "Unknown";
+        })
+      );
+      
+      // Wait for all team name fetches to complete
+      await Promise.all(teamPromises);
+      return teamNames;
+    } catch (error) {
+      console.error("Error fetching team names:", error);
+      return {};
     }
   }
   
-  // Add "Show All" button after the table if it doesn't exist yet
-  if (!document.getElementById('show-all-rankings')) {
-    const tableContainer = document.querySelector('#rankings-table').parentNode;
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'text-center mt-4';
-    buttonContainer.innerHTML = `
-      <button id="show-all-rankings" class="px-6 py-2 bg-baywatch-orange bg-opacity-20 rounded-lg 
-        hover:bg-opacity-40 transition-all duration-300 text-baywatch-orange">
-        <span class="show-text">Show All Rankings</span>
-        <span class="hide-text hidden">Hide Rankings</span>
-        <i class="fas fa-chevron-down ml-2 show-icon"></i>
-        <i class="fas fa-chevron-up ml-2 hide-icon hidden"></i>
-      </button>
-    `;
-    tableContainer.appendChild(buttonContainer);
+  // Show loading state while fetching team names
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5" class="p-4 text-center">
+        <div class="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-baywatch-orange mr-2"></div>
+        Loading rankings...
+      </td>
+    </tr>
+  `;
+  
+  // Fetch team names then update the table
+  fetchTeamNames(teamKeys).then(teamNames => {
+    // Generate HTML for all rankings
+    const allRowsHtml = rankings.map((team, index) => {
+      const teamNumber = team.team_key.replace('frc', '');
+      const teamName = teamNames[team.team_key] || "Unknown";
+      const isHighlighted = teamNumber === '7790';
+      const rowClass = isHighlighted ? 'bg-baywatch-orange bg-opacity-20' : '';
+      const hiddenClass = index >= 10 ? 'ranking-hidden hidden' : '';
+      const hiddenStyle = index >= 10 ? 'max-height: 0; opacity: 0;' : '';
+      
+      return `
+        <tr class="border-t border-gray-700 ${rowClass} ${hiddenClass} transition-all duration-300" style="${hiddenStyle}">
+          <td class="p-4">${team.rank}</td>
+          <td class="p-4">
+            <a href="team.html?team=${teamNumber}" 
+               class="flex flex-col text-baywatch-orange hover:text-white transition-colors">
+              <span>${teamNumber}</span>
+              <span class="text-xs text-gray-400">${teamName}</span>
+            </a>
+          </td>
+          <td class="p-4">${team.record.wins}-${team.record.losses}-${team.record.ties}</td>
+          <td class="p-4">${team.sort_orders[0].toFixed(2)}</td>
+        </tr>
+      `;
+    }).join('');
     
-    // Add event listener to the button
-    document.getElementById('show-all-rankings').addEventListener('click', toggleRankings);
-  }
+    // Update the table with all rows
+    tbody.innerHTML = allRowsHtml;
+    
+    // Add special handling for Team 7790 when not in top 10
+    if (team7790Index >= 10) {
+      // Find our team's row
+      const team7790Row = tbody.querySelectorAll('tr')[team7790Index];
+      if (team7790Row) {
+        // Make the row visible
+        team7790Row.classList.remove('hidden', 'ranking-hidden');
+        team7790Row.style.maxHeight = '50px';
+        team7790Row.style.opacity = '1';
+        
+        // Add separator line before Team 7790 row if it's not the first hidden row
+        if (team7790Index > 10) {
+          const separatorRow = document.createElement('tr');
+          separatorRow.className = 'team-7790-separator';
+          separatorRow.innerHTML = `
+            <td colspan="5" class="py-2">
+              <div class="border-t-2 border-dashed border-baywatch-orange border-opacity-30 relative">
+              </div>
+            </td>
+          `;
+          team7790Row.parentNode.insertBefore(separatorRow, team7790Row);
+        }
+      }
+    }
+    
+    // Add "Show All" button after the table if it doesn't exist yet
+    if (!document.getElementById('show-all-rankings')) {
+      const tableContainer = document.querySelector('#rankings-table').parentNode;
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = 'text-center mt-4';
+      buttonContainer.innerHTML = `
+        <button id="show-all-rankings" class="px-6 py-2 bg-baywatch-orange bg-opacity-20 rounded-lg 
+          hover:bg-opacity-40 transition-all duration-300 text-baywatch-orange">
+          <span class="show-text">Show All Rankings</span>
+          <span class="hide-text hidden">Hide Rankings</span>
+          <i class="fas fa-chevron-down ml-2 show-icon"></i>
+          <i class="fas fa-chevron-up ml-2 hide-icon hidden"></i>
+        </button>
+      `;
+      tableContainer.appendChild(buttonContainer);
+      
+      // Add event listener to the button
+      document.getElementById('show-all-rankings').addEventListener('click', toggleRankings);
+    }
+  });
 }
 
 // Function to toggle all rankings visibility
