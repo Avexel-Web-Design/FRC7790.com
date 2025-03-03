@@ -2518,7 +2518,7 @@ async function loadTeamOverview() {
             });
             
             if (matchesResponse.ok) {
-              const matches = await matchesResponse.json();
+              const matches = await matches.json();
               
               // Find upcoming match
               const upcomingMatch = matches.find(match => !match.actual_time);
@@ -3160,7 +3160,7 @@ function extractEventType(eventName) {
   return "";
 }
 
-// Initialize schedule page countdowns
+// Updated function to initialize schedule countdowns with final event results
 function initializeScheduleCountdowns() {
   const eventCodeSuffixes = ['milac', 'mitvc', 'micmp', 'cmptx'];
   
@@ -3180,20 +3180,8 @@ function initializeScheduleCountdowns() {
       
       const now = new Date();
       if (now > eventEndDate) {
-        // Event is over
-        if (countdownSectionElement) {
-          countdownSectionElement.innerHTML = `
-            <div class="text-center">
-              <h4 class="text-lg font-semibold mb-2">Event Complete</h4>
-              <div class="text-2xl font-bold text-baywatch-orange">
-                <i class="fas fa-flag-checkered"></i>
-              </div>
-              <p class="text-gray-400 text-sm mt-2">
-                This event has concluded
-              </p>
-            </div>
-          `;
-        }
+        // Event is over - show final results
+        fetchFinalEventResults(fullEventCode, suffix);
       } else {
         // Start countdown
         updateEventCountdownForEvent(fullEventCode, suffix);
@@ -3205,6 +3193,273 @@ function initializeScheduleCountdowns() {
       }
     }
   });
+}
+
+// New function to fetch and display final event results
+async function fetchFinalEventResults(eventCode, suffix) {
+  try {
+    const countdownSectionElement = document.getElementById(`countdown-section-${suffix}`);
+    if (!countdownSectionElement) return;
+    
+    // Show loading state
+    countdownSectionElement.innerHTML = `
+      <div class="text-center">
+        <h4 class="text-lg font-semibold mb-2">Event Complete</h4>
+        <div class="flex items-center justify-center">
+          <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-baywatch-orange mr-2"></div>
+          <span>Loading results...</span>
+        </div>
+      </div>
+    `;
+    
+    console.log(`Fetching final results for event: ${eventCode}`);
+    
+    // Fetch rankings for our final qualification rank
+    const rankingsResponse = await fetch(`${window.TBA_BASE_URL}/event/${eventCode}/rankings`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+    });
+    
+    let finalRanking = "Not available";
+    let totalTeams = 0;
+    
+    if (rankingsResponse.ok) {
+      const rankings = await rankingsResponse.json();
+      console.log(`Rankings data for ${eventCode}:`, rankings);
+      
+      if (rankings && rankings.rankings) {
+        totalTeams = rankings.rankings.length;
+        const ourRanking = rankings.rankings.find(r => r.team_key === window.FRC_TEAM_KEY);
+        console.log(`Our team ranking data:`, ourRanking);
+        
+        if (ourRanking) {
+          finalRanking = ourRanking.rank;
+        }
+      } else {
+        console.log(`No rankings data available for ${eventCode}`);
+      }
+    } else {
+      console.warn(`Failed to fetch rankings: ${rankingsResponse.status} ${rankingsResponse.statusText}`);
+    }
+    
+    // Fetch alliance selections to determine our alliance
+    console.log(`Fetching alliance data for event: ${eventCode}`);
+    const alliancesResponse = await fetch(`${window.TBA_BASE_URL}/event/${eventCode}/alliances`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+    });
+    
+    let allianceNumber = "Not selected";
+    let allianceRole = "";
+    let allianceFinish = "Did not get picked";
+    let ourAlliance = null;
+    
+    if (alliancesResponse.ok) {
+      // FIX: Make sure we use the proper variable name - await the response first
+      const alliances = await alliancesResponse.json();
+      console.log(`Alliance data for ${eventCode}:`, alliances);
+      
+      // Find our alliance
+      for (let i = 0; i < alliances.length; i++) {
+        const allianceTeams = alliances[i].picks;
+        console.log(`Checking alliance ${i+1} with teams:`, allianceTeams);
+        const ourIndex = allianceTeams.indexOf(window.FRC_TEAM_KEY);
+        
+        if (ourIndex !== -1) {
+          allianceNumber = i + 1;
+          ourAlliance = alliances[i];
+          
+          // Determine role based on pick order
+          if (ourIndex === 0) allianceRole = "Captain";
+          else if (ourIndex === 1) allianceRole = "First Pick";
+          else if (ourIndex === 2) allianceRole = "Second Pick";
+          else allianceRole = `Pick #${ourIndex + 1}`;
+          
+          console.log(`Found our alliance: ${allianceNumber}, role: ${allianceRole}`);
+          break;
+        }
+      }
+    } else {
+      console.warn(`Failed to fetch alliances: ${alliancesResponse.status} ${alliancesResponse.statusText}`);
+    }
+    
+    // If we were selected for an alliance, determine our finish by checking playoff matches
+    if (allianceNumber !== "Not selected") {
+      try {
+        // Fetch all playoff matches
+        console.log(`Fetching playoff matches for event: ${eventCode}`);
+        const matchesResponse = await fetch(`${window.TBA_BASE_URL}/event/${eventCode}/matches`, {
+          headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+        });
+        
+        if (matchesResponse.ok) {
+          const allMatches = await matchesResponse.json();
+          const playoffMatches = allMatches.filter(m => m.comp_level !== 'qm');
+          console.log(`Found ${playoffMatches.length} playoff matches`);
+          
+          // Check if our alliance played any matches
+          const ourMatches = playoffMatches.filter(match => {
+            const blueTeams = match.alliances.blue.team_keys;
+            const redTeams = match.alliances.red.team_keys;
+            return blueTeams.includes(window.FRC_TEAM_KEY) || redTeams.includes(window.FRC_TEAM_KEY);
+          });
+          
+          console.log(`Found ${ourMatches.length} matches with our team`);
+          
+          if (ourMatches.length > 0) {
+            // Find the furthest round we competed in
+            let wonEvent = false;
+            
+            // Sort by comp level: qf -> sf -> f
+            ourMatches.sort((a, b) => {
+              const levels = { "qf": 1, "sf": 2, "f": 3 };
+              return levels[b.comp_level] - levels[a.comp_level];
+            });
+            
+            const highestLevel = ourMatches[0].comp_level;
+            console.log(`Furthest competition level: ${highestLevel}`);
+            
+            // Check if we played in finals
+            const finalsMatches = ourMatches.filter(m => m.comp_level === "f");
+            if (finalsMatches.length > 0) {
+              console.log(`Finals matches:`, finalsMatches);
+              
+              // Check if we won any finals matches
+              let blueWins = 0, redWins = 0;
+              for (const match of finalsMatches) {
+                const isBlue = match.alliances.blue.team_keys.includes(window.FRC_TEAM_KEY);
+                if ((isBlue && match.winning_alliance === 'blue') || (!isBlue && match.winning_alliance === 'red')) {
+                  wonEvent = true;
+                }
+                
+                // Count wins per alliance
+                if (match.winning_alliance === 'blue') blueWins++;
+                if (match.winning_alliance === 'red') redWins++;
+              }
+              
+              // Alternative method: check overall winner by counting wins
+              if (blueWins > redWins && finalsMatches[0].alliances.blue.team_keys.includes(window.FRC_TEAM_KEY)) {
+                wonEvent = true;
+              } else if (redWins > blueWins && finalsMatches[0].alliances.red.team_keys.includes(window.FRC_TEAM_KEY)) {
+                wonEvent = true;
+              }
+              
+              // Determine if we won the event
+              if (wonEvent) {
+                allianceFinish = "Event Winner 🏆";
+              } else {
+                allianceFinish = "Event Finalist 🥈";
+              }
+            }
+            // Check if we played in semifinals
+            else if (highestLevel === "sf") {
+              allianceFinish = "Semifinalist";
+            }
+            // Otherwise we played in quarterfinals
+            else if (highestLevel === "qf") {
+              allianceFinish = "Quarterfinalist";
+            }
+            
+            console.log(`Final finish determination: ${allianceFinish}`);
+          } else {
+            allianceFinish = "Selected, did not play";
+            console.log("Selected for an alliance but didn't play in any matches");
+          }
+        } else {
+          console.warn(`Failed to fetch matches: ${matchesResponse.status} ${matchesResponse.statusText}`);
+          allianceFinish = "Results pending";
+        }
+      } catch (err) {
+        console.error("Error processing playoff matches:", err);
+        allianceFinish = "Results unavailable";
+      }
+    } else {
+      console.log("Our team was not selected for any alliance");
+    }
+    
+    // Fetch awards
+    console.log(`Fetching awards for event: ${eventCode}`);
+    const awardsResponse = await fetch(`${window.TBA_BASE_URL}/team/${window.FRC_TEAM_KEY}/event/${eventCode}/awards`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+    });
+    
+    let awardsHtml = '';
+    
+    if (awardsResponse.ok) {
+      // FIX: Use the proper variable name for the response
+      const awards = await awardsResponse.json();
+      console.log(`Awards data:`, awards);
+      
+      if (awards && awards.length > 0) {
+        awardsHtml = `
+          <div class="mt-4">
+            <h5 class="text-baywatch-orange font-semibold mb-1">Awards</h5>
+            <ul class="text-sm">
+              ${awards.map(award => `<li>• ${award.name}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      } else {
+        console.log("No awards found for this event");
+      }
+    } else {
+      console.warn(`Failed to fetch awards: ${awardsResponse.status} ${awardsResponse.statusText}`);
+    }
+    
+    // Update with final results - ensure we have values for all fields
+    console.log(`Updating UI with final results: Rank=${finalRanking}, Alliance=${allianceNumber}, Finish=${allianceFinish}`);
+    
+    countdownSectionElement.innerHTML = `
+      <div class="text-center">
+        <h4 class="text-lg font-semibold mb-3">Event Complete</h4>
+        <div class="text-xl font-bold text-baywatch-orange mb-4">
+          <i class="fas fa-flag-checkered mr-2"></i>Final Results
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-black/30 rounded p-3">
+            <h5 class="font-semibold mb-1">Qualification</h5>
+            <div class="text-2xl font-bold">${finalRanking}</div>
+            <div class="text-sm text-gray-400">of ${totalTeams} teams</div>
+          </div>
+          
+          <div class="bg-black/30 rounded p-3">
+            <h5 class="font-semibold mb-1">Alliance</h5>
+            <div class="text-2xl font-bold">${allianceNumber}</div>
+            <div class="text-sm text-gray-400">${allianceRole}</div>
+          </div>
+          
+          <div class="bg-black/30 rounded p-3">
+            <h5 class="font-semibold mb-1">Finish</h5>
+            <div class="text-xl font-bold ${allianceFinish.includes('Winner') ? 'text-baywatch-orange' : ''}">${allianceFinish}</div>
+          </div>
+        </div>
+        
+        ${awardsHtml}
+      </div>
+    `;
+    
+  } catch (error) {
+    console.error(`Error fetching final results for ${eventCode}:`, error);
+    
+    // Provide a more detailed error message to help with debugging
+    const countdownSectionElement = document.getElementById(`countdown-section-${suffix}`);
+    if (countdownSectionElement) {
+      countdownSectionElement.innerHTML = `
+        <div class="text-center">
+          <h4 class="text-lg font-semibold mb-2">Event Complete</h4>
+          <div class="text-2xl font-bold text-baywatch-orange">
+            <i class="fas fa-flag-checkered"></i>
+          </div>
+          <p class="text-gray-400 text-sm mt-2">
+            Final results not available
+          </p>
+          <p class="text-xs text-gray-500 mt-1">
+            Event: ${eventCode} | Team: ${window.FRC_TEAM_KEY}
+          </p>
+          ${error.message ? `<p class="text-xs text-red-400 mt-1">${error.message}</p>` : ''}
+        </div>
+      `;
+    }
+  }
 }
 
 // Update countdown for specific event
