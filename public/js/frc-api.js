@@ -3083,8 +3083,7 @@ function updateEventPageHeader(eventData) {
   // Set appropriate Twitch link if available
   const eventCode = eventData.key;
   const twitchChannels = {
-    '2025milac': 'firstinspires35',
-    '2025mitvc': 'firstinspires34'
+    '2025mitvc': 'firstinspires36'
   };
   
   if (twitchChannels[eventCode]) {
