@@ -362,6 +362,23 @@ function updateEventCountdown(startDate) {
   }
 }
 
+// New function to update event links with dynamic event key
+function updateEventLinks(eventKey) {
+  if (!eventKey) return;
+  
+  // Get all links that should be updated with the dynamic event
+  const eventLinks = document.querySelectorAll('.event-link, [data-card] a');
+  
+  // Update each link with the correct event key
+  eventLinks.forEach(link => {
+    if (link.href && link.href.includes('event.html')) {
+      link.href = `event.html?event=${eventKey}`;
+    }
+  });
+  
+  console.log(`Updated event links to point to: ${eventKey}`);
+}
+
 // Initialize and update all data with loading states
 async function initializeEventData() {
   setLoadingState(true);
@@ -380,6 +397,9 @@ async function initializeEventData() {
       
       // Add offset to event start date for comparison
       const actualEventStart = eventStart + OFFSET_MS;
+
+      // Update the event links to point to the next event
+      updateEventLinks(currentEvent.key);
 
       // Check against actual start time (with offset) for determining if the event has started
       if (currentDate >= actualEventStart && currentDate <= eventEnd) {
@@ -405,7 +425,11 @@ async function initializeEventData() {
       
       // Use a hard-coded date for Lake City event as fallback
       const fallbackDate = "2025-04-03";
+      const fallbackEvent = "2025milac";
       console.log("Using fallback date:", fallbackDate);
+      
+      // Update links to fallback event
+      updateEventLinks(fallbackEvent);
       
       document.getElementById("countdown-section").classList.remove("hidden");
       document.getElementById("live-updates").classList.add("hidden");
@@ -418,7 +442,11 @@ async function initializeEventData() {
     
     // Use a hard-coded date for Lake City event as fallback
     const fallbackDate = "2025-04-03";
+    const fallbackEvent = "2025milac";
     console.log("Using fallback date due to error:", fallbackDate);
+    
+    // Update links to fallback event
+    updateEventLinks(fallbackEvent);
     
     document.getElementById("countdown-section").classList.remove("hidden");
     document.getElementById("live-updates").classList.add("hidden");
