@@ -16,15 +16,6 @@ window.FRC_TEAM_KEY = window.FRC_TEAM_KEY || "frc7790"; // Add team key definiti
 // Constant for the 37-hour offset (in milliseconds)
 const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
 
-// Store data for all events
-const EVENT_CODES = ['2025milac', '2025mitvc', '2025micmp', '2025cmptx'];
-const EVENT_DATES = {
-  '2025milac': '2025-02-28',
-  '2025mitvc': '2025-03-13',
-  '2025micmp': '2025-04-03',
-  '2025cmptx': '2025-04-16'
-};
-
 // Fetch event data by event code
 async function fetchEventData(eventCode) {
   try {
@@ -94,24 +85,22 @@ async function getNextEvent() {
   }
 }
 
-// Update UI elements with loading state - modified to handle multiple events
-function setLoadingState(isLoading, eventCode) {
-  const suffix = eventCode.replace('2025', '');
-  
+// Update UI elements with loading state
+function setLoadingState(isLoading) {
   const loadingElements = {
     ranking: {
-      number: document.getElementById(`ranking-number-${suffix}`),
-      total: document.getElementById(`total-teams-${suffix}`),
+      number: document.getElementById("ranking-number"),
+      total: document.getElementById("total-teams"),
     },
     record: {
-      wins: document.getElementById(`wins-${suffix}`),
-      losses: document.getElementById(`losses-${suffix}`),
+      wins: document.getElementById("wins"),
+      losses: document.getElementById("losses"),
     },
     nextMatch: {
-      number: document.getElementById(`match-number-${suffix}`),
-      time: document.getElementById(`match-time-${suffix}`),
-      blue: document.getElementById(`blue-alliance-${suffix}`),
-      red: document.getElementById(`red-alliance-${suffix}`),
+      number: document.getElementById("match-number"),
+      time: document.getElementById("match-time"),
+      blue: document.getElementById("blue-alliance"),
+      red: document.getElementById("red-alliance"),
     },
   };
 
@@ -127,18 +116,16 @@ function setLoadingState(isLoading, eventCode) {
   }
 }
 
-// Handle errors gracefully - updated for multiple events
-function setErrorState(element, eventCode, message = "No data available") {
-  const suffix = eventCode.replace('2025', '');
-  const el = document.getElementById(`${element}-${suffix}`);
+// Handle errors gracefully
+function setErrorState(element, message = "No data available") {
+  const el = document.getElementById(element);
   if (el) {
     el.textContent = message;
   }
 }
 
-// Update rankings display with better error handling - updated for multiple events
+// Update rankings display with better error handling
 async function updateRankings(eventKey) {
-  const suffix = eventKey.replace('2025', '');
   try {
     const response = await fetch(`${TBA_BASE_URL}/event/${eventKey}/rankings`, {
       headers: {
@@ -156,21 +143,21 @@ async function updateRankings(eventKey) {
     );
 
     if (teamRanking) {
-      const rankingNumber = document.getElementById(`ranking-number-${suffix}`);
-      const totalTeams = document.getElementById(`total-teams-${suffix}`);
+      const rankingNumber = document.getElementById("ranking-number");
+      const totalTeams = document.getElementById("total-teams");
       
       if (rankingNumber && totalTeams) {
         rankingNumber.textContent = teamRanking.rank;
         totalTeams.textContent = `of ${rankings.rankings.length} teams`;
       }
     } else {
-      setErrorState("ranking-number", eventKey, "--");
-      setErrorState("total-teams", eventKey, "Not ranked yet");
+      setErrorState("ranking-number", "--");
+      setErrorState("total-teams", "Not ranked yet");
     }
   } catch (error) {
     console.error("Error fetching rankings:", error);
-    setErrorState("ranking-number", eventKey, "--");
-    setErrorState("total-teams", eventKey, "Rankings unavailable");
+    setErrorState("ranking-number", "--");
+    setErrorState("total-teams", "Rankings unavailable");
   }
 }
 
@@ -2397,6 +2384,19 @@ async function loadTeamOverview() {
           console.log(`Error fetching details for event ${event.key}:`, error);
         }
         
+        // Format date with 37-hour offset
+        const startDate = new Date(new Date(event.start_date).getTime() + OFFSET_MS);
+        const endDate = new Date(new Date(event.end_date).getTime() + OFFSET_MS);
+        const dateStr = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+        
+        // Create row
+        const row = document.createElement("tr");
+        
+        // Highlight current event
+        if (currentEvent && currentEvent.key === event.key) {
+          row.classList.add("bg-baywatch-orange/10");
+        }
+        
         row.innerHTML = `
           <td class="p-4">
             <a href="event.html?event=${event.key}" 
@@ -3159,280 +3159,3 @@ function extractEventType(eventName) {
   // Always return empty string regardless of event type
   return "";
 }
-
-// Initialize schedule page countdowns
-function initializeScheduleCountdowns() {
-  const eventCodeSuffixes = ['milac', 'mitvc', 'micmp', 'cmptx'];
-  
-  eventCodeSuffixes.forEach(suffix => {
-    const fullEventCode = `2025${suffix}`;
-    const countdownElement = document.getElementById(`countdown-timer-${suffix}`);
-    const liveUpdatesElement = document.getElementById(`live-updates-${suffix}`);
-    const countdownSectionElement = document.getElementById(`countdown-section-${suffix}`);
-    
-    if (countdownElement) {
-      // Check if event already happened
-      const endDate = EVENT_DATES[fullEventCode];
-      if (!endDate) return;
-      
-      const eventEndDate = new Date(endDate);
-      eventEndDate.setDate(eventEndDate.getDate() + 3); // End date + 3 days
-      
-      const now = new Date();
-      if (now > eventEndDate) {
-        // Event is over
-        if (countdownSectionElement) {
-          countdownSectionElement.innerHTML = `
-            <div class="text-center">
-              <h4 class="text-lg font-semibold mb-2">Event Complete</h4>
-              <div class="text-2xl font-bold text-baywatch-orange">
-                <i class="fas fa-flag-checkered"></i>
-              </div>
-              <p class="text-gray-400 text-sm mt-2">
-                This event has concluded
-              </p>
-            </div>
-          `;
-        }
-      } else {
-        // Start countdown
-        updateEventCountdownForEvent(fullEventCode, suffix);
-        
-        // Update every second
-        setInterval(() => {
-          updateEventCountdownForEvent(fullEventCode, suffix);
-        }, 1000);
-      }
-    }
-  });
-}
-
-// Update countdown for specific event
-function updateEventCountdownForEvent(eventCode, suffix) {
-  const startDate = EVENT_DATES[eventCode];
-  if (!startDate) return;
-  
-  const now = new Date().getTime();
-  const eventStart = new Date(startDate).getTime() + OFFSET_MS;
-  let timeLeft = eventStart - now;
-  
-  if (timeLeft < 0) {
-    // Event has started
-    const countdownSection = document.getElementById(`countdown-section-${suffix}`);
-    const liveUpdates = document.getElementById(`live-updates-${suffix}`);
-    
-    if (countdownSection && liveUpdates) {
-      countdownSection.classList.add('hidden');
-      liveUpdates.classList.remove('hidden');
-      
-      // Fetch live data
-      updateRankingForEvent(eventCode, suffix);
-      updateRecordForEvent(eventCode, suffix);
-      updateNextMatchForEvent(eventCode, suffix);
-      
-      // Set interval to update data periodically
-      if (!window[`${suffix}UpdateInterval`]) {
-        window[`${suffix}UpdateInterval`] = setInterval(() => {
-          updateRankingForEvent(eventCode, suffix);
-          updateRecordForEvent(eventCode, suffix);
-          updateNextMatchForEvent(eventCode, suffix);
-        }, 60000); // Update every minute
-      }
-    }
-    
-    return;
-  }
-  
-  // Calculate remaining time
-  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-  const hours = Math.floor(
-    (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-  );
-  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-  
-  // Update countdown display
-  const countdownEl = document.getElementById(`countdown-timer-${suffix}`);
-  if (countdownEl) {
-    countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-  }
-}
-
-// Update ranking for specific event
-async function updateRankingForEvent(eventCode, suffix) {
-  try {
-    const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/rankings`, {
-      headers: {
-        "X-TBA-Auth-Key": TBA_AUTH_KEY,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
-    }
-    
-    const rankings = await response.json();
-    const teamRanking = rankings.rankings.find(
-      (r) => r.team_key === window.FRC_TEAM_KEY
-    );
-
-    if (teamRanking) {
-      const rankingNumber = document.getElementById(`ranking-number-${suffix}`);
-      const totalTeams = document.getElementById(`total-teams-${suffix}`);
-      
-      if (rankingNumber && totalTeams) {
-        rankingNumber.textContent = teamRanking.rank;
-        totalTeams.textContent = `of ${rankings.rankings.length} teams`;
-      }
-    } else {
-      setErrorState("ranking-number", suffix, "--");
-      setErrorState("total-teams", suffix, "Not ranked yet");
-    }
-  } catch (error) {
-    console.error(`Error fetching rankings for ${eventCode}:`, error);
-    setErrorState("ranking-number", suffix, "--");
-    setErrorState("total-teams", suffix, "Rankings unavailable");
-  }
-}
-
-// Update record for specific event
-async function updateRecordForEvent(eventCode, suffix) {
-  try {
-    const response = await fetch(
-      `${window.TBA_BASE_URL}/team/${window.FRC_TEAM_KEY}/event/${eventCode}/matches`,
-      {
-        headers: {
-          "X-TBA-Auth-Key": window.TBA_AUTH_KEY,
-        },
-      }
-    );
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
-    }
-    
-    const matches = await response.json();
-
-    let wins = 0;
-    let losses = 0;
-
-    matches.forEach((match) => {
-      if (match.winning_alliance && match.actual_time) {
-        const blueTeams = match.alliances.blue.team_keys;
-        const redTeams = match.alliances.red.team_keys;
-        
-        const isOnBlue = blueTeams.includes(window.FRC_TEAM_KEY);
-        const isOnRed = redTeams.includes(window.FRC_TEAM_KEY);
-        
-        if ((isOnBlue && match.winning_alliance === "blue") || 
-            (isOnRed && match.winning_alliance === "red")) {
-          wins++;
-        } else if ((isOnBlue || isOnRed) && match.winning_alliance !== "") {
-          losses++;
-        }
-      }
-    });
-
-    const winsEl = document.getElementById(`wins-${suffix}`);
-    const lossesEl = document.getElementById(`losses-${suffix}`);
-    
-    if (winsEl && lossesEl) {
-      winsEl.textContent = wins;
-      lossesEl.textContent = losses;
-    }
-  } catch (error) {
-    console.error(`Error fetching match record for ${eventCode}:`, error);
-    setErrorState("wins", suffix, "--");
-    setErrorState("losses", suffix, "--");
-  }
-}
-
-// Update next match for specific event
-async function updateNextMatchForEvent(eventCode, suffix) {
-  try {
-    const response = await fetch(
-      `${window.TBA_BASE_URL}/team/${window.FRC_TEAM_KEY}/event/${eventCode}/matches`,
-      {
-        headers: {
-          "X-TBA-Auth-Key": window.TBA_AUTH_KEY,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error ${response.status}`);
-    }
-
-    const matches = await response.json();
-    
-    // Find next unplayed match
-    const sortedMatches = matches
-      .filter(match => !match.actual_time)
-      .sort((a, b) => (a.predicted_time || Infinity) - (b.predicted_time || Infinity));
-      
-    const nextMatch = sortedMatches[0];
-
-    if (nextMatch) {
-      // Format match number
-      const matchNumEl = document.getElementById(`match-number-${suffix}`);
-      if (matchNumEl) {
-        matchNumEl.textContent = `Match ${nextMatch.match_number}`;
-      }
-      
-      // Format match time
-      const matchTimeEl = document.getElementById(`match-time-${suffix}`);
-      if (matchTimeEl) {
-        const matchTime = new Date((nextMatch.predicted_time + (OFFSET_MS / 1000)) * 1000);
-        matchTimeEl.textContent = matchTime.toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit"
-        });
-      }
-
-      // Display alliance partners
-      const blueAllianceEl = document.getElementById(`blue-alliance-${suffix}`);
-      const redAllianceEl = document.getElementById(`red-alliance-${suffix}`);
-      
-      if (blueAllianceEl && redAllianceEl) {
-        const blueTeams = nextMatch.alliances.blue.team_keys;
-        const redTeams = nextMatch.alliances.red.team_keys;
-        
-        if (blueTeams.includes(window.FRC_TEAM_KEY)) {
-          blueAllianceEl.textContent = "Our Alliance";
-          blueAllianceEl.classList.add("font-bold");
-          redAllianceEl.textContent = "Opponent Alliance";
-        } else if (redTeams.includes(window.FRC_TEAM_KEY)) {
-          redAllianceEl.textContent = "Our Alliance";
-          redAllianceEl.classList.add("font-bold");
-          blueAllianceEl.textContent = "Opponent Alliance";
-        } else {
-          blueAllianceEl.textContent = "Blue Alliance";
-          redAllianceEl.textContent = "Red Alliance";
-        }
-      }
-    } else {
-      // No upcoming matches
-      setErrorState(`match-number-${suffix}`, "No scheduled matches");
-      setErrorState(`match-time-${suffix}`, "--:--");
-      setErrorState(`blue-alliance-${suffix}`, "TBD");
-      setErrorState(`red-alliance-${suffix}`, "TBD");
-    }
-  } catch (error) {
-    console.error(`Error fetching next match for ${eventCode}:`, error);
-    setErrorState(`match-number-${suffix}`, "Match data unavailable");
-    setErrorState(`match-time-${suffix}`, "--:--");
-    setErrorState(`blue-alliance-${suffix}`, "TBD");
-    setErrorState(`red-alliance-${suffix}`, "TBD");
-  }
-}
-
-// Initialize the schedule page when document is loaded
-document.addEventListener("DOMContentLoaded", function() {
-  // Check if we're on the schedule page
-  if (window.location.pathname.includes('schedule.html')) {
-    initializeScheduleCountdowns();
-  }
-  
-  // Rest of event initializations can remain unchanged
-  // ...existing code...
-});

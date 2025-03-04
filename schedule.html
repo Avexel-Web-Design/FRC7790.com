@@ -357,112 +357,6 @@
                       Lake City, MI
                     </span>
                   </div>
-                  
-                  <!-- Live Updates Section (Initially Hidden) -->
-                  <div id="live-updates-milac" class="mt-6 hidden">
-                    <div
-                      class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center"
-                    >
-                      <!-- Current Ranking -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">
-                          Current Ranking
-                        </h4>
-                        <div class="flex items-center justify-center gap-2">
-                          <span
-                            id="ranking-number-milac"
-                            class="text-4xl font-bold text-baywatch-orange counter"
-                            >--</span
-                          >
-                          <span class="text-xl text-gray-400">th</span>
-                        </div>
-                        <span class="text-gray-400 block mt-1" id="total-teams-milac"
-                          >Loading...</span
-                        >
-                      </div>
-
-                      <!-- Win/Loss Record -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">Event Record</h4>
-                        <div class="flex justify-center items-center gap-4">
-                          <div class="text-center">
-                            <span
-                              id="wins-milac"
-                              class="text-3xl font-bold text-green-500 counter"
-                              >--</span
-                            >
-                            <span class="text-gray-400 block">Wins</span>
-                          </div>
-                          <span class="text-xl text-gray-400">-</span>
-                          <div class="text-center">
-                            <span
-                              id="losses-milac"
-                              class="text-3xl font-bold text-red-500 counter"
-                              >--</span
-                            >
-                            <span class="text-gray-400 block">Losses</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Next Match -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">Next Match</h4>
-                        <div class="text-center">
-                          <span
-                            id="match-number-milac"
-                            class="text-2xl font-bold text-baywatch-orange"
-                            >Loading...</span
-                          >
-                          <div id="match-time-milac" class="text-gray-400 mt-1">
-                            --:-- --
-                          </div>
-                          <div class="mt-2 flex justify-center gap-2">
-                            <div
-                              id="blue-alliance-milac"
-                              class="text-xs px-2 py-1 bg-blue-500/20 rounded-full text-blue-400"
-                            >
-                              Loading...
-                            </div>
-                            <div
-                              id="red-alliance-milac"
-                              class="text-xs px-2 py-1 bg-red-500/20 rounded-full text-red-400"
-                            >
-                              Loading...
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Countdown Section -->
-                  <div
-                    id="countdown-section-milac"
-                    class="mt-6 flex flex-col items-center"
-                  >
-                    <div class="text-center">
-                      <h4 class="text-lg font-semibold mb-2">
-                        Event Countdown
-                      </h4>
-                      <div
-                        id="countdown-timer-milac"
-                        class="text-4xl font-bold text-baywatch-orange"
-                      >
-                        --d --h --m --s
-                      </div>
-                      <p class="text-gray-400 text-sm mt-2">
-                        Live match updates will appear here when the event
-                        starts
-                      </p>
-                    </div>
-                  </div>
                   <div
                     class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors"
                   >
@@ -507,7 +401,7 @@
                     </span>
                   </div>
                   <!-- Live Updates Section (Initially Hidden) -->
-                  <div id="live-updates-mitvc" class="mt-6 hidden">
+                  <div id="live-updates" class="mt-6 hidden">
                     <div
                       class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center"
                     >
@@ -520,13 +414,13 @@
                         </h4>
                         <div class="flex items-center justify-center gap-2">
                           <span
-                            id="ranking-number-mitvc"
+                            id="ranking-number"
                             class="text-4xl font-bold text-baywatch-orange counter"
                             >--</span
                           >
                           <span class="text-xl text-gray-400">th</span>
                         </div>
-                        <span class="text-gray-400 block mt-1" id="total-teams-mitvc"
+                        <span class="text-gray-400 block mt-1" id="total-teams"
                           >Loading...</span
                         >
                       </div>
@@ -539,7 +433,7 @@
                         <div class="flex justify-center items-center gap-4">
                           <div class="text-center">
                             <span
-                              id="wins-mitvc"
+                              id="wins"
                               class="text-3xl font-bold text-green-500 counter"
                               >--</span
                             >
@@ -548,7 +442,7 @@
                           <span class="text-xl text-gray-400">-</span>
                           <div class="text-center">
                             <span
-                              id="losses-mitvc"
+                              id="losses"
                               class="text-3xl font-bold text-red-500 counter"
                               >--</span
                             >
@@ -564,22 +458,22 @@
                         <h4 class="text-lg font-semibold mb-2">Next Match</h4>
                         <div class="text-center">
                           <span
-                            id="match-number-mitvc"
+                            id="match-number"
                             class="text-2xl font-bold text-baywatch-orange"
                             >Loading...</span
                           >
-                          <div id="match-time-mitvc" class="text-gray-400 mt-1">
+                          <div id="match-time" class="text-gray-400 mt-1">
                             --:-- --
                           </div>
                           <div class="mt-2 flex justify-center gap-2">
                             <div
-                              id="blue-alliance-mitvc"
+                              id="blue-alliance"
                               class="text-xs px-2 py-1 bg-blue-500/20 rounded-full text-blue-400"
                             >
                               Loading...
                             </div>
                             <div
-                              id="red-alliance-mitvc"
+                              id="red-alliance"
                               class="text-xs px-2 py-1 bg-red-500/20 rounded-full text-red-400"
                             >
                               Loading...
@@ -592,7 +486,7 @@
 
                   <!-- Countdown Section -->
                   <div
-                    id="countdown-section-mitvc"
+                    id="countdown-section"
                     class="mt-6 flex flex-col items-center"
                   >
                     <div class="text-center">
@@ -600,7 +494,7 @@
                         Event Countdown
                       </h4>
                       <div
-                        id="countdown-timer-mitvc"
+                        id="countdown-timer"
                         class="text-4xl font-bold text-baywatch-orange"
                       >
                         --d --h --m --s
@@ -661,112 +555,6 @@
                       Saginaw, MI
                     </span>
                   </div>
-                  
-                  <!-- Live Updates Section (Initially Hidden) -->
-                  <div id="live-updates-micmp" class="mt-6 hidden">
-                    <div
-                      class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center"
-                    >
-                      <!-- Current Ranking -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">
-                          Current Ranking
-                        </h4>
-                        <div class="flex items-center justify-center gap-2">
-                          <span
-                            id="ranking-number-micmp"
-                            class="text-4xl font-bold text-baywatch-orange counter"
-                            >--</span
-                          >
-                          <span class="text-xl text-gray-400">th</span>
-                        </div>
-                        <span class="text-gray-400 block mt-1" id="total-teams-micmp"
-                          >Loading...</span
-                        >
-                      </div>
-
-                      <!-- Win/Loss Record -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">Event Record</h4>
-                        <div class="flex justify-center items-center gap-4">
-                          <div class="text-center">
-                            <span
-                              id="wins-micmp"
-                              class="text-3xl font-bold text-green-500 counter"
-                              >--</span
-                            >
-                            <span class="text-gray-400 block">Wins</span>
-                          </div>
-                          <span class="text-xl text-gray-400">-</span>
-                          <div class="text-center">
-                            <span
-                              id="losses-micmp"
-                              class="text-3xl font-bold text-red-500 counter"
-                              >--</span
-                            >
-                            <span class="text-gray-400 block">Losses</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Next Match -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">Next Match</h4>
-                        <div class="text-center">
-                          <span
-                            id="match-number-micmp"
-                            class="text-2xl font-bold text-baywatch-orange"
-                            >Loading...</span
-                          >
-                          <div id="match-time-micmp" class="text-gray-400 mt-1">
-                            --:-- --
-                          </div>
-                          <div class="mt-2 flex justify-center gap-2">
-                            <div
-                              id="blue-alliance-micmp"
-                              class="text-xs px-2 py-1 bg-blue-500/20 rounded-full text-blue-400"
-                            >
-                              Loading...
-                            </div>
-                            <div
-                              id="red-alliance-micmp"
-                              class="text-xs px-2 py-1 bg-red-500/20 rounded-full text-red-400"
-                            >
-                              Loading...
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Countdown Section -->
-                  <div
-                    id="countdown-section-micmp"
-                    class="mt-6 flex flex-col items-center"
-                  >
-                    <div class="text-center">
-                      <h4 class="text-lg font-semibold mb-2">
-                        Event Countdown
-                      </h4>
-                      <div
-                        id="countdown-timer-micmp"
-                        class="text-4xl font-bold text-baywatch-orange"
-                      >
-                        --d --h --m --s
-                      </div>
-                      <p class="text-gray-400 text-sm mt-2">
-                        Live match updates will appear here when the event
-                        starts
-                      </p>
-                    </div>
-                  </div>
                   <div
                     class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors"
                   >
@@ -816,112 +604,6 @@
                       <i class="fas fa-map-marker-alt mr-2"></i>1001 Avenida De
                       Las Americas, Houston, TX
                     </span>
-                  </div>
-                  
-                  <!-- Live Updates Section (Initially Hidden) -->
-                  <div id="live-updates-cmptx" class="mt-6 hidden">
-                    <div
-                      class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center"
-                    >
-                      <!-- Current Ranking -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">
-                          Current Ranking
-                        </h4>
-                        <div class="flex items-center justify-center gap-2">
-                          <span
-                            id="ranking-number-cmptx"
-                            class="text-4xl font-bold text-baywatch-orange counter"
-                            >--</span
-                          >
-                          <span class="text-xl text-gray-400">th</span>
-                        </div>
-                        <span class="text-gray-400 block mt-1" id="total-teams-cmptx"
-                          >Loading...</span
-                        >
-                      </div>
-
-                      <!-- Win/Loss Record -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">Event Record</h4>
-                        <div class="flex justify-center items-center gap-4">
-                          <div class="text-center">
-                            <span
-                              id="wins-cmptx"
-                              class="text-3xl font-bold text-green-500 counter"
-                              >--</span
-                            >
-                            <span class="text-gray-400 block">Wins</span>
-                          </div>
-                          <span class="text-xl text-gray-400">-</span>
-                          <div class="text-center">
-                            <span
-                              id="losses-cmptx"
-                              class="text-3xl font-bold text-red-500 counter"
-                              >--</span
-                            >
-                            <span class="text-gray-400 block">Losses</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Next Match -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">Next Match</h4>
-                        <div class="text-center">
-                          <span
-                            id="match-number-cmptx"
-                            class="text-2xl font-bold text-baywatch-orange"
-                            >Loading...</span
-                          >
-                          <div id="match-time-cmptx" class="text-gray-400 mt-1">
-                            --:-- --
-                          </div>
-                          <div class="mt-2 flex justify-center gap-2">
-                            <div
-                              id="blue-alliance-cmptx"
-                              class="text-xs px-2 py-1 bg-blue-500/20 rounded-full text-blue-400"
-                            >
-                              Loading...
-                            </div>
-                            <div
-                              id="red-alliance-cmptx"
-                              class="text-xs px-2 py-1 bg-red-500/20 rounded-full text-red-400"
-                            >
-                              Loading...
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Countdown Section -->
-                  <div
-                    id="countdown-section-cmptx"
-                    class="mt-6 flex flex-col items-center"
-                  >
-                    <div class="text-center">
-                      <h4 class="text-lg font-semibold mb-2">
-                        Event Countdown
-                      </h4>
-                      <div
-                        id="countdown-timer-cmptx"
-                        class="text-4xl font-bold text-baywatch-orange"
-                      >
-                        --d --h --m --s
-                      </div>
-                      <p class="text-gray-400 text-sm mt-2">
-                        Live match updates will appear here when the event
-                        starts
-                      </p>
-                    </div>
                   </div>
                   <div
                     class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors"
