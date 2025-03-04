@@ -618,14 +618,15 @@
 
           <!-- Video Container -->
           <div class="w-full aspect-video rounded-xl overflow-hidden">
-            <iframe
+            <video 
               class="w-full h-full"
-              src="public/assets/videos/REEFSCAPE.mp4"
+              src="public/assets/videos/REEFSCAPE.mp4#t=1"
               title="REEFSCAPE Game Animation"
-              frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-            ></iframe>
+              controls
+              preload="metadata"
+              poster="public/assets/images/video-thumbnail.jpg">
+              Your browser does not support the video tag.
+            </video>
           </div>
 
           <!-- Game Elements Grid -->
