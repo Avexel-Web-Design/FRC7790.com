@@ -528,7 +528,7 @@ if (window.location.pathname.includes('schedule.html')) {
                 rankingSection.innerHTML = `
                   <h4 class="text-lg font-semibold mb-2">Final Ranking</h4>
                   <div class="flex items-center justify-center gap-1">
-                    <span id="ranking-number" class="text-4xl font-bold text-green-500 animate__animated animate__fadeIn">--</span>
+                    <span id="ranking-number" class="text-4xl font-bold text-baywatch-orange animate__animated animate__fadeIn">--</span>
                     <span class="text-sm text-gray-400 self-end mb-1">th</span>
                   </div>
                   <div id="qual-record" class="text-sm text-gray-400 mt-1">--W---L---T</div>
@@ -542,7 +542,7 @@ if (window.location.pathname.includes('schedule.html')) {
               allianceSection.innerHTML = `
                 <h4 class="text-lg font-semibold mb-2">Alliance</h4>
                 <div class="text-center">
-                  <div id="alliance-number" class="text-4xl font-bold text-green-500 mb-1">--</div>
+                  <div id="alliance-number" class="text-4xl font-bold text-baywatch-orange mb-1">--</div>
                   <div id="alliance-pick" class="text-sm text-gray-400 mb-1">--</div>
                 </div>
               `;
@@ -579,11 +579,7 @@ if (window.location.pathname.includes('schedule.html')) {
               // Add event status indicator at the top
               const eventStatusIndicator = document.createElement('div');
               eventStatusIndicator.className = 'mb-4 text-center';
-              eventStatusIndicator.innerHTML = `
-                <div class="inline-block px-3 py-1 bg-green-500/20 rounded-full text-green-400 text-sm animate__animated animate__fadeIn">
-                  <i class="fas fa-check-circle mr-1"></i> Event Complete
-                </div>
-              `;
+              eventStatusIndicator.innerHTML = ``;
               updatedLiveUpdates.insertBefore(eventStatusIndicator, updatedLiveUpdates.firstChild);
 
               // Only fetch final results for events we actually attended
@@ -995,7 +991,7 @@ function determinePlayoffPlacement(level, allianceNumber) {
   // If we reached semifinals
   if (level === 'sf') {
     placementText = '3rd Place';
-    placementClass = 'text-green-500';
+    placementClass = 'text-baywatch-orange';
     return { placementText, placementClass };
   }
   
@@ -1046,12 +1042,12 @@ async function fetchDetailedPlayoffResults(eventCode, teamStatus) {
         if (ourLastMatch.match_number === 13 || ourLastMatch.key.endsWith('_sf2m3')) {
           return {
             placementText: '3rd Place',
-            placementClass: 'text-green-500'
+            placementClass: 'text-baywatch-orange'
           };
         } else if (ourLastMatch.match_number === 12 || ourLastMatch.key.endsWith('_sf1m3')) {
           return {
             placementText: '4th Place',
-            placementClass: 'text-green-500'
+            placementClass: 'text-baywatch-orange'
           };
         }
       }
