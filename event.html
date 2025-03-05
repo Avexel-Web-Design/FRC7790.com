@@ -388,8 +388,26 @@
 
       <!-- Competition Data Sections Container -->
       <div id="competition-data-container">
+        <!-- Tab Navigation - Modified for mobile responsiveness -->
+        <div class="container mx-auto px-6 mb-2 mt-16">
+          <div class="border-b border-gray-700 flex justify-center sm:justify-start">
+            <button id="tab-rankings" class="tab-button tab-active py-3 px-3 sm:px-6 font-medium focus:outline-none">
+              <i class="fas fa-trophy mr-0 sm:mr-2"></i>
+              <span class="tab-text hidden sm:inline">Rankings</span>
+            </button>
+            <button id="tab-schedule" class="tab-button py-3 px-3 sm:px-6 font-medium focus:outline-none">
+              <i class="fas fa-calendar-days mr-0 sm:mr-2"></i>
+              <span class="tab-text hidden sm:inline">Schedule</span>
+            </button>
+            <button id="tab-playoff" class="tab-button py-3 px-3 sm:px-6 font-medium focus:outline-none">
+              <i class="fas fa-medal mr-0 sm:mr-2"></i>
+              <span class="tab-text hidden sm:inline">Playoffs</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Rankings Section (For active/completed events) -->
-        <section id="rankings-section" class="py-16 relative z-10">
+        <section id="rankings-section" class="tab-content py-8 relative z-10">
           <div class="container mx-auto px-6">
             <h2 class="text-3xl font-bold mb-8 text-center">Team Rankings</h2>
             <div class="card-gradient rounded-xl p-6">
@@ -414,7 +432,7 @@
         </section>
 
         <!-- Match Schedule Section (For active/completed events) -->
-        <section id="schedule-section" class="py-16 relative z-10">
+        <section id="schedule-section" class="tab-content py-8 relative z-10 hidden">
           <div class="container mx-auto px-6">
             <h2 class="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
             <div class="card-gradient rounded-xl p-6">
@@ -438,7 +456,7 @@
         </section>
 
         <!-- Playoff Bracket Section (For active/completed events) -->
-        <section id="playoff-section" class="py-16 relative z-10">
+        <section id="playoff-section" class="tab-content py-8 relative z-10 hidden">
           <div class="container mx-auto px-6">
             <h2 class="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
             <div class="card-gradient rounded-xl p-6 overflow-x-auto">
@@ -727,355 +745,93 @@
         </section>
       </div>
     </main>
-
-    <style>
-      .match-box {
-        position: relative;
-        padding: 1.5rem;
-        border-radius: 1rem;
-        background-color: rgba(0, 0, 0, 0.9);
-        border: 1px solid rgba(255, 107, 0, 0.3);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        transition-property: all;
-        transition-duration: 500ms;
-        width: 280px;
-        min-height: 160px;
-      }
-
-      /* Pattern Overlay */
-      .match-box::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        opacity: 0.05;
-        border-radius: 1rem;
-        pointer-events: none;
-        background: radial-gradient(circle at 1px 1px, rgb(255,107,0,0.2) 1px, transparent 0);
-        background-size: 20px 20px;
-      }
-
-      .match-box:hover {
-        transform: scale(1.05);
-        box-shadow: 0 0 30px rgba(255, 107, 0, 0.3);
-      }
-
-      .alliance-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        position: relative;
-        z-index: 10;
-      }
-
-      .alliance {
-        display: flex;
-        align-items: center; /* Changed from flex-start to center */
-        justify-content: space-between;
-        padding: 0.75rem;
-        border-radius: 0.375rem;
-        transition-property: all;
-        transition-duration: 300ms;
-        width: 100%;
-        position: relative;
-        margin-top: 0.75rem;  /* Increased from 0.6rem for more space */
-        padding-top: 0.75rem;
-      }
-
-      /* Updated alliance badge styles - more transparent and higher position */
-      .alliance-badge {
-        position: absolute;
-        top: -0.75rem;  /* Moved up from -0.6rem */
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 0.65rem;
-        font-weight: bold;
-        padding: 0.2rem 0.5rem;
-        border-radius: 0.75rem;
-        z-index: 25;
-        white-space: nowrap;
-        letter-spacing: 0.025em;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-      }
-
-      .blue-badge {
-        background-color: rgba(37, 99, 235, 0.4);  /* More transparent */
-        color: white;
-        border: 1px solid rgba(147, 197, 253, 0.4);
-      }
-
-      .red-badge {
-        background-color: rgba(220, 38, 38, 0.4);  /* More transparent */
-        color: white;
-        border: 1px solid rgba(252, 165, 165, 0.4);
-      }
-
-      .alliance.blue {
-        background-color: rgba(30, 58, 138, 0.3);
-        color: rgb(96, 165, 250);
-      }
-
-      .alliance.red {
-        background-color: rgba(185, 28, 28, 0.3);
-        color: rgb(248, 113, 113);
-      }
-
-      .alliance.blue:hover {
-        background-color: rgba(30, 58, 138, 0.4);
-      }
-
-      .alliance.red:hover {
-        background-color: rgba(185, 28, 28, 0.4);
-      }
-
-      .alliance.winner {
-        font-weight: bold;
-        border: 2px solid transparent;
-      }
-
-      .alliance.blue.winner {
-        border-color: rgba(96, 165, 250, 0.5);
-        box-shadow: 0 0 10px rgba(96, 165, 250, 0.2);
-      }
-
-      .alliance.red.winner {
-        border-color: rgba(248, 113, 113, 0.5);
-        box-shadow: 0 0 10px rgba(248, 113, 113, 0.2);
-      }
-
-      .teams {
-        font-size: 0.875rem;
-        flex: 1;
-        display: flex; /* Added to vertically center text */
-        align-items: center; /* Added to vertically center text */
-      }
-
-      .alliance-number {
-        font-weight: bold;
-        padding: 0.1rem 0.25rem;
-        margin-bottom: 0.25rem;
-        border-radius: 0.25rem;
-        font-size: 0.7rem;
-        letter-spacing: 0.025em;
-        text-transform: uppercase;
-        display: inline-block;
-        width: fit-content;
-      }
-      
-      .team-numbers {
-        font-size: 0.875rem;
-      }
-
-      .alliance.blue .alliance-number {
-        background-color: rgba(37, 99, 235, 0.3);
-        color: rgb(147, 197, 253);
-      }
-
-      .alliance.red .alliance-number {
-        background-color: rgba(220, 38, 38, 0.3);
-        color: rgb(252, 165, 165);
-      }
-
-      .score {
-        font-size: 1.125rem;
-        font-family: ui-monospace, monospace;
-        font-weight: bold;
-        margin-left: 0.75rem;
-        display: flex; /* Added to vertically center */
-        align-items: center; /* Added to vertically center */
-        justify-content: center; /* Added for better alignment */
-        min-width: 2rem; /* Added to maintain consistent spacing */
-        text-align: right; /* Keep score right-aligned */
-      }
-
-      .match-number {
-        position: absolute;
-        top: -0.75rem;
-        left: 50%;
-        transform: translateX(-50%); /* Added translateY(50%) to center it vertically */
-        font-size: 0.75rem;
-        font-weight: bold;
-        padding: 0.375rem 0.75rem;
-        border-radius: 9999px;
-        background-color: rgba(255, 107, 0, 0.2);
-        color: rgb(255, 107, 0);
-        z-index: 20;
-        line-height: 1; /* Added to improve vertical centering */
-        display: flex; /* Added to improve alignment */
-        align-items: center; /* Added to improve alignment */
-        justify-content: center; /* Added to improve alignment */
-      }
-
-      /* New alliance labels in match number area */
-      .alliance-labels {
-        display: flex;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-top: 0.25rem;
-        font-size: 0.65rem;
-      }
-
-      .blue-label, .red-label {
-        padding: 0.125rem 0.25rem;
-        border-radius: 0.25rem;
-        font-weight: bold;
-        letter-spacing: 0.025em;
-      }
-
-      .blue-label {
-        background-color: rgba(37, 99, 235, 0.3);
-        color: rgb(147, 197, 253);
-      }
-
-      .red-label {
-        background-color: rgba(220, 38, 38, 0.3);
-        color: rgb(252, 165, 165);
-      }
-
-      /* Reset teams style since we removed the alliance number from it */
-      .teams {
-        font-size: 0.875rem;
-        flex: 1;
-      }
-
-      /* Make match number badges wider to accommodate alliance numbers */
-      .match-box .match-number {
-        width: auto;
-        min-width: 100px;
-        text-align: center;
-        white-space: nowrap;
-      }
-
-      .finals-match {
-        border: 2px solid rgba(255, 107, 0, 0.5);
-        box-shadow: 0 0 15px rgba(255, 107, 0, 0.2);
-      }
-
-      /* Rankings toggle button styling */
-      #show-all-rankings {
-        transition: all 0.3s ease;
-        font-weight: 500;
-      }
-      
-      #show-all-rankings:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.2);
-      }
-      
-      .ranking-hidden {
-        transition: all 0.5s ease-out;
-      }
-      
-      tr {
-        transition: all 0.5s ease-out;
-      }
-      
-      .hide-text, .show-text, .hide-icon, .show-icon {
-        transition: opacity 0.3s ease;
-      }
-      
-      /* Add animation for expanding rows */
-      @keyframes fadeIn {
-        from { opacity: 0; max-height: 0; }
-        to { opacity: 1; max-height: 50px; }
-      }
-      
-      @keyframes fadeOut {
-        from { opacity: 1; max-height: 50px; }
-        to { opacity: 0; max-height: 0; }
-      }
-
-      /* Match scheduling styles */
-      #show-all-matches {
-        transition: all 0.3s ease;
-        font-weight: 500;
-      }
-      
-      #show-all-matches:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 107, 0, 0.2);
-      }
-      
-      /* Current match highlight animation - updated to remove border reference */
-      @keyframes pulseHighlight {
-        0% { background-color: rgba(255, 107, 0, 0.05); }
-        50% { background-color: rgba(255, 107, 0, 0.15); }
-        100% { background-color: rgba(255, 107, 0, 0.05); }
-      }
-      
-      .current-match {
-        animation: pulseHighlight 2s infinite;
-      }
-      
-      /* Animation for new rows */
-      @keyframes fadeInRow {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      
-      .animate-fade-in {
-        animation: fadeInRow 0.3s ease-out forwards;
-      }
-      
-      @media (max-width: 640px) {
-        .alliance {
-          flex-wrap: wrap;
+        
+    <!-- Tab Navigation Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get tab buttons and content sections
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Add tooltip data for mobile view
+        document.getElementById('tab-rankings').setAttribute('data-tooltip', 'Rankings');
+        document.getElementById('tab-schedule').setAttribute('data-tooltip', 'Schedule');
+        document.getElementById('tab-playoff').setAttribute('data-tooltip', 'Playoffs');
+        
+        // Add click event listeners to each tab button
+        tabButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            tabButtons.forEach(btn => {
+              btn.classList.remove('tab-active');
+              btn.classList.remove('tab-clicked');
+            });
+            
+            // Add "clicked" class for ripple effect animation
+            this.classList.add('tab-clicked');
+            
+            // After a short delay, add the active class to allow ripple to display first
+            setTimeout(() => {
+              this.classList.add('tab-active');
+            }, 150);
+            
+            // Hide all content sections first
+            tabContents.forEach(content => {
+              content.classList.add('hidden');
+              content.classList.remove('active');
+            });
+            
+            // Show corresponding content based on button id with animation
+            const tabId = this.id.replace('tab-', '');
+            const activeContent = document.getElementById(`${tabId}-section`);
+            
+            if (activeContent) {
+              // Remove hidden class first
+              activeContent.classList.remove('hidden');
+              
+              // Force a reflow to ensure the transition happens
+              void activeContent.offsetWidth;
+              
+              // Then add active class for animation
+              activeContent.classList.add('active');
+              
+              // Animate content inside the tab with staggered timing
+              const animatableElements = activeContent.querySelectorAll('h2, .card-gradient, table, .bracket-container');
+              animatableElements.forEach((el, index) => {
+                el.style.animation = `fadeInUp 0.5s ease forwards ${0.1 + (index * 0.1)}s`;
+                el.style.opacity = '0';
+              });
+            }
+            
+            // Remove the clicked class after animation completes
+            setTimeout(() => {
+              this.classList.remove('tab-clicked');
+            }, 600);
+          });
+        });
+        
+        // Function to set the active tab from URL hash if present
+        function setActiveTabFromHash() {
+          const hash = window.location.hash.substring(1); // Remove the # character
+          if (hash === 'schedule' || hash === 'playoff' || hash === 'rankings') {
+            // Simulate click on the appropriate tab
+            document.getElementById(`tab-${hash}`).click();
+          } else if (hash === 'playoffs') {
+            // Handle plural form as well (for backward compatibility)
+            document.getElementById('tab-playoff').click();
+          } else {
+            // If no hash, activate the first tab by default
+            document.getElementById('tab-rankings').click();
+          }
         }
         
-        .alliance .teams {
-          flex-basis: 100%;
-          margin-bottom: 0.25rem;
-        }
+        // Set active tab when page loads
+        setActiveTabFromHash();
         
-        .alliance .score {
-          margin-top: 0.25rem;
-          margin-left: auto;
-          min-width: auto; /* Reset min-width on mobile */
-        }
-      }
-
-      /* Additional style to ensure proper layout */
-      html, body {
-        height: 100%;
-      }
-      
-      body {
-        display: flex;
-        flex-direction: column;
-      }
-      
-      main {
-        flex: 1 0 auto;
-      }
-      
-      footer {
-        flex-shrink: 0;
-      }
-
-      /* Add team card container styles to prevent overflow on hover */
-      .team-card-container {
-        padding: 5px;
-        transform-origin: center;
-        overflow: visible;
-      }
-      
-      .team-card {
-        transform-origin: center;
-        backface-visibility: hidden;
-        will-change: transform;
-      }
-      
-      /* Ensure grid container has proper padding */
-      #teams-container .grid {
-        padding: 5px;
-      }
-      
-      /* Add media query to ensure cards look good on small screens */
-      @media (max-width: 640px) {
-        .team-card .max-w-180px {
-          max-width: 160px;
-        }
-      }
-    </style>
+        // Listen for hash changes
+        window.addEventListener('hashchange', setActiveTabFromHash);
+      });
+    </script>
     
     <!-- Event Page Script -->
     <script>
@@ -1107,7 +863,9 @@
         // This prevents issues when redirecting from legacy URLs
         if (window.history && window.history.replaceState) {
           const newUrl = `event.html?event=${eventCode}`;
-          window.history.replaceState({}, '', newUrl);
+          // Preserve hash if it exists
+          const hash = window.location.hash;
+          window.history.replaceState({}, '', newUrl + hash);
         }
         
         // Use the prepareEventPage function to load event data appropriately

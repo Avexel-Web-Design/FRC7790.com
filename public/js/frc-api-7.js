@@ -214,45 +214,27 @@ function updateTeamSocialLinks(teamNumber) {
       // Check if the event has ended (with 37 hour offset)
       const hasEnded = hasEventEnded(eventData.end_date);
       
-      if (hasEnded) {
-        // Event has ended - show results view
+      // Get the tab navigation element
+      const tabNavigation = document.querySelector('#competition-data-container .container:first-child');
+      
+      if (hasEnded || hasStarted) {
+        // Event has started or ended - show competition data view
         document.getElementById('teams-section').classList.add('hidden');
         
         // Make competition data container visible
         const competitionContainer = document.getElementById('competition-data-container');
         if (competitionContainer) {
           competitionContainer.classList.remove('hidden');
+          
+          // Make tab navigation visible
+          if (tabNavigation) tabNavigation.classList.remove('hidden');
         }
         
-        // Make individual sections visible
-        document.getElementById('rankings-section').classList.remove('hidden');
-        document.getElementById('schedule-section').classList.remove('hidden');
-        document.getElementById('playoff-section').classList.remove('hidden');
-        
-        // Load event competition data
+        // Load event competition data - all sections, but only the active tab will be visible
         loadEventRankings(eventCode);
         loadEventSchedule(eventCode);
         updatePlayoffBracket(eventCode);
         
-      } else if (hasStarted) {
-        // Event has started but not ended - show live updates
-        document.getElementById('teams-section').classList.add('hidden');
-        
-        // Make competition data container visible
-        const competitionContainer = document.getElementById('competition-data-container');
-        if (competitionContainer) {
-          competitionContainer.classList.remove('hidden');
-        }
-        
-        // Make individual sections visible
-        document.getElementById('rankings-section').classList.remove('hidden');
-        document.getElementById('schedule-section').classList.remove('hidden');
-        document.getElementById('playoff-section').classList.remove('hidden');
-        
-        // Load event competition data
-        loadEventRankings(eventCode);
-        loadEventSchedule(eventCode);
-        updatePlayoffBracket(eventCode);
       } else {
         // Event hasn't started - show teams section
         document.getElementById('teams-section').classList.remove('hidden');
@@ -267,6 +249,9 @@ function updateTeamSocialLinks(teamNumber) {
           document.getElementById('schedule-section').classList.add('hidden');
           document.getElementById('playoff-section').classList.add('hidden');
         }
+        
+        // Hide tab navigation for pre-event view
+        if (tabNavigation) tabNavigation.classList.add('hidden');
         
         // Display registered teams
         displayEventTeams(eventCode);
