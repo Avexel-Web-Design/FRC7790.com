@@ -911,6 +911,58 @@ footer {
   flex: 1 1 auto;
   text-align: center;
   overflow: hidden;
+  /* Enhanced properties to prevent ALL highlighting */
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  touch-action: manipulation;
+  outline: none !important;
+  border: none !important;
+}
+
+/* Ensure no outline on any state */
+.tab-button:focus,
+.tab-button:active,
+.tab-button:visited,
+.tab-button.tab-active {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Override active state */
+.tab-button:active {
+  background-color: transparent !important;
+}
+
+/* Override hover state */
+.tab-button:hover {
+  color: #ffffff;
+}
+
+/* Fix for event.html specific tabs */
+#tab-rankings,
+#tab-schedule,
+#tab-playoff {
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+  border: none !important;
+}
+
+/* Fix for Firefox */
+#tab-rankings::-moz-focus-inner,
+#tab-schedule::-moz-focus-inner, 
+#tab-playoff::-moz-focus-inner {
+  border: 0 !important;
+}
+
+/* Fix for Safari */
+@supports (-webkit-touch-callout: none) {
+  .tab-button {
+    box-shadow: none !important;
+  }
 }
 
 .tab-button:hover {
@@ -987,7 +1039,7 @@ footer {
     left: 50%;
     transform: translateX(-50%);
     background-color: rgba(0,0,0,0.8);
-    color: white;
+    color: rgb(255, 255, 255);
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 12px;
