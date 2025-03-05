@@ -418,6 +418,7 @@ if (window.location.pathname.includes('schedule.html')) {
   document.addEventListener('DOMContentLoaded', async function() {
     // List of event codes to check (all four events on the schedule page)
     const eventCodes = ['2025milac', '2025mitvc', '2025micmp', '2025cmptx'];
+    const countdownTimers = [];
     
     for (const eventCode of eventCodes) {
       try {
@@ -815,31 +816,16 @@ if (window.location.pathname.includes('schedule.html')) {
               updatedCountdownSection.classList.remove('hidden');
               updatedLiveUpdates.classList.add('hidden');
               
-              // Start countdown timer for this specific event
+              // Get the countdown container for this event
               const countdownTimer = updatedCountdownSection.querySelector('#countdown-timer');
               if (countdownTimer) {
                 // Calculate countdown with 37-hour offset
                 const startWithOffset = new Date(eventData.start_date);
                 startWithOffset.setHours(startWithOffset.getHours() + 37);
                 
-                // Update countdown immediately and then set interval
-                updateCountdownDisplay(countdownTimer, startWithOffset);
-                
-                // Use data attribute to store the event-specific interval ID
-                const intervalId = setInterval(() => {
-                  const now = new Date();
-                  if (now >= startWithOffset) {
-                    clearInterval(intervalId);
-                    // Refresh page on countdown completion
-                    window.location.reload();
-                    return;
-                  }
-                  
-                  updateCountdownDisplay(countdownTimer, startWithOffset);
-                }, 1000);
-                
-                // Store the interval ID to clear it if needed
-                countdownTimer.dataset.intervalId = intervalId;
+                // Store target date as data attribute and add to timers array
+                countdownTimer.dataset.targetDate = startWithOffset.getTime();
+                countdownTimers.push(countdownTimer);
               }
             }
           }
@@ -848,16 +834,61 @@ if (window.location.pathname.includes('schedule.html')) {
         console.error(`Error checking event status for ${eventCode}:`, error);
       }
     }
+    
+    // Set up a single global interval for all countdown timers
+    if (countdownTimers.length > 0) {
+      // Initial update for all timers
+      updateAllCountdownTimers(countdownTimers);
+      
+      // Set a single interval to update all timers synchronously
+      const globalCountdownInterval = setInterval(() => {
+        const allComplete = updateAllCountdownTimers(countdownTimers);
+        
+        // If all countdowns are complete, clear the interval
+        if (allComplete) {
+          clearInterval(globalCountdownInterval);
+          // Reload page to update the view
+          window.location.reload();
+        }
+      }, 1000);
+    }
   });
 }
 
+// Function to update all countdown timers at once
+function updateAllCountdownTimers(timers) {
+  const now = new Date();
+  let allComplete = true;
+  
+  timers.forEach(timer => {
+    const targetTime = parseInt(timer.dataset.targetDate);
+    const timeLeft = targetTime - now;
+    
+    if (timeLeft <= 0) {
+      timer.textContent = '0d 00h 00m 00s';
+    } else {
+      allComplete = false;
+      
+      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+      
+      timer.textContent = `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+    }
+  });
+  
+  return allComplete;
+}
+
 // Helper function to update countdown display for a specific timer
+// Note: This function is kept for compatibility with other parts of the code
 function updateCountdownDisplay(timerElement, targetDate) {
   const now = new Date();
   const timeLeft = targetDate - now;
   
   if (timeLeft <= 0) {
-    timerElement.textContent = '0d 0h 0m 0s';
+    timerElement.textContent = '0d 00h 00m 00s';
     return;
   }
   
@@ -866,7 +897,7 @@ function updateCountdownDisplay(timerElement, targetDate) {
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
   
-  timerElement.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  timerElement.textContent = `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
 }
 
 // Helper function to fetch team status at an event
