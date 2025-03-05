@@ -579,7 +579,6 @@ if (window.location.pathname.includes('schedule.html')) {
               // Add event status indicator at the top
               const eventStatusIndicator = document.createElement('div');
               eventStatusIndicator.className = 'mb-4 text-center';
-              eventStatusIndicator.innerHTML = ``;
               updatedLiveUpdates.insertBefore(eventStatusIndicator, updatedLiveUpdates.firstChild);
 
               // Only fetch final results for events we actually attended
