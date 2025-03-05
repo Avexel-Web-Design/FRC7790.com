@@ -1,5 +1,3 @@
-
-
 // Function to update playoff bracket
 async function updatePlayoffBracket(eventKey) {
     try {
@@ -255,54 +253,10 @@ async function updatePlayoffBracket(eventKey) {
     updateMatchVideo(matchData);
   }
   
-  // Update match time and status display
+  // Update match time and status display - simplified since elements were removed
   function updateMatchTimeAndStatus(matchData) {
-    const timeElement = document.getElementById('match-time');
-    const statusElement = document.getElementById('match-status');
-    
-    // Determine match time to display
-    let timeDisplay = 'Time unavailable';
-    let statusDisplay = 'Unknown status';
-    
-    // Add playoff-specific status information
-    let isPlayoff = matchData.comp_level !== 'qm';
-    
-    if (matchData.actual_time) {
-      // Match is completed, show when it was played
-      const matchDate = new Date(matchData.actual_time * 1000);
-      timeDisplay = matchDate.toLocaleString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      statusDisplay = isPlayoff ? 'Playoff match completed' : 'Match completed';
-      statusElement.classList.add('bg-green-800');
-    } 
-    else if (matchData.predicted_time) {
-      // Match has a predicted start time
-      const matchDate = new Date(matchData.predicted_time * 1000);
-      timeDisplay = matchDate.toLocaleString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-      
-      const now = new Date();
-      if (matchDate > now) {
-        statusDisplay = isPlayoff ? 'Playoff match scheduled' : 'Scheduled';
-        statusElement.classList.add('bg-blue-800');
-      } else {
-        statusDisplay = isPlayoff ? 'Playoff match in progress' : 'In progress / recently played';
-        statusElement.classList.add('bg-yellow-800');
-      }
-    }
-    
-    timeElement.innerHTML = `<i class="far fa-clock mr-1"></i> ${timeDisplay}`;
-    statusElement.innerHTML = `<i class="fas fa-circle-info mr-1"></i> ${statusDisplay}`;
+    // Function remains but no longer updates UI elements that were removed
+    console.log("Match time/status update skipped - elements removed from UI");
   }
   
   // Update alliance and score info
@@ -374,3 +328,260 @@ async function updatePlayoffBracket(eventKey) {
       redScore.textContent = '--';
     }
   }
+
+// Enhanced match details function that incorporates Statbotics data
+async function loadMatchDetailsWithStatbotics(matchKey) {
+  try {
+    // First call the original function to get TBA data
+    await loadMatchDetails(matchKey);
+    
+    // Then fetch Statbotics data
+    const statboticsMatchData = await getMatchStatbotics(matchKey);
+    if (!statboticsMatchData) return;
+    
+    // Update the match breakdown with additional Statbotics insights
+    updateStatboticsMatchBreakdown(statboticsMatchData);
+    
+  } catch (error) {
+    console.error('Error loading match details with Statbotics:', error);
+  }
+}
+
+// Function to update match breakdown with Statbotics data
+function updateStatboticsMatchBreakdown(matchData) {
+  const breakdownElement = document.getElementById('match-breakdown');
+  if (!breakdownElement) return;
+  
+  // Clear current content
+  breakdownElement.innerHTML = '';
+  
+  // Create sections
+  const predSection = document.createElement('div');
+  predSection.className = 'mb-6';
+  
+  // If prediction data is available, show it
+  if (matchData.pred) {
+    predSection.innerHTML = `
+      <h3 class="text-lg font-semibold mb-3">Match Prediction</h3>
+      <div class="card-gradient rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-blue-400 font-medium">Blue Alliance</div>
+          <div class="text-gray-300 font-medium">Win Probability</div>
+          <div class="text-red-400 font-medium">Red Alliance</div>
+        </div>
+        <div class="flex items-center">
+          <div class="w-full rounded-l-full h-5 bg-blue-500/30" 
+               style="width: ${(1 - matchData.pred.red_win_prob) * 100}%"></div>
+          <div class="px-2 text-xs bg-gray-800/80">${Math.round((1 - matchData.pred.red_win_prob) * 100)}%</div>
+          <div class="w-full rounded-r-full h-5 bg-red-500/30" 
+               style="width: ${matchData.pred.red_win_prob * 100}%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-gray-400 mt-1">
+          <div>${Math.round(matchData.pred.blue_score)} pts</div>
+          <div>Predicted Score</div>
+          <div>${Math.round(matchData.pred.red_score)} pts</div>
+        </div>
+      </div>
+    `;
+    
+    // Only append prediction section if match doesn't have results yet
+    if (!matchData.result) {
+      breakdownElement.appendChild(predSection);
+    } else {
+      breakdownElement.appendChild(predSection);
+    }
+  }
+  
+  // Create detailed stats section if the match has results
+  if (matchData.result) {
+    const statsSection = document.createElement('div');
+    
+    // Create stats header
+    const statsHeader = document.createElement('h3');
+    statsHeader.className = 'text-lg font-semibold mb-3 mt-6';
+    statsHeader.textContent = 'Detailed Match Statistics';
+    
+    // Create stats table
+    const statsTable = document.createElement('table');
+    statsTable.className = 'score-table';
+    
+    // Add table header
+    statsTable.appendChild(createTableHeader());
+    
+    // Add section header for Auto
+    statsTable.appendChild(createSectionHeader('Autonomous Period'));
+    
+    // Auto leave points
+    statsTable.appendChild(createStatsRow('Mobility Points', 
+      matchData.result.blue_auto_leave_points, 
+      matchData.result.red_auto_leave_points));
+    
+    // Auto coral number
+    statsTable.appendChild(createStatsRow('Auto Coral', 
+      matchData.result.blue_auto_coral, 
+      matchData.result.red_auto_coral));
+    
+    // Auto coral points
+    statsTable.appendChild(createStatsRow('Auto Coral Points', 
+      matchData.result.blue_auto_coral_points, 
+      matchData.result.red_auto_coral_points));
+    
+    // Total auto points
+    statsTable.appendChild(createStatsRow('Total Auto Points', 
+      matchData.result.blue_auto_points, 
+      matchData.result.red_auto_points));
+    
+    // Add section header for Teleop
+    statsTable.appendChild(createSectionHeader('Teleoperated Period'));
+    
+    // Teleop coral number
+    statsTable.appendChild(createStatsRow('Teleop Coral', 
+      matchData.result.blue_teleop_coral, 
+      matchData.result.red_teleop_coral));
+    
+    // Teleop coral points
+    statsTable.appendChild(createStatsRow('Teleop Coral Points', 
+      matchData.result.blue_teleop_coral_points, 
+      matchData.result.red_teleop_coral_points));
+    
+    // Coral by level
+    statsTable.appendChild(createStatsRow('L1 Coral', 
+      matchData.result.blue_coral_l1, 
+      matchData.result.red_coral_l1));
+    
+    statsTable.appendChild(createStatsRow('L2 Coral', 
+      matchData.result.blue_coral_l2, 
+      matchData.result.red_coral_l2));
+    
+    statsTable.appendChild(createStatsRow('L3 Coral', 
+      matchData.result.blue_coral_l3, 
+      matchData.result.red_coral_l3));
+    
+    statsTable.appendChild(createStatsRow('L4 Coral', 
+      matchData.result.blue_coral_l4, 
+      matchData.result.red_coral_l4));
+    
+    // Total coral points
+    statsTable.appendChild(createStatsRow('Total Coral Points', 
+      matchData.result.blue_total_coral_points, 
+      matchData.result.red_total_coral_points));
+    
+    // Processor algae
+    statsTable.appendChild(createStatsRow('Processor Algae', 
+      matchData.result.blue_processor_algae, 
+      matchData.result.red_processor_algae));
+    
+    // Processor algae points
+    statsTable.appendChild(createStatsRow('Processor Points', 
+      matchData.result.blue_processor_algae_points, 
+      matchData.result.red_processor_algae_points));
+    
+    // Net algae
+    statsTable.appendChild(createStatsRow('Net Algae', 
+      matchData.result.blue_net_algae, 
+      matchData.result.red_net_algae));
+    
+    // Net algae points
+    statsTable.appendChild(createStatsRow('Net Algae Points', 
+      matchData.result.blue_net_algae_points, 
+      matchData.result.red_net_algae_points));
+    
+    // Total algae points
+    statsTable.appendChild(createStatsRow('Total Algae Points', 
+      matchData.result.blue_total_algae_points, 
+      matchData.result.red_total_algae_points));
+    
+    // Add section header for Endgame
+    statsTable.appendChild(createSectionHeader('Endgame Period'));
+    
+    // Barge points
+    statsTable.appendChild(createStatsRow('Barge Points', 
+      matchData.result.blue_barge_points, 
+      matchData.result.red_barge_points));
+    
+    // Add section header for Totals
+    statsTable.appendChild(createSectionHeader('Match Totals'));
+    
+    // Total game pieces
+    statsTable.appendChild(createStatsRow('Game Pieces', 
+      matchData.result.blue_total_game_pieces, 
+      matchData.result.red_total_game_pieces));
+    
+    // Total points row with special styling
+    const totalRow = document.createElement('tr');
+    totalRow.className = 'total-row';
+    totalRow.innerHTML = `
+      <td class="score-category">Total Points</td>
+      <td class="blue-value">${matchData.result.blue_score}</td>
+      <td class="red-value">${matchData.result.red_score}</td>
+    `;
+    statsTable.appendChild(totalRow);
+    
+    // Append stats elements
+    statsSection.appendChild(statsHeader);
+    statsSection.appendChild(statsTable);
+    breakdownElement.appendChild(statsSection);
+  }
+}
+
+// Helper function to create table header
+function createTableHeader() {
+  const header = document.createElement('tr');
+  
+  const emptyCell = document.createElement('th');
+  emptyCell.className = 'score-category';
+  
+  const blueCell = document.createElement('th');
+  blueCell.textContent = 'BLUE';
+  
+  const redCell = document.createElement('th');
+  redCell.textContent = 'RED';
+  
+  header.appendChild(emptyCell);
+  header.appendChild(blueCell);
+  header.appendChild(redCell);
+  
+  return header;
+}
+
+// Helper function to create section headers
+function createSectionHeader(title) {
+  const row = document.createElement('tr');
+  row.className = 'section-header';
+  
+  const cell = document.createElement('td');
+  cell.colSpan = 3;
+  cell.textContent = title;
+  
+  row.appendChild(cell);
+  return row;
+}
+
+// Update document ready function to use enhanced match loader
+document.addEventListener('DOMContentLoaded', function() {
+  // Extract match key from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const matchKey = urlParams.get('match');
+  
+  if (matchKey) {
+    // Use enhanced function with Statbotics data
+    loadMatchDetailsWithStatbotics(matchKey);
+  } else {
+    // Handle case where no match key is provided (use original error handling)
+    document.getElementById('match-title').innerHTML = 
+      'No Match Selected <span class="text-red-400"><i class="fas fa-circle-exclamation"></i></span>';
+    document.getElementById('match-event').textContent = 'Please select a match from the schedule';
+    
+    document.getElementById('score-container').innerHTML = 
+      '<div class="w-full text-center py-8"><i class="fas fa-robot text-gray-600 text-5xl mb-4"></i><p class="text-gray-400">No match data available</p></div>';
+    
+    document.getElementById('match-breakdown').innerHTML = 
+      '<div class="text-center text-gray-400"><i class="fas fa-table-list text-gray-600 text-3xl mb-4"></i><p>Match breakdown unavailable</p></div>';
+      
+    document.getElementById('team-details').innerHTML = 
+      '<div class="text-center text-gray-400"><i class="fas fa-users text-gray-600 text-3xl mb-4"></i><p>Team information unavailable</p></div>';
+      
+    document.getElementById('match-video').innerHTML = 
+      '<div class="text-center text-gray-400"><i class="fas fa-video text-gray-600 text-3xl mb-4"></i><p>No match video available</p></div>';
+  }
+});

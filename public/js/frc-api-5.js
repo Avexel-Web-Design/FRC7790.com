@@ -1,5 +1,3 @@
-
-
 // New function to generate visual representation of reef nodes
 function generateReefVisualization(blueBreakdown, redBreakdown) {
     // Helper function to generate node visualization for a single alliance
@@ -18,8 +16,8 @@ function generateReefVisualization(blueBreakdown, redBreakdown) {
       };
       
       // Generate HTML for all nodes in the reef
-      const generateRowHtml = (rowName, displayName) => {
-        let rowHtml = `<div class="reef-row"><div class="row-label">${displayName}</div>`;
+      const generateRowHtml = (rowName) => {
+        let rowHtml = `<div class="reef-row">`;
         
         // Generate nodes A through L
         for (let i = 0; i < 12; i++) {
@@ -36,9 +34,9 @@ function generateReefVisualization(blueBreakdown, redBreakdown) {
       return `
         <div class="reef-container ${allianceColor}-reef">
           <h4 class="reef-title ${allianceColor === 'blue' ? 'text-blue-400' : 'text-red-400'}">${allianceColor.toUpperCase()} ALLIANCE REEF</h4>
-          ${generateRowHtml('topRow', 'Top')}
-          ${generateRowHtml('midRow', 'Mid')}
-          ${generateRowHtml('botRow', 'Bot')}
+          ${generateRowHtml('topRow')}
+          ${generateRowHtml('midRow')}
+          ${generateRowHtml('botRow')}
         </div>
       `;
     };
@@ -49,6 +47,7 @@ function generateReefVisualization(blueBreakdown, redBreakdown) {
         <h3 class="text-xl font-bold text-baywatch-orange mb-4">Reef Node Placement</h3>
         <div class="reefs-container">
           ${generateAllianceReef(blueBreakdown, 'blue')}
+          <div class="reef-divider"></div>
           ${generateAllianceReef(redBreakdown, 'red')}
         </div>
         <div class="reef-legend">
@@ -61,23 +60,26 @@ function generateReefVisualization(blueBreakdown, redBreakdown) {
             background: rgba(0,0,0,0.3);
             border-radius: 0.75rem;
             padding: 1rem;
+            width: 100%;
           }
           .reefs-container {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            width: 100%;
           }
-          @media (min-width: 768px) {
-            .reefs-container {
-              flex-direction: row;
-              gap: 2rem;
-            }
+          .reef-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,107,0,0.3), transparent);
+            margin: 0.5rem 0;
+            width: 100%;
           }
           .reef-container {
             flex: 1;
             border-radius: 0.5rem;
             padding: 0.75rem;
             background: rgba(0,0,0,0.2);
+            width: 100%;
           }
           .blue-reef {
             border: 1px solid rgba(59, 130, 246, 0.3);
@@ -93,16 +95,14 @@ function generateReefVisualization(blueBreakdown, redBreakdown) {
           .reef-row {
             display: flex;
             align-items: center;
+            justify-content: center;
             margin-bottom: 0.5rem;
-          }
-          .row-label {
-            width: 30px;
-            font-size: 0.75rem;
-            color: #aaa;
+            width: 100%;
           }
           .reef-node {
-            width: 15px;
-            height: 15px;
+            flex: 1;
+            aspect-ratio: 1/1;
+            max-width: calc(8.33% - 4px);
             margin: 0 2px;
             border-radius: 50%;
             border: 1px solid rgba(255,255,255,0.1);
@@ -419,3 +419,67 @@ function generateReefVisualization(blueBreakdown, redBreakdown) {
       }
     }
   });
+
+// Enhanced version of updateTeamDetails to include Statbotics data
+async function updateTeamDetailsWithStatbotics(matchData, teamData) {
+  // Call original function first
+  await updateTeamDetails(matchData, teamData);
+  
+  // Then enhance with Statbotics data
+  const eventKey = matchData.event_key;
+  const teamDetailsElement = document.getElementById('team-details');
+  
+  // Create a map of team keys to team data for quick lookup
+  const teamMap = {};
+  teamData.forEach(team => {
+    teamMap[team.key] = team;
+  });
+  
+  // Get all team cards
+  const teamCards = teamDetailsElement.querySelectorAll('.team-detail-card');
+  
+  // For each team card, add Statbotics data
+  for (const card of teamCards) {
+    // Extract team number from the link href
+    const teamLink = card.getAttribute('href');
+    const teamNumber = teamLink.split('=')[1];
+    
+    // Fetch team-event data from Statbotics
+    const teamEventData = await getTeamEventStatbotics(teamNumber, eventKey);
+    if (!teamEventData) continue;
+    
+    // Create stats element to insert
+    const statsElement = document.createElement('div');
+    statsElement.className = 'mt-3 pt-2 border-t border-gray-700/30';
+    
+    // Determine team alliance color
+    const isBlue = card.classList.contains('bg-blue-900/20');
+    const color = isBlue ? 'text-blue-300' : 'text-red-300';
+    
+    // Add EPA stats
+    statsElement.innerHTML = `
+      <div class="flex justify-between text-xs mt-1">
+        <span class="text-gray-400">EPA Rating:</span>
+        <span class="${color} font-mono">${teamEventData.epa.total_points.mean.toFixed(1)}</span>
+      </div>
+      <div class="flex justify-between text-xs mt-1">
+        <span class="text-gray-400">Auto Points:</span>
+        <span class="${color} font-mono">${teamEventData.epa.breakdown.auto_points.toFixed(1)}</span>
+      </div>
+      <div class="flex justify-between text-xs mt-1">
+        <span class="text-gray-400">Teleop Points:</span>
+        <span class="${color} font-mono">${teamEventData.epa.breakdown.teleop_points.toFixed(1)}</span>
+      </div>
+      <div class="flex justify-between text-xs mt-1">
+        <span class="text-gray-400">Endgame:</span>
+        <span class="${color} font-mono">${teamEventData.epa.breakdown.endgame_points.toFixed(1)}</span>
+      </div>
+      <div class="text-xs text-gray-400 mt-2 text-center">
+        <i class="fas fa-chart-line mr-1"></i> Statbotics EPA
+      </div>
+    `;
+    
+    // Append the stats element to the card
+    card.appendChild(statsElement);
+  }
+}
