@@ -428,16 +428,26 @@ if (window.location.pathname.includes('schedule.html')) {
           const hasStarted = hasEventStarted(eventData.start_date);
           const hasEnded = hasEventEnded(eventData.end_date);
           
-          // Get elements for this event - handle both direct links and external links
+          // Get elements for this event based on event code
           let eventSelector;
           if (eventCode === '2025cmptx') {
             // FIRST Championship uses external link
-            eventSelector = `a[href="https://frc-events.firstinspires.org/2025/CMPTX"]`;
+            eventSelector = `a[href="event.html?event=2025cmptx"]`;
+          } else if (eventCode === '2025milac') {
+            // Lake City Regional - explicitly set the selector
+            eventSelector = `a[href="event.html?event=2025milac"]`;
+          } else if (eventCode === '2025mitvc') {
+            // Traverse City Regional
+            eventSelector = `a[href="event.html?event=2025mitvc"]`;
+          } else if (eventCode === '2025micmp') {
+            // FIM District Championship
+            eventSelector = `a[href="event.html?event=2025micmp"]`;
           } else {
-            // Other events use local links
+            // Default selector pattern
             eventSelector = `a[href="event.html?event=${eventCode}"]`;
           }
           
+          // Find the countdown section and live updates section
           const liveUpdates = document.querySelector(`${eventSelector} #live-updates`);
           const countdownSection = document.querySelector(`${eventSelector} #countdown-section`);
           
@@ -464,6 +474,22 @@ if (window.location.pathname.includes('schedule.html')) {
                           <span class="text-xl text-gray-400">th</span>
                         </div>
                         <span class="text-gray-400 block mt-1" id="total-teams">Loading...</span>
+                      </div>
+
+                      <!-- Win/Loss Record -->
+                      <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
+                        <h4 class="text-lg font-semibold mb-2">Event Record</h4>
+                        <div class="flex justify-center items-center gap-4">
+                          <div class="text-center">
+                            <span id="wins" class="text-3xl font-bold text-green-500 counter">--</span>
+                            <span class="text-gray-400 block">Wins</span>
+                          </div>
+                          <span class="text-xl text-gray-400">-</span>
+                          <div class="text-center">
+                            <span id="losses" class="text-3xl font-bold text-red-500 counter">--</span>
+                            <span class="text-gray-400 block">Losses</span>
+                          </div>
+                        </div>
                       </div>
 
                       <!-- Next Match -->
