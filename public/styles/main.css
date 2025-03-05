@@ -545,3 +545,13 @@ footer a {
 .empty-state-icon {
   transition: transform 0.3s ease;
 }
+
+@keyframes timeline-pulse {
+  0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.7); }
+  70% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 0 20px rgba(255, 107, 0, 0); }
+  100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(255, 107, 0, 0); }
+}
+
+.dot-pulse {
+  animation: timeline-pulse 2s infinite;
+}
