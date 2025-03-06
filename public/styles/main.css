@@ -1085,3 +1085,13 @@ footer {
     transform: translateY(0);
   }
 }
+
+.custom-tooltip {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+/* Make the tooltip trigger span relative to position tooltip correctly */
+.tooltip-trigger {
+  position: relative;
+}

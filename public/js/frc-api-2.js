@@ -122,7 +122,7 @@ function updateSortableHeaders(rankingsData) {
     { id: 'name', text: 'Name', sortKey: 'teamName' },
     { id: 'record', text: 'Record (W-L-T)', sortKey: 'winPercentage' },
     { id: 'rp', text: 'Ranking Points', sortKey: 'sortOrder' },
-    { id: 'epa', text: 'EPA', sortKey: 'epa' }
+    { id: 'epa', text: 'EPA <i class="fas fa-info-circle text-baywatch-orange tooltip-trigger" data-tooltip="EPA data may take a moment to load. If it is taking too long, try refreshing the page."></i>', sortKey: 'epa' }
   ];
   
   // Create sortable headers
@@ -153,6 +153,30 @@ function updateSortableHeaders(rankingsData) {
   
   // Set initial sort indicator
   updateSortIndicator(rankingsSortConfig.column, rankingsSortConfig.direction);
+  
+  // Add custom tooltip functionality for the info icons
+  document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+    // Create tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.className = 'custom-tooltip opacity-0 invisible absolute z-50 bg-gray-900 text-white text-xs rounded p-2 max-w-xs transition-all duration-200';
+    tooltip.textContent = trigger.getAttribute('data-tooltip');
+    document.body.appendChild(tooltip);
+    
+    // Show tooltip on hover
+    trigger.addEventListener('mouseenter', (e) => {
+      const rect = trigger.getBoundingClientRect();
+      tooltip.style.left = `${rect.left + window.scrollX}px`;
+      tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+      tooltip.classList.remove('opacity-0', 'invisible');
+      tooltip.classList.add('opacity-100', 'visible');
+    });
+    
+    // Hide tooltip when not hovering
+    trigger.addEventListener('mouseleave', () => {
+      tooltip.classList.remove('opacity-100', 'visible');
+      tooltip.classList.add('opacity-0', 'invisible');
+    });
+  });
 }
 
 // Function to update sort indicators in the headers

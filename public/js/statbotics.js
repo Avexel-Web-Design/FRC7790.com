@@ -604,7 +604,7 @@ async function enhanceTeamEventsWithEPA(teamNumber) {
       if (teamEventData && teamEventData.epa && teamEventData.epa.total_points) {
         const epaRating = teamEventData.epa.total_points.mean;
         epaCell.innerHTML = `
-          <span class="font-mono ${epaRating > 35 ? 'text-green-400' : epaRating > 25 ? 'text-blue-400' : 'text-gray-300'}">
+          <span class="font-mono ${'text-gray-300'}">
             ${epaRating.toFixed(1)}
           </span>
         `;
