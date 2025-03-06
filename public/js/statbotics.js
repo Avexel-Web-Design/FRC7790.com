@@ -548,7 +548,7 @@ async function enhanceRankingsWithEPA(eventKey) {
       if (!headerRow.querySelector('th:last-child')?.textContent.includes('EPA')) {
         const epaHeader = document.createElement('th');
         epaHeader.textContent = 'EPA';
-        epaHeader.className = 'px-4 py-3 text-right';
+        epaHeader.className = 'px-4 py-3 text-right text-baywatch-orange';
         headerRow.appendChild(epaHeader);
       }
     }
@@ -605,7 +605,7 @@ async function enhanceTeamEventsWithEPA(teamNumber) {
     if (headerRow) {
       const epaHeader = document.createElement('th');
       epaHeader.textContent = 'EPA';
-      epaHeader.className = 'p-4 text-left';
+      epaHeader.className = 'p-4 text-left text-baywatch-orange';
       headerRow.appendChild(epaHeader);
     }
     
