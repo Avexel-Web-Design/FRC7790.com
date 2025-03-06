@@ -249,8 +249,8 @@
       });
     </script>
 
-    <!-- Hero Section with increased padding -->
-    <section class="relative pt-32 pb-32 bg-black"> <!-- Increased bottom padding substantially -->
+    <!-- Hero Section with reduced padding -->
+    <section class="relative pt-24 pb-16 bg-black"> <!-- Reduced top and bottom padding -->
       <div class="container mx-auto px-6">
         <div class="flex flex-col items-center justify-center text-center">
           <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white">
@@ -300,8 +300,8 @@
       </div>
     </section>
 
-    <!-- Main Content -->
-    <section class="py-12 bg-black">
+    <!-- Main Content with reduced top padding -->
+    <section class="py-8 bg-black"> <!-- Reduced top padding -->
       <div class="container mx-auto px-6">
         <!-- Error Message Banner -->
         <div id="error-message" class="hidden mb-6 bg-red-900/50 border border-red-800 text-red-100 px-4 py-3 rounded-lg animate__animated animate__fadeIn">
@@ -319,7 +319,7 @@
         </div>
 
         <!-- Event Info -->
-        <div id="event-info" class="mb-12 hidden animate__animated animate__fadeIn"> <!-- Increased margin-bottom -->
+        <div id="event-info" class="mb-16 hidden animate__animated animate__fadeIn"> <!-- Increased margin-bottom from 12 to 16 -->
           <div class="bg-black/20 card-gradient rounded-lg border border-gray-800 p-6">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
               <div>
@@ -343,7 +343,7 @@
         </div>
         
         <!-- Stats Control Panel with simplified sort options -->
-        <div class="mb-12 bg-black/30 card-gradient rounded-lg p-6 border border-gray-800"> 
+        <div class="mb-12 mt-8 bg-black/30 card-gradient rounded-lg p-6 border border-gray-800"> <!-- Added mt-8 for top margin -->
           <div class="flex flex-col md:flex-row gap-6 justify-between items-center">
             <div class="flex gap-6 flex-wrap justify-center w-full md:w-auto">
               <div>
@@ -1003,7 +1003,7 @@
       
       /* Ensure proper spacing between hero and event sections */
       #event-info {
-        margin-top: -50px;
+        margin-top: 0 !important; /* Override previous -50px value */
       }
     </style>
   </body>
