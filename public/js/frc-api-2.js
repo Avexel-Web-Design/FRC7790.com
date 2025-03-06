@@ -25,6 +25,12 @@ function getMatchWinnerStyles(match) {
   };
 }
 
+// Global variable to track current sort state
+let rankingsSortConfig = {
+  column: 'rank',  // Default sort by rank
+  direction: 'asc' // Default to ascending
+};
+
 function updateRankingsTable(rankings) {
   const tbody = document.querySelector("#rankings-table tbody");
   const team7790Index = rankings.findIndex(team => team.team_key === 'frc7790');
@@ -74,86 +80,273 @@ function updateRankingsTable(rankings) {
   
   // Fetch team names then update the table
   fetchTeamNames(teamKeys).then(teamNames => {
-    // Generate HTML for all rankings
-    const allRowsHtml = rankings.map((team, index) => {
+    // Create a sortable array that holds all the data
+    const rankingsData = rankings.map((team, index) => {
       const teamNumber = team.team_key.replace('frc', '');
       const teamName = teamNames[team.team_key] || "Unknown";
-      const isHighlighted = teamNumber === '7790';
-      const rowClass = isHighlighted ? 'bg-baywatch-orange bg-opacity-20' : '';
-      const hiddenClass = index >= 10 ? 'ranking-hidden hidden' : '';
-      const hiddenStyle = index >= 10 ? 'max-height: 0; opacity: 0;' : '';
-      
-      return `
-        <tr class="border-t border-gray-700 ${rowClass} ${hiddenClass} transition-all duration-300" style="${hiddenStyle}">
-          <td class="p-4">${team.rank}</td>
-          <td class="p-4">
-            <a href="team.html?team=${teamNumber}" 
-               class="text-baywatch-orange hover:text-white transition-colors">
-              ${teamNumber}
-            </a>
-          </td>
-          <td class="p-4">
-            <span class="text-gray-300">${teamName}</span>
-          </td>
-          <td class="p-4">${team.record.wins}-${team.record.losses}-${team.record.ties}</td>
-          <td class="p-4">${team.sort_orders[0].toFixed(2)}</td>
-        </tr>
+      return {
+        rank: team.rank,
+        teamNumber: parseInt(teamNumber),
+        teamNumberString: teamNumber,
+        teamName: teamName,
+        record: team.record,
+        recordString: `${team.record.wins}-${team.record.losses}-${team.record.ties}`,
+        winPercentage: team.record.wins / (team.record.wins + team.record.losses + team.record.ties) || 0,
+        sortOrder: team.sort_orders[0],
+        epa: null, // Will be filled by enhanceRankingsWithEPA
+        originalIndex: index,
+        isTeam7790: teamNumber === '7790'
+      };
+    });
+    
+    // Update the table headers to be sortable
+    updateSortableHeaders(rankingsData);
+    
+    // Initially sort by rank (default sorting)
+    renderRankingsTable(rankingsData);
+  });
+}
+
+// Function to update headers with sort functionality
+function updateSortableHeaders(rankingsData) {
+  const headerRow = document.querySelector('#rankings-table thead tr');
+  if (!headerRow) return;
+  
+  // Clear existing headers
+  headerRow.innerHTML = '';
+  
+  // Define the sortable columns - Always include EPA column since we know it will be added
+  const columns = [
+    { id: 'rank', text: 'Rank', sortKey: 'rank' },
+    { id: 'team', text: 'Team', sortKey: 'teamNumber' },
+    { id: 'name', text: 'Name', sortKey: 'teamName' },
+    { id: 'record', text: 'Record (W-L-T)', sortKey: 'winPercentage' },
+    { id: 'rp', text: 'Ranking Points', sortKey: 'sortOrder' },
+    { id: 'epa', text: 'EPA', sortKey: 'epa' }
+  ];
+  
+  // Create sortable headers
+  columns.forEach(column => {
+    const th = document.createElement('th');
+    th.className = 'p-4 text-baywatch-orange cursor-pointer select-none';
+    th.id = `header-${column.id}`;
+    
+    // Create header content with sort indicators
+    th.innerHTML = `
+      <div class="flex items-center">
+        ${column.text}
+        <span class="sort-indicator ml-1">
+          <i class="fas fa-sort text-gray-600"></i>
+          <i class="fas fa-sort-up text-baywatch-orange hidden"></i>
+          <i class="fas fa-sort-down text-baywatch-orange hidden"></i>
+        </span>
+      </div>
+    `;
+    
+    // Add click event to sort
+    th.addEventListener('click', () => {
+      sortRankingsBy(rankingsData, column.sortKey);
+    });
+    
+    headerRow.appendChild(th);
+  });
+  
+  // Set initial sort indicator
+  updateSortIndicator(rankingsSortConfig.column, rankingsSortConfig.direction);
+}
+
+// Function to update sort indicators in the headers
+function updateSortIndicator(column, direction) {
+  // First, reset all indicators
+  document.querySelectorAll('#rankings-table th .sort-indicator i').forEach(icon => {
+    icon.classList.add('hidden');
+  });
+  
+  // Find the correct header based on column
+  let headerId;
+  switch (column) {
+    case 'rank': headerId = 'header-rank'; break;
+    case 'teamNumber': headerId = 'header-team'; break;
+    case 'teamName': headerId = 'header-name'; break;
+    case 'winPercentage': headerId = 'header-record'; break;
+    case 'sortOrder': headerId = 'header-rp'; break;
+    case 'epa': headerId = 'header-epa'; break;
+    default: headerId = 'header-rank';
+  }
+  
+  const header = document.getElementById(headerId);
+  if (!header) return;
+  
+  // Show the appropriate sort direction icon
+  const indicator = header.querySelector('.sort-indicator');
+  if (direction === 'asc') {
+    indicator.querySelector('.fa-sort-up').classList.remove('hidden');
+  } else {
+    indicator.querySelector('.fa-sort-down').classList.remove('hidden');
+  }
+}
+
+// Function to sort rankings data by a specific column
+function sortRankingsBy(rankingsData, column) {
+  // Toggle sort direction if clicking the same column again
+  if (rankingsSortConfig.column === column) {
+    rankingsSortConfig.direction = rankingsSortConfig.direction === 'asc' ? 'desc' : 'asc';
+  } else {
+    rankingsSortConfig.column = column;
+    
+    // Default directions for different columns
+    if (column === 'teamName') {
+      rankingsSortConfig.direction = 'asc'; // A to Z for names
+    } else if (column === 'rank' || column === 'teamNumber') {
+      rankingsSortConfig.direction = 'asc'; // Low to high for ranks and team numbers
+    } else {
+      rankingsSortConfig.direction = 'desc'; // High to low for performance metrics
+    }
+  }
+  
+  // Sort the data based on the selected column and direction
+  rankingsData.sort((a, b) => {
+    let comparison = 0;
+    const valueA = a[column];
+    const valueB = b[column];
+    
+    // Handle null/undefined values
+    if (valueA === null && valueB === null) return 0;
+    if (valueA === null) return 1;
+    if (valueB === null) return -1;
+    
+    // Special handling for teamNumber to ensure correct numerical sorting
+    if (column === 'teamNumber') {
+      return rankingsSortConfig.direction === 'asc' ? 
+        parseInt(a.teamNumberString) - parseInt(b.teamNumberString) : 
+        parseInt(b.teamNumberString) - parseInt(a.teamNumberString);
+    }
+    
+    // Compare based on data type
+    if (typeof valueA === 'string' && typeof valueB === 'string') {
+      comparison = valueA.localeCompare(valueB, undefined, { numeric: true });
+    } else {
+      comparison = valueA - valueB;
+    }
+    
+    // Apply sort direction
+    return rankingsSortConfig.direction === 'asc' ? comparison : -comparison;
+  });
+  
+  // Update the sort indicator
+  updateSortIndicator(column, rankingsSortConfig.direction);
+  
+  // Render the sorted table
+  renderRankingsTable(rankingsData);
+}
+
+// Function to render the rankings table with sorted data
+function renderRankingsTable(rankingsData) {
+  const tbody = document.querySelector("#rankings-table tbody");
+  
+  // Clear existing rows
+  tbody.innerHTML = '';
+  
+  // Store the updated data globally for EPA enhancement
+  window.rankingsData = rankingsData;
+  
+  // Generate HTML for all rankings
+  rankingsData.forEach((team, index) => {
+    const isHighlighted = team.isTeam7790;
+    const rowClass = isHighlighted ? 'bg-baywatch-orange bg-opacity-20' : '';
+    const hiddenClass = index >= 10 && !isHighlighted ? 'ranking-hidden hidden' : '';
+    const hiddenStyle = index >= 10 && !isHighlighted ? 'max-height: 0; opacity: 0;' : '';
+    
+    const row = document.createElement('tr');
+    row.className = `border-t border-gray-700 ${rowClass} ${hiddenClass} transition-all duration-300`;
+    row.style = hiddenStyle;
+    
+    // Format EPA cell with loading indicator or value
+    let epaContent;
+    if (team.epa !== null) {
+      const epaValue = parseFloat(team.epa);
+      epaContent = `
+        <span class="font-mono ${
+          epaValue > 35 ? 'text-green-400' : 
+          epaValue > 25 ? 'text-blue-400' : 
+          'text-gray-300'
+        }">${epaValue.toFixed(1)}</span>
       `;
-    }).join('');
+    } else {
+      epaContent = `<span class="font-mono text-gray-500">...</span>`;
+    }
     
-    // Update the table with all rows
-    tbody.innerHTML = allRowsHtml;
+    // Append cells for each column
+    row.innerHTML = `
+      <td class="p-4">${team.rank}</td>
+      <td class="p-4">
+        <a href="team.html?team=${team.teamNumberString}" 
+           class="text-baywatch-orange hover:text-white transition-colors">
+          ${team.teamNumberString}
+        </a>
+      </td>
+      <td class="p-4">
+        <span class="text-gray-300">${team.teamName}</span>
+      </td>
+      <td class="p-4">${team.recordString}</td>
+      <td class="p-4">${team.sortOrder.toFixed(2)}</td>
+      <td class="p-4 epa-cell">${epaContent}</td>
+    `;
     
-    // Add special handling for Team 7790 when not in top 10
-    if (team7790Index >= 10) {
-      // Find our team's row
-      const team7790Row = tbody.querySelectorAll('tr')[team7790Index];
-      if (team7790Row) {
-        // Make the row visible
-        team7790Row.classList.remove('hidden', 'ranking-hidden');
-        team7790Row.style.maxHeight = '50px';
-        team7790Row.style.opacity = '1';
+    tbody.appendChild(row);
+  });
+  
+  // Add Team 7790 separator if needed
+  const team7790Index = rankingsData.findIndex(team => team.isTeam7790);
+  
+  if (team7790Index >= 10) {
+    // Determine if we need to add a separator before team 7790
+    const team7790Row = tbody.querySelectorAll('tr')[team7790Index];
+    
+    if (team7790Row) {
+      // Make the row visible
+      team7790Row.classList.remove('hidden', 'ranking-hidden');
+      team7790Row.style.maxHeight = '50px';
+      team7790Row.style.opacity = '1';
         
-        // Add separator line before Team 7790 row if it's not the first hidden row
-        if (team7790Index > 10) {
-          const separatorRow = document.createElement('tr');
-          separatorRow.className = 'team-7790-separator';
+      // Add separator line before Team 7790 row if it's not the first hidden row
+      if (team7790Index > 10) {
+        const separatorRow = document.createElement('tr');
+        separatorRow.className = 'team-7790-separator';
           
-          // Check if EPA column exists to determine the correct colspan
-          const headerRow = document.querySelector('#rankings-table thead tr');
-          const totalColumns = headerRow ? headerRow.querySelectorAll('th').length : 5;
+        // Check how many columns there are
+        const totalColumns = document.querySelectorAll('#rankings-table th').length;
           
-          separatorRow.innerHTML = `
-            <td colspan="${totalColumns}" class="py-2">
-              <div class="border-t-2 border-dashed border-baywatch-orange border-opacity-30 relative">
-              </div>
-            </td>
-          `;
-          team7790Row.parentNode.insertBefore(separatorRow, team7790Row);
-        }
+        separatorRow.innerHTML = `
+          <td colspan="${totalColumns}" class="py-2">
+            <div class="border-t-2 border-dashed border-baywatch-orange border-opacity-30 relative">
+            </div>
+          </td>
+        `;
+        team7790Row.parentNode.insertBefore(separatorRow, team7790Row);
       }
     }
+  }
+  
+  // Add "Show All" button if it doesn't exist yet
+  if (!document.getElementById('show-all-rankings') && rankingsData.length > 10) {
+    const tableContainer = document.querySelector('#rankings-table').parentNode;
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'text-center mt-4';
+    buttonContainer.innerHTML = `
+      <button id="show-all-rankings" class="px-6 py-2 bg-baywatch-orange bg-opacity-20 rounded-lg 
+        hover:bg-opacity-40 transition-all duration-300 text-baywatch-orange">
+        <span class="show-text">Show All Rankings</span>
+        <span class="hide-text hidden">Hide Rankings</span>
+        <i class="fas fa-chevron-down ml-2 show-icon"></i>
+        <i class="fas fa-chevron-up ml-2 hide-icon hidden"></i>
+      </button>
+    `;
+    tableContainer.appendChild(buttonContainer);
     
-    // Add "Show All" button after the table if it doesn't exist yet
-    if (!document.getElementById('show-all-rankings')) {
-      const tableContainer = document.querySelector('#rankings-table').parentNode;
-      const buttonContainer = document.createElement('div');
-      buttonContainer.className = 'text-center mt-4';
-      buttonContainer.innerHTML = `
-        <button id="show-all-rankings" class="px-6 py-2 bg-baywatch-orange bg-opacity-20 rounded-lg 
-          hover:bg-opacity-40 transition-all duration-300 text-baywatch-orange">
-          <span class="show-text">Show All Rankings</span>
-          <span class="hide-text hidden">Hide Rankings</span>
-          <i class="fas fa-chevron-down ml-2 show-icon"></i>
-          <i class="fas fa-chevron-up ml-2 hide-icon hidden"></i>
-        </button>
-      `;
-      tableContainer.appendChild(buttonContainer);
-      
-      // Add event listener to the button
-      document.getElementById('show-all-rankings').addEventListener('click', toggleRankings);
-    }
-  });
+    // Add event listener to the button
+    document.getElementById('show-all-rankings').addEventListener('click', toggleRankings);
+  }
 }
 
 // Function to toggle all rankings visibility

@@ -363,9 +363,6 @@ async function enhanceEventPageWithStatbotics(eventKey) {
           <div class="text-2xl font-bold text-green-400">${(statboticsData.metrics.win_prob.acc * 100).toFixed(0)}%</div>
         </div>
       </div>
-      <div class="text-xs text-gray-400 mt-2 text-right">
-        <i class="fas fa-chart-bar mr-1"></i> Data from Statbotics
-      </div>
     `;
     
     // Insert stats card at the top of rankings section
@@ -374,8 +371,11 @@ async function enhanceEventPageWithStatbotics(eventKey) {
       rankingsTable.parentNode.insertBefore(statsCard, rankingsTable);
     }
     
-    // Enhance team rankings with EPA
-    enhanceRankingsWithEPA(eventKey);
+    // IMPORTANT: Add a slight delay to ensure the table is fully rendered before enhancing with EPA
+    // This helps avoid timing issues with the sortable table
+    setTimeout(() => {
+      enhanceRankingsWithEPA(eventKey);
+    }, 500);
     
   } catch (error) {
     console.error('Error enhancing event page with Statbotics data:', error);
@@ -385,88 +385,141 @@ async function enhanceEventPageWithStatbotics(eventKey) {
 // Function to enhance team rankings with EPA data
 async function enhanceRankingsWithEPA(eventKey) {
   try {
+    console.log("Starting EPA enhancement for rankings table");
+    
     // Get all team rows in the rankings table
-    const rankingsTable = document.querySelector('#rankings-section table');
-    if (!rankingsTable) return;
-    
-    const teamRows = rankingsTable.querySelectorAll('tbody tr');
-    if (!teamRows.length) return;
-    
-    // Add EPA header if it doesn't exist
-    const headerRow = rankingsTable.querySelector('thead tr');
-    if (headerRow) {
-      // Check if EPA header already exists
-      if (!headerRow.querySelector('th:last-child')?.textContent.includes('EPA')) {
-        const epaHeader = document.createElement('th');
-        epaHeader.textContent = 'EPA';
-        epaHeader.className = 'px-4 py-3 text-right text-baywatch-orange';
-        headerRow.appendChild(epaHeader);
-      }
+    const rankingsTable = document.querySelector('#rankings-table');
+    if (!rankingsTable) {
+      console.error('Rankings table not found');
+      return;
     }
     
-    // First, update the colspan for any separator rows and ensure they span across the EPA column
-    const separatorRow = rankingsTable.querySelector('.team-7790-separator');
-    if (separatorRow && separatorRow.querySelector('td')) {
-      const separatorCell = separatorRow.querySelector('td');
-      separatorCell.setAttribute('colspan', '6'); // Increase colspan to include EPA column
+    // Get team data from table rows - using a more specific selector to avoid separator rows
+    const teamRows = rankingsTable.querySelectorAll('tbody tr:not(.team-7790-separator)');
+    if (!teamRows.length) {
+      console.error('No team rows found in rankings table');
+      return;
     }
     
-    // Show loading indicator on the EPA column
+    console.log(`Found ${teamRows.length} team rows to enhance with EPA data`);
+    
+    // If rankingsData doesn't exist yet, create it from the table
+    if (!window.rankingsData) {
+      console.log('Creating rankings data from table');
+      window.rankingsData = [];
+      
+      Array.from(teamRows).forEach((row, index) => {
+        const rankCell = row.cells[0];
+        const teamCell = row.cells[1].querySelector('a');
+        const nameCell = row.cells[2];
+        const recordCell = row.cells[3];
+        const rpCell = row.cells[4];
+        
+        if (!teamCell) return;
+        
+        const href = teamCell.getAttribute('href');
+        const teamNumber = href.split('=')[1];
+        
+        if (!teamNumber) return;
+        
+        // Create record object from string "W-L-T"
+        let record = { wins: 0, losses: 0, ties: 0 };
+        const recordMatch = recordCell.textContent.match(/(\d+)-(\d+)-(\d+)/);
+        if (recordMatch) {
+          record = { 
+            wins: parseInt(recordMatch[1]), 
+            losses: parseInt(recordMatch[2]), 
+            ties: parseInt(recordMatch[3])
+          };
+        }
+        
+        // Add to rankings data
+        window.rankingsData.push({
+          rank: parseInt(rankCell.textContent || '0'),
+          teamNumber: parseInt(teamNumber),
+          teamNumberString: teamNumber,
+          teamName: nameCell.textContent.trim() || 'Unknown',
+          record: record,
+          recordString: recordCell.textContent.trim() || '0-0-0',
+          winPercentage: record.wins / (record.wins + record.losses + record.ties) || 0,
+          sortOrder: parseFloat(rpCell.textContent.trim() || '0'),
+          epa: null,
+          originalIndex: index,
+          isTeam7790: teamNumber === '7790'
+        });
+      });
+    }
+    
     console.log("Starting EPA data fetch for all teams in ranking table...");
     let loadingCount = 0;
+    const fetchPromises = [];
     
-    // Process each team row
-    for (const row of teamRows) {
-      // If this is a separator row, adjust the colspan and skip the rest
-      if (row.classList.contains('team-7790-separator')) {
+    // Process each team row and fetch EPA data
+    for (let i = 0; i < teamRows.length; i++) {
+      const row = teamRows[i];
+      
+      // Get team number from the second cell that contains the team number link
+      const teamCell = row.querySelector('td:nth-child(2) a');
+      if (!teamCell) {
+        console.warn(`No team link found in row ${i+1}`);
         continue;
       }
       
-      // Find the team number cell (now it's the second cell)
-      const teamCell = row.querySelector('td:nth-child(2)');
-      if (!teamCell) continue;
-      
-      // Extract team number from link
-      let teamNumber;
-      const teamLink = teamCell.querySelector('a');
-      if (teamLink) {
-        const href = teamLink.getAttribute('href');
-        teamNumber = href.split('=')[1];
-      } else {
-        // If no link, try to get from text content
-        teamNumber = teamCell.textContent.trim();
+      const href = teamCell.getAttribute('href');
+      if (!href) {
+        console.warn(`No href attribute on team link in row ${i+1}`);
+        continue;
       }
       
-      if (!teamNumber) continue;
+      const teamNumber = href.split('=')[1];
+      if (!teamNumber) {
+        console.warn(`Could not extract team number from href: ${href}`);
+        continue;
+      }
       
-      // Create EPA cell if it doesn't exist
-      let epaCell = row.querySelector('.epa-cell');
-      if (!epaCell) {
-        // Create EPA cell
-        epaCell = document.createElement('td');
-        epaCell.className = 'px-4 py-3 text-right epa-cell';
-        
-        // If this is team 7790's row, add the highlighting class to the EPA cell too
-        if (teamNumber === '7790') {
-          epaCell.classList.add('bg-baywatch-orange', 'bg-opacity-20');
+      console.log(`Processing team ${teamNumber} in row ${i+1}`);
+      
+      // Find this team in rankingsData or continue
+      const teamDataIndex = window.rankingsData.findIndex(team => 
+        team.teamNumberString === teamNumber);
+      
+      if (teamDataIndex === -1) {
+        console.warn(`Could not find team ${teamNumber} in rankingsData`);
+        continue;
+      }
+      
+      // Get EPA cell - try both approaches as the DOM might have changed
+      let epaCell;
+      if (row.cells.length >= 6) {
+        epaCell = row.cells[5]; // Direct access if cell exists
+      } else {
+        epaCell = row.querySelector('.epa-cell'); // Query selector if direct access fails
+        if (!epaCell) {
+          // Create EPA cell if it doesn't exist
+          epaCell = document.createElement('td');
+          epaCell.className = 'p-4 epa-cell';
+          epaCell.innerHTML = `<span class="font-mono text-gray-500">...</span>`;
+          row.appendChild(epaCell);
         }
-        
-        // Add loading indicator
-        epaCell.innerHTML = `<span class="font-mono text-gray-500">...</span>`;
-        row.appendChild(epaCell);
       }
       
       // Increment loading counter
       loadingCount++;
       
-      // Use separate async function to fetch data for each team to avoid blocking
-      (async function fetchTeamEPA(teamNum, cell) {
+      // Create a promise for each team's EPA data fetch
+      const fetchPromise = (async function fetchTeamEPA(teamNum, cell, dataIndex) {
         try {
+          console.log(`Fetching EPA data for team ${teamNum}`);
           // Direct API call to the team_event endpoint
           const teamEventData = await getTeamEventStatbotics(teamNum, eventKey);
           
           if (teamEventData && teamEventData.epa && teamEventData.epa.total_points) {
             const epaRating = teamEventData.epa.total_points.mean;
+            
+            // Store EPA value in the team data
+            if (window.rankingsData && window.rankingsData[dataIndex]) {
+              window.rankingsData[dataIndex].epa = epaRating;
+            }
             
             // Update EPA value with color coding based on rating
             cell.innerHTML = `<span class="font-mono ${
@@ -479,18 +532,36 @@ async function enhanceRankingsWithEPA(eventKey) {
           } else {
             console.warn(`No EPA data found for team ${teamNum} at event ${eventKey}`);
             cell.innerHTML = `<span class="font-mono text-gray-500">N/A</span>`;
+            
+            // Set to 0 to avoid null issues with sorting
+            if (window.rankingsData && window.rankingsData[dataIndex]) {
+              window.rankingsData[dataIndex].epa = 0;
+            }
           }
         } catch (error) {
           console.error(`Error fetching EPA for team ${teamNum}:`, error);
           cell.innerHTML = `<span class="font-mono text-gray-500">--</span>`;
+          
+          // Set to 0 to avoid null issues with sorting
+          if (window.rankingsData && window.rankingsData[dataIndex]) {
+            window.rankingsData[dataIndex].epa = 0;
+          }
         } finally {
           loadingCount--;
           if (loadingCount === 0) {
             console.log("Completed loading all EPA data for teams");
           }
         }
-      })(teamNumber, epaCell);
+        return true; // Resolve the promise
+      })(teamNumber, epaCell, teamDataIndex);
+      
+      fetchPromises.push(fetchPromise);
     }
+    
+    // Wait for all EPA data to be fetched
+    await Promise.all(fetchPromises);
+    console.log("All EPA data fetching complete");
+    
   } catch (error) {
     console.error('Error enhancing rankings with EPA data:', error);
   }
