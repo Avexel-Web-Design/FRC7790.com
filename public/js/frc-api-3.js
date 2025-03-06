@@ -267,12 +267,78 @@ async function updatePlayoffBracket(eventKey) {
     const redScore = document.getElementById('red-score');
     const resultBanner = document.getElementById('match-result-banner');
     
+    // Get blue and red alliance headers to update them
+    const blueHeader = document.querySelector('.flex-1:first-child h3');
+    const redHeader = document.querySelector('.flex-1:last-child h3');
+    
     // Create a map of team keys to team data for quick lookup
     const teamMap = {};
     teamData.forEach(team => {
       teamMap[team.key] = team;
     });
     
+    // Check if this is a playoff match
+    const isPlayoff = matchData.comp_level !== 'qm';
+    
+    // If it's a playoff match, get alliance numbers
+    if (isPlayoff) {
+      // We need to fetch alliance data for the event to get alliance numbers
+      fetch(`${window.TBA_BASE_URL}/event/${matchData.event_key}/alliances`, {
+        headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+      })
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(alliances => {
+        // Create a map of team keys to alliance numbers
+        const allianceMap = {};
+        
+        // Iterate through each alliance and assign numbers
+        alliances.forEach((alliance, index) => {
+          const allianceNumber = index + 1;
+          alliance.picks.forEach(teamKey => {
+            allianceMap[teamKey] = allianceNumber;
+          });
+        });
+        
+        // Find alliance numbers for the current match
+        let blueAllianceNum = '?';
+        let redAllianceNum = '?';
+        
+        // Check each team in the blue alliance to find a match
+        for (const teamKey of matchData.alliances.blue.team_keys) {
+          if (allianceMap[teamKey]) {
+            blueAllianceNum = allianceMap[teamKey];
+            break;
+          }
+        }
+        
+        // Check each team in the red alliance to find a match
+        for (const teamKey of matchData.alliances.red.team_keys) {
+          if (allianceMap[teamKey]) {
+            redAllianceNum = allianceMap[teamKey];
+            break;
+          }
+        }
+        
+        // Update headers with alliance numbers and keep color indicator
+        if (blueHeader) blueHeader.innerHTML = `ALLIANCE ${blueAllianceNum} <span class="text-blue-400"></span>`;
+        if (redHeader) redHeader.innerHTML = `ALLIANCE ${redAllianceNum} <span class="text-red-400"></span>`;
+      })
+      .catch(err => {
+        console.error("Error fetching alliance data:", err);
+        // Fallback to basic headers on error
+        if (blueHeader) blueHeader.textContent = "BLUE ALLIANCE";
+        if (redHeader) redHeader.textContent = "RED ALLIANCE";
+      });
+    } else {
+      // For qualification matches, keep the original headers
+      if (blueHeader) blueHeader.textContent = "BLUE ALLIANCE";
+      if (redHeader) redHeader.textContent = "RED ALLIANCE";
+    }
+    
+    // Rest of the existing function remains the same
     // Display blue alliance teams
     blueTeams.innerHTML = matchData.alliances.blue.team_keys.map(teamKey => {
       const team = teamMap[teamKey];
