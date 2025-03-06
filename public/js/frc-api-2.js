@@ -65,7 +65,7 @@ function updateRankingsTable(rankings) {
   // Show loading state while fetching team names
   tbody.innerHTML = `
     <tr>
-      <td colspan="5" class="p-4 text-center">
+      <td colspan="6" class="p-4 text-center">
         <div class="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-baywatch-orange mr-2"></div>
         Loading rankings...
       </td>
@@ -88,10 +88,12 @@ function updateRankingsTable(rankings) {
           <td class="p-4">${team.rank}</td>
           <td class="p-4">
             <a href="team.html?team=${teamNumber}" 
-               class="flex flex-col text-baywatch-orange hover:text-white transition-colors">
-              <span>${teamNumber}</span>
-              <span class="text-xs text-gray-400">${teamName}</span>
+               class="text-baywatch-orange hover:text-white transition-colors">
+              ${teamNumber}
             </a>
+          </td>
+          <td class="p-4">
+            <span class="text-gray-300">${teamName}</span>
           </td>
           <td class="p-4">${team.record.wins}-${team.record.losses}-${team.record.ties}</td>
           <td class="p-4">${team.sort_orders[0].toFixed(2)}</td>
@@ -116,8 +118,13 @@ function updateRankingsTable(rankings) {
         if (team7790Index > 10) {
           const separatorRow = document.createElement('tr');
           separatorRow.className = 'team-7790-separator';
+          
+          // Check if EPA column exists to determine the correct colspan
+          const headerRow = document.querySelector('#rankings-table thead tr');
+          const totalColumns = headerRow ? headerRow.querySelectorAll('th').length : 5;
+          
           separatorRow.innerHTML = `
-            <td colspan="5" class="py-2">
+            <td colspan="${totalColumns}" class="py-2">
               <div class="border-t-2 border-dashed border-baywatch-orange border-opacity-30 relative">
               </div>
             </td>
