@@ -250,19 +250,30 @@
     </script>
 
     <!-- Hero Section with reduced padding -->
-    <section class="relative pt-24 pb-16 bg-black"> <!-- Reduced top and bottom padding -->
+    <section class="pt-32 pb-16 relative z-10">
       <div class="container mx-auto px-6">
-        <div class="flex flex-col items-center justify-center text-center">
-          <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white">
-            Team <span class="text-baywatch-orange">Scouting</span> Tool
-          </h1>
-          <p class="text-gray-300 max-w-2xl mx-auto mb-8">
-            Compare and rank teams at events using EPA (Expected Points Added) 
-            statistics from Statbotics. Track team selection during alliance selections.
-          </p>
+        <h1 class="text-5xl md:text-7xl font-bold text-center">
+          <span
+            class="text-white inline-block animate__animated animate__fadeInUp"
+            style="animation-delay: 0.2s"
+            >FRC</span
+          >
+          <span
+            class="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp"
+            style="animation-delay: 0.4s"
+            >Scouting</span
+          >
+        </h1>
+        <p
+          class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp"
+          style="animation-delay: 0.6s"
+        >
+          Compare and rank teams at events using EPA (Expected Points Added) 
+          statistics from Statbotics. Track team selection during alliance selections.
+        </p>
           
           <!-- Event Selection - Simplified with integrated search -->
-          <div class="w-full max-w-xl mx-auto mb-8">
+          <div class="w-full max-w-xl mx-auto mt-8">
             <div class="bg-black/30 card-gradient rounded-lg p-6 backdrop-blur-sm border border-gray-800">
               <label for="event-input" class="block text-sm font-medium text-gray-300 mb-3 text-left">Enter Event Code</label>
               <div class="flex items-center gap-3">
