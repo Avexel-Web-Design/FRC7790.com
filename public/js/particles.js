@@ -3,10 +3,10 @@
 class ParticleBackground {
   constructor() {
     this.canvas = document.getElementById('particle-background');
-    this.ctx = this.canvas.getContext('2d', { alpha: true, antialias: false });
+    this.ctx = this.canvas.getContext('2d');
     this.particles = [];
-    this.particleCount = 140; // Increased particle count
-    this.connectDistance = 170; // Increased connection distance
+    this.particleCount = 120;
+    this.connectDistance = 150;
     this.mouse = {
       x: null,
       y: null,
@@ -35,19 +35,8 @@ class ParticleBackground {
   }
 
   resizeCanvas() {
-    const dpr = window.devicePixelRatio || 1;
-    const rect = this.canvas.getBoundingClientRect();
-    
-    // Set the canvas dimensions to match the display size multiplied by the device pixel ratio
-    this.canvas.width = rect.width * dpr;
-    this.canvas.height = rect.height * dpr;
-    
-    // Scale the context to ensure correct drawing operations
-    this.ctx.scale(dpr, dpr);
-    
-    // Set display size (CSS pixels)
-    this.canvas.style.width = `${rect.width}px`;
-    this.canvas.style.height = `${rect.height}px`;
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
   }
 
   initParticles() {
@@ -58,7 +47,7 @@ class ParticleBackground {
     for (let i = 0; i < this.particleCount; i++) {
       const depthLayer = Math.random() * 0.7 + 0.3;
       
-      const size = Math.random() * 4 + 1; // Increased size
+      const size = Math.random() * 3 + 0.5;
       const x = Math.random() * (this.canvas.width - size * 2) + size;
       const y = Math.random() * (this.canvas.height - size * 2) + size;
       
@@ -68,7 +57,7 @@ class ParticleBackground {
       const vx = directionX;
       const vy = directionY;
       
-      const opacity = Math.random() * 0.5 + 0.2 * depthLayer; // Increased opacity
+      const opacity = Math.random() * 0.3 + 0.1 * depthLayer;
       
       const colorBase = this.colorOptions[Math.floor(Math.random() * this.colorOptions.length)];
       const colorVariation = 30;
@@ -170,9 +159,9 @@ class ParticleBackground {
   // Create subtle color pulse ripple effect
   createRipple(x, y) {
     const colors = [
-      {r: 255, g: 107, b: 0},  // Baywatch Orange
-      {r: 255, g: 140, b: 0},  // Dark Orange
-      {r: 255, g: 165, b: 0},  // Orange
+      {r: 168, g: 139, b: 250}, // Purple
+      {r: 139, g: 165, b: 250}, // Blue
+      {r: 139, g: 200, b: 250}  // Light blue
     ];
     
     const selectedColor = colors[Math.floor(Math.random() * colors.length)];
@@ -182,7 +171,7 @@ class ParticleBackground {
       y: y,
       radius: 0,
       maxRadius: 300, // Larger maximum radius
-      opacity: 0.6,   // Increased starting opacity
+      opacity: 0.4,   // More subtle starting opacity
       color: selectedColor,
       speed: 1.2,     // Slower expansion speed
       decay: 0.003    // Slower fade out
@@ -211,9 +200,9 @@ class ParticleBackground {
           ripple.x, ripple.y, ripple.radius
         );
         
-        // Enhanced color pulse with more opacity
-        gradient.addColorStop(0, `rgba(${ripple.color.r}, ${ripple.color.g}, ${ripple.color.b}, ${ripple.opacity * 0.6})`);
-        gradient.addColorStop(0.6, `rgba(${ripple.color.r}, ${ripple.color.g}, ${ripple.color.b}, ${ripple.opacity * 0.2})`);
+        // Subtle color pulse with transparency
+        gradient.addColorStop(0, `rgba(${ripple.color.r}, ${ripple.color.g}, ${ripple.color.b}, ${ripple.opacity * 0.4})`);
+        gradient.addColorStop(0.6, `rgba(${ripple.color.r}, ${ripple.color.g}, ${ripple.color.b}, ${ripple.opacity * 0.1})`);
         gradient.addColorStop(1, `rgba(${ripple.color.r}, ${ripple.color.g}, ${ripple.color.b}, 0)`);
         
         this.ctx.beginPath();
@@ -256,11 +245,11 @@ class ParticleBackground {
   }
 
   drawParticles() {
-    // Enhanced particle drawing with stronger glow
+    // Keep existing particle drawing
     this.particles.forEach(particle => {
       this.ctx.beginPath();
       
-      const glow = particle.size * 3; // Increased glow size
+      const glow = particle.size * 2;
       const gradient = this.ctx.createRadialGradient(
         particle.x, particle.y, 0,
         particle.x, particle.y, glow
@@ -272,18 +261,16 @@ class ParticleBackground {
       const b = baseColor[2].trim();
       const a = baseColor[3].trim();
       
-      // Enhanced glow effect with higher opacity
-      gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${Math.min(1, parseFloat(a) * 1.5)})`);
+      gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${a})`);
       gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
       
       this.ctx.fillStyle = gradient;
-      this.ctx.arc(particle.x, particle.y, particle.size * 2, 0, Math.PI * 2); // Increased particle size multiplier
+      this.ctx.arc(particle.x, particle.y, particle.size * 1.5, 0, Math.PI * 2);
       this.ctx.fill();
       
-      // Add brighter core to particles
       this.ctx.beginPath();
-      this.ctx.arc(particle.x, particle.y, particle.size * 0.8, 0, Math.PI * 2);
-      this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(1, parseFloat(a) * 2.5)})`;
+      this.ctx.arc(particle.x, particle.y, particle.size * 0.7, 0, Math.PI * 2);
+      this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${Math.min(1, parseFloat(a) * 2)})`;
       this.ctx.fill();
     });
   }
@@ -366,7 +353,7 @@ class ParticleBackground {
   }
 
   connectParticles() {
-    // Enhanced connection drawing with more opacity
+    // Keep existing connection drawing
     for (let i = 0; i < this.particles.length; i++) {
       for (let j = i + 1; j < this.particles.length; j++) {
         const dx = this.particles[i].x - this.particles[j].x;
@@ -374,7 +361,7 @@ class ParticleBackground {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < this.connectDistance) {
-          const opacity = Math.pow(1 - (distance / this.connectDistance), 2) * 0.4; // Increased opacity multiplier
+          const opacity = Math.pow(1 - (distance / this.connectDistance), 2) * 0.25;
           
           const p1 = this.particles[i];
           const p2 = this.particles[j];
@@ -389,7 +376,7 @@ class ParticleBackground {
           this.ctx.strokeStyle = gradient;
           
           const avgSize = (p1.size + p2.size) / 2;
-          this.ctx.lineWidth = Math.min(1.5, avgSize * 0.6); // Increased line width
+          this.ctx.lineWidth = Math.min(1, avgSize * 0.5);
           
           this.ctx.beginPath();
           this.ctx.moveTo(p1.x, p1.y);
@@ -417,13 +404,6 @@ class ParticleBackground {
     this.connectParticles();
     this.drawParticles();
     
-    // Add random ripples occasionally for visual interest
-    if (Math.random() < 0.02) { // 2% chance each frame
-      const x = Math.random() * this.canvas.width;
-      const y = Math.random() * this.canvas.height;
-      this.createRipple(x, y);
-    }
-    
     // Request next frame
     requestAnimationFrame(this.animate.bind(this));
   }
@@ -433,15 +413,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // Only initialize if the canvas element exists
   if (document.getElementById('particle-background')) {
     new ParticleBackground();
-    
-    // Add initial ripples for immediate visual interest
-    setTimeout(() => {
-      const particles = new ParticleBackground();
-      for (let i = 0; i < 3; i++) {
-        const x = Math.random() * window.innerWidth;
-        const y = Math.random() * window.innerHeight;
-        particles.createRipple(x, y);
-      }
-    }, 500);
   }
 });
