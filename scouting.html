@@ -60,12 +60,13 @@
     <link href="public/styles/main.css" rel="stylesheet" />
     <script src="public/js/animations.js" defer></script>
     <script src="public/js/search.js" defer></script>
+    <script src="public/js/statbotics.js" defer></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
   </head>
-  <body class="bg-baywatch-dark text-white overflow-x-hidden font-poppins">
+  <body class="bg-black text-white overflow-x-hidden font-poppins">
     <!-- Navigation Bar -->
     <nav
       class="fixed top-0 w-full z-50 transition-all duration-300"
@@ -129,7 +130,7 @@
           <li>
             <a
               href="scouting.html"
-              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              class="text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
               >Scouting</a
             >
           </li>
@@ -248,45 +249,62 @@
       });
     </script>
 
-    <!-- Main Content -->
-    <section class="pt-32 pb-20">
+    <!-- Hero Section with increased padding -->
+    <section class="relative pt-32 pb-32 bg-black"> <!-- Increased bottom padding substantially -->
       <div class="container mx-auto px-6">
-        <h1 class="text-4xl font-bold mb-6 text-center">Team Scouting Tool</h1>
-        <p class="text-gray-400 text-center mb-8 max-w-2xl mx-auto">
-          Compare and rank teams at events using EPA (Expected Points Average) statistics from Statbotics. Mark teams as they get picked for alliances.
-        </p>
-        
-        <!-- Event Selection -->
-        <div class="mb-8">
-          <div class="flex flex-col md:flex-row gap-4 justify-center">
-            <div class="flex-grow max-w-md">
-              <label for="event-input" class="block text-sm font-medium text-gray-400 mb-2">Event Code</label>
-              <div class="flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-2">
-                <input 
-                  type="text" 
-                  id="event-input" 
-                  placeholder="Enter event code (e.g., 2025milac)" 
-                  class="bg-transparent border-none focus:outline-none text-white w-full">
-                <button 
-                  id="load-event-button"
-                  class="text-gray-400 hover:text-baywatch-orange transition-colors">
-                  <i class="fas fa-search"></i>
-                </button>
+        <div class="flex flex-col items-center justify-center text-center">
+          <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white">
+            Team <span class="text-baywatch-orange">Scouting</span> Tool
+          </h1>
+          <p class="text-gray-300 max-w-2xl mx-auto mb-8">
+            Compare and rank teams at events using EPA (Expected Points Added) 
+            statistics from Statbotics. Track team selection during alliance selections.
+          </p>
+          
+          <!-- Event Selection - Simplified with integrated search -->
+          <div class="w-full max-w-xl mx-auto mb-8">
+            <div class="bg-black/30 card-gradient rounded-lg p-6 backdrop-blur-sm border border-gray-800">
+              <label for="event-input" class="block text-sm font-medium text-gray-300 mb-3 text-left">Enter Event Code</label>
+              <div class="flex items-center gap-3">
+                <div class="relative flex-grow">
+                  <input 
+                    type="text" 
+                    id="event-input" 
+                    placeholder="Enter event code (e.g., 2025milac)" 
+                    class="bg-black/40 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 focus:border-baywatch-orange/70 transition-all duration-300 px-4 py-3 w-full text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-baywatch-orange/30">
+                  <button 
+                    id="load-event-button"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-baywatch-orange transition-colors bg-transparent p-1 rounded-full hover:bg-black/30">
+                    <i class="fas fa-search text-lg"></i>
+                  </button>
+                </div>
               </div>
-              <p class="text-xs text-gray-500 mt-1">Try completed or ongoing events like <span class="text-baywatch-orange cursor-pointer event-suggestion">2023micmp</span> or <span class="text-baywatch-orange cursor-pointer event-suggestion">2025milac</span></p>
-            </div>
-            <div class="mt-6 md:mt-0 flex items-end">
-              <button 
-                id="load-event-button-alt" 
-                class="w-full md:w-auto px-6 py-2 bg-baywatch-orange rounded-lg hover:bg-orange-700 transition-colors">
-                Load Teams
-              </button>
+              <div class="flex justify-between mt-3">
+                <p class="text-xs text-gray-500">Try these completed events:</p>
+                <div class="flex gap-2">
+                  <span class="text-baywatch-orange cursor-pointer event-suggestion text-xs hover:underline">2025milac</span>
+                  <span class="text-gray-500 text-xs">|</span>
+                  <span class="text-baywatch-orange cursor-pointer event-suggestion text-xs hover:underline">2024mitvc</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        
+      </div>
+      
+      <!-- Decorative Elements -->
+      <div class="absolute bottom-0 left-0 w-full h-1/2 pointer-events-none overflow-hidden">
+        <svg class="absolute bottom-0 left-0 w-full" viewBox="0 0 1440 320" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+          <path fill-opacity="0.03" fill="#FF6B00" d="M0,224L48,208C96,192,192,160,288,165.3C384,171,480,213,576,208C672,203,768,149,864,144C960,139,1056,181,1152,181.3C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-12 bg-black">
+      <div class="container mx-auto px-6">
         <!-- Error Message Banner -->
-        <div id="error-message" class="hidden mb-6 bg-red-900/50 border border-red-800 text-red-100 px-4 py-3 rounded-lg">
+        <div id="error-message" class="hidden mb-6 bg-red-900/50 border border-red-800 text-red-100 px-4 py-3 rounded-lg animate__animated animate__fadeIn">
           <div class="flex items-start">
             <div class="flex-shrink-0">
               <i class="fas fa-exclamation-circle mt-0.5"></i>
@@ -294,59 +312,92 @@
             <div class="ml-3">
               <h3 class="text-sm font-medium" id="error-title">Event Not Found</h3>
               <div class="mt-1 text-sm" id="error-description">
-                This event wasn't found in the Statbotics database. Try using a completed event code like "2023micmp" (Michigan State Championship 2023).
+                This event wasn't found in the Statbotics database. Try using a completed event code like "2025milac" (Michigan State Championship 2023).
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Stats Control Panel -->
-        <div class="mb-6 bg-black/30 rounded-lg p-4 border border-gray-800">
-          <div class="flex flex-wrap gap-4 justify-between items-center">
-            <div>
-              <label for="sort-stat" class="block text-sm font-medium text-gray-400 mb-2">Sort By:</label>
-              <select id="sort-stat" class="bg-black/50 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-baywatch-orange/50">
-                <option value="epa_total">Total EPA</option>
-                <option value="epa_auto">Auto EPA</option>
-                <option value="epa_teleop">Teleop EPA</option>
-                <option value="epa_endgame">Endgame EPA</option>
-                <option value="team">Team Number</option>
-              </select>
+        <!-- Event Info -->
+        <div id="event-info" class="mb-12 hidden animate__animated animate__fadeIn"> <!-- Increased margin-bottom -->
+          <div class="bg-black/20 card-gradient rounded-lg border border-gray-800 p-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div>
+                <h2 id="event-name" class="text-2xl font-bold mb-2">Event Name</h2>
+                <div class="flex flex-wrap gap-x-8 gap-y-2 text-sm text-gray-300">
+                  <div id="event-date" class="flex items-center"><i class="far fa-calendar-alt mr-2 text-baywatch-orange"></i>Date: --</div>
+                  <div id="event-location" class="flex items-center"><i class="fas fa-map-marker-alt mr-2 text-baywatch-orange"></i>Location: --</div>
+                  <div id="teams-count" class="flex items-center"><i class="fas fa-users mr-2 text-baywatch-orange"></i>Teams: --</div>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <a id="tba-event-link" href="#" target="_blank" class="px-4 py-2 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded-lg transition-all flex items-center">
+                  <i class="fas fa-external-link-alt mr-2"></i> TBA
+                </a>
+                <a id="statbotics-event-link" href="#" target="_blank" class="px-4 py-2 bg-gray-600/30 hover:bg-gray-600/50 text-gray-300 rounded-lg transition-all flex items-center">
+                  <i class="fas fa-chart-bar mr-2"></i> Statbotics
+                </a>
+              </div>
             </div>
-            <div>
-              <button 
-                id="toggle-picked"
-                class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">
-                Show Available Only
-              </button>
+          </div>
+        </div>
+        
+        <!-- Stats Control Panel with simplified sort options -->
+        <div class="mb-12 bg-black/30 card-gradient rounded-lg p-6 border border-gray-800"> 
+          <div class="flex flex-col md:flex-row gap-6 justify-between items-center">
+            <div class="flex gap-6 flex-wrap justify-center w-full md:w-auto">
+              <div>
+                <label for="sort-stat" class="block text-sm font-medium text-gray-300 mb-2">Sort By:</label>
+                <div class="relative">
+                  <select id="sort-stat" class="appearance-none bg-black/50 text-white border border-gray-700 rounded-lg px-4 py-2.5 pr-10 focus:outline-none focus:ring-1 focus:ring-baywatch-orange focus:border-baywatch-orange/50 cursor-pointer transition-all duration-300 w-full">
+                    <option value="epa_total">Total EPA</option>
+                    <option value="epa_auto">Auto EPA</option>
+                    <option value="epa_teleop">Teleop EPA</option>
+                    <option value="epa_endgame">Endgame EPA</option>
+                    <option value="team">Team Number</option>
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">View Options:</label>
+                <button 
+                  id="toggle-picked"
+                  class="px-4 py-2.5 bg-black/50 hover:bg-gray-800 text-white rounded-lg transition-all duration-300 flex items-center justify-center border border-gray-700 hover:border-gray-600 w-full">
+                  <i class="fas fa-filter mr-2"></i> Show Available Only
+                </button>
+              </div>
             </div>
-            <div>
+            <div class="w-full md:w-auto">
               <button 
                 id="clear-picked"
-                class="px-4 py-2 bg-red-900/70 text-white rounded hover:bg-red-800 transition-colors">
-                Clear All Picked Teams
+                class="px-4 py-2.5 bg-black/50 hover:bg-red-900/70 text-white rounded-lg transition-all duration-300 flex items-center justify-center border border-red-900/30 hover:border-red-800 w-full md:w-auto">
+                <i class="fas fa-trash-alt mr-2"></i> Clear All Picked Teams
               </button>
             </div>
           </div>
         </div>
         
-        <!-- Event Info -->
-        <div id="event-info" class="mb-6 hidden">
-          <div class="bg-black/20 rounded-lg border border-gray-800 p-4">
-            <h2 id="event-name" class="text-2xl font-bold mb-2">Event Name</h2>
-            <div class="flex flex-wrap gap-x-8 gap-y-2 text-sm text-gray-300">
-              <div id="event-date">Date: --</div>
-              <div id="event-location">Location: --</div>
-              <div id="teams-count">Teams: --</div>
-            </div>
-          </div>
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="hidden flex flex-col justify-center items-center py-12 my-8 animate__animated animate__fadeIn">
+          <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-baywatch-orange mb-4"></div>
+          <p class="text-gray-400">Loading team data...</p>
+        </div>
+
+        <!-- No Teams Message -->
+        <div id="no-teams-message" class="hidden text-center py-16 my-8 text-gray-400 animate__animated animate__fadeIn">
+          <i class="fas fa-robot text-6xl mb-4 text-gray-600"></i>
+          <p class="text-xl">No teams found for this event.</p>
+          <p class="mt-2">Please check the event code and try again.</p>
         </div>
         
         <!-- Teams Table Container -->
-        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-black/20 shadow-lg">
+        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-black/20 shadow-lg mb-12">
           <table class="min-w-full">
             <thead>
-              <tr class="bg-black/40 border-b border-gray-800">
+              <tr class="bg-black/70 border-b border-gray-800">
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Rank</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Team</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
@@ -357,50 +408,93 @@
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Picked</th>
               </tr>
             </thead>
-            <tbody id="teams-table-body" class="bg-black/10">
+            <tbody id="teams-table-body" class="bg-black/20">
               <!-- Team rows will be added here dynamically -->
               <tr class="border-b border-gray-800">
-                <td colspan="7" class="px-4 py-10 text-center text-gray-500">
-                  Enter an event code and click "Load Teams" to view team statistics
+                <td colspan="8" class="px-4 py-10 text-center text-gray-500">
+                  <i class="fas fa-search text-2xl mb-4 text-gray-600"></i>
+                  <p>Enter an event code and press Enter or click the search icon to view team statistics</p>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Loading Indicator -->
-        <div id="loading-indicator" class="hidden flex justify-center items-center py-8">
-          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-baywatch-orange"></div>
-        </div>
-
-        <!-- No Teams Message -->
-        <div id="no-teams-message" class="hidden text-center py-10 text-gray-400">
-          No teams found for this event. Please check the event code and try again.
+        <!-- Tips Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          <!-- Left Card -->
+          <div class="bg-black/20 card-gradient rounded-lg p-6 border border-gray-800 reveal">
+            <div class="flex items-center mb-4">
+              <div class="bg-baywatch-orange/20 p-3 rounded-full mr-4">
+                <i class="fas fa-chart-line text-baywatch-orange text-xl"></i>
+              </div>
+              <h3 class="text-xl font-bold">Understanding EPA</h3>
+            </div>
+            <p class="text-gray-300 mb-4">
+              EPA (Expected Points Added) is a statistical measure of a team's performance developed by Statbotics. Higher values indicate better expected performance.
+            </p>
+            <ul class="space-y-2 text-gray-400">
+              <li class="flex items-start">
+                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <span><strong class="text-white">Total EPA:</strong> Overall expected point contribution</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <span><strong class="text-white">Auto EPA:</strong> Points expected during autonomous</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <span><strong class="text-white">Teleop EPA:</strong> Points expected during teleop</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <span><strong class="text-white">Endgame EPA:</strong> Points expected from endgame tasks</span>
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Right Card -->
+          <div class="bg-black/20 card-gradient rounded-lg p-6 border border-gray-800 reveal">
+            <div class="flex items-center mb-4">
+              <div class="bg-baywatch-orange/20 p-3 rounded-full mr-4">
+                <i class="fas fa-lightbulb text-baywatch-orange text-xl"></i>
+              </div>
+              <h3 class="text-xl font-bold">Using This Tool</h3>
+            </div>
+            <p class="text-gray-300 mb-4">
+              This scouting tool helps you track and compare teams at FRC events using data from Statbotics.
+            </p>
+            <ul class="space-y-2 text-gray-400">
+              <li class="flex items-start">
+                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <span><strong class="text-white">Mark teams:</strong> Click checkboxes to track which teams have been picked</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <span><strong class="text-white">Sort data:</strong> Use the dropdown to sort by different metrics</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <span><strong class="text-white">Filter view:</strong> Toggle between all teams or available teams only</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <span><strong class="text-white">Find events:</strong> Use event codes from <a href="https://www.thebluealliance.com" class="text-baywatch-orange hover:underline" target="_blank">The Blue Alliance</a></span>
+              </li>
+            </ul>
+          </div>
         </div>
         
-        <!-- Tips Section -->
-        <div class="mt-12 bg-black/20 rounded-lg p-6 border border-gray-800">
-          <h3 class="text-xl font-bold mb-4">Scouting Tips</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 class="text-baywatch-orange text-lg mb-2">Understanding EPA</h4>
-              <p class="text-gray-400 text-sm">
-                EPA (Expected Points Average) is a statistical measure of a team's performance. Higher values indicate better expected performance. Different components help identify strengths in auto, teleop, and endgame.
-              </p>
-            </div>
-            <div>
-              <h4 class="text-baywatch-orange text-lg mb-2">Using This Tool</h4>
-              <p class="text-gray-400 text-sm">
-                Click on a team's status to mark them as picked. Use the sorting options to identify top performing teams in different aspects of the game. Data is provided by Statbotics, which uses historical and current season match data.
-              </p>
-            </div>
-          </div>
+        <!-- Data Attribution -->
+        <div class="text-center text-sm text-gray-500 mb-4">
+          <p>Data provided by <a href="https://www.statbotics.io" class="text-baywatch-orange hover:underline" target="_blank">Statbotics</a> | 
+          Event information from <a href="https://www.thebluealliance.com" class="text-baywatch-orange hover:underline" target="_blank">The Blue Alliance</a></p>
         </div>
       </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-black py-12">
+    <footer class="bg-black border-t border-gray-900 py-12">
       <div class="container mx-auto px-6">
         <div class="flex flex-col md:flex-row justify-between items-center">
           <div class="flex space-x-4 mb-4 md:mb-0">
@@ -445,6 +539,8 @@
         const errorMessage = document.getElementById('error-message');
         const errorTitle = document.getElementById('error-title');
         const errorDescription = document.getElementById('error-description');
+        const tbaEventLink = document.getElementById('tba-event-link');
+        const statboticsEventLink = document.getElementById('statbotics-event-link');
         
         // Quick event suggestions
         document.querySelectorAll('.event-suggestion').forEach(suggestion => {
@@ -459,32 +555,10 @@
         let currentSortKey = 'epa_total';
         let showOnlyAvailable = false;
         
-        // Populate sort dropdown with additional EPA metrics
+        // Populate sort dropdown with additional EPA metrics - SIMPLIFIED to avoid too many options
         const populateSortOptions = () => {
-          // Add more sort options based on available EPA metrics
-          if (teamsData.length > 0 && teamsData[0].epa) {
-            // Clear existing options first
-            while (sortStatSelect.options.length > 5) {
-              sortStatSelect.remove(5);
-            }
-            
-            // Get all EPA metrics from the first team's data
-            const firstTeam = teamsData[0];
-            const metricsAdded = new Set(['epa_total', 'epa_auto', 'epa_teleop', 'epa_endgame', 'team']);
-            
-            if (firstTeam.epa && typeof firstTeam.epa === 'object') {
-              // Add any additional EPA metrics that exist
-              Object.keys(firstTeam.epa).forEach(key => {
-                if (!metricsAdded.has(`epa_${key}`)) {
-                  const option = document.createElement('option');
-                  option.value = `epa_${key}`;
-                  option.textContent = `${key.replace(/_/g, ' ')} EPA`;
-                  sortStatSelect.appendChild(option);
-                  metricsAdded.add(`epa_${key}`);
-                }
-              });
-            }
-          }
+          // We'll keep only the basic options that are already defined in the HTML
+          // No additional metrics will be added dynamically to avoid confusion
         };
         
         // Load teams from local storage if they exist
@@ -540,7 +614,7 @@
             return await response.json();
           } catch (error) {
             console.error('Error fetching event details:', error);
-            showError('Event Not Found', `The event "${eventCode}" wasn't found in the Statbotics database. Try using a past event code like "2023micmp" or "2023cur".`);
+            showError('Event Not Found', `The event "${eventCode}" wasn't found in the Statbotics database. Try using a past event code like "2025milac" or "2023cur".`);
             return null;
           }
         };
@@ -558,14 +632,18 @@
           try {
             const startDate = eventData.start_date ? new Date(eventData.start_date).toLocaleDateString() : '?';
             const endDate = eventData.end_date ? new Date(eventData.end_date).toLocaleDateString() : '?';
-            eventDateElement.textContent = `Date: ${startDate} - ${endDate}`;
+            eventDateElement.innerHTML = `<i class="far fa-calendar-alt mr-2 text-baywatch-orange"></i>Date: ${startDate} - ${endDate}`;
           } catch (e) {
-            eventDateElement.textContent = 'Date: Not available';
+            eventDateElement.innerHTML = '<i class="far fa-calendar-alt mr-2 text-baywatch-orange"></i>Date: Not available';
           }
           
           const location = [eventData.state, eventData.country].filter(Boolean).join(', ');
-          eventLocationElement.textContent = `Location: ${location || 'Not specified'}`;
-          teamsCountElement.textContent = `Teams: ${eventData.num_teams || '0'}`;
+          eventLocationElement.innerHTML = `<i class="fas fa-map-marker-alt mr-2 text-baywatch-orange"></i>Location: ${location || 'Not specified'}`;
+          teamsCountElement.innerHTML = `<i class="fas fa-users mr-2 text-baywatch-orange"></i>Teams: ${eventData.num_teams || '0'}`;
+          
+          // Set up external links
+          tbaEventLink.href = `https://www.thebluealliance.com/event/${eventData.key}`;
+          statboticsEventLink.href = `https://www.statbotics.io/event/${eventData.key}`;
           
           eventInfo.classList.remove('hidden');
         };
@@ -603,9 +681,6 @@
             return [];
           }
         };
-
-        // Update UI with event information
-        // ...existing code...
         
         // Sort teams based on current sort key
         const sortTeams = () => {
@@ -663,31 +738,42 @@
           // Add row for each team
           teamsToRender.forEach((team, index) => {
             const row = document.createElement('tr');
-            row.className = 'border-b border-gray-800 hover:bg-black/30 transition-colors';
+            row.className = 'border-b border-gray-800 hover:bg-black/50 transition-colors';
             if (pickedTeams[team.team]) {
-              row.classList.add('bg-gray-900/30');
+              row.classList.add('bg-gray-900/40');
             }
             
             const isPicked = pickedTeams[team.team] || false;
             
             row.innerHTML = `
-              <td class="px-4 py-3">${index + 1}</td>
-              <td class="px-4 py-3 font-medium ${isPicked ? 'text-gray-500' : 'text-baywatch-orange'}">${team.team}</td>
-              <td class="px-4 py-3 ${isPicked ? 'text-gray-500' : ''}">${team.name || '---'}</td>
-              <td class="px-4 py-3">${formatEPAValue(team.epa_total)}</td>
-              <td class="px-4 py-3">${formatEPAValue(team.epa_auto)}</td>
-              <td class="px-4 py-3">${formatEPAValue(team.epa_teleop)}</td>
-              <td class="px-4 py-3">${formatEPAValue(team.epa_endgame)}</td>
-              <td class="px-4 py-3 text-center">
-                <label class="inline-flex items-center justify-center">
+              <td class="px-4 py-4">${index + 1}</td>
+              <td class="px-4 py-4 font-medium ${isPicked ? 'text-gray-500' : 'text-baywatch-orange'}">${team.team}</td>
+              <td class="px-4 py-4 ${isPicked ? 'text-gray-500' : ''}">${team.name || '---'}</td>
+              <td class="px-4 py-4">${formatEPAValue(team.epa_total)}</td>
+              <td class="px-4 py-4">${formatEPAValue(team.epa_auto)}</td>
+              <td class="px-4 py-4">${formatEPAValue(team.epa_teleop)}</td>
+              <td class="px-4 py-4">${formatEPAValue(team.epa_endgame)}</td>
+              <td class="px-4 py-4 text-center">
+                <div class="inline-block relative">
                   <input 
                     type="checkbox" 
-                    class="team-status-checkbox form-checkbox h-5 w-5 rounded text-baywatch-orange focus:ring-baywatch-orange focus:ring-opacity-50"
+                    id="team-${team.team}" 
+                    class="team-status-checkbox opacity-0 absolute h-5 w-5 cursor-pointer z-10"
                     data-team="${team.team}"
                     ${isPicked ? 'checked' : ''}
                   >
-                  <span class="sr-only">Mark as picked</span>
-                </label>
+                  <label 
+                    for="team-${team.team}" 
+                    class="team-status-label flex items-center cursor-pointer"
+                  >
+                    <span class="h-5 w-5 flex items-center justify-center border border-gray-600 rounded bg-black/50 mr-2 transition-all">
+                      <svg class="w-3 h-3 text-white fill-current hidden" viewBox="0 0 20 20">
+                        <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
+                      </svg>
+                    </span>
+                    <span class="sr-only">Mark as picked</span>
+                  </label>
+                </div>
               </td>
             `;
             
@@ -699,6 +785,18 @@
             checkbox.addEventListener('change', function() {
               const teamNumber = parseInt(this.dataset.team, 10);
               toggleTeamPickedStatus(teamNumber);
+              
+              // Update the checkbox display manually
+              const checkSvg = this.nextElementSibling.querySelector('svg');
+              if (this.checked) {
+                checkSvg.classList.remove('hidden');
+                this.nextElementSibling.querySelector('span').classList.add('bg-baywatch-orange');
+                this.nextElementSibling.querySelector('span').classList.add('border-baywatch-orange');
+              } else {
+                checkSvg.classList.add('hidden');
+                this.nextElementSibling.querySelector('span').classList.remove('bg-baywatch-orange');
+                this.nextElementSibling.querySelector('span').classList.remove('border-baywatch-orange');
+              }
             });
           });
         };
@@ -757,10 +855,6 @@
           loadEventTeams(eventInput.value.trim());
         });
         
-        loadEventButtonAlt.addEventListener('click', () => {
-          loadEventTeams(eventInput.value.trim());
-        });
-        
         eventInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             loadEventTeams(eventInput.value.trim());
@@ -774,7 +868,9 @@
         
         togglePickedButton.addEventListener('click', () => {
           showOnlyAvailable = !showOnlyAvailable;
-          togglePickedButton.textContent = showOnlyAvailable ? 'Show All Teams' : 'Show Available Only';
+          togglePickedButton.innerHTML = showOnlyAvailable ? 
+            '<i class="fas fa-eye mr-2"></i> Show All Teams' : 
+            '<i class="fas fa-filter mr-2"></i> Show Available Only';
           renderTeams();
         });
         
@@ -786,6 +882,22 @@
           }
         });
         
+        // Activate reveal animations
+        const revealElements = document.querySelectorAll('.reveal');
+        const animateReveal = () => {
+          revealElements.forEach(element => {
+            const elementTop = element.getBoundingClientRect().top;
+            const elementVisible = 150;
+            if (elementTop < window.innerHeight - elementVisible) {
+              element.classList.add('active');
+            }
+          });
+        };
+        
+        window.addEventListener('scroll', animateReveal);
+        // Trigger on page load too
+        setTimeout(animateReveal, 300);
+        
         // Check URL for event parameter
         const urlParams = new URLSearchParams(window.location.search);
         const eventParam = urlParams.get('event');
@@ -796,5 +908,103 @@
         }
       });
     </script>
+    
+    <!-- Fix for table height and display and checkbox issues -->
+    <style>
+      /* Force proper table height */
+      .overflow-x-auto {
+        min-height: 200px;
+      }
+      
+      /* Ensure rows have proper height */
+      #teams-table-body tr {
+        min-height: 45px;
+      }
+      
+      /* Better spacing for cells */
+      #teams-table-body td {
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+      
+      /* Fix overlapping elements */
+      .container {
+        position: relative;
+        z-index: 5;
+      }
+      
+      /* Ensure background is fully black */
+      html, body {
+        background-color: #000000 !important;
+      }
+      
+      .bg-baywatch-dark {
+        background-color: #000000 !important;
+      }
+      
+      /* Fix table spacing issues */
+      table {
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+      
+      /* Ensure table header is visible */
+      thead {
+        position: relative;
+        z-index: 10;
+      }
+      
+      /* Add spacing between table rows */
+      tbody tr:not(:last-child) {
+        margin-bottom: 2px;
+      }
+      
+      /* New Custom Checkbox Styling */
+      .team-status-checkbox:checked + .team-status-label span {
+        border-color: #FF6B00;
+        background-color: #FF6B00;
+      }
+      
+      .team-status-checkbox:checked + .team-status-label svg {
+        display: block;
+      }
+      
+      .team-status-checkbox:focus + .team-status-label span {
+        box-shadow: 0 0 0 2px rgba(255, 107, 0, 0.3);
+      }
+
+      /* Fix visual glitch with multiple checkboxes */
+      .team-status-checkbox {
+        position: absolute;
+        opacity: 0;
+        z-index: -1; /* Make sure it's hidden */
+      }
+      
+      .team-status-label {
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+      }
+      
+      /* Custom select styling */
+      select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: none !important;
+      }
+      
+      /* Fix mobile layout */
+      @media (max-width: 768px) {
+        #toggle-picked, #clear-picked {
+          width: 100%;
+        }
+      }
+      
+      /* Ensure proper spacing between hero and event sections */
+      #event-info {
+        margin-top: -50px;
+      }
+    </style>
   </body>
 </html>
