@@ -462,15 +462,6 @@ function updateMatchBreakdown(matchData) {
           </tr>
         `;
       });
-      
-      // Win/Loss RP
-      rowsHTML += `
-        <tr>
-          <td class="score-category">Match Result RP</td>
-          <td class="blue-value">${matchData.winning_alliance === 'blue' ? '2' : (matchData.winning_alliance === '' ? '1' : '0')}</td>
-          <td class="red-value">${matchData.winning_alliance === 'red' ? '2' : (matchData.winning_alliance === '' ? '1' : '0')}</td>
-        </tr>
-      `;
     }
     
     // Create the final table with the generated rows
