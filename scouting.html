@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <link rel="shortcut icon" type="image/png" href="public/assets/images/logo.png" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Scouting - FRC Team 7790 - Baywatch Robotics</title>
+    <meta
+      name="description"
+      content="Team scouting tool for FRC events - view and rank teams by EPA stats."
+    />
+    <meta
+      name="keywords"
+      content="FRC, FIRST Robotics, Team 7790, Baywatch Robotics, Harbor Springs, Michigan, Scouting, EPA"
+    />
+    <link rel="canonical" href="https://www.frc7790.com/scouting.html" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="Team Scouting - FRC Team 7790" />
+    <meta
+      property="og:description"
+      content="Team scouting tool for FRC events"
+    />
+    <meta
+      property="og:image"
+      content="https://www.frc7790.com/src/assets/images/baywatchLogo.png"
+    />
+    <meta property="og:url" content="https://www.frc7790.com/scouting.html" />
+    <meta property="og:type" content="website" />
+
+    <!-- Add Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "baywatch-orange": "#FF6B00",
+              "baywatch-dark": "#1A1A1A",
+            },
+            fontFamily: {
+              poppins: ["Poppins", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link href="public/styles/main.css" rel="stylesheet" />
+    <script src="public/js/animations.js" defer></script>
+    <script src="public/js/search.js" defer></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body class="bg-baywatch-dark text-white overflow-x-hidden font-poppins">
+    <!-- Navigation Bar -->
+    <nav
+      class="fixed top-0 w-full z-50 transition-all duration-300"
+      id="navbar"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-2">
+          <a
+            href="index.html#"
+            class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
+          >
+            <img
+              src="public/assets/images/logo.png"
+              alt="Baywatch Robotics Logo"
+              class="w-20 h-20"
+            />
+          </a>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        
+        <!-- Desktop Menu -->
+        <ul class="hidden md:flex space-x-8">
+          <li>
+            <a
+              href="robots.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Robots</a
+            >
+          </li>
+          <li>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
+            >
+          </li>
+          <li>
+            <a
+              href="schedule.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Schedule</a
+            >
+          </li>
+          <li>
+            <a
+              href="ftc.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >FTC</a
+            >
+          </li>
+          <li>
+            <a
+              href="scouting.html"
+              class="text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Scouting</a
+            >
+          </li>
+        </ul>
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button
+            id="mobile-menu-btn"
+            class="focus:outline-none transition-transform duration-300"
+          >
+            <i class="fas fa-bars text-3xl"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div
+      id="mobile-menu-overlay"
+      class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
+    >
+      <!-- Mobile Search Bar -->
+      <div class="px-8 pt-32 pb-4">
+        <div class="flex items-center bg-black/50 rounded-lg border border-gray-700 px-3 py-2">
+          <input 
+            type="text" 
+            id="mobile-search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="mobile-search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="flex flex-col items-center justify-center h-full space-y-8 -mt-32">
+        <a
+          href="robots.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Robots</a
+        >
+        <a
+          href="sponsors.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Sponsors</a
+        >
+        <a
+          href="schedule.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Schedule</a
+        >
+        <a
+          href="ftc.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >FTC</a
+        >
+        <a
+          href="scouting.html"
+          class="text-2xl text-baywatch-orange transition-all duration-300 hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Scouting</a
+        >
+      </div>
+    </div>
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+      const menuBtn = document.getElementById("mobile-menu-btn");
+      const mobileMenu = document.getElementById("mobile-menu-overlay");
+      let menuOpen = false;
+
+      menuBtn.addEventListener("click", () => {
+        menuOpen = !menuOpen;
+
+        if (menuOpen) {
+          // Show menu with slide-down effect
+          mobileMenu.classList.remove("hidden");
+          mobileMenu.classList.remove("animate__fadeOutUp");
+          mobileMenu.classList.add("animate__fadeInDown");
+          // Rotate hamburger to X
+          menuBtn.firstElementChild.classList.remove("fa-bars");
+          menuBtn.firstElementChild.classList.add(
+            "fa-times",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+        } else {
+          // Animate hide menu with slide-up effect then hide
+          mobileMenu.classList.remove("animate__fadeInDown");
+          mobileMenu.classList.add("animate__fadeOutUp");
+          // Rotate X back to hamburger
+          menuBtn.firstElementChild.classList.remove(
+            "fa-times",
+            "animate__rotateIn"
+          );
+          menuBtn.firstElementChild.classList.add(
+            "fa-bars",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+          // After animation, add hidden class
+          setTimeout(() => {
+            mobileMenu.classList.add("hidden");
+          }, 500);
+        }
+      });
+    </script>
+
+    <!-- Main Content -->
+    <section class="pt-32 pb-20">
+      <div class="container mx-auto px-6">
+        <h1 class="text-4xl font-bold mb-6 text-center">Team Scouting Tool</h1>
+        <p class="text-gray-400 text-center mb-8 max-w-2xl mx-auto">
+          Compare and rank teams at events using EPA (Estimated Performance Assessment) statistics from Statbotics. Mark teams as they get picked for alliances.
+        </p>
+        
+        <!-- Event Selection -->
+        <div class="mb-8">
+          <div class="flex flex-col md:flex-row gap-4 justify-center">
+            <div class="flex-grow max-w-md">
+              <label for="event-input" class="block text-sm font-medium text-gray-400 mb-2">Event Code</label>
+              <div class="flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-2">
+                <input 
+                  type="text" 
+                  id="event-input" 
+                  placeholder="Enter event code (e.g., 2025milac)" 
+                  class="bg-transparent border-none focus:outline-none text-white w-full">
+                <button 
+                  id="load-event-button"
+                  class="text-gray-400 hover:text-baywatch-orange transition-colors">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Find event codes on <a href="https://www.thebluealliance.com/events" class="text-baywatch-orange hover:underline" target="_blank">The Blue Alliance</a></p>
+            </div>
+            <div class="mt-6 md:mt-0 flex items-end">
+              <button 
+                id="load-event-button-alt" 
+                class="w-full md:w-auto px-6 py-2 bg-baywatch-orange rounded-lg hover:bg-orange-700 transition-colors">
+                Load Teams
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Stats Control Panel -->
+        <div class="mb-6 bg-black/30 rounded-lg p-4 border border-gray-800">
+          <div class="flex flex-wrap gap-4 justify-between items-center">
+            <div>
+              <label for="sort-stat" class="block text-sm font-medium text-gray-400 mb-2">Sort By:</label>
+              <select id="sort-stat" class="bg-black/50 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-baywatch-orange/50">
+                <option value="epa_total">Total EPA</option>
+                <option value="epa_auto">Auto EPA</option>
+                <option value="epa_teleop">Teleop EPA</option>
+                <option value="epa_endgame">Endgame EPA</option>
+                <option value="team">Team Number</option>
+              </select>
+            </div>
+            <div>
+              <button 
+                id="toggle-picked"
+                class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">
+                Show Available Only
+              </button>
+            </div>
+            <div>
+              <button 
+                id="clear-picked"
+                class="px-4 py-2 bg-red-900/70 text-white rounded hover:bg-red-800 transition-colors">
+                Clear All Picked Teams
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Event Info -->
+        <div id="event-info" class="mb-6 hidden">
+          <div class="bg-black/20 rounded-lg border border-gray-800 p-4">
+            <h2 id="event-name" class="text-2xl font-bold mb-2">Event Name</h2>
+            <div class="flex flex-wrap gap-x-8 gap-y-2 text-sm text-gray-300">
+              <div id="event-date">Date: --</div>
+              <div id="event-location">Location: --</div>
+              <div id="teams-count">Teams: --</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Teams Table Container -->
+        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-black/20 shadow-lg">
+          <table class="min-w-full">
+            <thead>
+              <tr class="bg-black/40 border-b border-gray-800">
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Rank</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Team</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Name</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Total EPA</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Auto EPA</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Teleop EPA</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Endgame EPA</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody id="teams-table-body" class="bg-black/10">
+              <!-- Team rows will be added here dynamically -->
+              <tr class="border-b border-gray-800">
+                <td colspan="7" class="px-4 py-10 text-center text-gray-500">
+                  Enter an event code and click "Load Teams" to view team statistics
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="hidden flex justify-center items-center py-8">
+          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-baywatch-orange"></div>
+        </div>
+
+        <!-- No Teams Message -->
+        <div id="no-teams-message" class="hidden text-center py-10 text-gray-400">
+          No teams found for this event. Please check the event code and try again.
+        </div>
+        
+        <!-- Tips Section -->
+        <div class="mt-12 bg-black/20 rounded-lg p-6 border border-gray-800">
+          <h3 class="text-xl font-bold mb-4">Scouting Tips</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="text-baywatch-orange text-lg mb-2">Understanding EPA</h4>
+              <p class="text-gray-400 text-sm">
+                EPA (Estimated Performance Assessment) is a statistical measure of a team's performance. Higher values indicate better expected performance. Different components help identify strengths in auto, teleop, and endgame.
+              </p>
+            </div>
+            <div>
+              <h4 class="text-baywatch-orange text-lg mb-2">Using This Tool</h4>
+              <p class="text-gray-400 text-sm">
+                Click on a team's status to mark them as picked. Use the sorting options to identify top performing teams in different aspects of the game. Data is provided by Statbotics, which uses historical and current season match data.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black py-12">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="flex space-x-4 mb-4 md:mb-0">
+            <a
+              href="https://youtube.com/@frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube"
+            >
+              <i class="fab fa-youtube"></i>
+            </a>
+            <a
+              href="https://instagram.com/frc7790"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram"
+            >
+              <i class="fab fa-instagram"></i>
+            </a>
+          </div>
+          <div class="text-gray-400 text-sm">
+            © 2025 Baywatch Robotics. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- JavaScript for Statbotics API and Team Management -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // DOM Elements
+        const eventInput = document.getElementById('event-input');
+        const loadEventButton = document.getElementById('load-event-button');
+        const loadEventButtonAlt = document.getElementById('load-event-button-alt');
+        const sortStatSelect = document.getElementById('sort-stat');
+        const togglePickedButton = document.getElementById('toggle-picked');
+        const clearPickedButton = document.getElementById('clear-picked');
+        const teamsTableBody = document.getElementById('teams-table-body');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const eventInfo = document.getElementById('event-info');
+        const eventNameElement = document.getElementById('event-name');
+        const eventDateElement = document.getElementById('event-date');
+        const eventLocationElement = document.getElementById('event-location');
+        const teamsCountElement = document.getElementById('teams-count');
+        const noTeamsMessage = document.getElementById('no-teams-message');
+        
+        // State variables
+        let teamsData = [];
+        let currentSortKey = 'epa_total';
+        let showOnlyAvailable = false;
+        
+        // Load teams from local storage if they exist
+        const loadPickedTeamsFromStorage = () => {
+          const storedData = localStorage.getItem('pickedTeams');
+          return storedData ? JSON.parse(storedData) : {};
+        };
+        
+        // Save teams to local storage
+        const savePickedTeamsToStorage = (pickedTeams) => {
+          localStorage.setItem('pickedTeams', JSON.stringify(pickedTeams));
+        };
+        
+        let pickedTeams = loadPickedTeamsFromStorage();
+        
+        // Format EPA value with appropriate colors
+        const formatEPAValue = (value) => {
+          if (value === null || value === undefined) return '<span class="text-gray-500">--</span>';
+          
+          let colorClass = 'text-gray-300';
+          if (value > 1.5) colorClass = 'text-green-400';
+          else if (value > 0.5) colorClass = 'text-green-300/80';
+          else if (value < -0.5) colorClass = 'text-red-300';
+          
+          return `<span class="${colorClass}">${value.toFixed(2)}</span>`;
+        };
+        
+        // Fetch event details from Statbotics
+        const fetchEventDetails = async (eventCode) => {
+          try {
+            const response = await fetch(`https://api.statbotics.io/v2/event/${eventCode}`);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch event details: ${response.status}`);
+            }
+            return await response.json();
+          } catch (error) {
+            console.error('Error fetching event details:', error);
+            return null;
+          }
+        };
+        
+        // Fetch team details for an event from Statbotics
+        const fetchEventTeams = async (eventCode) => {
+          try {
+            const response = await fetch(`https://api.statbotics.io/v2/event/${eventCode}/teams`);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch event teams: ${response.status}`);
+            }
+            return await response.json();
+          } catch (error) {
+            console.error('Error fetching event teams:', error);
+            return [];
+          }
+        };
+        
+        // Update UI with event information
+        const updateEventInfo = (eventData) => {
+          if (!eventData) {
+            eventInfo.classList.add('hidden');
+            return;
+          }
+          
+          eventNameElement.textContent = eventData.name;
+          eventDateElement.textContent = `Date: ${new Date(eventData.start_date).toLocaleDateString()} - ${new Date(eventData.end_date).toLocaleDateString()}`;
+          eventLocationElement.textContent = `Location: ${eventData.location || 'Not specified'}`;
+          teamsCountElement.textContent = `Teams: ${eventData.teams || '0'}`;
+          
+          eventInfo.classList.remove('hidden');
+        };
+        
+        // Sort teams based on current sort key
+        const sortTeams = () => {
+          if (currentSortKey === 'team') {
+            teamsData.sort((a, b) => a.team - b.team);
+          } else {
+            teamsData.sort((a, b) => {
+              // Handle null values by treating them as extremely low values
+              const valA = a[currentSortKey] !== null ? a[currentSortKey] : -9999;
+              const valB = b[currentSortKey] !== null ? b[currentSortKey] : -9999;
+              return valB - valA; // Descending order
+            });
+          }
+        };
+        
+        // Render team rows in the table
+        const renderTeams = () => {
+          teamsTableBody.innerHTML = '';
+          
+          // Apply current sort
+          sortTeams();
+          
+          // Filter if showing only available teams
+          const teamsToRender = showOnlyAvailable 
+            ? teamsData.filter(team => !pickedTeams[team.team])
+            : teamsData;
+          
+          if (teamsToRender.length === 0) {
+            teamsTableBody.innerHTML = `
+              <tr class="border-b border-gray-800">
+                <td colspan="8" class="px-4 py-10 text-center text-gray-500">
+                  No teams to display${showOnlyAvailable ? ' (all teams have been picked)' : ''}.
+                </td>
+              </tr>
+            `;
+            return;
+          }
+          
+          // Add row for each team
+          teamsToRender.forEach((team, index) => {
+            const row = document.createElement('tr');
+            row.className = 'border-b border-gray-800 hover:bg-black/30 transition-colors';
+            if (pickedTeams[team.team]) {
+              row.classList.add('bg-gray-900/30');
+            }
+            
+            const isPicked = pickedTeams[team.team] || false;
+            
+            row.innerHTML = `
+              <td class="px-4 py-3">${index + 1}</td>
+              <td class="px-4 py-3 font-medium ${isPicked ? 'text-gray-500' : 'text-baywatch-orange'}">${team.team}</td>
+              <td class="px-4 py-3 ${isPicked ? 'text-gray-500' : ''}">${team.name || '---'}</td>
+              <td class="px-4 py-3">${formatEPAValue(team.epa_total)}</td>
+              <td class="px-4 py-3">${formatEPAValue(team.epa_auto)}</td>
+              <td class="px-4 py-3">${formatEPAValue(team.epa_teleop)}</td>
+              <td class="px-4 py-3">${formatEPAValue(team.epa_endgame)}</td>
+              <td class="px-4 py-3 text-center">
+                <button 
+                  class="team-status-btn px-3 py-1 rounded text-xs ${isPicked ? 'bg-red-900 text-red-100' : 'bg-green-900 text-green-100'}"
+                  data-team="${team.team}">
+                  ${isPicked ? 'Picked' : 'Available'}
+                </button>
+              </td>
+            `;
+            
+            teamsTableBody.appendChild(row);
+          });
+          
+          // Add event listeners for status buttons
+          document.querySelectorAll('.team-status-btn').forEach(button => {
+            button.addEventListener('click', function() {
+              const teamNumber = parseInt(this.dataset.team, 10);
+              toggleTeamPickedStatus(teamNumber);
+            });
+          });
+        };
+        
+        // Toggle a team's picked status
+        const toggleTeamPickedStatus = (teamNumber) => {
+          pickedTeams[teamNumber] = !pickedTeams[teamNumber];
+          savePickedTeamsToStorage(pickedTeams);
+          renderTeams();
+        };
+        
+        // Load teams for an event
+        const loadEventTeams = async (eventCode) => {
+          if (!eventCode) return;
+          
+          // Show loading indicator
+          teamsTableBody.innerHTML = '';
+          loadingIndicator.classList.remove('hidden');
+          noTeamsMessage.classList.add('hidden');
+          
+          // Fetch event details
+          const eventData = await fetchEventDetails(eventCode);
+          updateEventInfo(eventData);
+          
+          // Fetch teams for the event
+          const teams = await fetchEventTeams(eventCode);
+          
+          // Hide loading indicator
+          loadingIndicator.classList.add('hidden');
+          
+          // Show message if no teams found
+          if (!teams || teams.length === 0) {
+            noTeamsMessage.classList.remove('hidden');
+            teamsData = [];
+            renderTeams();
+            return;
+          }
+          
+          teamsData = teams;
+          renderTeams();
+        };
+        
+        // Event listeners
+        loadEventButton.addEventListener('click', () => {
+          loadEventTeams(eventInput.value.trim());
+        });
+        
+        loadEventButtonAlt.addEventListener('click', () => {
+          loadEventTeams(eventInput.value.trim());
+        });
+        
+        eventInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            loadEventTeams(eventInput.value.trim());
+          }
+        });
+        
+        sortStatSelect.addEventListener('change', () => {
+          currentSortKey = sortStatSelect.value;
+          renderTeams();
+        });
+        
+        togglePickedButton.addEventListener('click', () => {
+          showOnlyAvailable = !showOnlyAvailable;
+          togglePickedButton.textContent = showOnlyAvailable ? 'Show All Teams' : 'Show Available Only';
+          renderTeams();
+        });
+        
+        clearPickedButton.addEventListener('click', () => {
+          if (confirm('Are you sure you want to clear all picked teams?')) {
+            pickedTeams = {};
+            savePickedTeamsToStorage(pickedTeams);
+            renderTeams();
+          }
+        });
+        
+        // Check URL for event parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventParam = urlParams.get('event');
+        
+        if (eventParam) {
+          eventInput.value = eventParam;
+          loadEventTeams(eventParam);
+        }
+      });
+    </script>
+  </body>
+</html>
