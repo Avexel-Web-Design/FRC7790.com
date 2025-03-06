@@ -345,7 +345,7 @@ async function enhanceEventPageWithStatbotics(eventKey) {
     
     statsCard.innerHTML = `
       <h3 class="text-lg font-semibold mb-3">Event Statistics</h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div class="bg-black/30 p-3 rounded text-center">
           <div class="text-xs text-gray-400 mb-1">Max EPA</div>
           <div class="text-2xl font-bold text-baywatch-orange">${statboticsData.epa.max.toFixed(1)}</div>
@@ -357,10 +357,6 @@ async function enhanceEventPageWithStatbotics(eventKey) {
         <div class="bg-black/30 p-3 rounded text-center">
           <div class="text-xs text-gray-400 mb-1">Average EPA</div>
           <div class="text-2xl font-bold text-gray-300">${statboticsData.epa.mean.toFixed(1)}</div>
-        </div>
-        <div class="bg-black/30 p-3 rounded text-center">
-          <div class="text-xs text-gray-400 mb-1">Prediction Accuracy</div>
-          <div class="text-2xl font-bold text-green-400">${(statboticsData.metrics.win_prob.acc * 100).toFixed(0)}%</div>
         </div>
       </div>
     `;
