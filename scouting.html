@@ -435,19 +435,19 @@
             </p>
             <ul class="space-y-2 text-gray-400">
               <li class="flex items-start">
-                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <i class="fas fa-check text-white-400 mr-2 mt-1"></i>
                 <span><strong class="text-white">Total EPA:</strong> Overall expected point contribution</span>
               </li>
               <li class="flex items-start">
-                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <i class="fas fa-check text-white-400 mr-2 mt-1"></i>
                 <span><strong class="text-white">Auto EPA:</strong> Points expected during autonomous</span>
               </li>
               <li class="flex items-start">
-                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <i class="fas fa-check text-white-400 mr-2 mt-1"></i>
                 <span><strong class="text-white">Teleop EPA:</strong> Points expected during teleop</span>
               </li>
               <li class="flex items-start">
-                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <i class="fas fa-check text-white-400 mr-2 mt-1"></i>
                 <span><strong class="text-white">Endgame EPA:</strong> Points expected from endgame tasks</span>
               </li>
             </ul>
@@ -466,19 +466,19 @@
             </p>
             <ul class="space-y-2 text-gray-400">
               <li class="flex items-start">
-                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <i class="fas fa-check text-white-400 mr-2 mt-1"></i>
                 <span><strong class="text-white">Mark teams:</strong> Click checkboxes to track which teams have been picked</span>
               </li>
               <li class="flex items-start">
-                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <i class="fas fa-check text-white-400 mr-2 mt-1"></i>
                 <span><strong class="text-white">Sort data:</strong> Use the dropdown to sort by different metrics</span>
               </li>
               <li class="flex items-start">
-                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <i class="fas fa-check text-white-400 mr-2 mt-1"></i>
                 <span><strong class="text-white">Filter view:</strong> Toggle between all teams or available teams only</span>
               </li>
               <li class="flex items-start">
-                <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                <i class="fas fa-check text-white-400 mr-2 mt-1"></i>
                 <span><strong class="text-white">Find events:</strong> Use event codes from <a href="https://www.thebluealliance.com" class="text-baywatch-orange hover:underline" target="_blank">The Blue Alliance</a></span>
               </li>
             </ul>
@@ -594,8 +594,8 @@
           if (value === null || value === undefined) return '<span class="text-gray-500">--</span>';
           
           let colorClass = 'text-gray-300';
-          if (value > 1.5) colorClass = 'text-green-400';
-          else if (value > 0.5) colorClass = 'text-green-300/80';
+          if (value > 1.5) colorClass = 'text-white-400';
+          else if (value > 0.5) colorClass = 'text-white-300/80';
           else if (value < -0.5) colorClass = 'text-red-300';
           
           return `<span class="${colorClass}">${value.toFixed(2)}</span>`;
