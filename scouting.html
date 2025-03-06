@@ -394,8 +394,11 @@
         </div>
         
         <!-- Teams Table Container -->
-        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-black/20 shadow-lg mb-12">
-          <table class="min-w-full">
+        <div class="overflow-x-auto rounded-lg border border-gray-800 bg-black/90 shadow-2xl hover:shadow-baywatch-orange/30 transition-all duration-500 card-container group mb-12">
+          <!-- Pattern Overlay -->
+          <div class="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_1px_1px,_rgb(255,107,0,0.2)_1px,_transparent_0)] bg-[size:20px_20px] rounded-lg pointer-events-none"></div>
+          
+          <table class="min-w-full relative z-10">
             <thead>
               <tr class="bg-black/70 border-b border-gray-800">
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Rank</th>
@@ -408,7 +411,7 @@
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Picked</th>
               </tr>
             </thead>
-            <tbody id="teams-table-body" class="bg-black/20">
+            <tbody id="teams-table-body" class="bg-transparent">
               <!-- Team rows will be added here dynamically -->
               <tr class="border-b border-gray-800">
                 <td colspan="8" class="px-4 py-10 text-center text-gray-500">
@@ -914,11 +917,51 @@
       /* Force proper table height */
       .overflow-x-auto {
         min-height: 200px;
+        position: relative;
+      }
+      
+      /* Enhance table hover effect like About Us card */
+      .card-container {
+        border: 1px solid rgba(255, 107, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+      
+      .card-container:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255, 107, 0, 0.5);
+      }
+      
+      /* Make table rows get brighter on container hover */
+      .group:hover tr:not(:hover) {
+        background-color: rgba(0, 0, 0, 0.3);
+      }
+      
+      .group:hover tr:hover {
+        background-color: rgba(255, 107, 0, 0.1);
+      }
+      
+      /* Create a glow effect on the container when hovered */
+      .card-container::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(to right, transparent, rgba(255, 107, 0, 0.5), transparent);
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      
+      .card-container:hover::after {
+        opacity: 1;
       }
       
       /* Ensure rows have proper height */
       #teams-table-body tr {
         min-height: 45px;
+        transition: background-color 0.3s ease;
       }
       
       /* Better spacing for cells */
