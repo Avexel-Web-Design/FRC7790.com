@@ -523,8 +523,6 @@ async function enhanceRankingsWithEPA(eventKey) {
             
             // Update EPA value with color coding based on rating
             cell.innerHTML = `<span class="font-mono ${
-              epaRating > 35 ? 'text-green-400' : 
-              epaRating > 25 ? 'text-blue-400' : 
               'text-gray-300'
             }">${epaRating.toFixed(1)}</span>`;
             
