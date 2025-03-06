@@ -86,6 +86,7 @@
     />
     <link href="public/styles/main.css" rel="stylesheet" />
     <script src="public/js/animations.js" defer></script>
+    <script src="public/js/particles.js" defer></script>
     <script src="public/js/frc-api.js" defer></script>
     <script src="public/js/frc-api-2.js" defer></script>
     <script src="public/js/frc-api-3.js" defer></script>
@@ -368,20 +369,14 @@
     <section
       class="min-h-screen relative overflow-hidden pt-12 flex items-center justify-center"
     >
+      <!-- Canvas for particle animation -->
+      <canvas id="particle-background" class="absolute inset-0 z-0" style="image-rendering: crisp-edges;"></canvas>
+      
       <div
         class="absolute inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-90"
       ></div>
-      <!-- Animated background elements -->
-      <div class="absolute inset-0 overflow-hidden">
-        <div
-          class="absolute w-96 h-96 bg-baywatch-orange/10 rounded-full blur-3xl -top-20 -left-20 animate-pulse"
-          style="animation-duration: 5s"
-        ></div>
-        <div
-          class="absolute w-[500px] h-[500px] bg-baywatch-orange/5 rounded-full blur-3xl bottom-40 -right-20 animate-pulse"
-          style="animation-duration: 7s"
-        ></div>
-      </div>
+      <!-- Removing the blurred background elements -->
+
       <div
         class="container mx-auto px-6 flex flex-col items-center justify-center relative z-10 -mt-12"
       >
