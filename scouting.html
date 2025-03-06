@@ -354,7 +354,7 @@
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Auto EPA</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Teleop EPA</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Endgame EPA</th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Picked</th>
               </tr>
             </thead>
             <tbody id="teams-table-body" class="bg-black/10">
@@ -459,6 +459,34 @@
         let currentSortKey = 'epa_total';
         let showOnlyAvailable = false;
         
+        // Populate sort dropdown with additional EPA metrics
+        const populateSortOptions = () => {
+          // Add more sort options based on available EPA metrics
+          if (teamsData.length > 0 && teamsData[0].epa) {
+            // Clear existing options first
+            while (sortStatSelect.options.length > 5) {
+              sortStatSelect.remove(5);
+            }
+            
+            // Get all EPA metrics from the first team's data
+            const firstTeam = teamsData[0];
+            const metricsAdded = new Set(['epa_total', 'epa_auto', 'epa_teleop', 'epa_endgame', 'team']);
+            
+            if (firstTeam.epa && typeof firstTeam.epa === 'object') {
+              // Add any additional EPA metrics that exist
+              Object.keys(firstTeam.epa).forEach(key => {
+                if (!metricsAdded.has(`epa_${key}`)) {
+                  const option = document.createElement('option');
+                  option.value = `epa_${key}`;
+                  option.textContent = `${key.replace(/_/g, ' ')} EPA`;
+                  sortStatSelect.appendChild(option);
+                  metricsAdded.add(`epa_${key}`);
+                }
+              });
+            }
+          }
+        };
+        
         // Load teams from local storage if they exist
         const loadPickedTeamsFromStorage = () => {
           const storedData = localStorage.getItem('pickedTeams');
@@ -498,7 +526,7 @@
           
           return `<span class="${colorClass}">${value.toFixed(2)}</span>`;
         };
-        
+
         // Fetch event details from Statbotics v3 API
         const fetchEventDetails = async (eventCode) => {
           try {
@@ -517,34 +545,6 @@
           }
         };
         
-        // Fetch team details for an event from Statbotics v3 API
-        const fetchEventTeams = async (eventCode) => {
-          try {
-            // Fetch team event data for all teams at the specified event
-            const response = await fetch(`https://api.statbotics.io/v3/team_events?event=${eventCode}&limit=100`);
-            if (!response.ok) {
-              if (response.status === 404) {
-                throw new Error(`No teams found for event ${eventCode}.`);
-              }
-              throw new Error(`Failed to fetch event teams: ${response.status}`);
-            }
-            const data = await response.json();
-            
-            // Transform the data to match our expected format
-            return data.map(teamEvent => ({
-              team: teamEvent.team,
-              name: teamEvent.team_name,
-              epa_total: teamEvent.epa?.breakdown?.total_points || null,
-              epa_auto: teamEvent.epa?.breakdown?.auto_points || null,
-              epa_teleop: teamEvent.epa?.breakdown?.teleop_points || null,
-              epa_endgame: teamEvent.epa?.breakdown?.endgame_points || null
-            }));
-          } catch (error) {
-            console.error('Error fetching event teams:', error);
-            return [];
-          }
-        };
-
         // Update UI with event information
         const updateEventInfo = (eventData) => {
           if (!eventData) {
@@ -569,16 +569,69 @@
           
           eventInfo.classList.remove('hidden');
         };
+
+        // Fetch team details for an event from Statbotics v3 API
+        const fetchEventTeams = async (eventCode) => {
+          try {
+            // Fetch team event data for all teams at the specified event
+            const response = await fetch(`https://api.statbotics.io/v3/team_events?event=${eventCode}&limit=100`);
+            if (!response.ok) {
+              if (response.status === 404) {
+                throw new Error(`No teams found for event ${eventCode}.`);
+              }
+              throw new Error(`Failed to fetch event teams: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            // Transform the data to match our expected format
+            return data.map(teamEvent => {
+              // Store all EPA-related data in an epa object
+              const epaMetrics = teamEvent.epa?.breakdown || {};
+              
+              return {
+                team: teamEvent.team,
+                name: teamEvent.team_name,
+                epa_total: teamEvent.epa?.breakdown?.total_points || null,
+                epa_auto: teamEvent.epa?.breakdown?.auto_points || null,
+                epa_teleop: teamEvent.epa?.breakdown?.teleop_points || null,
+                epa_endgame: teamEvent.epa?.breakdown?.endgame_points || null,
+                epa: epaMetrics // Store all EPA metrics for additional sorting options
+              };
+            });
+          } catch (error) {
+            console.error('Error fetching event teams:', error);
+            return [];
+          }
+        };
+
+        // Update UI with event information
+        // ...existing code...
         
         // Sort teams based on current sort key
         const sortTeams = () => {
           if (currentSortKey === 'team') {
             teamsData.sort((a, b) => a.team - b.team);
-          } else {
+          } else if (currentSortKey.startsWith('epa_')) {
+            // Handle standard EPA metrics
+            const metricKey = currentSortKey.substring(4); // Remove 'epa_' prefix
+            
             teamsData.sort((a, b) => {
-              // Handle null values by treating them as extremely low values
-              const valA = a[currentSortKey] !== null ? a[currentSortKey] : -9999;
-              const valB = b[currentSortKey] !== null ? b[currentSortKey] : -9999;
+              let valA, valB;
+              
+              // First check if it's one of our standard extracted metrics
+              if (a[currentSortKey] !== undefined) {
+                valA = a[currentSortKey] !== null ? a[currentSortKey] : -9999;
+                valB = b[currentSortKey] !== null ? b[currentSortKey] : -9999;
+              } 
+              // Otherwise look in the epa object for other metrics
+              else if (a.epa && b.epa) {
+                valA = a.epa[metricKey] !== null && a.epa[metricKey] !== undefined ? a.epa[metricKey] : -9999;
+                valB = b.epa[metricKey] !== null && b.epa[metricKey] !== undefined ? b.epa[metricKey] : -9999;
+              } else {
+                valA = -9999;
+                valB = -9999;
+              }
+              
               return valB - valA; // Descending order
             });
           }
@@ -626,20 +679,24 @@
               <td class="px-4 py-3">${formatEPAValue(team.epa_teleop)}</td>
               <td class="px-4 py-3">${formatEPAValue(team.epa_endgame)}</td>
               <td class="px-4 py-3 text-center">
-                <button 
-                  class="team-status-btn px-3 py-1 rounded text-xs ${isPicked ? 'bg-red-900 text-red-100' : 'bg-green-900 text-green-100'}"
-                  data-team="${team.team}">
-                  ${isPicked ? 'Picked' : 'Available'}
-                </button>
+                <label class="inline-flex items-center justify-center">
+                  <input 
+                    type="checkbox" 
+                    class="team-status-checkbox form-checkbox h-5 w-5 rounded text-baywatch-orange focus:ring-baywatch-orange focus:ring-opacity-50"
+                    data-team="${team.team}"
+                    ${isPicked ? 'checked' : ''}
+                  >
+                  <span class="sr-only">Mark as picked</span>
+                </label>
               </td>
             `;
             
             teamsTableBody.appendChild(row);
           });
           
-          // Add event listeners for status buttons
-          document.querySelectorAll('.team-status-btn').forEach(button => {
-            button.addEventListener('click', function() {
+          // Add event listeners for checkboxes
+          document.querySelectorAll('.team-status-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
               const teamNumber = parseInt(this.dataset.team, 10);
               toggleTeamPickedStatus(teamNumber);
             });
@@ -690,6 +747,8 @@
           }
           
           teamsData = teams;
+          // Populate sort options based on available EPA metrics
+          populateSortOptions();
           renderTeams();
         };
         
