@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
   <head>
-    <link rel="shortcut icon" type="image/png" href="public/assets/images/logo.png" />
+    <link rel="shortcut icon" type="image/svg+xml" href="public/assets/images/logo.svg" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Event Details - Baywatch Robotics | FRC Team 7790</title>
@@ -96,7 +96,7 @@
             class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
           >
             <img
-              src="public/assets/images/logo.png"
+              src="public/assets/images/logo.svg"
               alt="Baywatch Robotics Logo"
               class="w-20 h-20"
             />
@@ -339,9 +339,12 @@
         <p id="event-details" class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
           Loading event information...
         </p>
-        <div class="flex justify-center mt-6 gap-4">
+        <div class="flex justify-center mt-6 gap-4 lex-wrap">
           <a id="event-watch-link" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-[#A970FF] bg-[#6441A4]/20 hover:bg-[#6441A4]/30 transition-colors duration-300 px-4 py-2 rounded-lg">
             <i class="fab fa-twitch mr-2"></i> Watch Live
+          </a>
+          <a id="event-scouting-link" href="#" class="inline-flex items-center text-baywatch-orange bg-baywatch-orange/20 hover:bg-baywatch-orange/40 transition-all duration-300 px-4 py-2 rounded-lg border border-baywatch-orange/30 hover:border-baywatch-orange hover:scale-105 hover:shadow-md hover:shadow-baywatch-orange/20">
+            <i class="fas fa-clipboard-list mr-2"></i> Team Scouting <i class="fas fa-chevron-right ml-1 text-xs opacity-70"></i>
           </a>
           <a href="schedule.html" class="inline-flex items-center text-gray-300 bg-gray-800/50 hover:bg-gray-800/70 transition-colors duration-300 px-4 py-2 rounded-lg">
             <i class="fas fa-calendar-days mr-2"></i> All Events
@@ -892,6 +895,22 @@
             // Add default year 2025 if no year is specified
             eventCode = `2025${eventCode}`;
           }
+        }
+        
+        // Set up the scouting link to point to the scouting page with this event code
+        const scoutingLink = document.getElementById('event-scouting-link');
+        if (scoutingLink) {
+          scoutingLink.href = `scouting.html?event=${eventCode}`;
+          
+          // Add click event listener to ensure the link works properly
+          scoutingLink.addEventListener('click', function(e) {
+            window.location.href = `scouting.html?event=${eventCode}`;
+          });
+          
+          // Make the link more prominent with a subtle animation
+          setTimeout(() => {
+            scoutingLink.classList.add('animate__animated', 'animate__pulse');
+          }, 1500);
         }
         
         // Set page history state for proper back button behavior

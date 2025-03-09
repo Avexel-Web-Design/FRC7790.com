@@ -1,21 +1,25 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth"></html>
+<html lang="en" class="scroll-smooth">
   <head>
-    <link rel="shortcut icon" type="image/png" href="public/assets/images/logo.png" />
-    <!-- Similar head section to index.html -->
+    <link rel="shortcut icon" type="image/svg+xml" href="public/assets/images/logo.svg" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Our Robots - Baywatch Robotics | FRC Team 7790</title>
     <meta
       name="description"
-      content="Meet the robots of FRC Team 7790 Baywatch Robotics. From CRESCENDO to CHARGED UP, explore our competitive machines."
+      content="Explore the robots built by FRC Team 7790 Baywatch Robotics. Learn about our engineering solutions for FIRST Robotics Competition challenges."
     />
+    <meta
+      name="keywords"
+      content="FRC, FIRST Robotics, Team 7790, Baywatch Robotics, Harbor Springs, Robots, Engineering, RIPTIDE, REEFSCAPE"
+    />
+    <link rel="canonical" href="https://www.frc7790.com/robots.html" />
 
-    <!-- Add Google Fonts -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    <link 
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" 
       rel="stylesheet"
     />
 
@@ -41,170 +45,151 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
     <link href="public/styles/main.css" rel="stylesheet" />
+    <script src="public/js/animations.js" defer></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
-    <script src="public/js/animations.js" defer></script>
-    <!-- Add this line -->
-    <script>
-      // Font loading handler
-      const font = new FontFace('Anurati', 'url(/public/assets/fonts/Anurati-Regular.woff2)');
-      
-      font.load().then(() => {
-        document.fonts.add(font);
-        document.documentElement.classList.add('anurati-loaded');
-        document.querySelectorAll('.font-anurati').forEach(el => {
-          el.classList.add('font-loaded');
-        });
-      }).catch((err) => {
-        console.warn('Anurati font failed to load:', err);
-        // If font fails to load, remove loading class to show fallback
-        document.querySelectorAll('.font-anurati').forEach(el => {
-          el.style.opacity = '1';
-        });
-      });
-    </script>
   </head>
-  <body class="bg-black text-white font-poppins overflow-x-hidden">
-   <!-- Navigation Bar -->
-   <nav
-   class="fixed top-0 w-full z-50 transition-all duration-300"
-   id="navbar"
- >
-   <div
-     class="container mx-auto px-6 py-4 flex items-center justify-between"
-   >
-     <div class="flex items-center space-x-2">
-       <a
-         href="index.html#"
-         class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
-       >
-         <img
-           src="public/assets/images/logo.png"
-           alt="Baywatch Robotics Logo"
-           class="w-20 h-20"
-         />
-       </a>
-     </div>
-     
-     <!-- Search Bar (New Addition) -->
-     <div class="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
-       <input 
-         type="text" 
-         id="search-input" 
-         placeholder="Search team # or event code..." 
-         class="bg-transparent border-none focus:outline-none text-white w-full"
-         aria-label="Search for team or event">
-       <button 
-         id="search-button"
-         class="text-gray-400 hover:text-baywatch-orange transition-colors"
-         aria-label="Search">
-         <i class="fas fa-search"></i>
-       </button>
-     </div>
-     
-     <!-- Desktop Menu -->
-     <ul class="hidden md:flex space-x-8">
-       <li>
-         <a
-           href="robots.html"
-           class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
-           >Robots</a
-         >
-       </li>
-       <li>
-         <a
-           href="sponsors.html"
-           class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
-           >Sponsors</a
-         >
-       </li>
-       <li>
-         <a
-           href="schedule.html"
-           class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
-           >Schedule</a
-         >
-       </li>
-       <li>
-         <a
-           href="scouting.html"
-           class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
-           >Scouting</a
-         >
-       </li>
-       <li>
-         <a
-           href="ftc.html"
-           class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
-           >FTC</a
-         >
-       </li>
-     </ul>
-     <!-- Mobile Menu Button -->
-     <div class="md:hidden">
-       <button
-         id="mobile-menu-btn"
-         class="focus:outline-none transition-transform duration-300"
-       >
-         <i class="fas fa-bars text-3xl"></i>
-       </button>
-     </div>
-   </div>
- </nav>
+  <body class="bg-black text-white font-poppins">
+    <!-- Navigation Bar -->
+    <nav
+      class="fixed top-0 w-full z-50 transition-all duration-300"
+      id="navbar"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-2">
+          <a
+            href="index.html#"
+            class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
+          >
+            <img
+              src="public/assets/images/logo.svg"
+              alt="Baywatch Robotics Logo"
+              class="w-20 h-20"
+            />
+          </a>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        
+        <!-- Desktop Menu -->
+        <ul class="hidden md:flex space-x-8">
+          <li>
+            <a
+              href="robots.html"
+              class="text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Robots</a
+            >
+          </li>
+          <li>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
+            >
+          </li>
+          <li>
+            <a
+              href="schedule.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Schedule</a
+            >
+          </li>
+          <li>
+            <a
+              href="scouting.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Scouting</a
+            >
+          </li>
+          <li>
+            <a
+              href="ftc.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >FTC</a
+            >
+          </li>
+        </ul>
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button
+            id="mobile-menu-btn"
+            class="focus:outline-none transition-transform duration-300"
+          >
+            <i class="fas fa-bars text-3xl"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
 
- <!-- Mobile Menu Overlay -->
- <div
-   id="mobile-menu-overlay"
-   class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
- >
-   <!-- Mobile Search Bar (New Addition) -->
-   <div class="px-8 pt-32 pb-4">
-     <div class="flex items-center bg-black/50 rounded-lg border border-gray-700 px-3 py-2">
-       <input 
-         type="text" 
-         id="mobile-search-input" 
-         placeholder="Search team # or event code..." 
-         class="bg-transparent border-none focus:outline-none text-white w-full"
-         aria-label="Search for team or event">
-       <button 
-         id="mobile-search-button"
-         class="text-gray-400 hover:text-baywatch-orange transition-colors"
-         aria-label="Search">
-         <i class="fas fa-search"></i>
-       </button>
-     </div>
-   </div>
-   
-   <div class="flex flex-col items-center justify-center h-full space-y-8 -mt-32">
-     <a
-       href="robots.html"
-       class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
-       >Robots</a
-     >
-     <a
-       href="sponsors.html"
-       class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
-       >Sponsors</a
-     >
-     <a
-       href="schedule.html"
-       class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
-       >Schedule</a
-     >
-     <a
-       href="ftc.html"
-       class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
-       >FTC</a
-     >
-     <a
-       href="scouting.html"
-       class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
-       >Scouting</a
-     >
-   </div>
- </div>
+    <!-- Mobile Menu Overlay -->
+    <div
+      id="mobile-menu-overlay"
+      class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
+    >
+      <!-- Mobile Search Bar -->
+      <div class="px-8 pt-32 pb-4">
+        <div class="flex items-center bg-black/50 rounded-lg border border-gray-700 px-3 py-2">
+          <input 
+            type="text" 
+            id="mobile-search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="mobile-search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="flex flex-col items-center justify-center h-full space-y-8 -mt-32">
+        <a
+          href="robots.html"
+          class="text-2xl text-baywatch-orange transition-all duration-300 hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Robots</a
+        >
+        <a
+          href="sponsors.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Sponsors</a
+        >
+        <a
+          href="schedule.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Schedule</a
+        >
+        <a
+          href="ftc.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >FTC</a
+        >
+        <a
+          href="scouting.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Scouting</a
+        >
+      </div>
+    </div>
 
     <!-- Mobile Menu Toggle Script -->
     <script>
@@ -252,7 +237,6 @@
     <!-- Search Functionality -->
     <script>
       // This script will be replaced by search.js functionality
-      // Keeping it as a fallback until search.js fully loads
       document.addEventListener('DOMContentLoaded', function() {
         // Check if search.js has initialized
         if (typeof setupGlobalSearch !== 'function') {
@@ -333,112 +317,91 @@
           class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp"
           style="animation-delay: 0.6s"
         >
-          Meet the machines that represent Team 7790 in FIRST Robotics
-          Competition. Each robot is crafted with precision, innovation, and
-          dedication.
+          Explore our team's engineering excellence through the robots we've built for FIRST Robotics Competition challenges
         </p>
       </div>
     </section>
 
-    <!-- Robots Grid -->
-    <section class="py-16 relative z-10 overflow-hidden">
-      <div class="container mx-auto px-6 max-w-7xl">
-        <div class="grid grid-cols-1 gap-12">
-          <!-- RIPTIDE - 2025 -->
-          <a href="riptide.html" class="h-full">
-            <div class="card-gradient rounded-xl overflow-hidden p-8 group transform-gpu hover:scale-[1.02] transition-all duration-300">
-              <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-black rounded-xl overflow-hidden border border-baywatch-orange/20 hover:scale-105 transition-all duration-300">
-                  <div class="robot-image-container">
-                    <img
-                    src="public/assets/images/RIPTIDE/short-better.png"
-                    alt="RIPTIDE Robot"
-                    class="w-full h-full object-contain"
-                    />
-                  </div>
-                </div>
-                <div class="card-gradient rounded-xl p-8 flex flex-col justify-center border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 items-center w-full">
-                  <div class="w-full max-w-[90%] mx-auto">
-                    <h2 class="text-[min(5vw,3.5rem)] font-bold font-anurati font-loading text-baywatch-orange glow-orange mb-4 tracking-[.2em] animate__animated animate__fadeInUp text-center">
-                        RIPTIDE
-                    </h2>
-                    <p class="text-[min(3vw,2rem)] text-white mb-4 animate__animated animate__fadeInUp text-center">
-                        2025 - REEFSCAPE
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </a>
-          <!-- COBALT - 2024 -->
-          <a href="ftc.html#robots" class="h-full">
-            <div
-              class="card-gradient rounded-xl overflow-hidden p-8 group transform-gpu hover:scale-[1.02] transition-all duration-300"
+    <!-- Current Robot Section - RIPTIDE -->
+    <section id="robot-riptide" class="py-20 relative z-10 bg-black">
+      <div class="container mx-auto px-6">
+        <h2 class="text-4xl font-bold mb-8 text-center">2025 - REEFSCAPE</h2>
+        
+        <div class="flex flex-col items-center justify-center max-w-6xl mx-auto">
+          <h3 class="text-center mb-8">
+            <span
+              class="text-[min(8vw,6rem)] font-bold font-anurati text-baywatch-orange glow-orange tracking-[.25em] animate__animated animate__fadeInUp"
             >
-              <div class="grid md:grid-cols-2 gap-8">
-                <div
-                  class="card-gradient rounded-xl p-8 flex flex-col justify-center border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 order-2 md:order-1 items-center w-full"
-                >
-                  <div class="w-full max-w-[90%]">
-                    <!-- Added container with max-width -->
-                    <h2
-                      class="text-[min(5vw,3.5rem)] font-bold font-anurati font-loading text-baywatch-orange glow-orange mb-4 tracking-[.2em] animate__animated animate__fadeInUp text-center"
-                    >
-                      COBALT
-                    </h2>
-                    <p
-                      class="text-[min(3vw,2rem)] text-white mb-4 animate__animated animate__fadeInUp text-center"
-                    >
-                      2024 - INTO THE DEEP
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="bg-black rounded-xl overflow-hidden border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 order-1 md:order-2"
-                >
-                  <div class="robot-image-container">
-                    <img
-                      src="public/assets/images/COBALT/Cobalt-Start-non-metal.png"
-                      alt="COBALT Robot"
-                      class="w-full h-full object-contain"
-                    />
-                  </div>
-                </div>
-              </div>
+              RIPTIDE
+            </span>
+          </h3>
+          
+          <!-- Main Robot Image -->
+          <div class="mb-16 relative">
+            <div class="rounded-xl overflow-hidden">
+              <img
+                src="public/assets/images/RIPTIDE/short-better.png"
+                alt="RIPTIDE Robot"
+                class="w-full max-w-4xl mx-auto object-contain animate__animated animate__fadeInUp"
+              />
             </div>
-          </a>
-          <!-- HUNGRY - 2024 -->
-          <div
-            class="card-gradient rounded-xl overflow-hidden p-8 group transform-gpu hover:scale-[1.02] transition-all duration-300"
-          >
-            <div class="grid md:grid-cols-2 gap-8">
-              <div
-                class="bg-black rounded-xl overflow-hidden border border-baywatch-orange/20 hover:scale-105 transition-all duration-300"
-              >
-                <div class="robot-image-container">
-                  <img
-                    src="public/assets/images/hungry.png"
-                    alt="HUNGRY Robot"
-                    class="w-full h-full object-contain"
-                  />
-                </div>
+          </div>
+
+          <!-- Robot Features Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div
+              class="card-gradient rounded-xl p-6 hover:scale-105 transition-all duration-300"
+            >
+              <i class="fas fa-layer-group text-3xl text-baywatch-orange mb-4"></i>
+              <h3 class="text-xl font-bold mb-2">Multi-Level Scoring</h3>
+              <p class="text-gray-400">
+                RIPTIDE has a hinged placement system capable of quickly scoring on all reef levels
+              </p>
+            </div>
+            <div
+              class="card-gradient rounded-xl p-6 hover:scale-105 transition-all duration-300"
+            >
+              <i class="fas fa-eye text-3xl text-baywatch-orange mb-4"></i>
+              <h3 class="text-xl font-bold mb-2">Advanced Vision</h3>
+              <p class="text-gray-400">
+                Dual-camera pose estimation system enables precise scoring and autonomous navigation
+              </p>
+            </div>
+            <div
+              class="card-gradient rounded-xl p-6 hover:scale-105 transition-all duration-300"
+            >
+              <i class="fas fa-arrow-up text-3xl text-baywatch-orange mb-4"></i>
+              <h3 class="text-xl font-bold mb-2">Deep Cage Climb</h3>
+              <p class="text-gray-400">
+                Folding funnel allows for centered Deep Cage positioning
+              </p>
+            </div>
+          </div>
+
+          <!-- Technical Specifications -->
+          <div class="card-gradient rounded-xl p-8 mb-12">
+            <h3 class="text-2xl font-bold mb-6 text-center">Technical Specifications</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div class="relative p-6 rounded-2xl bg-black/90 border border-baywatch-orange/30 transition-all duration-500 animate-fade-in group">
+                <h4 class="text-xl font-bold mb-4 text-baywatch-orange">Key Features</h4>
+                <ul class="space-y-2 text-gray-400">
+                  <li>• Folding Funnel Intake</li>
+                  <li>• Multi-Axis End Effector</li>
+                  <li>• Processor Placement</li>
+                  <li>• Deep Cage Climbing</li>
+                  <li>• 2-Camera Pose Estimation</li>
+                  <li>• Coral Scope Camera</li>
+                  <li>• MK4i Swerve Drive</li>
+                </ul>
               </div>
-              <div
-                class="card-gradient rounded-xl p-8 flex flex-col justify-center border border-baywatch-orange/20 hover:scale-105 transition-all duration-300 items-center w-full"
-              >
-                <div class="w-full max-w-[90%]">
-                  <!-- Added container with max-width -->
-                  <h2
-                    class="text-[min(5vw,3.5rem)] font-bold font-anurati font-loading text-baywatch-orange glow-orange mb-4 tracking-[.2em] animate__animated animate__fadeInUp text-center"
-                  >
-                    HUNGRY
-                  </h2>
-                  <p
-                    class="text-[min(3vw,2rem)] text-white mb-4 animate__animated animate__fadeInUp text-center"
-                  >
-                    2024 - CRESCENDO
-                  </p>
-                </div>
+              <div class="relative p-6 rounded-2xl bg-black/90 border border-baywatch-orange/30 transition-all duration-500 animate-fade-in group">
+                <h4 class="text-xl font-bold mb-4 text-baywatch-orange">Capabilities</h4>
+                <ul class="space-y-2 text-gray-400">
+                  <li>• Full reef height range scoring</li>
+                  <li>• 2-Coral L4 Auton</li>
+                  <li>• Algae Removal</li>
+                  <li>• Autonomous TeleOp Cycling</li>
+                </ul>
               </div>
             </div>
           </div>
@@ -446,20 +409,63 @@
       </div>
     </section>
 
-    <!-- Include the same footer as index.html -->
+    <!-- Past Robots Section -->
+    <section id="past-robots" class="py-20 relative z-10 bg-gradient-to-b from-black to-baywatch-dark">
+      <div class="container mx-auto px-6">
+        <h2 class="text-4xl font-bold mb-12 text-center">Previous Robots</h2>
+        
+        <!-- CRESCENDO Robot -->
+        <div class="max-w-6xl mx-auto mb-24">
+          <div class="card-gradient rounded-xl p-8 transition-all duration-300 reveal">
+            <div class="flex flex-col md:flex-row gap-8 items-center">
+              <div class="md:w-1/2">
+                <h3 class="font-anurati text-3xl md:text-4xl text-baywatch-orange tracking-wider mb-4">HUNGRY</h3>
+                <p class="text-xl font-bold mb-2">2024 - CRESCENDO</p>
+                <p class="text-gray-400 mb-6">
+                  HUNGRY featured a high-velocity shooter with adjustable angle control, allowing for long-range note shooting. The telescoping arm provided versatility for placing into the Amp.
+                </p>
+                <div class="space-y-4">
+                  <div class="flex items-start">
+                    <i class="fas fa-eye text-baywatch-orange mt-1 mr-3"></i>
+                    <div>
+                      <p class="font-bold">Note Detection</p>
+                      <p class="text-gray-400 text-sm">Multi-stage ground intake equipped with Limelight 2 and Google Coral to detect Notes</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start">
+                    <i class="fas fa-crosshairs text-baywatch-orange mt-1 mr-3"></i>
+                    <div>
+                      <p class="font-bold">Auto Aim</p>
+                      <p class="text-gray-400 text-sm">Limelight 3-powered trigonometric rotation and arm angle calculations for precise long-distance shots</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="md:w-1/2">
+                <div class="rounded-xl overflow-hidden">
+                  <img
+                    src="public/assets/images/hungry.png"
+                    alt="Hungry Robot - 2024 CRESCENDO Challenge"
+                    class="w-full h-auto object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
     <footer class="bg-black py-12">
       <div class="container mx-auto px-6">
         <div class="flex flex-col md:flex-row justify-between items-center">
           <div class="flex space-x-4 mb-4 md:mb-0">
             <a
               href="https://youtube.com/@frc7790"
-              class="text-baywatch-orange hover:text-orange-700 text-2xl"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon youtube"
             >
               <i class="fab fa-youtube"></i>
             </a>
             <a
               href="https://instagram.com/frc7790"
-              class="text-baywatch-orange hover:text-orange-700 text-2xl"
+              class="text-baywatch-orange hover:text-orange-700 text-2xl social-icon instagram"
             >
               <i class="fab fa-instagram"></i>
             </a>
@@ -470,18 +476,5 @@
         </div>
       </div>
     </footer>
-
-    <!-- Add this right before the closing body tag -->
-    <script>
-      // Check if custom font is loaded
-      document.fonts.ready.then(() => {
-        document.fonts.load("1em Anurati").then(() => {
-          // Remove loading class when font is available
-          document.querySelectorAll(".font-loading").forEach((el) => {
-            el.classList.remove("font-loading");
-          });
-        });
-      });
-    </script>
   </body>
 </html>
