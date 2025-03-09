@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <link rel="shortcut icon" type="image/svg+xml" href="public/assets/images/logo.svg" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>District Rankings - Baywatch Robotics | FRC Team 7790</title>
+    <meta
+      name="description"
+      content="FRC District Rankings and team performance statistics."
+    />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="public/js/search.js" defer></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "baywatch-orange": "#FF6B00",
+              "baywatch-dark": "#1A1A1A"
+            },
+            fontFamily: {
+              poppins: ["Poppins", "sans-serif"]
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="public/styles/main.css" rel="stylesheet" />
+    <script src="public/js/animations.js" defer></script>
+    <script src="public/js/frc-api.js" defer></script>
+    <script src="public/js/frc-api-2.js" defer></script>
+    <script src="public/js/frc-api-9.js" defer></script>
+    <script src="public/js/frc-api-10.js" defer></script>
+
+    <style>
+      /* Sortable table styling */
+      #district-rankings-table th {
+        position: relative;
+        transition: background-color 0.2s;
+      }
+      
+      #district-rankings-table th:hover {
+        background-color: rgba(255, 107, 0, 0.1);
+      }
+      
+      .sort-indicator {
+        display: inline-flex;
+        margin-left: 4px;
+      }
+    </style>
+  </head>
+
+  <body class="bg-black text-white font-poppins min-h-screen flex flex-col">
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
+      <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <a href="index.html#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105">
+            <img src="public/assets/images/logo.svg" alt="Baywatch Robotics Logo" class="w-20 h-20" />
+          </a>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
+          <input type="text" id="search-input" placeholder="Search team # or event code..." class="bg-transparent border-none focus:outline-none text-white w-full" aria-label="Search for team or event">
+          <button id="search-button" class="text-gray-400 hover:text-baywatch-orange transition-colors" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        
+        <!-- Desktop Menu -->
+        <ul class="hidden md:flex space-x-8">
+          <li><a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a></li>
+          <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a></li>
+          <li><a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a></li>
+          <li><a href="scouting.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Scouting</a></li>
+          <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
+        </ul>
+
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button id="mobile-menu-btn" class="focus:outline-none transition-transform duration-300">
+            <i class="fas fa-bars text-3xl"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated">
+      <!-- Mobile Search Bar -->
+      <div class="px-8 pt-32 pb-4">
+        <div class="flex items-center bg-black/50 rounded-lg border border-gray-700 px-3 py-2">
+          <input type="text" id="mobile-search-input" placeholder="Search team # or event code..." class="bg-transparent border-none focus:outline-none text-white w-full" aria-label="Search for team or event">
+          <button id="mobile-search-button" class="text-gray-400 hover:text-baywatch-orange transition-colors" aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="flex flex-col items-center justify-center h-full space-y-8 -mt-32">
+        <a href="robots.html" class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg">Robots</a>
+        <a href="sponsors.html" class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg">Sponsors</a>
+        <a href="schedule.html" class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg">Schedule</a>
+        <a href="ftc.html" class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg">FTC</a>
+        <a href="scouting.html" class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg">Scouting</a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+      <!-- Hero Section -->
+      <section class="pt-36 pb-8 relative z-10">
+        <div class="container mx-auto px-6">
+          <h1 class="text-4xl md:text-5xl font-bold text-center mb-4">
+            <span id="district-name" class="text-white animate__animated animate__fadeInUp" style="animation-delay: 0.2s">Loading District...</span>
+          </h1>
+          <p id="district-info" class="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp" style="animation-delay: 0.6s">
+            <span id="district-team-count">--</span> teams competing in this district
+          </p>
+        </div>
+      </section>
+
+      <!-- Error Message -->
+      <div id="error-message" class="hidden">
+        <div class="container mx-auto px-6 py-16 text-center">
+          <div class="mb-6 text-red-500">
+            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+          </div>
+          <h2 class="text-xl font-bold text-red-400">District Not Found</h2>
+          <p class="text-gray-400 mt-2 mb-6">The district code provided is invalid or the data is not available.</p>
+          <a href="schedule.html" class="inline-flex items-center px-4 py-2 bg-baywatch-orange rounded-lg text-white font-medium hover:bg-baywatch-orange/80 transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Return to Schedule
+          </a>
+        </div>
+      </div>
+
+      <!-- District Links -->
+      <section id="district-links" class="pb-8 relative z-10 hidden">
+        <div class="container mx-auto px-6">
+          <div class="flex justify-center">
+            <a id="tba-district-link" href="#" target="_blank" class="px-4 py-2 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 rounded-lg transition-all flex items-center">
+              <i class="fas fa-external-link-alt mr-2"></i> View on TBA
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- District Rankings -->
+      <section id="rankings-section" class="py-8 relative z-10 hidden">
+        <div class="container mx-auto px-6">
+          <h2 class="text-3xl font-bold mb-8 text-center">Team Rankings</h2>
+          <div class="card-gradient rounded-xl p-6">
+            <div class="overflow-x-auto">
+              <table class="min-w-full table-auto" id="district-rankings-table">
+                <thead>
+                  <tr class="text-left">
+                    <th class="p-4 text-baywatch-orange">Rank</th>
+                    <th class="p-4 text-baywatch-orange">Team</th>
+                    <th class="p-4 text-baywatch-orange">Name</th>
+                    <th class="p-4 text-baywatch-orange">District Points</th>
+                    <th class="p-4 text-baywatch-orange">Event 1</th>
+                    <th class="p-4 text-baywatch-orange">Event 2</th>
+                    <th class="p-4 text-baywatch-orange">DCMP</th>
+                    <th class="p-4 text-baywatch-orange">Rookie Bonus</th>
+                  </tr>
+                </thead>
+                <tbody class="text-gray-300">
+                  <tr><td colspan="8" class="p-4 text-center">
+                    <div class="animate-pulse text-gray-400">
+                      <i class="fas fa-spinner fa-spin mr-2"></i> Loading rankings...
+                    </div>
+                  </td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black py-12">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="flex space-x-4 mb-4 md:mb-0">
+            <a href="https://youtube.com/@frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl">
+              <i class="fab fa-youtube"></i>
+            </a>
+            <a href="https://instagram.com/frc7790" class="text-baywatch-orange hover:text-orange-700 text-2xl">
+              <i class="fab fa-instagram"></i>
+            </a>
+          </div>
+          <div class="text-gray-400 text-sm">
+            © 2025 Baywatch Robotics. All rights reserved.
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Mobile Menu Toggle Script -->
+    <script>
+      const menuBtn = document.getElementById("mobile-menu-btn");
+      const mobileMenu = document.getElementById("mobile-menu-overlay");
+      let menuOpen = false;
+
+      menuBtn.addEventListener("click", () => {
+        if (!menuOpen) {
+          menuBtn.classList.add("rotate-90");
+          mobileMenu.classList.remove("hidden");
+          mobileMenu.classList.add("animate__fadeIn");
+          menuOpen = true;
+        } else {
+          menuBtn.classList.remove("rotate-90");
+          mobileMenu.classList.remove("animate__fadeIn");
+          mobileMenu.classList.add("animate__fadeOut");
+          menuOpen = false;
+          // After animation, add hidden class
+          setTimeout(() => {
+            mobileMenu.classList.add("hidden");
+            mobileMenu.classList.remove("animate__fadeOut");
+          }, 500);
+        }
+      });
+    </script>
+  </body>
+</html>

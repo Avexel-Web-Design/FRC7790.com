@@ -82,8 +82,11 @@ const apiCache = {
   teamSearch: new Map(),
   events: new Map(),
   eventSearch: new Map(),
+  districts: new Map(), // Add districts cache
+  districtSearch: new Map(),
   lastTeamFetch: 0,
   lastEventFetch: 0,
+  lastDistrictFetch: 0,
   pendingQueries: new Map() // Track active API requests to prevent duplicates
 };
 
@@ -575,6 +578,98 @@ async function searchEventsWithTBA(query) {
   }
 }
 
+// Search for districts via TBA API
+async function searchDistrictsWithTBA(query) {
+  // Check cache first
+  const cacheKey = query.toLowerCase();
+  if (apiCache.districtSearch.has(cacheKey) && 
+      Date.now() - apiCache.lastDistrictFetch < API_CACHE_DURATION) {
+    return apiCache.districtSearch.get(cacheKey);
+  }
+
+  try {
+    const currentYear = new Date().getFullYear();
+    
+    // Get districts for current year and next year
+    const [districtsCurrentYear, districtsNextYear] = await Promise.all([
+      fetchFromTBA(`/districts/${currentYear}`).catch(() => []),
+      fetchFromTBA(`/districts/${currentYear + 1}`).catch(() => [])
+    ]);
+
+    let allDistricts = [...(districtsCurrentYear || []), ...(districtsNextYear || [])];
+
+    // Cache all districts
+    allDistricts.forEach(district => {
+      const formattedDistrict = {
+        id: district.key,
+        name: district.display_name,
+        type: "district",
+        url: `district.html?district=${district.key}`,
+        year: district.year
+      };
+      apiCache.districts.set(district.key, formattedDistrict);
+    });
+
+    apiCache.lastDistrictFetch = Date.now();
+
+    // Filter districts based on query
+    const queryLower = query.toLowerCase();
+    const queryTerms = queryLower.split(/\s+/).filter(term => term.length > 0);
+
+    const filteredDistricts = allDistricts.filter(district => {
+      const districtName = district.display_name.toLowerCase();
+      const districtKey = district.key.toLowerCase();
+
+      // Check for exact matches first
+      if (districtKey === queryLower) return true;
+      if (districtName === queryLower) return true;
+
+      // Then check for substring matches
+      if (districtKey.includes(queryLower)) return true;
+      if (districtName.includes(queryLower)) return true;
+
+      // If we have multiple terms, check if all terms appear somewhere
+      if (queryTerms.length > 1) {
+        const combinedText = `${districtKey} ${districtName}`.toLowerCase();
+        return queryTerms.every(term => combinedText.includes(term));
+      }
+
+      return false;
+    });
+
+    // Format results
+    const results = filteredDistricts.map(district => {
+      // Use cached formatted district if available
+      if (apiCache.districts.has(district.key)) {
+        return apiCache.districts.get(district.key);
+      }
+
+      // Otherwise format on the fly
+      return {
+        id: district.key,
+        name: district.display_name,
+        type: "district",
+        url: `district.html?district=${district.key}`,
+        year: district.year
+      };
+    });
+
+    // Sort results by year (newest first) then by name
+    results.sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return a.name.localeCompare(b.name);
+    });
+
+    // Cache the search results
+    apiCache.districtSearch.set(cacheKey, results);
+
+    return results;
+  } catch (error) {
+    console.error("Error searching districts with TBA:", error);
+    return [];
+  }
+}
+
 // Helper function to format event dates
 function formatEventDate(startDate, endDate) {
   if (!startDate) return "Date TBD";
@@ -728,6 +823,12 @@ async function searchAllItems(query) {
         descriptionMatch = fuzzySearch(item.description, query);
         contentMatch = fuzzySearch(item.content, query);
         break;
+      case 'district':
+        searchableText = `${item.id} ${item.name}`;
+        nameMatch = fuzzySearch(item.name, query);
+        descriptionMatch = fuzzySearch(item.id, query);
+        contentMatch = { score: 0, highlighted: '' };
+        break;
     }
     
     // Calculate combined score - giving more weight to name matches
@@ -745,11 +846,12 @@ async function searchAllItems(query) {
   // Start API searches - run in parallel
   const apiPromises = [
     searchTeamsWithTBA(query),
-    searchEventsWithTBA(query)
+    searchEventsWithTBA(query),
+    searchDistrictsWithTBA(query)
   ];
   
   try {
-    const [tbaTeams, tbaEvents] = await Promise.all(apiPromises);
+    const [tbaTeams, tbaEvents, tbaDistricts] = await Promise.all(apiPromises);
     
     // Process TBA team results
     const teamResults = tbaTeams.map(team => {
@@ -782,11 +884,26 @@ async function searchAllItems(query) {
       };
     });
     
+    // Process district results
+    const districtResults = tbaDistricts.map(district => {
+      const nameMatch = fuzzySearch(district.name, query);
+      const descriptionMatch = fuzzySearch(district.id, query);
+
+      return {
+        ...district,
+        score: nameMatch.score * 0.7 + descriptionMatch.score * 0.3,
+        nameHighlighted: nameMatch.highlighted,
+        descriptionHighlighted: descriptionMatch.highlighted,
+        contentHighlighted: ''
+      };
+    });
+
     // Combine all results
     let allResults = [
       ...localResults,
       ...teamResults,
-      ...eventResults
+      ...eventResults,
+      ...districtResults
     ];
     
     // Remove duplicates by ID
@@ -836,7 +953,7 @@ async function searchAllItems(query) {
       }
       
       // If scores are identical, prioritize certain result types
-      const typeOrder = { team: 1, event: 0, page: 2 };
+      const typeOrder = { team: 1, event: 0, page: 2, district: 3 };
       return typeOrder[a.type] - typeOrder[b.type];
     });
 
@@ -851,11 +968,13 @@ async function searchAllItems(query) {
 function renderSearchResult(result) {
   const badgeClass = result.type === 'team' ? 'team-badge' : 
                      result.type === 'event' ? 'event-badge' : 
+                     result.type === 'district' ? 'district-badge' :
                      'page-badge';
   
   // Don't mention 2025 in the badge text
   const badgeText = result.type === 'team' ? 'Team' : 
                     result.type === 'event' ? 'Event' : 
+                    result.type === 'district' ? 'District' :
                     'Page';
   
   return `
@@ -1018,6 +1137,7 @@ function setupFilterButtons(allResults, query) {
   const allButton = document.getElementById('filter-all');
   const teamsButton = document.getElementById('filter-teams');
   const eventsButton = document.getElementById('filter-events');
+  const districtsButton = document.getElementById('filter-districts');
   const pagesButton = document.getElementById('filter-pages');
   
   // Make sure we update counters when we first set up buttons
@@ -1026,7 +1146,7 @@ function setupFilterButtons(allResults, query) {
   // Simple function to filter and display results with proper type mapping
   function filterAndDisplay(type) {
     // Remove active class from all buttons
-    [allButton, teamsButton, eventsButton, pagesButton].forEach(btn => {
+    [allButton, teamsButton, eventsButton, districtsButton, pagesButton].forEach(btn => {
       if (btn) btn.classList.remove('active-filter');
     });
     
@@ -1035,6 +1155,7 @@ function setupFilterButtons(allResults, query) {
       'all': allButton,
       'team': teamsButton, // Map singular type to button
       'event': eventsButton,
+      'district': districtsButton,
       'page': pagesButton
     };
     
@@ -1076,6 +1197,10 @@ function setupFilterButtons(allResults, query) {
     eventsButton.onclick = () => filterAndDisplay('event'); // Use singular 'event' for filtering
   }
   
+  if (districtsButton) {
+    districtsButton.onclick = () => filterAndDisplay('district'); // Use singular 'district' for filtering
+  }
+  
   if (pagesButton) {
     pagesButton.onclick = () => filterAndDisplay('page'); // Use singular 'page' for filtering
   }
@@ -1092,6 +1217,8 @@ function setupFilterButtons(allResults, query) {
       'team': 'team',
       'events': 'event',
       'event': 'event',
+      'districts': 'district',
+      'district': 'district',
       'pages': 'page',
       'page': 'page'
     };
@@ -1105,6 +1232,9 @@ function setupFilterButtons(allResults, query) {
         break;
       case 'event':
         if (eventsButton) eventsButton.click();
+        break;
+      case 'district':
+        if (districtsButton) districtsButton.click();
         break;
       case 'page':
         if (pagesButton) pagesButton.click();
@@ -1517,7 +1647,9 @@ function setupSearchSuggestions() {
         // Generate suggestion HTML
         suggestionsContainer.innerHTML = results.map(result => {
           const icon = result.type === 'team' ? 'fa-users' : 
-                      result.type === 'event' ? 'fa-calendar' : 'fa-file';
+                      result.type === 'event' ? 'fa-calendar' : 
+                      result.type === 'district' ? 'fa-trophy' :
+                      'fa-file';
           
           let secondaryInfo = '';
           if (result.type === 'team') {
@@ -1591,6 +1723,7 @@ function updateCountersFromResults(results) {
   // Get actual counts by type
   const teamCount = results.filter(r => r.type === 'team').length;
   const eventCount = results.filter(r => r.type === 'event').length;
+  const districtCount = results.filter(r => r.type === 'district').length;
   const pageCount = results.filter(r => r.type === 'page').length;
   const totalCount = results.length;
   
@@ -1599,6 +1732,7 @@ function updateCountersFromResults(results) {
     all: totalCount, 
     team: teamCount, 
     event: eventCount, 
+    district: districtCount,
     page: pageCount 
   });
   
@@ -1606,6 +1740,7 @@ function updateCountersFromResults(results) {
   const allCounter = document.querySelector('#filter-all .counter');
   const teamsCounter = document.querySelector('#filter-teams .counter');
   const eventsCounter = document.querySelector('#filter-events .counter');
+  const districtsCounter = document.querySelector('#filter-districts .counter');
   const pagesCounter = document.querySelector('#filter-pages .counter');
   
   // Update function with gentler animation, only if value actually changed
@@ -1637,6 +1772,7 @@ function updateCountersFromResults(results) {
   updateCounterElement(allCounter, totalCount);
   updateCounterElement(teamsCounter, teamCount);
   updateCounterElement(eventsCounter, eventCount);
+  updateCounterElement(districtsCounter, districtCount);
   updateCounterElement(pagesCounter, pageCount);
 }
 
@@ -1758,6 +1894,7 @@ function updateCountersFromResults(results) {
   const counts = {
     team: results.filter(r => r.type === 'team').length,
     event: results.filter(r => r.type === 'event').length,
+    district: results.filter(r => r.type === 'district').length,
     page: results.filter(r => r.type === 'page').length,
     all: results.length
   };
@@ -1783,6 +1920,7 @@ function updateCountersFromResults(results) {
   updateCounter('filter-all', counts.all);
   updateCounter('filter-teams', counts.team);
   updateCounter('filter-events', counts.event);
+  updateCounter('filter-districts', counts.district);
   updateCounter('filter-pages', counts.page);
 }
 
@@ -1792,6 +1930,7 @@ function setupFilterButtons(allResults, query) {
   const allButton = document.getElementById('filter-all');
   const teamsButton = document.getElementById('filter-teams');
   const eventsButton = document.getElementById('filter-events');
+  const districtsButton = document.getElementById('filter-districts');
   const pagesButton = document.getElementById('filter-pages');
   
   // Make sure we update counters when we first set up buttons
@@ -1800,7 +1939,7 @@ function setupFilterButtons(allResults, query) {
   // Simple function to filter and display results with proper type mapping
   function filterAndDisplay(type) {
     // Remove active class from all buttons
-    [allButton, teamsButton, eventsButton, pagesButton].forEach(btn => {
+    [allButton, teamsButton, eventsButton, districtsButton, pagesButton].forEach(btn => {
       if (btn) btn.classList.remove('active-filter');
     });
     
@@ -1809,6 +1948,7 @@ function setupFilterButtons(allResults, query) {
       'all': allButton,
       'team': teamsButton, // Map singular type to button
       'event': eventsButton,
+      'district': districtsButton,
       'page': pagesButton
     };
     
@@ -1850,6 +1990,10 @@ function setupFilterButtons(allResults, query) {
     eventsButton.onclick = () => filterAndDisplay('event'); // Use singular 'event' for filtering
   }
   
+  if (districtsButton) {
+    districtsButton.onclick = () => filterAndDisplay('district'); // Use singular 'district' for filtering
+  }
+  
   if (pagesButton) {
     pagesButton.onclick = () => filterAndDisplay('page'); // Use singular 'page' for filtering
   }
@@ -1866,6 +2010,8 @@ function setupFilterButtons(allResults, query) {
       'team': 'team',
       'events': 'event',
       'event': 'event',
+      'districts': 'district',
+      'district': 'district',
       'pages': 'page',
       'page': 'page'
     };
@@ -1879,6 +2025,9 @@ function setupFilterButtons(allResults, query) {
         break;
       case 'event':
         if (eventsButton) eventsButton.click();
+        break;
+      case 'district':
+        if (districtsButton) districtsButton.click();
         break;
       case 'page':
         if (pagesButton) pagesButton.click();
