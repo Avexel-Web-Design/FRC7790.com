@@ -787,7 +787,7 @@ function fuzzySearch(text, query) {
   return { score: Math.min(score, 1.0), highlighted };
 }
 
-// Modified search function that combines local and API results - COMPLETELY REMOVE 2025 FOCUS
+// Modified search function that combines local and API results
 async function searchAllItems(query) {
   if (!query || query.trim() === '') return [];
   
@@ -922,39 +922,33 @@ async function searchAllItems(query) {
     
     // Sort results by score, not by 2025 priority
     return filteredResults.sort((a, b) => {
-      // First sort by type: current/upcoming events at the top for event type
-      if (a.type === 'event' && b.type === 'event') {
-        // Check if one event is past and the other is upcoming
-        const aIsPast = isEventPast(a.date);
-        const bIsPast = isEventPast(b.date);
-        
-        if (!aIsPast && bIsPast) {
-          return -1; // A is upcoming, B is past, so A comes first
-        } else if (aIsPast && !bIsPast) {
-          return 1;  // B is upcoming, A is past, so B comes first
-        }
-        
-        // Both are past or both are upcoming, sort by date
-        const dateA = parseEventDate(a.date);
-        const dateB = parseEventDate(b.date);
-        
-        // For upcoming events (both not past), sort by nearest date first
-        if (!aIsPast && !bIsPast) {
-          return dateA - dateB; 
-        }
-        
-        // For past events, sort by most recent first
-        return dateB - dateA;
+      // First prioritize by type
+      const typeOrder = { district: 0, team: 1, event: 2, page: 3 };
+      if (typeOrder[a.type] !== typeOrder[b.type]) {
+        return typeOrder[a.type] - typeOrder[b.type];
       }
-      
-      // For different result types or non-event results, sort by score
+
+      // For same types, sort by score
       if (a.score !== b.score) {
         return b.score - a.score;
       }
-      
-      // If scores are identical, prioritize certain result types
-      const typeOrder = { team: 1, event: 0, page: 2, district: 3 };
-      return typeOrder[a.type] - typeOrder[b.type];
+
+      // For events with same score, prioritize upcoming events
+      if (a.type === 'event' && b.type === 'event') {
+        const aIsPast = isEventPast(a.date);
+        const bIsPast = isEventPast(b.date);
+        
+        if (!aIsPast && bIsPast) return -1;
+        if (aIsPast && !bIsPast) return 1;
+        
+        // Both past or both upcoming, sort by date
+        const dateA = parseEventDate(a.date);
+        const dateB = parseEventDate(b.date);
+        return !aIsPast ? dateA - dateB : dateB - dateA;
+      }
+
+      // Default to alphabetical sorting by name
+      return (a.name || '').localeCompare(b.name || '');
     });
 
   } catch (error) {
