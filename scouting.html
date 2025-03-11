@@ -761,7 +761,11 @@
             
             row.innerHTML = `
               <td class="px-4 py-4">${index + 1}</td>
-              <td class="px-4 py-4 font-medium ${isPicked ? 'text-gray-500' : 'text-baywatch-orange'}">${team.team}</td>
+              <td class="px-4 py-4 font-medium">
+                <a href="team.html?team=${team.team}" class="${isPicked ? 'text-gray-500' : 'text-baywatch-orange hover:text-orange-400'} transition-colors">
+                  ${team.team}
+                </a>
+              </td>
               <td class="px-4 py-4 ${isPicked ? 'text-gray-500' : ''}">${team.name || '---'}</td>
               <td class="px-4 py-4">${formatEPAValue(team.epa_total)}</td>
               <td class="px-4 py-4">${formatEPAValue(team.epa_auto)}</td>
