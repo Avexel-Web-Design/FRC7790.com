@@ -67,412 +67,187 @@
     <script src="public/js/frc-api-20.js" defer></script>
     <script src="public/js/statbotics.js" defer></script>
     <script src="public/js/search.js" defer></script>
-    <style>
-      /* Custom animations and effects that can't be done with Tailwind alone */
-      @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-5px); }
-        100% { transform: translateY(0px); }
-      }
-      
-      @keyframes pulse-glow {
-        0% { box-shadow: 0 0 5px 0px rgba(255, 107, 0, 0.3), 0 0 10px 2px rgba(255, 107, 0, 0.2), 0 0 0 0px rgba(255, 107, 0, 0.1); }
-        50% { box-shadow: 0 0 10px 1px rgba(255, 107, 0, 0.4), 0 0 15px 3px rgba(255, 107, 0, 0.3), 0 0 0 1px rgba(255, 107, 0, 0.2); }
-        100% { box-shadow: 0 0 5px 0px rgba(255, 107, 0, 0.3), 0 0 10px 2px rgba(255, 107, 0, 0.2), 0 0 0 0px rgba(255, 107, 0, 0.1); }
-      }
-
-      @keyframes pulse-badge {
-        0% { transform: scale(0.8); opacity: 0.8; }
-        50% { transform: scale(1.2); opacity: 1; }
-        100% { transform: scale(0.8); opacity: 0.8; }
-      }
-      
-      @keyframes scan {
-        0%, 100% { left: -150%; opacity: 0; }
-        5% { opacity: 0.5; }
-        45%, 55% { left: 150%; opacity: 0.5; }
-        99% { opacity: 0; }
-      }
-      
-      @keyframes rotate-gradient {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      
-      /* Tech navbar clip paths */
-      .tech-nav {
-        clip-path: polygon(
-          0% 0%, 
-          3% 6%, 
-          97% 6%, 
-          100% 0%, 
-          100% 70%, 
-          97% 100%, 
-          3% 100%, 
-          0% 70%
-        );
-      }
-      
-      .tech-nav.scrolled {
-        clip-path: polygon(0% 0%, 100% 0%, 99% 100%, 1% 100%);
-      }
-      
-      .tech-search-clip {
-        clip-path: polygon(
-          0% 0%, 
-          95% 0%, 
-          100% 50%, 
-          95% 100%, 
-          0% 100%
-        );
-      }
-      
-      .mobile-nav-clip {
-        clip-path: polygon(
-          0% 0%, 
-          100% 0%, 
-          90% 100%, 
-          10% 100%
-        );
-      }
-      
-      /* Special effects */
-      .nav-link {
-        position: relative;
-        transition: color 0ms; /* Immediate color change */
-      }
-      
-      .nav-link::after {
-        content: attr(data-text);
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 0;
-        color: #FF6B00;
-        white-space: nowrap;
-        overflow: hidden;
-        transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        text-shadow: 0 0 8px rgba(255, 107, 0, 0.4);
-      }
-      
-      .nav-link.active, 
-      .nav-link:hover {
-        color: transparent; /* Hide original text */
-      }
-      
-      .nav-link.active::after,
-      .nav-link:hover::after {
-        width: 100%;
-      }
-      
-      /* Scanning light effect */
-      .tech-nav::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -150%;
-        width: 80%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 107, 0, 0.05),
-          rgba(255, 255, 255, 0.08),
-          rgba(255, 107, 0, 0.05),
-          transparent
-        );
-        transform: skewX(-15deg);
-        animation: scan 10s infinite;
-      }
-      
-      .nav-module::before {
-        content: '';
-        position: absolute;
-        inset: -1px;
-        background: linear-gradient(45deg, rgba(255,107,0,0), rgba(255,107,0,0.3), rgba(255,107,0,0));
-        border-radius: inherit;
-        opacity: 0;
-        transition: opacity 0.4s ease;
-      }
-      
-      .nav-module:hover::before {
-        opacity: 1;
-        animation: rotate-gradient 2s linear infinite;
-      }
-      
-      .mobile-nav-item::before {
-        content: '';
-        position: absolute;
-        left: -100%;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 107, 0, 0.1), transparent);
-        transition: left 0.6s ease;
-      }
-      
-      .mobile-nav-item:hover::before {
-        left: 100%;
-      }
-      
-      .tech-logo::after {
-        content: '';
-        position: absolute;
-        top: -3px;
-        left: -3px;
-        right: -3px;
-        bottom: -3px;
-        border: 1px solid rgba(255, 107, 0, 0.3);
-        opacity: 0;
-        transition: all 0.3s ease;
-      }
-      
-      .tech-logo:hover::after {
-        opacity: 1;
-        top: 3px;
-        left: 3px;
-        filter: hue-rotate(60deg);
-      }
-    </style>
   </head>
-  <body class="bg-baywatch-dark text-white overflow-x-hidden font-poppins">
-    <!-- Futuristic Tech-Inspired Navigation Bar with Tailwind CSS -->
-    <nav id="navbar" class="fixed top-6 left-0 right-0 z-50 px-4 [perspective:2000px] [perspective-origin:center_top]">
-      <div class="tech-nav relative mx-auto max-w-5xl py-2 px-3 md:px-6 
-                  bg-[rgba(8,8,12,0.85)] backdrop-blur-xl border border-[rgba(255,107,0,0.15)] 
-                  transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
-                  shadow-[0_5px_15px_rgba(0,0,0,0.2),inset_0_0_1px_rgba(255,107,0,0.3)]
-                  hover:border-[rgba(255,107,0,0.3)] 
-                  hover:shadow-[0_7px_25px_rgba(0,0,0,0.3),0_0_15px_rgba(255,107,0,0.15),inset_0_0_2px_rgba(255,107,0,0.5)]">
+  <body class="bg-black text-white font-poppins overflow-x-hidden text-center">
+    <!-- Navigation Bar -->
+    <nav
+      class="fixed top-0 w-full z-50 transition-all duration-300"
+      id="navbar"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex items-center justify-between"
+      >
+        <div class="flex items-center space-x-2">
+          <a
+            href="index.html#"
+            class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
+          >
+            <img
+              src="public/assets/images/logo.svg"
+              alt="Baywatch Robotics Logo"
+              class="w-20 h-20"
+            />
+          </a>
+        </div>
         
-        <!-- Circuit pattern overlay -->
-        <div class="absolute inset-0 z-[-1] opacity-80 
-                    bg-[linear-gradient(to_right,rgba(255,107,0,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,107,0,0.03)_1px,transparent_1px)] 
-                    bg-[size:20px_20px] [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]"></div>
+        <!-- Search Bar (New Addition) -->
+        <div class="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
         
-        <div class="flex items-center justify-between">
-          <!-- Logo Section with glitch effect -->
-          <div class="tech-logo relative flex items-center transition-all duration-300">
-            <a href="index.html#" class="flex items-center hover:scale-110 transition-transform duration-300 hover:drop-shadow-[0_0_8px_rgba(255,107,0,0.7)]">
-              <img src="public/assets/images/logo.svg" alt="Baywatch Robotics Logo" class="w-12 h-12 md:w-14 md:h-14">
-              <span class="hidden md:block ml-2 text-xs uppercase tracking-[0.2em] text-gray-400 font-semibold">
-                FRC<span class="text-baywatch-orange">7790</span>
-              </span>
-            </a>
-          </div>
-          
-          <!-- Desktop Menu with tech styling -->
-          <div class="hidden md:flex items-center space-x-1">
-            <div class="nav-module px-4 py-1 rounded-sm mx-1 hover:scale-105 relative overflow-hidden
-                        transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-                        bg-gradient-to-br from-[rgba(26,26,26,0.8)] to-[rgba(15,15,15,0.95)]
-                        border border-[rgba(255,255,255,0.05)] [transform:perspective(500px)_translateZ(0)]
-                        hover:[transform:perspective(500px)_translateZ(10px)]
-                        hover:shadow-[0_5px_15px_rgba(0,0,0,0.2),0_0_5px_rgba(255,107,0,0.3)]">
-              <a href="robots.html" class="nav-link block relative font-medium text-sm py-1 text-gray-300 transition-all duration-400" data-text="Robots">
-                Robots
-              </a>
-            </div>
-            <div class="nav-module px-4 py-1 rounded-sm mx-1 hover:scale-105 relative overflow-hidden
-                        transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-                        bg-gradient-to-br from-[rgba(26,26,26,0.8)] to-[rgba(15,15,15,0.95)]
-                        border border-[rgba(255,255,255,0.05)] [transform:perspective(500px)_translateZ(0)]
-                        hover:[transform:perspective(500px)_translateZ(10px)]
-                        hover:shadow-[0_5px_15px_rgba(0,0,0,0.2),0_0_5px_rgba(255,107,0,0.3)]">
-              <a href="sponsors.html" class="nav-link block relative font-medium text-sm py-1 text-gray-300 transition-all duration-400" data-text="Sponsors">
-                Sponsors
-              </a>
-            </div>
-            <div class="nav-module px-4 py-1 rounded-sm mx-1 hover:scale-105 relative overflow-hidden
-                        transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-                        bg-gradient-to-br from-[rgba(26,26,26,0.8)] to-[rgba(15,15,15,0.95)]
-                        border border-[rgba(255,255,255,0.05)] [transform:perspective(500px)_translateZ(0)]
-                        hover:[transform:perspective(500px)_translateZ(10px)]
-                        hover:shadow-[0_5px_15px_rgba(0,0,0,0.2),0_0_5px_rgba(255,107,0,0.3)]">
-              <a href="schedule.html" class="nav-link block relative font-medium text-sm py-1 text-gray-300 transition-all duration-400" data-text="Schedule">
-                Schedule
-              </a>
-            </div>
-            <div class="nav-module px-4 py-1 rounded-sm mx-1 hover:scale-105 relative overflow-hidden
-                        transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-                        bg-gradient-to-br from-[rgba(26,26,26,0.8)] to-[rgba(15,15,15,0.95)]
-                        border border-[rgba(255,255,255,0.05)] [transform:perspective(500px)_translateZ(0)]
-                        hover:[transform:perspective(500px)_translateZ(10px)]
-                        hover:shadow-[0_5px_15px_rgba(0,0,0,0.2),0_0_5px_rgba(255,107,0,0.3)]">
-              <a href="scouting.html" class="nav-link block relative font-medium text-sm py-1 text-gray-300 transition-all duration-400" data-text="Scouting">
-                Scouting
-              </a>
-            </div>
-            <div class="nav-module px-4 py-1 rounded-sm mx-1 hover:scale-105 relative overflow-hidden
-                        transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
-                        bg-gradient-to-br from-[rgba(26,26,26,0.8)] to-[rgba(15,15,15,0.95)]
-                        border border-[rgba(255,255,255,0.05)] [transform:perspective(500px)_translateZ(0)]
-                        hover:[transform:perspective(500px)_translateZ(10px)]
-                        hover:shadow-[0_5px_15px_rgba(0,0,0,0.2),0_0_5px_rgba(255,107,0,0.3)]">
-              <a href="ftc.html" class="nav-link block relative font-medium text-sm py-1 text-gray-300 transition-all duration-400" data-text="FTC">
-                FTC
-              </a>
-            </div>
-          </div>
-          
-          <!-- Futuristic Search Bar -->
-          <div class="hidden md:flex items-center">
-            <div class="tech-search tech-search-clip flex items-center py-1.5 px-3 
-                        bg-[rgba(10,10,10,0.4)] border border-[rgba(255,107,0,0.1)] border-l-[3px] border-l-baywatch-orange
-                        transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] w-40
-                        focus-within:w-60 focus-within:bg-[rgba(15,15,15,0.7)] focus-within:border-[rgba(255,107,0,0.3)]
-                        focus-within:shadow-[0_0_15px_rgba(255,107,0,0.2),inset_0_0_5px_rgba(0,0,0,0.5)]">
-              <input id="search-input" type="text" placeholder="SEARCH:/" 
-                     class="bg-transparent border-none focus:outline-none text-white text-sm w-full font-mono tracking-wider">
-              <button id="search-button" class="text-gray-400 hover:text-baywatch-orange transition-colors" aria-label="Search">
-                <i class="fas fa-search"></i>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Mobile Menu Button -->
-          <div class="md:hidden">
-            <button id="mobile-menu-btn" 
-                    class="relative p-2 rounded-sm bg-black/40 border border-baywatch-orange/20
-                           transition-all duration-300 focus:outline-none">
-              <div class="flex flex-col items-center justify-center h-5 w-5 space-y-1">
-                <span class="block h-0.5 w-full bg-baywatch-orange rounded-sm transition-all duration-300"></span>
-                <span class="block h-0.5 w-3/4 ml-auto bg-baywatch-orange rounded-sm transition-all duration-300"></span>
-                <span class="block h-0.5 w-1/2 ml-auto bg-baywatch-orange rounded-sm transition-all duration-300"></span>
-              </div>
-            </button>
-          </div>
+        <!-- Desktop Menu -->
+        <ul class="hidden md:flex space-x-8">
+          <li>
+            <a
+              href="robots.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Robots</a
+            >
+          </li>
+          <li>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
+            >
+          </li>
+          <li>
+            <a
+              href="schedule.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Schedule</a
+            >
+          </li>
+          <li>
+            <a
+              href="scouting.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Scouting</a
+            >
+          </li>
+          <li>
+            <a
+              href="ftc.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >FTC</a
+            >
+          </li>
+        </ul>
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button
+            id="mobile-menu-btn"
+            class="focus:outline-none transition-transform duration-300"
+          >
+            <i class="fas fa-bars text-3xl"></i>
+          </button>
         </div>
       </div>
     </nav>
 
-    <!-- Mobile Menu Overlay with Tech Styling -->
-    <div id="mobile-menu-overlay" class="fixed inset-0 hidden z-40 transition-all duration-300 animate__animated bg-black/95">
-      <div class="flex flex-col items-center justify-center h-full px-6">
-        <!-- Mobile Search with Tech Styling -->
-        <div class="w-full max-w-sm mb-8 mt-16">
-          <div class="tech-search-clip flex items-center py-2 px-4 w-full
-                      bg-[rgba(10,10,10,0.4)] border border-[rgba(255,107,0,0.1)] border-l-[3px] border-l-baywatch-orange
-                      transition-all duration-300">
-            <input type="text" id="mobile-search-input" placeholder="SEARCH:/" 
-                   class="bg-transparent border-none focus:outline-none text-white w-full font-mono text-sm tracking-wider">
-            <button id="mobile-search-button" class="text-gray-400 hover:text-baywatch-orange transition-colors" aria-label="Search">
-              <i class="fas fa-search"></i>
-            </button>
-          </div>
+    <!-- Mobile Menu Overlay -->
+    <div
+      id="mobile-menu-overlay"
+      class="fixed inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-95 hidden z-40 transition-opacity duration-300 animate__animated"
+    >
+      <!-- Mobile Search Bar (New Addition) -->
+      <div class="px-8 pt-32 pb-4">
+        <div class="flex items-center bg-black/50 rounded-lg border border-gray-700 px-3 py-2">
+          <input 
+            type="text" 
+            id="mobile-search-input" 
+            placeholder="Search team # or event code..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="mobile-search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
+            <i class="fas fa-search"></i>
+          </button>
         </div>
-        
-        <!-- Tech-styled Mobile Navigation Menu -->
-        <div class="w-full max-w-sm mobile-nav-clip overflow-hidden shadow-[0_0_15px_rgba(255,107,0,0.2)] py-2
-                    bg-gradient-to-b from-[rgba(15,15,15,0.95)] to-[rgba(10,10,10,0.98)]
-                    border border-[rgba(255,107,0,0.2)]">
-          <a href="robots.html" class="mobile-nav-item flex items-center space-x-3 px-5 py-4 text-gray-300 hover:text-baywatch-orange
-                                       relative overflow-hidden transition-all duration-300 border-b border-b-[rgba(255,107,0,0.05)]">
-            <i class="fas fa-robot w-6 text-center"></i>
-            <span class="font-mono tracking-wider">ROBOTS</span>
-            <span class="ml-auto text-xs text-baywatch-orange opacity-60">01</span>
-          </a>
-          <a href="sponsors.html" class="mobile-nav-item flex items-center space-x-3 px-5 py-4 text-gray-300 hover:text-baywatch-orange
-                                         relative overflow-hidden transition-all duration-300 border-b border-b-[rgba(255,107,0,0.05)]">
-            <i class="fas fa-handshake w-6 text-center"></i>
-            <span class="font-mono tracking-wider">SPONSORS</span>
-            <span class="ml-auto text-xs text-baywatch-orange opacity-60">02</span>
-          </a>
-          <a href="schedule.html" class="mobile-nav-item flex items-center space-x-3 px-5 py-4 text-gray-300 hover:text-baywatch-orange
-                                        relative overflow-hidden transition-all duration-300 border-b border-b-[rgba(255,107,0,0.05)]">
-            <i class="fas fa-calendar w-6 text-center"></i>
-            <span class="font-mono tracking-wider">SCHEDULE</span>
-            <span class="ml-auto text-xs text-baywatch-orange opacity-60">03</span>
-          </a>
-          <a href="scouting.html" class="mobile-nav-item flex items-center space-x-3 px-5 py-4 text-gray-300 hover:text-baywatch-orange
-                                         relative overflow-hidden transition-all duration-300 border-b border-b-[rgba(255,107,0,0.05)]">
-            <i class="fas fa-clipboard w-6 text-center"></i>
-            <span class="font-mono tracking-wider">SCOUTING</span>
-            <span class="ml-auto text-xs text-baywatch-orange opacity-60">04</span>
-          </a>
-          <a href="ftc.html" class="mobile-nav-item flex items-center space-x-3 px-5 py-4 text-gray-300 hover:text-baywatch-orange
-                                    relative overflow-hidden transition-all duration-300">
-            <i class="fas fa-cog w-6 text-center"></i>
-            <span class="font-mono tracking-wider">FTC</span>
-            <span class="ml-auto text-xs text-baywatch-orange opacity-60">05</span>
-          </a>
-        </div>
+      </div>
+      
+      <div class="flex flex-col items-center justify-center h-full space-y-8 -mt-32">
+        <a
+          href="robots.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Robots</a
+        >
+        <a
+          href="sponsors.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Sponsors</a
+        >
+        <a
+          href="schedule.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Schedule</a
+        >
+        <a
+          href="ftc.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >FTC</a
+        >
+        <a
+          href="scouting.html"
+          class="text-2xl text-white transition-all duration-300 hover:text-baywatch-orange hover:scale-110 px-4 py-2 bg-black/20 rounded-lg"
+          >Scouting</a
+        >
       </div>
     </div>
 
-    <!-- Enhanced Mobile Menu Toggle Script -->
+    <!-- Mobile Menu Toggle Script -->
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const navbar = document.getElementById('navbar');
-        const navbarInner = document.querySelector('.tech-nav');
-        const menuBtn = document.getElementById('mobile-menu-btn');
-        const menuBtnSpans = menuBtn.querySelectorAll('span');
-        const mobileMenu = document.getElementById('mobile-menu-overlay');
-        const navLinks = document.querySelectorAll('.nav-link');
-        let menuOpen = false;
-        
-        // Handle scroll behavior
-        window.addEventListener('scroll', function() {
-          if (window.scrollY > 100) {
-            navbar.classList.add('top-3', 'md:top-3');
-            navbarInner.classList.add('scrolled');
-          } else {
-            navbar.classList.remove('top-3', 'md:top-3');
-            navbarInner.classList.remove('scrolled');
-          }
-        });
-        
-        // Add active class to current page
-        const currentPath = window.location.pathname;
-        navLinks.forEach(link => {
-          const href = link.getAttribute('href');
-          if ((currentPath.includes(href) && href !== 'index.html') || 
-              (currentPath === '/' && href === 'index.html' || currentPath.endsWith('index.html'))) {
-            link.classList.add('active');
-          }
-        });
+      const menuBtn = document.getElementById("mobile-menu-btn");
+      const mobileMenu = document.getElementById("mobile-menu-overlay");
+      let menuOpen = false;
 
-        // Mobile menu toggle with enhanced animations
-        menuBtn.addEventListener('click', () => {
-          menuOpen = !menuOpen;
+      menuBtn.addEventListener("click", () => {
+        menuOpen = !menuOpen;
 
-          if (menuOpen) {
-            // Show menu with slide-down effect
-            mobileMenu.classList.remove('hidden');
-            mobileMenu.classList.remove('animate__fadeOutUp');
-            mobileMenu.classList.add('animate__fadeInDown');
-            
-            // Animate hamburger to X
-            menuBtnSpans[0].style.transform = 'rotate(45deg) translate(2px, 6px)';
-            menuBtnSpans[1].style.opacity = '0';
-            menuBtnSpans[2].style.transform = 'rotate(-45deg) translate(-5px, 4px)';
-            menuBtnSpans[0].style.width = '100%';
-            menuBtnSpans[2].style.width = '100%';
-            
-            menuBtn.style.borderColor = 'rgba(255, 107, 0, 0.4)';
-            menuBtn.style.background = 'rgba(255, 107, 0, 0.1)';
-          } else {
-            // Animate hide menu
-            mobileMenu.classList.remove('animate__fadeInDown');
-            mobileMenu.classList.add('animate__fadeOutUp');
-            
-            // Animate X back to hamburger
-            menuBtnSpans[0].style.transform = 'none';
-            menuBtnSpans[1].style.opacity = '1';
-            menuBtnSpans[2].style.transform = 'none';
-            menuBtnSpans[0].style.width = '100%';
-            menuBtnSpans[1].style.width = '75%';
-            menuBtnSpans[2].style.width = '50%';
-            
-            menuBtn.style.borderColor = 'rgba(255, 107, 0, 0.2)';
-            menuBtn.style.background = 'rgba(0, 0, 0, 0.4)';
-            
-            // After animation, add hidden class
-            setTimeout(() => {
-              mobileMenu.classList.add('hidden');
-            }, 500);
-          }
-        });
+        if (menuOpen) {
+          // Show menu with slide-down effect
+          mobileMenu.classList.remove("hidden");
+          mobileMenu.classList.remove("animate__fadeOutUp");
+          mobileMenu.classList.add("animate__fadeInDown");
+          // Rotate hamburger to X
+          menuBtn.firstElementChild.classList.remove("fa-bars");
+          menuBtn.firstElementChild.classList.add(
+            "fa-times",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+        } else {
+          // Animate hide menu with slide-up effect then hide
+          mobileMenu.classList.remove("animate__fadeInDown");
+          mobileMenu.classList.add("animate__fadeOutUp");
+          // Rotate X back to hamburger
+          menuBtn.firstElementChild.classList.remove(
+            "fa-times",
+            "animate__rotateIn"
+          );
+          menuBtn.firstElementChild.classList.add(
+            "fa-bars",
+            "animate__animated",
+            "animate__rotateIn"
+          );
+          // After animation, add hidden class
+          setTimeout(() => {
+            mobileMenu.classList.add("hidden");
+          }, 500);
+        }
       });
     </script>
 
