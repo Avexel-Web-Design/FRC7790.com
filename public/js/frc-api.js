@@ -461,15 +461,84 @@ document.addEventListener("DOMContentLoaded", initializeEventData);
 // Functions for Lake City Regional page
 async function loadEventRankings(eventCode) {
   try {
+    console.log(`Loading rankings for event: ${eventCode}`);
+    
+    // Ensure rankings table element exists before proceeding
+    const rankingsTable = document.getElementById('rankings-table');
+    if (!rankingsTable) {
+      console.error('Rankings table element not found in DOM');
+      return;
+    }
+    
+    const rankingsTableBody = rankingsTable.querySelector('tbody');
+    if (!rankingsTableBody) {
+      console.error('Rankings table body not found');
+      return;
+    }
+    
+    // Show loading state
+    rankingsTableBody.innerHTML = '<tr><td colspan="5" class="p-4 text-center">Loading rankings data...</td></tr>';
+    
+    // Fetch rankings data with timeout for better error handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
     const response = await fetch(`${window.TBA_BASE_URL}/event/${eventCode}/rankings`, {
-      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+      headers: {
+        "X-TBA-Auth-Key": window.TBA_AUTH_KEY
+      },
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`Rankings data fetch failed with status: ${response.status}`);
+    }
+    
     const data = await response.json();
-    updateRankingsTable(data.rankings);
+    
+    // Check if we have valid rankings data
+    if (!data || !data.rankings || data.rankings.length === 0) {
+      // No rankings available yet
+      rankingsTableBody.innerHTML = `
+        <tr>
+          <td colspan="5" class="p-8 text-center">
+            <div class="flex flex-col items-center justify-center">
+              <i class="fas fa-chart-line text-gray-600 text-4xl mb-3"></i>
+              <p class="text-lg text-gray-400">No rankings available yet</p>
+              <p class="text-sm text-gray-500 mt-2">Check back during the event</p>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+    
+    // Update the rankings table with data
+    updateRankingsTable(data, rankingsTableBody);
+    
   } catch (error) {
-    console.error(`Error loading rankings for ${eventCode}:`, error);
-    document.querySelector("#rankings-table tbody").innerHTML = 
-      '<tr><td colspan="4" class="p-4 text-center">No Rankings Available</td></tr>';
+    console.error('Error loading event rankings:', error);
+    
+    // Ensure rankings table element exists before updating error message
+    const rankingsTable = document.getElementById('rankings-table');
+    if (rankingsTable) {
+      const rankingsTableBody = rankingsTable.querySelector('tbody');
+      if (rankingsTableBody) {
+        rankingsTableBody.innerHTML = `
+          <tr>
+            <td colspan="5" class="p-8 text-center">
+              <div class="flex flex-col items-center justify-center">
+                <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-3"></i>
+                <p class="text-lg text-gray-400">Error loading rankings</p>
+                <p class="text-sm text-gray-500 mt-2">${error.message || 'Please try again later'}</p>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+    }
   }
 }
 

@@ -66,7 +66,7 @@ function updateTeamSocialLinks(teamNumber) {
   function hasEventStarted(eventStartDate) {
     const now = new Date();
     const startDate = new Date(eventStartDate);
-    // Add 37-phour offset to the official start date
+    // Add 37-hour offset to the official start date
     startDate.setHours(startDate.getHours() + 37);
     return now >= startDate;
   }
@@ -386,11 +386,6 @@ function updateTeamSocialLinks(teamNumber) {
     );
     
     return cityParts.join(' ') || 'Event';
-  }
-  
-  function extractEventType(eventName) {
-    // Always return empty string regardless of event type
-    return "";
   }
   
   function extractEventType(eventName) {

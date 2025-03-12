@@ -394,3 +394,27 @@ async function updatePlayoffBracket(eventKey) {
       redScore.textContent = '--';
     }
   }
+
+// At the end of the file, add this event listener to ensure proper tab initialization
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if we're on the event page
+  if (window.location.pathname.includes('event.html')) {
+    // Try to select the rankings tab by default (if available)
+    setTimeout(() => {
+      const rankingsTab = document.getElementById('tab-rankings');
+      if (rankingsTab && typeof rankingsTab.click === 'function') {
+        rankingsTab.click();
+      }
+      
+      // Check hash to switch to appropriate tab
+      const hash = window.location.hash.substring(1);
+      if (hash === 'schedule' || hash === 'playoff' || hash === 'rankings') {
+        const tab = document.getElementById(`tab-${hash}`);
+        if (tab && typeof tab.click === 'function') {
+          tab.click();
+        }
+      }
+    }, 500); // small delay to ensure DOM is ready
+  }
+});
