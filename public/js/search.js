@@ -5,33 +5,6 @@ const API_CACHE_DURATION = 3600000; // 1 hour in milliseconds
 
 // Local database for frequently accessed content and pages
 const localSearchDatabase = {
-  teams: [
-    { 
-      id: "7790", 
-      name: "Baywatch Robotics", 
-      location: "Harbor Springs, MI",
-      type: "team",
-      url: "team.html?team=7790" 
-    },
-  ],
-  events: [
-    {
-      id: "2025milac",
-      name: "FIM District Lake City Event",
-      location: "Lake City, Michigan",
-      date: "February 28 - March 2, 2025",
-      type: "event",
-      url: "event.html?event=2025milac"
-    },
-    {
-      id: "2025mitvc",
-      name: "FIM District Traverse City Event",
-      location: "Traverse City, Michigan",
-      date: "March 13-15, 2025",
-      type: "event",
-      url: "event.html?event=2025mitvc"
-    },
-  ],
   pages: [
     {
       id: "home",
