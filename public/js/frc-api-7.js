@@ -305,6 +305,20 @@ function updateTeamSocialLinks(teamNumber) {
       // Hide watch link if no channel is available
       document.getElementById('event-watch-link').classList.add('hidden');
     }
+    
+    // Update district button link if the event has district information
+    const districtLink = document.getElementById('event-district-link');
+    if (districtLink && eventData.district) {
+      // Use district key from event data to create link to district page
+      const districtKey = eventData.district.key;
+      districtLink.href = `district.html?district=${districtKey}`;
+      
+      // Make sure the button is visible
+      districtLink.classList.remove('hidden');
+    } else if (districtLink) {
+      // If event doesn't have district info, hide the district button
+      districtLink.classList.add('hidden');
+    }
   }
   
   // Function to update countdown display for upcoming events
