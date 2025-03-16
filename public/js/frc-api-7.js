@@ -275,11 +275,16 @@ function updateTeamSocialLinks(teamNumber) {
     document.getElementById('event-city').textContent = cityName;
     document.getElementById('event-type').textContent = eventType;
     
+    // Check if this is the Traverse City event that needs a location override
+    const locationName = eventData.key === "2025mitvc" ? 
+        "1150 Milliken Drive" : 
+        eventData.location_name;
+    
     // Format dates
     const startDate = new Date(eventData.start_date);
     const endDate = new Date(eventData.end_date);
     const dateOptions = { month: 'long', day: 'numeric', year: 'numeric' };
-    const formattedDates = `${startDate.toLocaleDateString('en-US', dateOptions)} - ${endDate.toLocaleDateString('en-US', dateOptions)} | ${eventData.location_name}`;
+    const formattedDates = `${startDate.toLocaleDateString('en-US', dateOptions)} - ${endDate.toLocaleDateString('en-US', dateOptions)} | ${locationName}`;
     document.getElementById('event-details').textContent = formattedDates;
     
     // Set appropriate Twitch link if available from webcasts array
