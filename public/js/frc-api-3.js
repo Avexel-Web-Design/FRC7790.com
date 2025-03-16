@@ -342,7 +342,14 @@ async function updatePlayoffBracket(eventKey) {
     } else if (matchData.comp_level === 'sf') {
       matchTitle = `${matchType} ${matchData.set_number} Match ${matchNumber}`;
     } else if (matchData.comp_level === 'f') {
-      matchTitle = `${matchType} ${matchNumber}`;
+      // Check if this is a finals match beyond #3 (overtime)
+      if (matchNumber <= 3) {
+        matchTitle = `${matchType} ${matchNumber}`;
+      } else {
+        // This is an overtime match (Finals 4 becomes Overtime 1, etc.)
+        const overtimeNumber = matchNumber - 3;
+        matchTitle = `Overtime ${overtimeNumber}`;
+      }
     } else {
       const matchSet = matchData.set_number > 1 ? ` (Set ${matchData.set_number})` : '';
       matchTitle = `${matchType} ${matchNumber}${matchSet}`;
