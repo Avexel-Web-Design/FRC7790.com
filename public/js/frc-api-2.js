@@ -299,9 +299,12 @@ function renderRankingsTable(rankingsData) {
       epaContent = `<span class="font-mono text-gray-500">...</span>`;
     }
     
+    // Get the proper suffix for ranking (1st, 2nd, 3rd, 4th, etc.)
+    const rankSuffix = window.formatRankSuffix ? window.formatRankSuffix(team.rank) : 'th';
+    
     // Append cells for each column
     row.innerHTML = `
-      <td class="p-4">${team.rank}</td>
+      <td class="p-4">${team.rank}<sup>${rankSuffix}</sup></td>
       <td class="p-4">
         <a href="team.html?team=${team.teamNumberString}" 
            class="text-baywatch-orange hover:text-white transition-colors">

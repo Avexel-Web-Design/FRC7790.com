@@ -16,6 +16,22 @@ window.FRC_TEAM_KEY = window.FRC_TEAM_KEY || "frc7790"; // Add team key definiti
 // Constant for the 37-hour offset (in milliseconds)
 const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
 
+// Helper function to format ranking with proper suffix (1st, 2nd, 3rd, etc.)
+function formatRankSuffix(rank) {
+  if (rank === 1) {
+    return "st";
+  } else if (rank === 2) {
+    return "nd";
+  } else if (rank === 3) {
+    return "rd";
+  } else {
+    return "th";
+  }
+}
+
+// Make formatRankSuffix function available globally
+window.formatRankSuffix = formatRankSuffix;
+
 // Fetch event data by event code
 async function fetchEventData(eventCode) {
   try {
@@ -148,6 +164,11 @@ async function updateRankings(eventKey) {
       
       if (rankingNumber && totalTeams) {
         rankingNumber.textContent = teamRanking.rank;
+        // Update the suffix span with the correctly formatted suffix
+        const rankingSuffix = document.querySelector('#ranking-number + span');
+        if (rankingSuffix) {
+          rankingSuffix.textContent = formatRankSuffix(teamRanking.rank);
+        }
         totalTeams.textContent = `of ${rankings.rankings.length} teams`;
       }
     } else {

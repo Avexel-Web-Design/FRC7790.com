@@ -1,4 +1,4 @@
-  // Add this at the end of the file to handle event states on schedule page
+// Add this at the end of the file to handle event states on schedule page
   if (window.location.pathname.includes('schedule.html')) {
     document.addEventListener('DOMContentLoaded', async function() {
       // List of event codes to check (all four events on the schedule page)
@@ -143,7 +143,7 @@
                       <span id="ranking-number" class="text-4xl font-bold text-baywatch-orange animate__animated animate__fadeIn">--</span>
                       <span class="text-sm text-gray-400 self-end mb-1">th</span>
                     </div>
-                    <div id="qual-record" class="text-sm text-gray-400 mt-1">--W---L---T</div>
+                    <div id="qual-record" class="text-sm text-gray-400 mt-1">--W--L--T</div>
                   `;
                 }
   
@@ -205,6 +205,13 @@
                       if (status.qual && status.qual.ranking) {
                         const ranking = status.qual.ranking;
                         if (rankEl) rankEl.textContent = ranking.rank || '--';
+                        
+                        // Update suffix using the formatRankSuffix function
+                        const rankSuffix = updatedLiveUpdates.querySelector('#ranking-number + span');
+                        if (rankSuffix && window.formatRankSuffix && ranking.rank) {
+                          rankSuffix.textContent = window.formatRankSuffix(ranking.rank);
+                        }
+                        
                         if (recordEl) {
                           recordEl.textContent = `${ranking.record ? ranking.record.wins : '--'}-${ranking.record ? ranking.record.losses : '--'}-${ranking.record ? ranking.record.ties : '--'}`;
                         }
