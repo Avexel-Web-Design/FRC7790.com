@@ -282,19 +282,36 @@ function updateTeamSocialLinks(teamNumber) {
     const formattedDates = `${startDate.toLocaleDateString('en-US', dateOptions)} - ${endDate.toLocaleDateString('en-US', dateOptions)} | ${eventData.location_name}`;
     document.getElementById('event-details').textContent = formattedDates;
     
-    // Set appropriate Twitch link if available
-    const eventCode = eventData.key;
-    const twitchChannels = {
-      '2025mitvc': 'firstinspires36'
-    };
+    // Set appropriate Twitch link if available from webcasts array
+    const watchLink = document.getElementById('event-watch-link');
     
-    if (twitchChannels[eventCode]) {
-      const watchLink = document.getElementById('event-watch-link');
-      watchLink.href = `https://twitch.tv/${twitchChannels[eventCode]}`;
-      watchLink.classList.remove('hidden');
+    // Check if webcasts array exists and has entries
+    if (eventData.webcasts && eventData.webcasts.length > 0) {
+      // Look for a Twitch stream first
+      const twitchStream = eventData.webcasts.find(webcast => webcast.type === 'twitch');
+      
+      if (twitchStream && twitchStream.channel) {
+        // Set the watch link to the Twitch channel
+        watchLink.href = `https://twitch.tv/${twitchStream.channel}`;
+        watchLink.classList.remove('hidden');
+      } else {
+        // Check for YouTube stream as fallback
+        const youtubeStream = eventData.webcasts.find(webcast => webcast.type === 'youtube');
+        if (youtubeStream && youtubeStream.channel) {
+          watchLink.href = `https://youtube.com/watch?v=${youtubeStream.channel}`;
+          watchLink.innerHTML = `<i class="fab fa-youtube mr-2"></i> Watch Live`;
+          watchLink.classList.remove('hidden');
+          watchLink.classList.replace('text-[#A970FF]', 'text-[#FF0000]');
+          watchLink.classList.replace('bg-[#6441A4]/20', 'bg-[#FF0000]/20');
+          watchLink.classList.replace('hover:bg-[#6441A4]/30', 'hover:bg-[#FF0000]/30');
+        } else {
+          // Hide watch link if no stream available
+          watchLink.classList.add('hidden');
+        }
+      }
     } else {
-      // Hide watch link if no channel is available
-      document.getElementById('event-watch-link').classList.add('hidden');
+      // No webcasts available
+      watchLink.classList.add('hidden');
     }
     
     // Update district button link if the event has district information
@@ -303,11 +320,8 @@ function updateTeamSocialLinks(teamNumber) {
       // Use district key from event data to create link to district page
       const districtKey = eventData.district.key;
       districtLink.href = `district.html?district=${districtKey}`;
-      
-      // Make sure the button is visible
-      districtLink.classList.remove('hidden');
-    } else if (districtLink) {
-      // If event doesn't have district info, hide the district button
+    } else {
+      // Hide district link if no district information
       districtLink.classList.add('hidden');
     }
   }
