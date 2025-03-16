@@ -243,29 +243,6 @@
       </div>
     </div>
 
-    <!-- Main Content Container -->
-    <main class="flex-grow">
-      <!-- Filter Controls -->
-      <div class="container mx-auto px-6 mb-8">
-        <div class="flex flex-wrap gap-3">
-          <button id="filter-all" class="filter-btn active-filter px-4 py-1 rounded-full text-sm border border-baywatch-orange/50 bg-baywatch-orange/20 hover:bg-baywatch-orange/30 transition-colors">
-            All Results
-          </button>
-          <button id="filter-teams" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
-            Teams
-          </button>
-          <button id="filter-events" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
-            Events
-          </button>
-          <button id="filter-districts" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
-            Districts
-          </button>
-          <button id="filter-pages" class="filter-btn px-4 py-1 rounded-full text-sm border border-gray-700 bg-black/20 hover:bg-black/30 transition-colors">
-            Pages
-          </button>
-        </div>
-      </div>
-
       <!-- Results Container -->
       <div class="container mx-auto px-6 mb-12">
         <div id="search-results" class="grid grid-cols-1 gap-6">
@@ -386,10 +363,6 @@
         font-weight: 500;
       }
       
-      /* Empty state styling */
-      #no-results-message {
-        animation: fadeIn 0.5s ease-in-out;
-      }
       
       @keyframes fadeIn {
         from { opacity: 0; }
