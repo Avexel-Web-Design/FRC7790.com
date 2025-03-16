@@ -60,34 +60,86 @@
 
   <body class="bg-black text-white font-poppins min-h-screen flex flex-col">
     <!-- Navigation Bar -->
-    <nav class="fixed top-0 w-full z-50 transition-all duration-300" id="navbar">
-      <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+    <nav
+      class="fixed top-0 w-full z-50 transition-all duration-300"
+      id="navbar"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex items-center justify-between"
+      >
         <div class="flex items-center space-x-2">
-          <a href="index.html#" class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105">
-            <img src="public/assets/images/logo.svg" alt="Baywatch Robotics Logo" class="w-20 h-20" />
+          <a
+            href="index.html#"
+            class="flex items-center space-x-2 scroll-smooth transition-all duration-300 hover:scale-105"
+          >
+            <img
+              src="public/assets/images/logo.svg"
+              alt="Baywatch Robotics Logo"
+              class="w-20 h-20"
+            />
           </a>
         </div>
         
-        <!-- Search Bar -->
+        <!-- Search Bar (New Addition) -->
         <div class="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
-          <input type="text" id="search-input" placeholder="Search team # or event code..." class="bg-transparent border-none focus:outline-none text-white w-full" aria-label="Search for team or event">
-          <button id="search-button" class="text-gray-400 hover:text-baywatch-orange transition-colors" aria-label="Search">
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search team # or event..." 
+            class="bg-transparent border-none focus:outline-none text-white w-full"
+            aria-label="Search for team or event">
+          <button 
+            id="search-button"
+            class="text-gray-400 hover:text-baywatch-orange transition-colors"
+            aria-label="Search">
             <i class="fas fa-search"></i>
           </button>
         </div>
         
         <!-- Desktop Menu -->
         <ul class="hidden md:flex space-x-8">
-          <li><a href="robots.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Robots</a></li>
-          <li><a href="sponsors.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Sponsors</a></li>
-          <li><a href="schedule.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Schedule</a></li>
-          <li><a href="scouting.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">Scouting</a></li>
-          <li><a href="ftc.html" class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block">FTC</a></li>
+          <li>
+            <a
+              href="robots.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Robots</a
+            >
+          </li>
+          <li>
+            <a
+              href="sponsors.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Sponsors</a
+            >
+          </li>
+          <li>
+            <a
+              href="schedule.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Schedule</a
+            >
+          </li>
+          <li>
+            <a
+              href="scouting.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >Scouting</a
+            >
+          </li>
+          <li>
+            <a
+              href="ftc.html"
+              class="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+              >FTC</a
+            >
+          </li>
         </ul>
-
         <!-- Mobile Menu Button -->
         <div class="md:hidden">
-          <button id="mobile-menu-btn" class="focus:outline-none transition-transform duration-300">
+          <button
+            id="mobile-menu-btn"
+            class="focus:outline-none transition-transform duration-300"
+          >
             <i class="fas fa-bars text-3xl"></i>
           </button>
         </div>
