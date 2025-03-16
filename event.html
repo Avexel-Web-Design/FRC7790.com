@@ -78,6 +78,15 @@
       #rankings-table tbody tr {
         transition: all 0.3s ease-out;
       }
+      
+      /* Tooltip styling */
+      .custom-tooltip {
+        pointer-events: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        max-width: 250px;
+        white-space: normal;
+        z-index: 100;
+      }
     </style>
   </head>
 
@@ -443,7 +452,12 @@
                       <th class="p-4 text-baywatch-orange">Team</th>
                       <th class="p-4 text-baywatch-orange">Name</th>
                       <th class="p-4 text-baywatch-orange">Record (W-L-T)</th>
-                      <th class="p-4 text-baywatch-orange">Ranking Points</th>
+                      <th class="p-4 text-baywatch-orange">Ranking Score</th>
+                      <th class="p-4 text-baywatch-orange">
+                        <div class="flex items-center">
+                          EPA <i class="fas fa-info-circle text-baywatch-orange tooltip-trigger ml-1" data-tooltip="EPA data may take a moment to load"></i>
+                        </div>
+                      </th>
                     </tr>
                   </thead>
                   <tbody class="text-gray-300">
@@ -940,6 +954,35 @@
         
         // Use the prepareEventPage function to load event data appropriately
         prepareEventPage(eventCode);
+      });
+    </script>
+    
+    <!-- Add tooltip initialization script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips for the statically defined tooltip triggers
+        document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+          // Create tooltip element
+          const tooltip = document.createElement('div');
+          tooltip.className = 'custom-tooltip opacity-0 invisible absolute z-50 bg-gray-900 text-white text-xs rounded p-2 max-w-xs transition-all duration-200';
+          tooltip.textContent = trigger.getAttribute('data-tooltip');
+          document.body.appendChild(tooltip);
+          
+          // Show tooltip on hover
+          trigger.addEventListener('mouseenter', (e) => {
+            const rect = trigger.getBoundingClientRect();
+            tooltip.style.left = `${rect.left + window.scrollX}px`;
+            tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            tooltip.classList.remove('opacity-0', 'invisible');
+            tooltip.classList.add('opacity-100', 'visible');
+          });
+          
+          // Hide tooltip when not hovering
+          trigger.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('opacity-100', 'visible');
+            tooltip.classList.add('opacity-0', 'invisible');
+          });
+        });
       });
     </script>
   </body>

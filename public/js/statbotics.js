@@ -367,11 +367,8 @@ async function enhanceEventPageWithStatbotics(eventKey) {
       rankingsTable.parentNode.insertBefore(statsCard, rankingsTable);
     }
     
-    // IMPORTANT: Add a slight delay to ensure the table is fully rendered before enhancing with EPA
-    // This helps avoid timing issues with the sortable table
-    setTimeout(() => {
-      enhanceRankingsWithEPA(eventKey);
-    }, 500);
+    // Remove the delay - call enhanceRankingsWithEPA immediately
+    enhanceRankingsWithEPA(eventKey);
     
   } catch (error) {
     console.error('Error enhancing event page with Statbotics data:', error);
@@ -398,6 +395,22 @@ async function enhanceRankingsWithEPA(eventKey) {
     }
     
     console.log(`Found ${teamRows.length} team rows to enhance with EPA data`);
+    
+    // First, immediately ensure all rows have the placeholder dots showing
+    // This makes the EPA column appear consistent right away
+    for (let i = 0; i < teamRows.length; i++) {
+      const row = teamRows[i];
+      
+      // Get EPA cell - try both approaches as the DOM might have changed
+      let epaCell;
+      if (row.cells.length >= 6) {
+        epaCell = row.cells[5]; // Direct access if cell exists
+        // Ensure the placeholder is showing immediately
+        if (epaCell && !epaCell.querySelector('.font-mono')) {
+          epaCell.innerHTML = `<span class="font-mono text-gray-500">...</span>`;
+        }
+      }
+    }
     
     // If rankingsData doesn't exist yet, create it from the table
     if (!window.rankingsData) {

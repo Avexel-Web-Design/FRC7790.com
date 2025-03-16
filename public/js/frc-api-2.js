@@ -122,7 +122,7 @@ function updateSortableHeaders(rankingsData) {
     { id: 'name', text: 'Name', sortKey: 'teamName' },
     { id: 'record', text: 'Record (W-L-T)', sortKey: 'winPercentage' },
     { id: 'rp', text: 'Ranking Points', sortKey: 'sortOrder' },
-    { id: 'epa', text: 'EPA <i class="fas fa-info-circle text-baywatch-orange tooltip-trigger" data-tooltip="EPA data may take a moment to load. If it is taking too long, try refreshing the page."></i>', sortKey: 'epa' }
+    { id: 'epa', text: 'EPA <i class="fas fa-info-circle text-baywatch-orange tooltip-trigger" data-tooltip="EPA data may take a moment to load"></i>', sortKey: 'epa' }
   ];
   
   // Create sortable headers

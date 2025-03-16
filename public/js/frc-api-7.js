@@ -37,8 +37,7 @@ function updateTeamSocialLinks(teamNumber) {
     });
   }
   
-  // Add periodic updates for the rankings and schedule on the event page
-  // to ensure the data stays current during an active event
+  // Add initialization for the event page without periodic updates
   document.addEventListener('DOMContentLoaded', function() {
     if (window.location.pathname.includes('event.html')) {
       // Parse URL parameters to get event code
@@ -49,15 +48,7 @@ function updateTeamSocialLinks(teamNumber) {
         // Prepare the event page based on whether it has started
         prepareEventPage(eventCode);
         
-        // Set up periodic updates for live event data
-        setInterval(() => {
-          // Check if event has started before updating
-          const eventStartDate = localStorage.getItem(`${eventCode}_startDate`);
-          if (eventStartDate && hasEventStarted(eventStartDate)) {
-            loadEventRankings(eventCode);
-            loadEventSchedule(eventCode);
-          }
-        }, 60000); // Update every minute
+        // Automatic refresh has been removed to prevent data updates every 30-60 seconds
       }
     }
   });
