@@ -965,7 +965,7 @@ function renderSearchResult(result) {
   `;
 }
 
-// Update the results display with the given results array - Fix counter updating
+// Update the results display with the given results array
 async function displaySearchResults(results, query) {
   const resultsContainer = document.getElementById('search-results');
   const noResultsMessage = document.getElementById('no-results-message');
@@ -989,16 +989,26 @@ async function displaySearchResults(results, query) {
   // Update counters with actual result counts - IMPORTANT: Do this AFTER setting searchResults
   updateCountersFromResults(results);
   
+  // Always hide no results message first
+  if (noResultsMessage) {
+    noResultsMessage.classList.add('hidden');
+    noResultsMessage.setAttribute('aria-hidden', 'true');
+    noResultsMessage.style.display = 'none';
+  }
+  
   // Handle empty results
   if (results.length === 0) {
     if (resultsContainer) resultsContainer.innerHTML = '';
-    if (noResultsMessage) noResultsMessage.classList.remove('hidden');
+    if (noResultsMessage) {
+      noResultsMessage.classList.remove('hidden');
+      noResultsMessage.removeAttribute('aria-hidden');
+      noResultsMessage.style.display = 'block';
+    }
     if (searchSummary) searchSummary.textContent = `No results found for "${query}"`;
     return;
   }
   
   // Show results
-  if (noResultsMessage) noResultsMessage.classList.add('hidden');
   if (searchSummary) searchSummary.textContent = `Found ${results.length} results for "${query}"`;
   
   // Generate HTML for all results
@@ -1226,15 +1236,19 @@ function displayFilteredResults(results, query) {
     return;
   }
   
+  // Always hide no results message first
+  noResultsMessage.classList.add('hidden');
+  noResultsMessage.setAttribute('aria-hidden', 'true');
+  noResultsMessage.style.display = 'none';
+  
   // Handle empty results
   if (!results || results.length === 0) {
     resultsContainer.innerHTML = '';
     noResultsMessage.classList.remove('hidden');
+    noResultsMessage.removeAttribute('aria-hidden');
+    noResultsMessage.style.display = 'block';
     return;
   }
-  
-  // Hide no results message
-  noResultsMessage.classList.add('hidden');
   
   // Generate HTML for results
   resultsContainer.innerHTML = results
