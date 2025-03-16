@@ -232,22 +232,12 @@ async function updatePlayoffBracket(eventKey) {
     loadEventRankings('2025milac');
     loadEventSchedule('2025milac');
     updatePlayoffBracket('2025milac');
-    
-    // Optional: Add periodic updates
-    setInterval(() => {
-      updatePlayoffBracket('2025milac');
-    }, 30000); // Update every 30 seconds
   }
   // Add support for Traverse City event page
   else if (window.location.pathname.includes('mitvc.html')) {
     loadEventRankings('2025mitvc');
     loadEventSchedule('2025mitvc');
     updatePlayoffBracket('2025mitvc');
-    
-    // Optional: Add periodic updates
-    setInterval(() => {
-      updatePlayoffBracket('2025mitvc');
-    }, 30000); // Update every 30 seconds
   }
   
   // Add this new function to handle loading match details
