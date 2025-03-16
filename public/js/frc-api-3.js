@@ -47,8 +47,20 @@ async function updatePlayoffBracket(eventKey) {
         });
   
         // Process finals matches
-        const finalMatches = playoffMatches.filter(match => match.comp_level === 'f');
-        finalMatches.forEach(match => {
+        const finalMatches = playoffMatches
+          .filter(match => match.comp_level === 'f')
+          .sort((a, b) => a.match_number - b.match_number);
+        
+        // Check if we have a tie in match 3
+        let hasMatchThreeTie = false;
+        const finalMatch3 = finalMatches.find(match => match.match_number === 3);
+        if (finalMatch3 && finalMatch3.winning_alliance === '') {
+          hasMatchThreeTie = true;
+        }
+
+        // Always show matches 1 and 2
+        for (let i = 0; i < Math.min(2, finalMatches.length); i++) {
+          const match = finalMatches[i];
           const matchId = `match-f${match.match_number}`;
           const matchBox = document.getElementById(matchId);
           if (matchBox) {
@@ -65,7 +77,98 @@ async function updatePlayoffBracket(eventKey) {
               `;
             }
           }
-        });
+        }
+
+        // For matches 3 and beyond, only show them if they have been played
+        // or if previous match was a tie (indicating they are needed)
+        for (let i = 2; i < finalMatches.length; i++) {
+          const match = finalMatches[i];
+          const matchNumber = match.match_number;
+          const matchId = `match-f${matchNumber}`;
+          const matchBox = document.getElementById(matchId);
+          
+          if (!matchBox) continue;
+          
+          // Check if this match has been played (has an actual_time)
+          // or if the previous match was a tie (indicating this match is necessary)
+          const matchHasBeenPlayed = match.actual_time !== null;
+          
+          // Find the previous match to see if it was a tie
+          let previousMatchWasTie = false;
+          if (matchNumber > 1) {
+            const prevMatch = finalMatches.find(m => m.match_number === matchNumber - 1);
+            if (prevMatch && prevMatch.winning_alliance === '') {
+              previousMatchWasTie = true;
+            }
+          }
+          
+          // Show this match if it has been played or previous was tie
+          if (matchHasBeenPlayed || previousMatchWasTie) {
+            // Show the match
+            matchBox.classList.remove('hidden');
+            updateMatchBox(matchBox, match, allianceMap);
+            
+            // Add match link - Use Finals for match 3, Overtime for matches 4+
+            const matchNumberElement = matchBox.querySelector('.match-number');
+            if (matchNumberElement) {
+              // For match 3, it's still "Finals 3"
+              // For match 4+, it's "Overtime 1", "Overtime 2", etc.
+              const displayLabel = matchNumber === 3 
+                ? `Finals ${matchNumber}` 
+                : `Overtime ${matchNumber - 3}`;
+                
+              matchNumberElement.innerHTML = `
+                <a href="match.html?match=${match.key}" class="match-link">
+                  ${displayLabel}
+                  <i class="fas fa-external-link-alt text-xs ml-1"></i>
+                </a>
+              `;
+            }
+          } else {
+            // Hide the match if it hasn't been played yet and isn't needed
+            matchBox.classList.add('hidden');
+          }
+        }
+        
+        // Check if we need to add additional finals matches beyond the default 3
+        // First unhide matches 4 and 5 if they've been played
+        for (let matchNum = 4; matchNum <= 5; matchNum++) {
+          const match = finalMatches.find(m => m.match_number === matchNum);
+          const matchBox = document.getElementById(`match-f${matchNum}`);
+          
+          if (!matchBox) continue;
+          
+          if (match) {
+            // This match exists in the data - update and show it
+            matchBox.classList.remove('hidden');
+            updateMatchBox(matchBox, match, allianceMap);
+            
+            const matchNumberElement = matchBox.querySelector('.match-number');
+            if (matchNumberElement) {
+              // Use "Overtime" naming for matches 4 and 5
+              const overtimeNum = matchNum - 3;
+              
+              matchNumberElement.innerHTML = `
+                <a href="match.html?match=${match.key}" class="match-link">
+                  Overtime ${overtimeNum}
+                  <i class="fas fa-external-link-alt text-xs ml-1"></i>
+                </a>
+              `;
+            }
+          } else {
+            // This match isn't in the data
+            // Show it only if previous match was a tie and we still need more matches
+            const prevMatch = finalMatches.find(m => m.match_number === matchNum - 1);
+            
+            if (prevMatch && prevMatch.winning_alliance === '' && needsMoreMatches(finalMatches)) {
+              // Previous match was a tie, so keep this one visible but with placeholder data
+              matchBox.classList.remove('hidden');
+            } else {
+              // Hide it
+              matchBox.classList.add('hidden');
+            }
+          }
+        }
       }
   
     } catch (error) {
@@ -73,6 +176,24 @@ async function updatePlayoffBracket(eventKey) {
       // Don't replace the bracket with an error message - just log it
       // The initialized placeholders will remain visible
     }
+  }
+
+  // Helper function to determine if more finals matches are needed
+  function needsMoreMatches(finalMatches) {
+    // Count wins for blue and red alliances
+    let blueWins = 0;
+    let redWins = 0;
+    
+    finalMatches.forEach(match => {
+      if (match.winning_alliance === 'blue') {
+        blueWins++;
+      } else if (match.winning_alliance === 'red') {
+        redWins++;
+      }
+    });
+    
+    // Need more matches if neither alliance has won 2 matches yet
+    return blueWins < 2 && redWins < 2;
   }
   
   // New function to initialize the bracket with TBD placeholders
