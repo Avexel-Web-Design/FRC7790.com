@@ -299,16 +299,29 @@ function updateTeamSocialLinks(teamNumber) {
         // Set the watch link to the Twitch channel
         watchLink.href = `https://twitch.tv/${twitchStream.channel}`;
         watchLink.classList.remove('hidden');
+        
+        // Add click handler to ensure link works properly
+        watchLink.onclick = function(e) {
+          e.preventDefault(); 
+          window.open(`https://twitch.tv/${twitchStream.channel}`, '_blank');
+        };
       } else {
         // Check for YouTube stream as fallback
         const youtubeStream = eventData.webcasts.find(webcast => webcast.type === 'youtube');
         if (youtubeStream && youtubeStream.channel) {
-          watchLink.href = `https://youtube.com/watch?v=${youtubeStream.channel}`;
+          const youtubeUrl = `https://youtube.com/watch?v=${youtubeStream.channel}`;
+          watchLink.href = youtubeUrl;
           watchLink.innerHTML = `<i class="fab fa-youtube mr-2"></i> Watch Live`;
           watchLink.classList.remove('hidden');
           watchLink.classList.replace('text-[#A970FF]', 'text-[#FF0000]');
           watchLink.classList.replace('bg-[#6441A4]/20', 'bg-[#FF0000]/20');
           watchLink.classList.replace('hover:bg-[#6441A4]/30', 'hover:bg-[#FF0000]/30');
+          
+          // Add click handler to ensure link works properly
+          watchLink.onclick = function(e) {
+            e.preventDefault();
+            window.open(youtubeUrl, '_blank');
+          };
         } else {
           // Hide watch link if no stream available
           watchLink.classList.add('hidden');
@@ -324,7 +337,15 @@ function updateTeamSocialLinks(teamNumber) {
     if (districtLink && eventData.district) {
       // Use district key from event data to create link to district page
       const districtKey = eventData.district.key;
-      districtLink.href = `district.html?district=${districtKey}`;
+      const districtUrl = `district.html?district=${districtKey}`;
+      districtLink.href = districtUrl;
+      districtLink.classList.remove('hidden');
+      
+      // Add click handler to ensure link works properly
+      districtLink.onclick = function(e) {
+        e.preventDefault();
+        window.location.href = districtUrl;
+      };
     } else {
       // Hide district link if no district information
       districtLink.classList.add('hidden');
