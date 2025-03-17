@@ -393,8 +393,45 @@
         
         <!-- Loading Indicator -->
         <div id="loading-indicator" class="hidden flex flex-col justify-center items-center py-12 my-8 animate__animated animate__fadeIn">
-          <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-baywatch-orange mb-4"></div>
-          <p class="text-gray-400">Loading team data...</p>
+          <div class="loader-container">
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+            <div class="loader-particle"></div>
+          </div>
+          <p class="text-gray-400 mt-4">Loading team data...</p>
+        </div>
+
+        <!-- Loading Overlay - Shows while scout data is loading -->
+        <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+          <div class="text-center">
+            <div class="loader-container">
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+              <div class="loader-particle"></div>
+            </div>
+            <h2 class="text-xl font-bold text-baywatch-orange mt-4">Loading Scouting Data</h2>
+            <p class="text-gray-400 mt-2">Retrieving information from The Blue Alliance</p>
+          </div>
         </div>
 
         <!-- No Teams Message -->

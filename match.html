@@ -381,7 +381,24 @@
               <h2 class="text-2xl font-bold mb-4">Team Information</h2>
               <div class="card-gradient rounded-xl p-6">
                 <div id="team-details" class="space-y-6">
-                  <div class="loading-pulse">Loading team information...</div>
+                  <div class="text-center py-8">
+                    <div class="loader-container">
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                      <div class="loader-particle"></div>
+                    </div>
+                    <p class="text-gray-400 mt-4">Loading team information...</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -397,6 +414,29 @@
         </div>
       </div>
     </section>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
+      <div class="text-center">
+        <div class="loader-container">
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+          <div class="loader-particle"></div>
+        </div>
+        <h2 class="text-xl font-bold text-baywatch-orange mt-4">Loading Match Data</h2>
+        <p class="text-gray-400 mt-2">Retrieving information from The Blue Alliance</p>
+      </div>
+    </div>
 
     <style>
       /* Match Overview specific styles */
