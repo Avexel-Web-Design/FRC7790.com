@@ -386,3 +386,195 @@ document.addEventListener('DOMContentLoaded', function() {
     return mapping[eventName] || '';
   }
 });
+
+// Spider Web Cursor Effect
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Create canvas element
+  const canvas = document.createElement('canvas');
+  canvas.id = 'spider';
+  canvas.className = 'spider';
+  document.body.appendChild(canvas);
+  
+  const ctx = canvas.getContext('2d');
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  
+  // Set canvas size
+  canvas.width = width;
+  canvas.height = height;
+  
+  // Mouse position tracking
+  let mousePos = { x: width / 2, y: height / 2 };
+  let prevMousePos = { x: width / 2, y: height / 2 };
+  let isMouseMoving = false;
+  let mouseStillTimeout;
+  
+  // Web points
+  const points = [];
+  const maxPoints = 60; // Larger web
+  const distanceThreshold = 150; // Larger connections
+  const pointLife = 200; // Slower fading
+  
+  // Colors for the web
+  const webColor = '#FF6B00'; // Baywatch orange
+  const webAlpha = 0.4; // Web transparency
+  
+  // Track if mouse is over the window
+  let isMouseOnPage = false;
+  
+  // Counter for consistent point generation
+  let frameCounter = 0;
+  const spawnInterval = 6; // Higher number = more time between spawns
+  
+  // Handle window resize
+  window.addEventListener('resize', function() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+  });
+  
+  // Function to check if mouse is moving
+  function checkMouseMovement(e) {
+      const currentX = e.clientX;
+      const currentY = e.clientY;
+      
+      // Check if mouse has moved more than 2 pixels in any direction
+      isMouseMoving = Math.abs(currentX - prevMousePos.x) > 2 || 
+                      Math.abs(currentY - prevMousePos.y) > 2;
+      
+      if (isMouseMoving) {
+          // Update mouse position
+          mousePos.x = currentX;
+          mousePos.y = currentY;
+          
+          // Clear previous timeout and set new one
+          clearTimeout(mouseStillTimeout);
+          mouseStillTimeout = setTimeout(() => {
+              isMouseMoving = false;
+          }, 50); // Consider mouse still after 50ms of no movement
+      }
+      
+      // Update previous position
+      prevMousePos.x = currentX;
+      prevMousePos.y = currentY;
+      
+      // Set mouse on page
+      isMouseOnPage = true;
+  }
+  
+  // Track mouse position and movement
+  document.addEventListener('mousemove', checkMouseMovement);
+  
+  // Track mouse leaving the window
+  document.addEventListener('mouseout', function(e) {
+      // Check if mouse has actually left the window
+      const from = e.relatedTarget || e.toElement;
+      if (!from || from.nodeName === 'HTML') {
+          isMouseOnPage = false;
+      }
+  });
+  
+  // Track mouse entering the window
+  document.addEventListener('mouseover', function() {
+      isMouseOnPage = true;
+  });
+  
+  // Add a point to the web
+  function addPoint(x, y) {
+      // Add slight randomness to point position around cursor
+      const randomOffset = 5;
+      x += (Math.random() - 0.5) * randomOffset;
+      y += (Math.random() - 0.5) * randomOffset;
+      
+      points.push({
+          x: x,
+          y: y,
+          // Add random velocity - reduced for slower movement
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: (Math.random() - 0.5) * 0.7,
+          life: pointLife
+      });
+  }
+  
+  // Main animation loop
+  function animate() {
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+      
+      // Increment frame counter for consistent spawning
+      frameCounter++;
+      
+      // Add new points at a consistent rate when mouse is on page AND moving
+      if (isMouseOnPage && isMouseMoving && points.length < maxPoints && frameCounter % spawnInterval === 0) {
+          addPoint(mousePos.x, mousePos.y);
+      }
+      
+      // Update and draw web points (regardless of whether mouse is on page or moving)
+      for (let i = 0; i < points.length; i++) {
+          points[i].x += points[i].vx;
+          points[i].y += points[i].vy;
+          points[i].life -= 0.5; // Slow fading
+          
+          // Remove points that have expired
+          if (points[i].life <= 0) {
+              points.splice(i, 1);
+              i--;
+              continue;
+          }
+          
+          // Draw connections between points that are close enough
+          for (let j = i + 1; j < points.length; j++) {
+              const dx = points[i].x - points[j].x;
+              const dy = points[i].y - points[j].y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              
+              if (dist < distanceThreshold) {
+                  // Line opacity based on distance and point life
+                  const opacity = (1 - dist / distanceThreshold) * (points[i].life / pointLife) * webAlpha;
+                  ctx.beginPath();
+                  ctx.moveTo(points[i].x, points[i].y);
+                  ctx.lineTo(points[j].x, points[j].y);
+                  ctx.strokeStyle = `rgba(255, 107, 0, ${opacity})`;
+                  
+                  // Line width based on distance
+                  ctx.lineWidth = 1.5 * (1 - dist / distanceThreshold);
+                  ctx.stroke();
+                  ctx.closePath();
+              }
+          }
+          
+          // Connect to mouse position for more interactivity (only when mouse is on page)
+          if (isMouseOnPage) {
+              const dx = points[i].x - mousePos.x;
+              const dy = points[i].y - mousePos.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              
+              if (dist < distanceThreshold * 1.2) {
+                  const opacity = (1 - dist / (distanceThreshold * 1.2)) * (points[i].life / pointLife) * webAlpha;
+                  ctx.beginPath();
+                  ctx.moveTo(points[i].x, points[i].y);
+                  ctx.lineTo(mousePos.x, mousePos.y);
+                  ctx.strokeStyle = `rgba(255, 107, 0, ${opacity})`;
+                  ctx.lineWidth = 1.5 * (1 - dist / (distanceThreshold * 1.2));
+                  ctx.stroke();
+                  ctx.closePath();
+              }
+          }
+          
+          // Draw point - INCREASED DOT SIZE
+          const pointOpacity = (points[i].life / pointLife) * 0.8;
+          ctx.beginPath();
+          ctx.arc(points[i].x, points[i].y, 3.5, 0, Math.PI * 2); // Increased from 1.5 to 3.5
+          ctx.fillStyle = `rgba(255, 107, 0, ${pointOpacity})`;
+          ctx.fill();
+          ctx.closePath();
+      }
+      
+      requestAnimationFrame(animate);
+  }
+  
+  // Start animation
+  animate();
+});
