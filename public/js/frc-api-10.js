@@ -76,96 +76,177 @@ async function updateRankingsTable(data, tableBodyElement) {
   try {
     // Default to the rankings-table tbody if no element provided
     if (!tableBodyElement) {
-      const table = document.getElementById('district-rankings-table');
+      // First try district-rankings-table (for district page)
+      let table = document.getElementById('district-rankings-table');
+      
+      // If not found, try rankings-table (for event page)
+      if (!table) {
+        table = document.getElementById('rankings-table');
+      }
+      
       if (!table) {
         throw new Error('Rankings table element not found');
       }
+      
       tableBodyElement = table.querySelector('tbody');
       if (!tableBodyElement) {
         throw new Error('Rankings table body not found');
       }
     }
 
-    // Handle no rankings data
-    if (!data || !Array.isArray(data)) {
+    // Handle district rankings data (array of team objects)
+    if (Array.isArray(data)) {
+      // This is district rankings data
+      
+      // Handle no rankings data
+      if (data.length === 0) {
+        tableBodyElement.innerHTML = `
+          <tr>
+            <td colspan="8" class="p-8 text-center">
+              <div class="flex flex-col items-center justify-center">
+                <i class="fas fa-chart-line text-gray-600 text-4xl mb-3"></i>
+                <p class="text-lg text-gray-400">No rankings available yet</p>
+                <p class="text-sm text-gray-500 mt-2">Check back during the season</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      // Update team count for district page
+      const teamCountEl = document.getElementById('district-team-count');
+      if (teamCountEl) {
+        teamCountEl.textContent = data.length;
+      }
+
+      // Build table rows for district rankings
+      const rows = await Promise.all(data.map(async (team) => {
+        const teamNumber = team.team_key.replace('frc', '');
+        const is7790 = teamNumber === '7790';
+        const teamClass = is7790 ? 'bg-baywatch-orange/30 font-bold' : '';
+        
+        // Fetch team name
+        const teamDetails = await fetchTeamDetails(teamNumber);
+        const teamName = teamDetails?.nickname || 'Unknown Team';
+
+        // Format event points safely
+        const formatPoints = (points) => {
+          if (typeof points === 'number') {
+            return points.toFixed(1);
+          }
+          return '0.0';
+        };
+
+        // Get event points safely
+        const event1Points = team.event_points && team.event_points.length > 0 ? formatPoints(team.event_points[0]) : '0.0';
+        const event2Points = team.event_points && team.event_points.length > 1 ? formatPoints(team.event_points[1]) : '0.0';
+        const dcmpPoints = typeof team.district_cmp_points === 'number' ? formatPoints(team.district_cmp_points) : '0.0';
+        const rookieBonus = typeof team.rookie_bonus === 'number' ? formatPoints(team.rookie_bonus) : '0.0';
+        const totalPoints = typeof team.point_total === 'number' ? formatPoints(team.point_total) : '0.0';
+
+        return `
+          <tr class="${teamClass} hover:bg-black/40 transition-colors">
+            <td class="p-4 font-semibold">${team.rank}</td>
+            <td class="p-4">
+              <a href="team.html?team=${teamNumber}" class="text-baywatch-orange hover:underline">
+                ${teamNumber}
+              </a>
+            </td>
+            <td class="p-4">${teamName}</td>
+            <td class="p-4 font-semibold">${totalPoints}</td>
+            <td class="p-4">${event1Points}</td>
+            <td class="p-4">${event2Points}</td>
+            <td class="p-4">${dcmpPoints}</td>
+            <td class="p-4">${rookieBonus}</td>
+          </tr>
+        `;
+      }));
+      
+      tableBodyElement.innerHTML = rows.join('');
+    }
+    // Handle event rankings data (with rankings property)
+    else if (data && data.rankings) {
+      // This is event rankings data
+      const rankings = data.rankings || [];
+      
+      if (rankings.length === 0) {
+        tableBodyElement.innerHTML = `
+          <tr>
+            <td colspan="5" class="p-8 text-center">
+              <div class="flex flex-col items-center justify-center">
+                <i class="fas fa-chart-line text-gray-600 text-4xl mb-3"></i>
+                <p class="text-lg text-gray-400">No rankings available yet</p>
+                <p class="text-sm text-gray-500 mt-2">Check back during the event</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      // Build table rows for event rankings
+      const rows = rankings.map(team => {
+        const teamNumber = team.team_key.replace('frc', '');
+        const is7790 = teamNumber === '7790';
+        const teamClass = is7790 ? 'bg-baywatch-orange/30 font-bold' : '';
+        
+        return `
+          <tr class="${teamClass} hover:bg-black/40 transition-colors">
+            <td class="p-4 font-semibold">${team.rank}</td>
+            <td class="p-4">
+              <a href="team.html?team=${teamNumber}" class="text-baywatch-orange hover:underline">
+                ${teamNumber}
+              </a>
+            </td>
+            <td class="p-4">${team.extra_stats[0].toFixed(2)}</td>
+            <td class="p-4">${team.record.wins}-${team.record.losses}-${team.record.ties}</td>
+            <td class="p-4">${team.sort_orders[0].toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
+      
+      // Update table content
+      tableBodyElement.innerHTML = rows;
+      
+      // Update ranking count if the element exists
+      const countElement = document.getElementById('ranking-count');
+      if (countElement) {
+        countElement.textContent = rankings.length;
+      }
+    } 
+    // Handle empty/invalid data
+    else {
       tableBodyElement.innerHTML = `
         <tr>
           <td colspan="8" class="p-8 text-center">
             <div class="flex flex-col items-center justify-center">
               <i class="fas fa-chart-line text-gray-600 text-4xl mb-3"></i>
               <p class="text-lg text-gray-400">No rankings available yet</p>
-              <p class="text-sm text-gray-500 mt-2">Check back during the season</p>
+              <p class="text-sm text-gray-500 mt-2">Check back during the event</p>
             </div>
           </td>
         </tr>
       `;
-      return;
     }
-
-    // Update team count
-    const teamCountEl = document.getElementById('district-team-count');
-    if (teamCountEl) {
-      teamCountEl.textContent = data.length;
-    }
-
-    // Build table rows
-    const rows = await Promise.all(data.map(async (team) => {
-      const teamNumber = team.team_key.replace('frc', '');
-      const is7790 = teamNumber === '7790';
-      const teamClass = is7790 ? 'bg-baywatch-orange/30 font-bold' : '';
-      
-      // Fetch team name
-      const teamDetails = await fetchTeamDetails(teamNumber);
-      const teamName = teamDetails?.nickname || 'Unknown Team';
-
-      // Format event points safely
-      const formatPoints = (points) => {
-        if (typeof points === 'number') {
-          return points.toFixed(1);
-        }
-        return '0.0';
-      };
-
-      // Get event points safely
-      const event1Points = team.event_points && team.event_points.length > 0 ? formatPoints(team.event_points[0]) : '0.0';
-      const event2Points = team.event_points && team.event_points.length > 1 ? formatPoints(team.event_points[1]) : '0.0';
-      const dcmpPoints = typeof team.district_cmp_points === 'number' ? formatPoints(team.district_cmp_points) : '0.0';
-      const rookieBonus = typeof team.rookie_bonus === 'number' ? formatPoints(team.rookie_bonus) : '0.0';
-      const totalPoints = typeof team.point_total === 'number' ? formatPoints(team.point_total) : '0.0';
-
-      return `
-        <tr class="${teamClass} hover:bg-black/40 transition-colors">
-          <td class="p-4 font-semibold">${team.rank}</td>
-          <td class="p-4">
-            <a href="team.html?team=${teamNumber}" class="text-baywatch-orange hover:underline">
-              ${teamNumber}
-            </a>
-          </td>
-          <td class="p-4">${teamName}</td>
-          <td class="p-4 font-semibold">${totalPoints}</td>
-          <td class="p-4">${event1Points}</td>
-          <td class="p-4">${event2Points}</td>
-          <td class="p-4">${dcmpPoints}</td>
-          <td class="p-4">${rookieBonus}</td>
-        </tr>
-      `;
-    }));
-    
-    tableBodyElement.innerHTML = rows.join('');
     
   } catch (error) {
     console.error('Error updating rankings table:', error);
-    tableBodyElement.innerHTML = `
-      <tr>
-        <td colspan="8" class="p-8 text-center">
-          <div class="flex flex-col items-center justify-center">
-            <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-3"></i>
-            <p class="text-lg text-gray-400">Error displaying rankings</p>
-            <p class="text-sm text-gray-500 mt-2">${error.message || 'Please try again later'}</p>
-          </div>
-        </td>
-      </tr>
-    `;
+    
+    // Show error in table
+    if (tableBodyElement) {
+      tableBodyElement.innerHTML = `
+        <tr>
+          <td colspan="8" class="p-8 text-center">
+            <div class="flex flex-col items-center justify-center">
+              <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-3"></i>
+              <p class="text-lg text-gray-400">Error displaying rankings</p>
+              <p class="text-sm text-gray-500 mt-2">${error.message || 'Please try again later'}</p>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
   }
 }
 
