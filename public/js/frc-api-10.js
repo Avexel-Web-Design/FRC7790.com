@@ -138,10 +138,38 @@ async function updateRankingsTable(data, tableBodyElement) {
           return '0.0';
         };
 
-        // Get event points safely
-        const event1Points = team.event_points && team.event_points.length > 0 ? formatPoints(team.event_points[0]) : '0.0';
-        const event2Points = team.event_points && team.event_points.length > 1 ? formatPoints(team.event_points[1]) : '0.0';
-        const dcmpPoints = typeof team.district_cmp_points === 'number' ? formatPoints(team.district_cmp_points) : '0.0';
+        // Fixed code for event points
+        // Get individual event points from the event_points array structure
+        let event1Points = '0.0';
+        let event2Points = '0.0';
+        let dcmpPoints = '0.0';
+        
+        // Log the structure of team.event_points for debugging
+        console.log(`Team ${teamNumber} event points:`, team.event_points);
+        
+        // Process each event in the event_points array
+        if (Array.isArray(team.event_points)) {
+          team.event_points.forEach((event, index) => {
+            // Each event entry should have total and event_key properties
+            if (event && typeof event.total === 'number') {
+              const isChampionship = event.event_key && event.event_key.includes('dcmp');
+              
+              if (isChampionship) {
+                dcmpPoints = formatPoints(event.total);
+              } else if (index === 0) {
+                event1Points = formatPoints(event.total);
+              } else if (index === 1) {
+                event2Points = formatPoints(event.total);
+              }
+            }
+          });
+        }
+        
+        // If we didn't find DCMP points in event_points, use the district_cmp_points field
+        if (dcmpPoints === '0.0' && typeof team.district_cmp_points === 'number') {
+          dcmpPoints = formatPoints(team.district_cmp_points);
+        }
+        
         const rookieBonus = typeof team.rookie_bonus === 'number' ? formatPoints(team.rookie_bonus) : '0.0';
         const totalPoints = typeof team.point_total === 'number' ? formatPoints(team.point_total) : '0.0';
 
