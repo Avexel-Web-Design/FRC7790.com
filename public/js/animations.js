@@ -387,8 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Spider Web Cursor Effect
-
+// Spider Web Cursor Effect with 3D Parallax
 document.addEventListener('DOMContentLoaded', function() {
   // Create canvas element
   const canvas = document.createElement('canvas');
@@ -404,17 +403,27 @@ document.addEventListener('DOMContentLoaded', function() {
   canvas.width = width;
   canvas.height = height;
   
-  // Mouse position tracking
+  // Mouse position tracking for cursor and parallax effects
   let mousePos = { x: width / 2, y: height / 2 };
   let prevMousePos = { x: width / 2, y: height / 2 };
   let isMouseMoving = false;
   let mouseStillTimeout;
   
-  // Web points
+  // Smooth mouse tracking for parallax effect
+  let targetMouseX = width / 2;
+  let targetMouseY = height / 2;
+  let mouseX = width / 2;
+  let mouseY = height / 2;
+  
+  // Web points with depth properties for parallax
   const points = [];
-  const maxPoints = 60; // Larger web
-  const distanceThreshold = 150; // Larger connections
+  const maxPoints = 60;
+  const distanceThreshold = 150;
   const pointLife = 200; // Slower fading
+  const movementFactor = 0.03; // How much points move with mouse parallax (lower = more subtle)
+  
+  // Number of depth layers to simulate 3D effect
+  const maxDepth = 5; 
   
   // Colors for the web
   const webColor = '#FF6B00'; // Baywatch orange
@@ -440,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const currentX = e.clientX;
       const currentY = e.clientY;
       
-      // Check if mouse has moved more than 2 pixels in any direction
+      // For cursor effect - check if mouse moved more than 2 pixels
       isMouseMoving = Math.abs(currentX - prevMousePos.x) > 2 || 
                       Math.abs(currentY - prevMousePos.y) > 2;
       
@@ -448,6 +457,10 @@ document.addEventListener('DOMContentLoaded', function() {
           // Update mouse position
           mousePos.x = currentX;
           mousePos.y = currentY;
+          
+          // For parallax effect - set target position
+          targetMouseX = currentX;
+          targetMouseY = currentY;
           
           // Clear previous timeout and set new one
           clearTimeout(mouseStillTimeout);
@@ -481,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
       isMouseOnPage = true;
   });
   
-  // Add a point to the web
+  // Add a point to the web with depth property for parallax
   function addPoint(x, y) {
       // Add slight randomness to point position around cursor
       const randomOffset = 5;
@@ -494,14 +507,32 @@ document.addEventListener('DOMContentLoaded', function() {
           // Add random velocity - reduced for slower movement
           vx: (Math.random() - 0.5) * 0.7,
           vy: (Math.random() - 0.5) * 0.7,
-          life: pointLife
+          life: pointLife,
+          // Add depth property for parallax effect (random depth layer)
+          depth: (Math.random() * 0.8) + 0.2, // Value between 0.2 and 1.0
+          // Size based on depth (closer = larger)
+          size: 1.5 + (Math.random() * 2.5)
       });
   }
+  
+  // Scroll tracking for additional effect
+  let scrollY = window.scrollY || document.documentElement.scrollTop;
+  window.addEventListener('scroll', function() {
+      scrollY = window.scrollY || document.documentElement.scrollTop;
+  });
   
   // Main animation loop
   function animate() {
       // Clear canvas
       ctx.clearRect(0, 0, width, height);
+      
+      // Smooth mouse movement for parallax (easing)
+      mouseX += (targetMouseX - mouseX) * 0.05;
+      mouseY += (targetMouseY - mouseY) * 0.05;
+      
+      // Calculate mouse offset from center for parallax effect
+      const offsetX = (mouseX - (width / 2)) * movementFactor;
+      const offsetY = (mouseY - (height / 2)) * movementFactor;
       
       // Increment frame counter for consistent spawning
       frameCounter++;
@@ -513,6 +544,11 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Update and draw web points (regardless of whether mouse is on page or moving)
       for (let i = 0; i < points.length; i++) {
+          // Calculate parallax shift based on point's depth
+          const parallaxX = offsetX * points[i].depth;
+          const parallaxY = offsetY * points[i].depth;
+          
+          // Apply movement to points
           points[i].x += points[i].vx;
           points[i].y += points[i].vy;
           points[i].life -= 0.5; // Slow fading
@@ -524,22 +560,35 @@ document.addEventListener('DOMContentLoaded', function() {
               continue;
           }
           
+          // Apply parallax to calculate display position
+          const displayX = points[i].x + parallaxX;
+          const displayY = points[i].y + parallaxY;
+          
           // Draw connections between points that are close enough
           for (let j = i + 1; j < points.length; j++) {
-              const dx = points[i].x - points[j].x;
-              const dy = points[i].y - points[j].y;
+              // Apply parallax to second point
+              const parallaxX2 = offsetX * points[j].depth;
+              const parallaxY2 = offsetY * points[j].depth;
+              
+              const displayX2 = points[j].x + parallaxX2;
+              const displayY2 = points[j].y + parallaxY2;
+              
+              const dx = displayX - displayX2;
+              const dy = displayY - displayY2;
               const dist = Math.sqrt(dx * dx + dy * dy);
               
               if (dist < distanceThreshold) {
-                  // Line opacity based on distance and point life
-                  const opacity = (1 - dist / distanceThreshold) * (points[i].life / pointLife) * webAlpha;
+                  // Line opacity based on distance, point life, and average depth
+                  const avgDepth = (points[i].depth + points[j].depth) / 2;
+                  const opacity = (1 - dist / distanceThreshold) * (points[i].life / pointLife) * webAlpha * avgDepth;
+                  
                   ctx.beginPath();
-                  ctx.moveTo(points[i].x, points[i].y);
-                  ctx.lineTo(points[j].x, points[j].y);
+                  ctx.moveTo(displayX, displayY);
+                  ctx.lineTo(displayX2, displayY2);
                   ctx.strokeStyle = `rgba(255, 107, 0, ${opacity})`;
                   
-                  // Line width based on distance
-                  ctx.lineWidth = 1.5 * (1 - dist / distanceThreshold);
+                  // Line width based on distance and depth (greater depth = thicker lines)
+                  ctx.lineWidth = 1.5 * (1 - dist / distanceThreshold) * avgDepth;
                   ctx.stroke();
                   ctx.closePath();
               }
@@ -547,15 +596,15 @@ document.addEventListener('DOMContentLoaded', function() {
           
           // Connect to mouse position for more interactivity (only when mouse is on page)
           if (isMouseOnPage) {
-              const dx = points[i].x - mousePos.x;
-              const dy = points[i].y - mousePos.y;
+              const dx = displayX - mouseX;
+              const dy = displayY - mouseY;
               const dist = Math.sqrt(dx * dx + dy * dy);
               
               if (dist < distanceThreshold * 1.2) {
                   const opacity = (1 - dist / (distanceThreshold * 1.2)) * (points[i].life / pointLife) * webAlpha;
                   ctx.beginPath();
-                  ctx.moveTo(points[i].x, points[i].y);
-                  ctx.lineTo(mousePos.x, mousePos.y);
+                  ctx.moveTo(displayX, displayY);
+                  ctx.lineTo(mouseX, mouseY);
                   ctx.strokeStyle = `rgba(255, 107, 0, ${opacity})`;
                   ctx.lineWidth = 1.5 * (1 - dist / (distanceThreshold * 1.2));
                   ctx.stroke();
@@ -563,13 +612,29 @@ document.addEventListener('DOMContentLoaded', function() {
               }
           }
           
-          // Draw point - INCREASED DOT SIZE
-          const pointOpacity = (points[i].life / pointLife) * 0.8;
+          // Draw point with size based on depth
+          const pointOpacity = (points[i].life / pointLife) * 0.8 * points[i].depth;
           ctx.beginPath();
-          ctx.arc(points[i].x, points[i].y, 3.5, 0, Math.PI * 2); // Increased from 1.5 to 3.5
+          ctx.arc(displayX, displayY, points[i].size * points[i].depth, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(255, 107, 0, ${pointOpacity})`;
           ctx.fill();
-          ctx.closePath();
+          
+          // Add glow effect for larger particles
+          if (points[i].size * points[i].depth > 2.5) {
+              ctx.beginPath();
+              ctx.arc(displayX, displayY, points[i].size * points[i].depth * 1.5, 0, Math.PI * 2);
+              
+              // Glow with gradient
+              const gradient = ctx.createRadialGradient(
+                  displayX, displayY, points[i].size * points[i].depth * 0.5,
+                  displayX, displayY, points[i].size * points[i].depth * 2
+              );
+              gradient.addColorStop(0, `rgba(255, 107, 0, ${pointOpacity * 0.5})`);
+              gradient.addColorStop(1, 'rgba(255, 107, 0, 0)');
+              
+              ctx.fillStyle = gradient;
+              ctx.fill();
+          }
       }
       
       requestAnimationFrame(animate);
@@ -577,4 +642,13 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Start animation
   animate();
+});
+
+// Optional: Add scroll effect to spider web particles
+window.addEventListener('scroll', function() {
+  const scrollFactor = window.scrollY * 0.001;
+  const canvas = document.getElementById('spider');
+  if (canvas) {
+    canvas.style.transform = `translateY(${scrollFactor * 50}px)`;
+  }
 });
