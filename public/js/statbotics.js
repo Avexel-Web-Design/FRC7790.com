@@ -157,10 +157,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // On event page, enhance with Statbotics event data
     enhanceEventPageWithStatbotics(params.get('event'));
   }
-  else if (path.includes('team.html') && params.has('team')) {
-    // On team page, enhance with Statbotics team data
-    enhanceTeamEventsWithEPA(params.get('team'));
-  }
+  // Remove team.html EPA enhancement since we removed the EPA column
+  // else if (path.includes('team.html') && params.has('team')) {
+  //   enhanceTeamEventsWithEPA(params.get('team'));
+  // }
 });
 
 // Function to update match breakdown with Statbotics data
@@ -246,22 +246,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Use enhanced function with Statbotics data
     loadMatchDetailsWithStatbotics(matchKey);
   } else {
-    // Handle case where no match key is provided (use original error handling)
-    document.getElementById('match-title').innerHTML = 
-      'No Match Selected <span class="text-red-400"><i class="fas fa-circle-exclamation"></i></span>';
-    document.getElementById('match-event').textContent = 'Please select a match from the schedule';
+    // Handle case where no match key is provided but we're on the match page
+    const matchTitle = document.getElementById('match-title');
+    const matchEvent = document.getElementById('match-event');
+    const scoreContainer = document.getElementById('score-container');
+    const matchBreakdown = document.getElementById('match-breakdown');
+    const teamDetails = document.getElementById('team-details');
+    const matchVideo = document.getElementById('match-video');
     
-    document.getElementById('score-container').innerHTML = 
-      '<div class="w-full text-center py-8"><i class="fas fa-robot text-gray-600 text-5xl mb-4"></i><p class="text-gray-400">No match data available</p></div>';
-    
-    document.getElementById('match-breakdown').innerHTML = 
-      '<div class="text-center text-gray-400"><i class="fas fa-table-list text-gray-600 text-3xl mb-4"></i><p>Match breakdown unavailable</p></div>';
+    // Only update if we're on the match page
+    if (matchTitle && matchEvent && scoreContainer && matchBreakdown && teamDetails && matchVideo) {
+      matchTitle.innerHTML = 
+        'No Match Selected <span class="text-red-400"><i class="fas fa-circle-exclamation"></i></span>';
+      matchEvent.textContent = 'Please select a match from the schedule';
       
-    document.getElementById('team-details').innerHTML = 
-      '<div class="text-center text-gray-400"><i class="fas fa-users text-gray-600 text-3xl mb-4"></i><p>Team information unavailable</p></div>';
+      scoreContainer.innerHTML = 
+        '<div class="w-full text-center py-8"><i class="fas fa-robot text-gray-600 text-5xl mb-4"></i><p class="text-gray-400">No match data available</p></div>';
       
-    document.getElementById('match-video').innerHTML = 
-      '<div class="text-center text-gray-400"><i class="fas fa-video text-gray-600 text-3xl mb-4"></i><p>No match video available</p></div>';
+      matchBreakdown.innerHTML = 
+        '<div class="text-center text-gray-400"><i class="fas fa-table-list text-gray-600 text-3xl mb-4"></i><p>Match breakdown unavailable</p></div>';
+        
+      teamDetails.innerHTML = 
+        '<div class="text-center text-gray-400"><i class="fas fa-users text-gray-600 text-3xl mb-4"></i><p>Team information unavailable</p></div>';
+        
+      matchVideo.innerHTML = 
+        '<div class="text-center text-gray-400"><i class="fas fa-video text-gray-600 text-3xl mb-4"></i><p>No match video available</p></div>';
+    }
   }
 });
 
@@ -574,60 +584,5 @@ async function enhanceRankingsWithEPA(eventKey) {
   }
 }
 
-// Function to enhance team events table with EPA data
-async function enhanceTeamEventsWithEPA(teamNumber) {
-  try {
-    const eventsTable = document.getElementById('events-table');
-    if (!eventsTable) return;
-    
-    // Add EPA header to events table
-    const headerRow = eventsTable.querySelector('thead tr');
-    if (headerRow) {
-      const epaHeader = document.createElement('th');
-      epaHeader.textContent = 'EPA';
-      epaHeader.className = 'p-4 text-left text-baywatch-orange';
-      headerRow.appendChild(epaHeader);
-    }
-    
-    // Get all event rows
-    const eventRows = eventsTable.querySelectorAll('tbody tr');
-    if (!eventRows.length) return;
-    
-    // Process each event row
-    for (const row of eventRows) {
-      // Skip if this is just a "No events" message row
-      if (row.querySelector('td[colspan]')) continue;
-      
-      // Find the event key from the event name cell
-      const eventLinkCell = row.querySelector('td:first-child a');
-      if (!eventLinkCell) continue;
-      
-      const eventHref = eventLinkCell.getAttribute('href');
-      const eventKey = eventHref.split('=')[1];
-      
-      if (!eventKey) continue;
-      
-      // Fetch team-event data from Statbotics
-      const teamEventData = await getTeamEventStatbotics(teamNumber, eventKey);
-      
-      // Create EPA cell
-      const epaCell = document.createElement('td');
-      epaCell.className = 'p-4';
-      
-      if (teamEventData && teamEventData.epa && teamEventData.epa.total_points) {
-        const epaRating = teamEventData.epa.total_points.mean;
-        epaCell.innerHTML = `
-          <span class="font-mono ${'text-gray-300'}">
-            ${epaRating.toFixed(1)}
-          </span>
-        `;
-      } else {
-        epaCell.textContent = 'N/A';
-      }
-      
-      row.appendChild(epaCell);
-    }
-  } catch (error) {
-    console.error('Error enhancing team events with EPA data:', error);
-  }
-}
+// Function to enhance team events table with EPA data - DISABLED
+// Removed function implementation since we no longer have an EPA column

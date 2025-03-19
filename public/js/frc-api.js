@@ -364,6 +364,12 @@ function updateCountdown(startDate) {
 
 // New function for event countdown - Updated to add 37-hour offset
 function updateEventCountdown(startDate) {
+  const countdownEl = document.getElementById("countdown-timer");
+  if (!countdownEl) {
+    // No countdown timer element found, possibly on team.html
+    return;
+  }
+
   const now = new Date().getTime();
   // Add the 37-hour offset to the TBA start date to get the actual start time
   const eventStart = new Date(startDate).getTime() + OFFSET_MS;
@@ -377,7 +383,6 @@ function updateEventCountdown(startDate) {
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-  const countdownEl = document.getElementById("countdown-timer");
   if (countdownEl) {
     countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
   }
@@ -392,7 +397,7 @@ function updateEventLinks(eventKey) {
   
   // Update each link with the correct event key
   eventLinks.forEach(link => {
-    if (link.href && link.href.includes('event.html')) {
+    if (link && link.href && link.href.includes('event.html')) {
       link.href = `event.html?event=${eventKey}`;
     }
   });
@@ -402,14 +407,22 @@ function updateEventLinks(eventKey) {
 
 // Initialize and update all data with loading states
 async function initializeEventData() {
-  setLoadingState(true);
   console.log("Initializing event data...");
-
   try {
     // Use calculated next event instead of a hardcoded one
     console.log("Fetching next event with team key:", window.FRC_TEAM_KEY);
     const currentEvent = await getNextEvent();
     console.log("Next event data:", currentEvent);
+    
+    // Get necessary DOM elements with null checks
+    const countdownSection = document.getElementById("countdown-section");
+    const liveUpdates = document.getElementById("live-updates");
+    
+    // Check if we're on a page with these elements before proceeding
+    if (!countdownSection && !liveUpdates) {
+      console.log("Required DOM elements not found - might be on team.html or another page without event status UI");
+      return;
+    }
     
     if (currentEvent) {
       const currentDate = new Date().getTime();
@@ -418,31 +431,29 @@ async function initializeEventData() {
       
       // Add offset to event start date for comparison
       const actualEventStart = eventStart + OFFSET_MS;
-
       // Update the event links to point to the next event
       updateEventLinks(currentEvent.key);
-
       // Check against actual start time (with offset) for determining if the event has started
-      if (currentDate >= actualEventStart && currentDate <= eventEnd) {
-        // We're currently at an event - show live data
-        const eventKey = currentEvent.key;
-        document.getElementById("countdown-section").classList.add("hidden");
-        document.getElementById("live-updates").classList.remove("hidden");
-        updateRankings(eventKey);
-        updateRecord(eventKey);
-        updateNextMatch(eventKey);
-      } else if (currentDate < actualEventStart) {
-        // We're before the actual start time - show countdown
-        document.getElementById("countdown-section").classList.remove("hidden");
-        document.getElementById("live-updates").classList.add("hidden");
-        // Pass the original TBA date - the function will add the offset
-        updateEventCountdown(currentEvent.start_date);
-        setInterval(() => updateEventCountdown(currentEvent.start_date), 1000);
+      if (countdownSection && liveUpdates) {
+        if (currentDate >= actualEventStart && currentDate <= eventEnd) {
+          // We're currently at an event - show live data
+          const eventKey = currentEvent.key;
+          countdownSection.classList.add("hidden");
+          liveUpdates.classList.remove("hidden");
+          updateRankings(eventKey);
+          updateRecord(eventKey);
+          updateNextMatch(eventKey);
+        } else if (currentDate < actualEventStart) {
+          // We're before the actual start time - show countdown
+          countdownSection.classList.remove("hidden");
+          liveUpdates.classList.add("hidden");
+          // Pass the original TBA date - the function will add the offset
+          updateEventCountdown(currentEvent.start_date);
+          setInterval(() => updateEventCountdown(currentEvent.start_date), 1000);
+        }
       }
     } else {
       console.error("No upcoming events found");
-      setErrorState("ranking-number", "No upcoming event");
-      setErrorState("total-teams", "Check back later");
       
       // Use a hard-coded date for Lake City event as fallback
       const fallbackDate = "2025-04-03";
@@ -452,14 +463,16 @@ async function initializeEventData() {
       // Update links to fallback event
       updateEventLinks(fallbackEvent);
       
-      document.getElementById("countdown-section").classList.remove("hidden");
-      document.getElementById("live-updates").classList.add("hidden");
-      updateEventCountdown(fallbackDate);
-      setInterval(() => updateEventCountdown(fallbackDate), 1000);
+      // Only update UI elements if they exist
+      if (countdownSection && liveUpdates) {
+        countdownSection.classList.remove("hidden");
+        liveUpdates.classList.add("hidden");
+        updateEventCountdown(fallbackDate);
+        setInterval(() => updateEventCountdown(fallbackDate), 1000);
+      }
     }
   } catch (error) {
     console.error("Error initializing data:", error);
-    setErrorState("ranking-number", "Error loading data");
     
     // Use a hard-coded date for Lake City event as fallback
     const fallbackDate = "2025-04-03";
@@ -469,10 +482,16 @@ async function initializeEventData() {
     // Update links to fallback event
     updateEventLinks(fallbackEvent);
     
-    document.getElementById("countdown-section").classList.remove("hidden");
-    document.getElementById("live-updates").classList.add("hidden");
-    updateEventCountdown(fallbackDate);
-    setInterval(() => updateEventCountdown(fallbackDate), 1000);
+    // Only update UI elements if they exist
+    const countdownSection = document.getElementById("countdown-section");
+    const liveUpdates = document.getElementById("live-updates");
+    
+    if (countdownSection && liveUpdates) {
+      countdownSection.classList.remove("hidden");
+      liveUpdates.classList.add("hidden");
+      updateEventCountdown(fallbackDate);
+      setInterval(() => updateEventCountdown(fallbackDate), 1000);
+    }
   }
 }
 

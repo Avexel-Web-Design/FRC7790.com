@@ -1319,11 +1319,22 @@ function setupResultsPageSearch() {
 // Add data from URL query parameters to the search database
 function addDynamicSearchData() {
   try {
+    // Initialize the teams array if it doesn't exist
+    if (!localSearchDatabase.teams) {
+      localSearchDatabase.teams = [];
+    }
+    
+    // Initialize the events array if it doesn't exist
+    if (!localSearchDatabase.events) {
+      localSearchDatabase.events = [];
+    }
+
     // Add recently viewed teams if stored in localStorage
     const recentTeams = JSON.parse(localStorage.getItem('recentlyViewedTeams') || '[]');
     recentTeams.forEach(team => {
       // Check if team is already in database to avoid duplicates
-      if (!localSearchDatabase.teams.some(t => t.id === team.id)) {
+      // Added null check to prevent error when teams array doesn't exist
+      if (team && team.id && !localSearchDatabase.teams.some(t => t && t.id === team.id)) {
         localSearchDatabase.teams.push({
           id: team.id,
           name: team.name,
@@ -1334,11 +1345,11 @@ function addDynamicSearchData() {
       }
     });
     
-    // Add recently viewed events if stored in localStorage - ACCEPT ALL EVENTS
+    // Add recently viewed events if stored in localStorage
     const recentEvents = JSON.parse(localStorage.getItem('recentlyViewedEvents') || '[]');
     recentEvents.forEach(event => {
-      // Add all events, not just 2025 events
-      if (!localSearchDatabase.events.some(e => e.id === event.id)) {
+      // Added null check to prevent error when events array doesn't exist
+      if (event && event.id && !localSearchDatabase.events.some(e => e && e.id === event.id)) {
         localSearchDatabase.events.push({
           id: event.id,
           name: event.name,
@@ -1365,7 +1376,7 @@ function addDynamicSearchData() {
     ];
     
     commonTeams.forEach(team => {
-      if (!localSearchDatabase.teams.some(t => t.id === team.id)) {
+      if (!localSearchDatabase.teams.some(t => t && t.id === team.id)) {
         localSearchDatabase.teams.push({
           ...team,
           type: "team",
@@ -1390,7 +1401,7 @@ function addDynamicSearchData() {
     ];
     
     additionalEvents.forEach(event => {
-      if (!localSearchDatabase.events.some(e => e.id === event.id)) {
+      if (!localSearchDatabase.events.some(e => e && e.id === event.id)) {
         localSearchDatabase.events.push({
           ...event,
           type: "event",

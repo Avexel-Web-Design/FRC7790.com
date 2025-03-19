@@ -44,16 +44,7 @@
     <script src="public/js/frc-api-8.js" defer></script>
     <script src="public/js/frc-api-9.js" defer></script>
     <script src="public/js/frc-api-10.js" defer></script>
-    <script src="public/js/frc-api-11.js" defer></script>
-    <script src="public/js/frc-api-12.js" defer></script>
-    <script src="public/js/frc-api-13.js" defer></script>
-    <script src="public/js/frc-api-14.js" defer></script>
-    <script src="public/js/frc-api-15.js" defer></script>
-    <script src="public/js/frc-api-16.js" defer></script>
-    <script src="public/js/frc-api-17.js" defer></script>
-    <script src="public/js/frc-api-18.js" defer></script>
-    <script src="public/js/frc-api-19.js" defer></script>
-    <script src="public/js/frc-api-20.js" defer></script>
+    <!-- Removed references to non-existent script files frc-api-11.js through frc-api-20.js -->
     <script src="public/js/statbotics.js" defer></script>
     <script src="public/js/search.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -466,21 +457,22 @@
         return `<a href="event.html?event=${eventKey}" target="_blank" class="hover:text-baywatch-orange transition-colors font-medium">${eventName}</a>`;
       }
       
-      // Update the row generation in loadTeamOverview function where events are displayed
-      // Replace this section in the function:
-      row.innerHTML = `
-        <td class="p-4">
-          ${generateEventLink(event.key, event.name)}
-          ${currentEvent && currentEvent.key === event.key ? 
-            '<span class="ml-2 px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full text-xs">Current</span>' : 
-            (nextEvent && nextEvent.key === event.key ? 
-              '<span class="ml-2 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full text-xs">Next</span>' : '')}
-        </td>
-        <td class="p-4">${dateStr}</td>
-        <td class="p-4">${ranking}</td>
-        <td class="p-4">${record}</td>
-        <td class="p-4">${awards}</td>
-      `;
+      // Define a function to generate row HTML rather than trying to reference row directly
+      function generateEventRowHTML(event, currentEvent, nextEvent, dateStr, ranking, record, awards) {
+        return `
+          <td class="p-4">
+            ${generateEventLink(event.key, event.name)}
+            ${currentEvent && currentEvent.key === event.key ? 
+              '<span class="ml-2 px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full text-xs">Current</span>' : 
+              (nextEvent && nextEvent.key === event.key ? 
+                '<span class="ml-2 px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-full text-xs">Next</span>' : '')}
+          </td>
+          <td class="p-4">${dateStr}</td>
+          <td class="p-4">${ranking}</td>
+          <td class="p-4">${record}</td>
+          <td class="p-4">${awards}</td>
+        `;
+      }
     </script>
   </body>
 </html>

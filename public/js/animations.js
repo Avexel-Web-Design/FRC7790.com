@@ -203,6 +203,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const dots = document.querySelectorAll('.w-8.h-8.bg-baywatch-orange.rounded-full');
   console.log(`Found ${dots.length} dots total`);
   
+  // If we don't have any dots, just skip the timeline logic - this happens on pages like team.html
+  if (dots.length === 0) {
+    console.log('No timeline dots found on this page - skipping timeline logic');
+    return;
+  }
+
   // Clear existing timeline-dot classes and data attributes to avoid confusion
   dots.forEach(dot => {
     dot.classList.remove('timeline-dot');
@@ -236,18 +242,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     console.log('Mapped all dots to their positions between events');
-  } else {
-    console.error(`Expected at least 5 dots but found ${dots.length}`);
+  } else if (dots.length > 0) {
+    console.log(`Found ${dots.length} dots, but expected at least 5. Will work with what we have.`);
+    // Map whatever dots we have
+    dots.forEach((dot, index) => {
+      dot.classList.add('timeline-dot');
+      dot.dataset.position = `dot-${index}`;
+    });
   }
   
   // Get the current date
   const today = new Date();
-  // For testing, uncomment one of these to simulate a specific date
-  // const today = new Date('2025-03-01'); // During Lake City
-  // const today = new Date('2025-03-10'); // Between Lake City and Traverse City
-  // const today = new Date('2025-03-20'); // Between Traverse City and FIM District
-  
   console.log(`Current date for timeline check: ${today.toDateString()}`);
+  
+  // Rest of timeline code only executes if we have dots
+  if (dots.length === 0) return;
   
   // Define time periods including between events
   const timePeriods = [
@@ -315,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function() {
       name: 'After all events',
       start: new Date(events[3].end.getTime() + 1),
       end: new Date('2100-01-01'), // Any date in the future
-      dotIndex: dots.length > 4 ? 4 : 3, // End dot or last dot available
+      dotIndex: dots.length > 4 ? 4 : (dots.length - 1 > 0 ? dots.length - 1 : 0), // End dot or last dot available
       isEvent: false
     }
   ];
@@ -330,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  if (currentPeriod) {
+  if (currentPeriod && dots.length > currentPeriod.dotIndex) {
     const dotToHighlight = dots[currentPeriod.dotIndex];
     if (dotToHighlight) {
       console.log(`Highlighting dot at index ${currentPeriod.dotIndex}`);
@@ -356,22 +365,13 @@ document.addEventListener('DOMContentLoaded', function() {
             countdownSection.classList.add('hidden');
           }
         }
-      } else {
-        // We're between events or before/after all events
-        
-        // Find next upcoming event if we're before or between events
-        let nextEventIndex = -1;
-        for (let i = 0; i < events.length; i++) {
-          if (today < events[i].start) {
-            nextEventIndex = i;
-            break;
-          }
-        }
       }
       
       const dotParent = dotToHighlight.parentNode;
-      dotParent.style.position = 'relative';
-      dotParent.appendChild(indicator);
+      if (dotParent) {
+        dotParent.style.position = 'relative';
+        dotParent.appendChild(indicator);
+      }
     }
   }
   
