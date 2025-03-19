@@ -225,6 +225,7 @@ function updateTeamSocialLinks(teamNumber) {
         loadEventRankings(eventCode);
         loadEventSchedule(eventCode);
         updatePlayoffBracket(eventCode);
+        loadEventAwards(eventCode); // New call to load awards data
         
       } else {
         // Event hasn't started - show teams section
@@ -239,6 +240,7 @@ function updateTeamSocialLinks(teamNumber) {
           document.getElementById('rankings-section').classList.add('hidden');
           document.getElementById('schedule-section').classList.add('hidden');
           document.getElementById('playoff-section').classList.add('hidden');
+          document.getElementById('awards-section').classList.add('hidden'); // Hide awards section for pre-event view
         }
         
         // Hide tab navigation for pre-event view
@@ -436,4 +438,309 @@ function updateTeamSocialLinks(teamNumber) {
   function extractEventType(eventName) {
     // Always return empty string regardless of event type
     return "";
+  }
+  
+  // New function to fetch award data for an event
+  async function fetchEventAwards(eventCode) {
+    try {
+      const response = await fetch(`${window.TBA_BASE_URL}/event/${eventCode}/awards`, {
+        headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error fetching award data: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching event awards:', error);
+      return [];
+    }
+  }
+  
+  // Function to load and display award data
+  async function loadEventAwards(eventCode) {
+    try {
+      const awardsContainer = document.getElementById('awards-container');
+      
+      // Get the award data from the API
+      const awardsData = await fetchEventAwards(eventCode);
+      
+      if (!awardsData || awardsData.length === 0) {
+        awardsContainer.innerHTML = `
+          <div class="text-center py-8">
+            <i class="fas fa-award text-gray-500 text-5xl mb-4"></i>
+            <p class="text-xl text-gray-400">No awards data available yet</p>
+            <p class="text-sm text-gray-500 mt-2">Awards will be displayed once they are announced</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Sort awards by type to ensure consistent ordering
+      awardsData.sort((a, b) => a.award_type - b.award_type);
+      
+      // First we need to gather all team keys to fetch team names in a single call
+      const teamKeys = new Set();
+      awardsData.forEach(award => {
+        if (award.recipient_list) {
+          award.recipient_list.forEach(recipient => {
+            if (recipient.team_key) {
+              teamKeys.add(recipient.team_key);
+            }
+          });
+        }
+      });
+      
+      // Fetch team data for all teams that received awards
+      const teamDataMap = new Map();
+      if (teamKeys.size > 0) {
+        const teamKeysArray = Array.from(teamKeys);
+        const teamsData = await Promise.all(
+          teamKeysArray.map(async (teamKey) => {
+            try {
+              const response = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}`, {
+                headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+              });
+              
+              if (response.ok) {
+                return await response.json();
+              }
+              return null;
+            } catch (error) {
+              console.error(`Error fetching team data for ${teamKey}:`, error);
+              return null;
+            }
+          })
+        );
+        
+        // Create map of team data keyed by team_key
+        teamsData.forEach(team => {
+          if (team) {
+            teamDataMap.set(`frc${team.team_number}`, team);
+          }
+        });
+      }
+      
+      // Group awards by category for better organization
+      const awardGroups = {
+        submitted: [],  // Truly submitted awards: Impact (Chairman's), Dean's List, Digital Animation, Safety Animation, Woodie Flowers
+        alliance: [],   // Winner, Finalist
+        technical: [],  // Technical awards (excluding Imagery)
+        attribute: [],  // Special recognition awards + Engineering Inspiration + Rookie All-Star + Imagery
+        individual: []  // Other individual awards not in submitted category
+      };
+      
+      // Categorize awards
+      awardsData.forEach(award => {
+        const type = award.award_type;
+        
+        // Truly submitted awards: Impact (0), Dean's List (4), Woodie Flowers (3), Digital Animation (31)
+        // Safety Animation doesn't seem to have a distinct type but would go here
+        if (type === 0 || type === 4 || type === 3 || type === 31) {
+          awardGroups.submitted.push(award);
+        }
+        // Alliance awards (1-2)
+        else if (type === 1 || type === 2) {
+          awardGroups.alliance.push(award);
+        }
+        // Engineering Inspiration (9), Rookie All-Star (10) now go to Attribute
+        else if (type === 9 || type === 10 || type === 27) {
+          awardGroups.attribute.push(award);
+        }
+        // Individual recognition (3-5) excluding those already handled
+        else if ((type >= 3 && type <= 5) && type !== 3 && type !== 4) {
+          awardGroups.individual.push(award);
+        }
+        // Technical awards (16-29, 71-73) excluding Imagery (27)
+        else if ((type >= 16 && type <= 29 && type !== 27) || (type >= 71 && type <= 73)) {
+          awardGroups.technical.push(award);
+        }
+        // Other special awards go to Attribute
+        else {
+          awardGroups.attribute.push(award);
+        }
+      });
+      
+      // Generate the styled HTML
+      let awardsHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      `;
+      
+      // Function to generate award HTML
+      const generateAwardHTML = (award) => {
+        let html = `
+          <div class="award-card overflow-hidden relative p-8 rounded-2xl bg-black/90 border border-baywatch-orange/30 shadow-lg transition-shadow duration-500 ease-in-out hover:shadow-baywatch-orange/30 transition-all duration-500 animate-fade-in group">
+            <div class="absolute -top-10 -right-10 opacity-5 text-8xl">
+              <i class="fas fa-award"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-baywatch-orange mb-3 relative">${award.name}</h3>
+            <div class="space-y-3 relative">
+        `;
+        
+        if (award.recipient_list && award.recipient_list.length > 0) {
+          award.recipient_list.forEach(recipient => {
+            const teamKey = recipient.team_key;
+            const recipientName = recipient.awardee;
+            
+            // Special handling for Dean's List (award_type 4) - show both team and recipient name
+            if (award.award_type === 4 && teamKey && recipientName) {
+              const teamNumber = teamKey.replace('frc', '');
+              const isTeam7790 = teamNumber === '7790';
+              const teamData = teamDataMap.get(teamKey);
+              const teamName = teamData ? teamData.nickname : 'Unknown Team';
+              
+              html += `
+                <div class="flex items-center ${isTeam7790 ? 'award-highlight-team' : ''} rounded-lg p-2">
+                  <a href="team.html?team=${teamNumber}" class="flex items-center hover:scale-105 transition-all">
+                    <div class="w-10 h-10 rounded-full ${isTeam7790 ? 'bg-gradient-to-br from-baywatch-orange to-orange-600' : 'bg-gradient-to-br from-gray-700 to-gray-800'} flex items-center justify-center font-bold mr-3">
+                      ${teamNumber}
+                    </div>
+                    <div>
+                      <span class="font-semibold ${isTeam7790 ? 'text-baywatch-orange' : 'text-white'}">${recipientName}</span>
+                      <p class="text-sm text-gray-400">${teamName}</p>
+                    </div>
+                  </a>
+                </div>
+              `;
+            }
+            // Normal team award
+            else if (teamKey) {
+              const teamNumber = teamKey.replace('frc', '');
+              const isTeam7790 = teamNumber === '7790';
+              const teamData = teamDataMap.get(teamKey);
+              const teamName = teamData ? teamData.nickname : 'Unknown Team';
+              
+              html += `
+                <div class="flex items-center ${isTeam7790 ? 'award-highlight-team' : ''} rounded-lg p-2">
+                  <a href="team.html?team=${teamNumber}" class="flex items-center hover:scale-105 transition-all">
+                    <div class="w-10 h-10 rounded-full ${isTeam7790 ? 'bg-gradient-to-br from-baywatch-orange to-orange-600' : 'bg-gradient-to-br from-gray-700 to-gray-800'} flex items-center justify-center font-bold mr-3">
+                      ${teamNumber}
+                    </div>
+                    <span class="font-semibold ${isTeam7790 ? 'text-baywatch-orange' : 'text-white'}">${teamName}</span>
+                  </a>
+                </div>
+              `;
+            } 
+            // Individual award (like Woodie Flowers)
+            else if (recipientName) {
+              html += `
+                <div class="flex items-center p-2">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center mr-3">
+                    <i class="fas fa-user text-white"></i>
+                  </div>
+                  <span class="font-semibold text-white">${recipientName}</span>
+                </div>
+              `;
+            }
+          });
+        } else {
+          html += `<div class="text-gray-500 italic">No recipients announced yet</div>`;
+        }
+        
+        html += `
+            </div>
+          </div>
+        `;
+        return html;
+      };
+      
+      // Add Submitted Awards at the top (if any)
+      if (awardGroups.submitted.length > 0) {
+        awardsHTML += `
+          <div class="col-span-1 md:col-span-2 mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-center border-b border-baywatch-orange/30 pb-2">Submitted Awards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              ${awardGroups.submitted.map(generateAwardHTML).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      // Add alliance awards
+      if (awardGroups.alliance.length > 0) {
+        awardsHTML += `
+          <div class="col-span-1 md:col-span-2 mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-center border-b border-baywatch-orange/30 pb-2">Alliance Awards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              ${awardGroups.alliance.map(generateAwardHTML).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      // Add technical awards
+      if (awardGroups.technical.length > 0) {
+        awardsHTML += `
+          <div class="col-span-1 md:col-span-2 mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-center border-b border-baywatch-orange/30 pb-2">Technical Awards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              ${awardGroups.technical.map(generateAwardHTML).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      // Add attribute awards
+      if (awardGroups.attribute.length > 0) {
+        awardsHTML += `
+          <div class="col-span-1 md:col-span-2 mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-center border-b border-baywatch-orange/30 pb-2">Attribute Awards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              ${awardGroups.attribute.map(generateAwardHTML).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      // Add individual awards
+      if (awardGroups.individual.length > 0) {
+        awardsHTML += `
+          <div class="col-span-1 md:col-span-2 mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-center border-b border-baywatch-orange/30 pb-2">Individual Awards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              ${awardGroups.individual.map(generateAwardHTML).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      awardsHTML += `
+        </div>
+        <style>
+          .award-highlight-team {
+            background-color: rgba(255, 107, 0, 0.1);
+            border-radius: 0.5rem;
+            box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
+          }
+          /* No longer overriding card-gradient class */
+        </style>
+      `;
+      
+      // Update the awards container with the generated HTML
+      awardsContainer.innerHTML = awardsHTML;
+      
+      // Add subtle animation to award cards
+      const awardCards = document.querySelectorAll('.award-card');
+      awardCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, 100 + (index * 50)); // Staggered animation
+      });
+      
+    } catch (error) {
+      console.error('Error loading event awards:', error);
+      document.getElementById('awards-container').innerHTML = `
+        <div class="text-center py-8">
+          <i class="fas fa-exclamation-triangle text-red-500 text-5xl mb-4"></i>
+          <p class="text-xl text-red-400">Error loading awards</p>
+          <p class="text-sm text-gray-400 mt-2">Please try again later</p>
+        </div>
+      `;
+    }
   }
