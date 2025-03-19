@@ -411,6 +411,7 @@
       ></div>
     </section>
 
+
     <!-- Live Event Updates Section -->
     <section id="live-updates" class="py-20 gradient-section scroll-mt-24 hidden">
       <div class="container mx-auto px-6">
@@ -547,6 +548,81 @@
         </div>
       </div>
     </section>
+
+        <!-- Contact Us Section -->
+        <section class="py-16 bg-black relative z-10">
+          <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto">
+              <div class="p-8 card-gradient rounded-xl border border-baywatch-orange/30 shadow-lg hover:shadow-baywatch-orange/20 transition-all duration-300">
+                <h2 class="text-4xl font-bold mb-6 text-center">
+                  <span class="text-white">Contact</span>
+                  <span class="text-baywatch-orange glow-orange">Us</span>
+                </h2>
+                
+                <div class="flex flex-col md:flex-row items-center justify-center gap-8 mt-8">
+                  <!-- Email with copy functionality -->
+                  <div class="relative group">
+                    <button 
+                      id="copy-email-btn"
+                      class="flex items-center px-6 py-3 bg-black/40 hover:bg-black/60 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300"
+                      aria-label="Copy email to clipboard"
+                    >
+                      <i class="fas fa-envelope text-baywatch-orange mr-3"></i>
+                      <span id="email-text">frc@harborps.org</span>
+                      <i class="fas fa-copy ml-3 text-gray-400 group-hover:text-white"></i>
+                    </button>
+                    <span id="copy-tooltip" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-baywatch-orange text-white text-sm px-3 py-1 rounded opacity-0 transition-opacity duration-300">
+                      Copied!
+                    </span>
+                  </div>
+                  
+                  <!-- Contact form button -->
+                  <a 
+                    href="become-a-sponsor.html" 
+                    class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-lg text-white font-semibold hover:scale-105 transition-all duration-300 shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_30px_rgba(255,107,0,0.5)]"
+                  >
+                    <i class="fas fa-paper-plane mr-2"></i>
+                    Contact Form
+                  </a>
+                </div>
+                
+                <p class="text-gray-400 text-center mt-8">
+                  Have questions or want to reach out about a sponsorship. You can reach us at frc@harborps.org or through <a href="become-a-sponsor.html" class="text-baywatch-orange">this contact form.</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+    
+        <!-- Copy to Clipboard Script -->
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            const copyEmailBtn = document.getElementById('copy-email-btn');
+            const emailText = document.getElementById('email-text');
+            const copyTooltip = document.getElementById('copy-tooltip');
+            
+            if (copyEmailBtn && emailText && copyTooltip) {
+              copyEmailBtn.addEventListener('click', function() {
+                // Create a temporary input to copy from
+                const tempInput = document.createElement('input');
+                tempInput.value = emailText.textContent;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                
+                // Show tooltip
+                copyTooltip.style.opacity = '1';
+                
+                // Hide tooltip after 2 seconds
+                setTimeout(function() {
+                  copyTooltip.style.opacity = '0';
+                }, 2000);
+              });
+            }
+          });
+        </script>
+
 
     <!-- About Us / Our Team Section -->
     <section id="about-team" class="py-20 bg-black scroll-mt-24">
