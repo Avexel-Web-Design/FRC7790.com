@@ -675,14 +675,19 @@
             style="animation-delay: 0.2s"
           >
             RIPTIDE
-          </span>
-        </h3>
-        <div class="flex flex-col items-center justify-center">
-          <div class="robot-image-container mx-auto mb-8">
-            <img
-              src="public/assets/images/RIPTIDE/short-better.png"
-              alt="RIPTIDE"
-              class="w-full h-full object-contain"
+          </h3>
+          <div class="flex flex-col items-center justify-center">
+            <div class="robot-image-container mx-auto mb-8">
+              <img
+                src="public/assets/images/RIPTIDE/short-better.png"
+                alt="RIPTIDE"
+                class="w-full h-full object-contain"
+                width="800"
+                height="600"
+                loading="lazy"
+                srcset="public/assets/images/RIPTIDE/short-better-small.png 400w,
+                  public/assets/images/RIPTIDE/short-better.png 800w"
+                sizes="(max-width: 768px) 90vw, 800px"
             />
           </div>
           <a
