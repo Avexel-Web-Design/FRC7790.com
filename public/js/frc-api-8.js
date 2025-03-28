@@ -411,9 +411,14 @@
                 // Get the countdown container for this event
                 const countdownTimer = updatedCountdownSection.querySelector('#countdown-timer');
                 if (countdownTimer) {
-                  // Calculate countdown with 37-hour offset
+                  // Get the event-specific offset instead of using hardcoded 37 hours
+                  const eventOffset = window.getOffsetForEvent ? 
+                      window.getOffsetForEvent(eventCode) : 
+                      (37 * 3600 * 1000); // fallback to 37 hours if global function not available
+                  
+                  // Calculate countdown with event-specific offset
                   const startWithOffset = new Date(eventData.start_date);
-                  startWithOffset.setHours(startWithOffset.getHours() + 37);
+                  startWithOffset.setTime(startWithOffset.getTime() + eventOffset);
                   
                   // Store target date as data attribute and add to timers array
                   countdownTimer.dataset.targetDate = startWithOffset.getTime();

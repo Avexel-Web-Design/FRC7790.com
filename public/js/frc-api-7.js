@@ -53,21 +53,60 @@ function updateTeamSocialLinks(teamNumber) {
     }
   });
   
-  // New function to check if event has started (accounting for 37-hour offset)
-  function hasEventStarted(eventStartDate) {
+  // Helper function to get the appropriate offset for an event
+  function getEventOffset(eventKey) {
+    // Use the global function if available, otherwise use constants here
+    if (window.getOffsetForEvent) {
+      return window.getOffsetForEvent(eventKey);
+    }
+    
+    // Fallback constants if the global function is not available
+    const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset for district events
+    const MICMP_OFFSET_MS = 20.5 * 3600 * 1000; // 20.5 hour offset for FiM championship
+    const TXCMP_OFFSET_MS = 17.5 * 3600 * 1000; // 17.5 hour offset for FiT championship
+    const NECMP_OFFSET_MS = (17+(1/6)) * 3600 * 1000; // 17.5 hour offset for NE championship
+    
+    if (!eventKey) return OFFSET_MS;
+    
+    // Convert to lowercase for case-insensitive comparison
+    const eventLower = eventKey.toLowerCase();
+    
+    // Check for Michigan state championship (micmp)
+    if (eventLower.includes('micmp')) {
+      return MICMP_OFFSET_MS;
+    }
+    
+    // Check for Texas state championship (txcmp only)
+    if (eventLower.includes('txcmp')) {
+      return TXCMP_OFFSET_MS;
+    }
+    
+    // Check for New England state championship (necmp)
+    if (eventLower.includes('necmp')) {
+      return NECMP_OFFSET_MS;
+    }
+    
+    // Default offset for district and other events
+    return OFFSET_MS;
+  }
+  
+  // New function to check if event has started (using event-specific offset)
+  function hasEventStarted(eventStartDate, eventKey) {
     const now = new Date();
     const startDate = new Date(eventStartDate);
-    // Add 37-hour offset to the official start date
-    startDate.setHours(startDate.getHours() + 37);
+    // Add event-specific offset to the official start date
+    const offsetMs = getEventOffset(eventKey);
+    startDate.setTime(startDate.getTime() + offsetMs);
     return now >= startDate;
   }
   
-  // Add this function to check if an event has ended (accounting for 37-hour offset)
-  function hasEventEnded(eventEndDate) {
+  // Add this function to check if an event has ended (using event-specific offset)
+  function hasEventEnded(eventEndDate, eventKey) {
     const now = new Date();
     const endDate = new Date(eventEndDate);
-    // Add 37-hour offset to the official end date
-    endDate.setHours(endDate.getHours() + 37);
+    // Add event-specific offset to the official end date
+    const offsetMs = getEventOffset(eventKey);
+    endDate.setTime(endDate.getTime() + offsetMs);
     return now > endDate;
   }
   
@@ -200,10 +239,10 @@ function updateTeamSocialLinks(teamNumber) {
       // Update page title and header information
       updateEventPageHeader(eventData);
       
-      // Check if the event has started (with 37 hour offset)
-      const hasStarted = hasEventStarted(eventData.start_date);
-      // Check if the event has ended (with 37 hour offset)
-      const hasEnded = hasEventEnded(eventData.end_date);
+      // Check if the event has started (using event-specific offset)
+      const hasStarted = hasEventStarted(eventData.start_date, eventData.key);
+      // Check if the event has ended (using event-specific offset)
+      const hasEnded = hasEventEnded(eventData.end_date, eventData.key);
       
       // Get the tab navigation element
       const tabNavigation = document.querySelector('#competition-data-container .container:first-child');
@@ -250,7 +289,7 @@ function updateTeamSocialLinks(teamNumber) {
         displayEventTeams(eventCode);
         
         // Update countdown timer
-        updateEventCountdownDisplay(eventData.start_date, eventData.end_date);
+        updateEventCountdownDisplay(eventData.start_date, eventData.key);
       }
       
       // Hide loading overlay
@@ -355,13 +394,14 @@ function updateTeamSocialLinks(teamNumber) {
   }
   
   // Function to update countdown display for upcoming events
-  function updateEventCountdownDisplay(startDate) {
+  function updateEventCountdownDisplay(startDate, eventKey) {
     // Get the countdown container
     const countdownContainer = document.getElementById('event-countdown');
     
-    // Calculate time until event starts (with 37 hour offset)
+    // Calculate time until event starts (with event-specific offset)
     const startWithOffset = new Date(startDate);
-    startWithOffset.setHours(startWithOffset.getHours() + 37);
+    const offsetMs = getEventOffset(eventKey);
+    startWithOffset.setTime(startWithOffset.getTime() + offsetMs);
     
     // Update initial countdown
     updateUpcomingEventCountdown(startWithOffset);
