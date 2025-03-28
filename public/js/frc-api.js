@@ -13,8 +13,11 @@ window.TBA_AUTH_KEY = window.TBA_AUTH_KEY || "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzba
 window.TBA_BASE_URL = window.TBA_BASE_URL || "https://www.thebluealliance.com/api/v3";
 window.FRC_TEAM_KEY = window.FRC_TEAM_KEY || "frc7790"; // Add team key definition
 
-// Constant for the 37-hour offset (in milliseconds)
-const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
+// Constant for the start time offsets (in milliseconds)
+const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset for district events
+const MICMP_OFFSET_MS = 20.5 * 3600 * 1000; // 20.5 hour offset for FiM championship
+const TXCMP_OFFSET_MS = 17.5 * 3600 * 1000; // 17.5 hour offset for FiT championship
+const NECMP_OFFSET_MS = (17+(1/6)) * 3600 * 1000; // 17.5 hour offset for NE championship
 
 // Helper function to format ranking with proper suffix (1st, 2nd, 3rd, etc.)
 function formatRankSuffix(rank) {
