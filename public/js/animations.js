@@ -393,6 +393,14 @@ document.addEventListener('DOMContentLoaded', function() {
   const canvas = document.createElement('canvas');
   canvas.id = 'spider';
   canvas.className = 'spider';
+  
+  // Set fixed position to make it follow the cursor exactly regardless of scroll
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  canvas.style.pointerEvents = 'none'; // Ensure it doesn't interfere with clicks
+  canvas.style.zIndex = '9999'; // Keep it on top
+  
   document.body.appendChild(canvas);
   
   const ctx = canvas.getContext('2d');
@@ -413,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let targetMouseX = width / 2;
   let targetMouseY = height / 2;
   let mouseX = width / 2;
-  let mouseY = height / 2;
+  let mouseY = width / 2;
   
   // Web points with depth properties for parallax
   const points = [];
@@ -514,12 +522,6 @@ document.addEventListener('DOMContentLoaded', function() {
           size: 1.5 + (Math.random() * 2.5)
       });
   }
-  
-  // Scroll tracking for additional effect
-  let scrollY = window.scrollY || document.documentElement.scrollTop;
-  window.addEventListener('scroll', function() {
-      scrollY = window.scrollY || document.documentElement.scrollTop;
-  });
   
   // Main animation loop
   function animate() {
@@ -642,13 +644,4 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Start animation
   animate();
-});
-
-// Optional: Add scroll effect to spider web particles
-window.addEventListener('scroll', function() {
-  const scrollFactor = window.scrollY * 0.001;
-  const canvas = document.getElementById('spider');
-  if (canvas) {
-    canvas.style.transform = `translateY(${scrollFactor * 50}px)`;
-  }
 });
