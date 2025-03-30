@@ -1,3 +1,11 @@
+/*
+ * FRC API Module 8 - Schedule Management & Event Status
+ * 
+ * This file handles schedule page functionality, event countdown timers,
+ * and real-time competition status updates. Includes functions to check
+ * event phases (upcoming, active, completed) and render appropriate UI.
+ */
+
 // Add this at the end of the file to handle event states on schedule page
   if (window.location.pathname.includes('schedule.html')) {
     document.addEventListener('DOMContentLoaded', async function() {

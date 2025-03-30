@@ -1,3 +1,11 @@
+/*
+ * FRC API Module 5 - Visualization & Series Tracking
+ * 
+ * This file handles visual elements including the reef node visualization for the
+ * 2025 game and playoff series tracking. Provides detailed representations of game
+ * elements and playoff elimination match status for best-of-three series.
+ */
+
 // New function to generate visual representation of reef nodes
 function generateReefVisualization(blueBreakdown, redBreakdown) {
     // Helper function to generate node visualization for a single alliance

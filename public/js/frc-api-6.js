@@ -1,3 +1,11 @@
+/*
+ * FRC API Module 6 - Team Overview Page
+ * 
+ * This file handles the team overview page functionality, including team stats,
+ * current/upcoming events, and team history. Features responsive event countdowns,
+ * match schedules, and event-specific time offsets for accurate timing.
+ */
+
 // New function to load team overview data
 async function loadTeamOverview() {
     try {

@@ -1,3 +1,11 @@
+/*
+ * FRC API Module 7 - Event Page & Teams Management
+ * 
+ * This file handles the event page functionality, team listings, and page preparation
+ * based on event status. Includes functions for displaying teams, countdown timers,
+ * and determining whether events have started or ended with proper time offsets.
+ */
+
 // New function to update social media links for the specific team
 function updateTeamSocialLinks(teamNumber) {
     // Update social links container with consistent links for all teams

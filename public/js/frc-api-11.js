@@ -1,3 +1,11 @@
+/*
+ * FRC API Module 11 - Team Scheduling & Performance Analytics
+ * 
+ * This file handles team-specific functionality including event schedules, match
+ * results, team performance metrics, and statbotics integration. Enables users to
+ * browse qualification and playoff matches with dynamic highlighting of team performance.
+ */
+
 // Update the event link generation in the processEventData function
 function generateEventLink(eventKey, eventName) {
     return `<a href="event.html?event=${eventKey}" target="_blank" class="hover:text-baywatch-orange transition-colors font-medium">${eventName}</a>`;

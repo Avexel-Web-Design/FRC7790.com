@@ -1,3 +1,11 @@
+/*
+ * FRC API Main Module - Core Functions
+ * 
+ * This file contains core functions for updating team record, next match,
+ * and other essential real-time competition data. These functions power
+ * the main dashboard components and provide live updates during events.
+ */
+
 // FRC API Configuration - Check if constants are already defined (from search.js)
 if (typeof TBA_AUTH_KEY === 'undefined') {
   const TBA_AUTH_KEY =

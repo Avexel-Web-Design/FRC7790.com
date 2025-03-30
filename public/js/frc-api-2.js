@@ -1,3 +1,11 @@
+/*
+ * FRC API Module 2 - Ranking Tables & Match Display
+ * 
+ * This file handles functions related to team rankings and match tables.
+ * Includes sortable ranking tables, match schedule display, playoff bracket
+ * updates, and alliance mapping functions for playoff visualization.
+ */
+
 // Helper function to determine winner and apply styling
 function getMatchWinnerStyles(match) {
   if (!match.actual_time) return { blueStyle: '', redStyle: '', scoreStyle: '' };
