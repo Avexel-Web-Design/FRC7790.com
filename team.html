@@ -48,6 +48,103 @@
     <script src="public/js/statbotics.js" defer></script>
     <script src="public/js/search.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+      /* Tab styling */
+      .tab-button {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s;
+      }
+      
+      .tab-button:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background-color: #FF6B00;
+        transition: all 0.3s;
+        transform: translateX(-50%);
+      }
+      
+      .tab-button.tab-active {
+        color: #FF6B00;
+      }
+      
+      .tab-button.tab-active:after {
+        width: 100%;
+      }
+      
+      /* Ripple effect for tab buttons */
+      .tab-button.tab-clicked:before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 107, 0, 0.3);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%, -50%);
+        transform-origin: 50% 50%;
+        animation: ripple 0.6s ease-out;
+      }
+      
+      @keyframes ripple {
+        0% {
+          transform: scale(0, 0) translate(-50%, -50%);
+          opacity: 0.5;
+        }
+        100% {
+          transform: scale(20, 20) translate(-50%, -50%);
+          opacity: 0;
+        }
+      }
+      
+      /* Tab content animation */
+      .tab-content {
+        transition: all 0.3s ease;
+      }
+      
+      .tab-content.active {
+        animation: fadeIn 0.5s;
+      }
+      
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* Tooltip for mobile tab buttons */
+      @media (max-width: 640px) {
+        .tab-button {
+          position: relative;
+        }
+        
+        .tab-button:hover:after {
+          content: attr(data-tooltip);
+          position: absolute;
+          top: -30px;
+          left: 50%;
+          transform: translateX(-50%);
+          background-color: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 0.75rem;
+          white-space: nowrap;
+          z-index: 10;
+        }
+      }
+    </style>
   </head>
 
   <body class="bg-black text-white font-poppins min-h-screen flex flex-col">
@@ -314,97 +411,249 @@
     <!-- Team Information Section -->
     <section class="py-16 relative z-10">
       <div class="container mx-auto px-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <!-- Team Stats -->
-          <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn" style="animation-delay: 0.2s">
-            <h2 class="text-2xl font-bold mb-6 text-center">Team Stats</h2>
-            <div class="space-y-4">
-              <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                <span class="text-gray-400">Rookie Year</span>
-                <span id="rookie-year" class="font-bold">Loading...</span>
-              </div>
-              <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                <span class="text-gray-400">Events (2025)</span>
-                <span id="events-count" class="font-bold">Loading...</span>
-              </div>
-              <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                <span class="text-gray-400">Avg. Ranking</span>
-                <span id="avg-ranking" class="font-bold">Loading...</span>
-              </div>
-              <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                <span class="text-gray-400">Win Rate</span>
-                <span id="win-rate" class="font-bold">Loading...</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-gray-400">Location</span>
-                <span id="team-location" class="font-bold">Harbor Springs, MI</span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Current Event Overview -->
-          <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn" style="animation-delay: 0.3s">
-            <h2 class="text-2xl font-bold mb-6 text-center">Current Event</h2>
-            <div id="current-event-container" class="space-y-6">
-              <div class="text-center" id="event-loading">
-                <div class="text-gray-400 animate-pulse">Loading event data...</div>
-              </div>
-              <!-- Current Event Data will load here -->
-            </div>
-          </div>
-          
-          <!-- Social Media & Links -->
-          <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn" style="animation-delay: 0.4s">
-            <h2 class="text-2xl font-bold mb-6 text-center">Team Links</h2>
-            <div class="space-y-4" id="team-links-container">
-              <!-- Links will be populated by JavaScript -->
-              <div class="text-center py-4">
-                <div class="text-gray-400 animate-pulse">Loading team links...</div>
-              </div>
-            </div>
+        <!-- Tab Navigation - Modified for mobile responsiveness -->
+        <div class="container mx-auto px-6 mb-2">
+          <div class="border-b border-gray-700 flex justify-center sm:justify-start">
+            <button id="tab-overview" class="tab-button tab-active py-3 px-3 sm:px-6 font-medium focus:outline-none">
+              <i class="fas fa-info-circle mr-0 sm:mr-2"></i>
+              <span class="tab-text hidden sm:inline">Overview</span>
+            </button>
+            <button id="tab-schedule" class="tab-button py-3 px-3 sm:px-6 font-medium focus:outline-none">
+              <i class="fas fa-calendar-days mr-0 sm:mr-2"></i>
+              <span class="tab-text hidden sm:inline">Matches</span>
+            </button>
+            <button id="tab-history" class="tab-button py-3 px-3 sm:px-6 font-medium focus:outline-none">
+              <i class="fas fa-history mr-0 sm:mr-2"></i>
+              <span class="tab-text hidden sm:inline">History</span>
+            </button>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- Season Performance -->
-    <section class="py-16 relative z-10">
-      <div class="container mx-auto px-6">
-        <h2 class="text-3xl font-bold mb-8 text-center">2025 Season Performance</h2>
-        <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn" style="animation-delay: 0.5s">
-          <div class="overflow-x-auto">
-            <table class="min-w-full table-auto" id="events-table">
-              <thead>
-                <tr class="text-left">
-                  <th class="p-4 text-baywatch-orange">Event</th>
-                  <th class="p-4 text-baywatch-orange">Date</th>
-                  <th class="p-4 text-baywatch-orange">Ranking</th>
-                  <th class="p-4 text-baywatch-orange">Record</th>
-                  <th class="p-4 text-baywatch-orange">Awards</th>
-                </tr>
-              </thead>
-              <tbody class="text-gray-300">
-                <tr>
-                  <td colspan="5" class="p-4 text-center">Loading season data...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
-    
-    <!-- Historical Performance -->
-    <section class="py-16 relative z-10">
-      <div class="container mx-auto px-6">
-        <h2 class="text-3xl font-bold mb-8 text-center">Team History</h2>
-        <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn" style="animation-delay: 0.6s">
-          <div id="team-history" class="space-y-6">
-            <div class="text-center">
-              <div class="text-gray-400 animate-pulse">Loading team history...</div>
+        <!-- Overview Section -->
+        <section id="overview-section" class="tab-content py-8 relative z-10">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Team Stats -->
+            <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn" style="animation-delay: 0.2s">
+              <h2 class="text-2xl font-bold mb-6 text-center">Team Stats</h2>
+              <div class="space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                  <span class="text-gray-400">Rookie Year</span>
+                  <span id="rookie-year" class="font-bold">Loading...</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                  <span class="text-gray-400">Events (2025)</span>
+                  <span id="events-count" class="font-bold">Loading...</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                  <span class="text-gray-400">Avg. Ranking</span>
+                  <span id="avg-ranking" class="font-bold">Loading...</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                  <span class="text-gray-400">Win Rate</span>
+                  <span id="win-rate" class="font-bold">Loading...</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-400">Location</span>
+                  <span id="team-location" class="font-bold">Harbor Springs, MI</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Current Event Overview -->
+            <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn" style="animation-delay: 0.3s">
+              <h2 class="text-2xl font-bold mb-6 text-center">Current Event</h2>
+              <div id="current-event-container" class="space-y-6">
+                <div class="text-center" id="event-loading">
+                  <div class="text-gray-400 animate-pulse">Loading event data...</div>
+                </div>
+                <!-- Current Event Data will load here -->
+              </div>
+            </div>
+            
+            <!-- Social Media & Links -->
+            <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn" style="animation-delay: 0.4s">
+              <h2 class="text-2xl font-bold mb-6 text-center">Team Links</h2>
+              <div class="space-y-4" id="team-links-container">
+                <!-- Links will be populated by JavaScript -->
+                <div class="text-center py-4">
+                  <div class="text-gray-400 animate-pulse">Loading team links...</div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+          
+          <!-- Season Performance - Moved from stats tab -->
+          <div class="mt-8">
+            <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn" style="animation-delay: 0.5s">
+              <h3 class="text-2xl font-bold mb-6 text-center">2025 Season Performance</h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full table-auto" id="events-table">
+                  <thead>
+                    <tr class="text-left">
+                      <th class="p-4 text-baywatch-orange">Event</th>
+                      <th class="p-4 text-baywatch-orange">Date</th>
+                      <th class="p-4 text-baywatch-orange">Ranking</th>
+                      <th class="p-4 text-baywatch-orange">Record</th>
+                      <th class="p-4 text-baywatch-orange">Awards</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-gray-300">
+                    <tr>
+                      <td colspan="5" class="p-4 text-center">Loading season data...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Schedule Section - Updated with wider event selector and simplified table -->
+        <section id="schedule-section" class="tab-content py-8 relative z-10 hidden">
+          <h2 class="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
+          <div class="card-gradient rounded-xl p-6">
+            <!-- Event selector - Now much wider -->
+            <div class="mb-6">
+              <label for="event-selector" class="block text-sm font-medium text-gray-400 mb-2">Select Event:</label>
+              <select id="event-selector" class="w-full md:w-[32rem] bg-black/50 text-white border border-gray-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-baywatch-orange/50">
+                <option value="">Loading events...</option>
+              </select>
+            </div>
+            
+            <!-- Qualification Matches -->
+            <div class="mb-8">
+              <h3 class="text-2xl font-bold mb-4">Qualification Matches</h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full table-auto" id="team-qual-table">
+                  <thead>
+                    <tr class="text-left">
+                      <th class="p-4 text-baywatch-orange">Match</th>
+                      <th class="p-4 text-baywatch-orange">Blue Alliance</th>
+                      <th class="p-4 text-baywatch-orange">Red Alliance</th>
+                      <th class="p-4 text-baywatch-orange">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-gray-300">
+                    <tr>
+                      <td colspan="4" class="p-4 text-center">Select an event to view qualification matches</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Playoff Matches -->
+            <div>
+              <h3 class="text-2xl font-bold mb-4">Playoff Matches</h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full table-auto" id="team-playoff-table">
+                  <thead>
+                    <tr class="text-left">
+                      <th class="p-4 text-baywatch-orange">Match</th>
+                      <th class="p-4 text-baywatch-orange">Blue Alliance</th>
+                      <th class="p-4 text-baywatch-orange">Red Alliance</th>
+                      <th class="p-4 text-baywatch-orange">Score</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-gray-300">
+                    <tr>
+                      <td colspan="4" class="p-4 text-center">Select an event to view playoff matches</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section id="stats-section" class="tab-content py-8 relative z-10 hidden">
+          <h2 class="text-3xl font-bold mb-8 text-center">Performance Statistics</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Season Performance Card -->
+            <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn">
+              <h3 class="text-2xl font-bold mb-6 text-center">2025 Season Performance</h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full table-auto" id="events-table">
+                  <thead>
+                    <tr class="text-left">
+                      <th class="p-4 text-baywatch-orange">Event</th>
+                      <th class="p-4 text-baywatch-orange">Date</th>
+                      <th class="p-4 text-baywatch-orange">Ranking</th>
+                      <th class="p-4 text-baywatch-orange">Record</th>
+                      <th class="p-4 text-baywatch-orange">Awards</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-gray-300">
+                    <tr>
+                      <td colspan="5" class="p-4 text-center">Loading season data...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Performance Metrics Card -->
+            <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn">
+              <h3 class="text-2xl font-bold mb-6 text-center">Performance Metrics</h3>
+              <div id="team-metrics" class="space-y-6">
+                <!-- Auto Performance -->
+                <div class="mb-4">
+                  <h4 class="text-lg font-medium mb-2">Autonomous Performance</h4>
+                  <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                      <span class="text-gray-400">Avg. Auto Points</span>
+                      <span id="avg-auto-points" class="font-bold">--</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2.5">
+                      <div id="auto-points-bar" class="bg-baywatch-orange h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Teleop Performance -->
+                <div class="mb-4">
+                  <h4 class="text-lg font-medium mb-2">Teleop Performance</h4>
+                  <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                      <span class="text-gray-400">Avg. Teleop Points</span>
+                      <span id="avg-teleop-points" class="font-bold">--</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2.5">
+                      <div id="teleop-points-bar" class="bg-baywatch-orange h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Overall Performance -->
+                <div>
+                  <h4 class="text-lg font-medium mb-2">Overall Performance</h4>
+                  <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                      <span class="text-gray-400">EPA Total</span>
+                      <span id="epa-total" class="font-bold">--</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-2.5">
+                      <div id="epa-bar" class="bg-baywatch-orange h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="history-section" class="tab-content py-8 relative z-10 hidden">
+          <h2 class="text-3xl font-bold mb-8 text-center">Team History</h2>
+          <div class="card-gradient rounded-xl p-6 animate__animated animate__fadeIn">
+            <div id="team-history" class="space-y-6">
+              <div class="text-center">
+                <div class="text-gray-400 animate-pulse">Loading team history...</div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </section>
 
@@ -473,6 +722,486 @@
           <td class="p-4">${awards}</td>
         `;
       }
+    </script>
+
+    <!-- Tab Navigation Script -->
+    <script>
+      // Modified tab navigation script - removed stats tab references
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get tab buttons and content sections
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Add tooltip data for mobile view
+        document.getElementById('tab-overview').setAttribute('data-tooltip', 'Overview');
+        document.getElementById('tab-schedule').setAttribute('data-tooltip', 'Schedule');
+        document.getElementById('tab-history').setAttribute('data-tooltip', 'History');
+        
+        // Add click event listeners to each tab button
+        tabButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            tabButtons.forEach(btn => {
+              btn.classList.remove('tab-active');
+              btn.classList.remove('tab-clicked');
+            });
+            
+            // Add "clicked" class for ripple effect animation
+            this.classList.add('tab-clicked');
+            
+            // After a short delay, add the active class to allow ripple to display first
+            setTimeout(() => {
+              this.classList.add('tab-active');
+            }, 150);
+            
+            // Hide all content sections first
+            tabContents.forEach(content => {
+              content.classList.add('hidden');
+              content.classList.remove('active');
+            });
+            
+            // Show corresponding content based on button id with animation
+            const contentId = this.id.replace('tab-', '') + '-section';
+            const contentElement = document.getElementById(contentId);
+            
+            if (contentElement) {
+              contentElement.classList.remove('hidden');
+              setTimeout(() => {
+                contentElement.classList.add('active');
+              }, 50);
+              
+              // Update URL hash without scrolling
+              const hash = this.id.replace('tab-', '');
+              history.replaceState(null, null, `#${hash}`);
+              
+              // If schedule tab is active, load the team schedule
+              if (hash === 'schedule') {
+                loadTeamSchedule();
+              }
+            }
+          });
+        });
+        
+        // Function to set active tab based on URL hash
+        function setActiveTabFromHash() {
+          const hash = window.location.hash.substring(1); // Remove the # character
+          if (hash === 'schedule' || hash === 'history') {
+            // Simulate click on the appropriate tab
+            document.getElementById(`tab-${hash}`).click();
+          } else {
+            // If no hash or stats (now removed), activate the first tab by default
+            document.getElementById('tab-overview').click();
+          }
+        }
+        
+        // Set active tab when page loads
+        setActiveTabFromHash();
+        
+        // Listen for hash changes
+        window.addEventListener('hashchange', setActiveTabFromHash);
+      });
+    </script>
+
+    <!-- Function to load team schedule data -->
+    <script>
+      async function loadTeamSchedule() {
+        // Get team number from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamNumber = urlParams.get('team');
+        
+        if (!teamNumber) return;
+        
+        try {
+          // Get event selector element
+          const eventSelector = document.getElementById('event-selector');
+          const qualTable = document.getElementById('team-qual-table').getElementsByTagName('tbody')[0];
+          const playoffTable = document.getElementById('team-playoff-table').getElementsByTagName('tbody')[0];
+          
+          // First, load the team's events for the current year
+          const teamKey = `frc${teamNumber}`;
+          const currentYear = new Date().getFullYear();
+          
+          const eventsResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/events/${currentYear}`, {
+            headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+          });
+          
+          if (!eventsResponse.ok) throw new Error(`Failed to fetch team events: ${eventsResponse.status}`);
+          
+          const events = await eventsResponse.json();
+          
+          if (events.length === 0) {
+            eventSelector.innerHTML = '<option value="">No events found for this year</option>';
+            qualTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center">No events scheduled for this year</td></tr>';
+            playoffTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center">No events scheduled for this year</td></tr>';
+            return;
+          }
+          
+          // Sort events by start date
+          events.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+          
+          // Populate event selector dropdown
+          eventSelector.innerHTML = events.map(event => 
+            `<option value="${event.key}">${event.name}</option>`
+          ).join('');
+          
+          // Add event listener for event selection change
+          eventSelector.addEventListener('change', async function() {
+            const selectedEventKey = this.value;
+            await loadEventMatches(teamKey, selectedEventKey);
+          });
+          
+          // Load matches for the first event by default
+          await loadEventMatches(teamKey, events[0].key);
+          
+        } catch (error) {
+          console.error('Error loading team schedule:', error);
+          document.getElementById('team-qual-table').getElementsByTagName('tbody')[0].innerHTML = 
+            '<tr><td colspan="4" class="p-4 text-center text-red-400">Error loading team schedule</td></tr>';
+          document.getElementById('team-playoff-table').getElementsByTagName('tbody')[0].innerHTML = 
+            '<tr><td colspan="4" class="p-4 text-center text-red-400">Error loading team schedule</td></tr>';
+        }
+      }
+      
+      // Function to load matches for a specific event
+      async function loadEventMatches(teamKey, eventKey) {
+        try {
+          const qualTable = document.getElementById('team-qual-table').getElementsByTagName('tbody')[0];
+          const playoffTable = document.getElementById('team-playoff-table').getElementsByTagName('tbody')[0];
+          
+          qualTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center">Loading qualification matches...</td></tr>';
+          playoffTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center">Loading playoff matches...</td></tr>';
+          
+          // Fetch team matches at the event
+          const matchesResponse = await fetch(`${window.TBA_BASE_URL}/team/${teamKey}/event/${eventKey}/matches`, {
+            headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+          });
+          
+          if (!matchesResponse.ok) throw new Error(`Failed to fetch team matches: ${matchesResponse.status}`);
+          
+          const matches = await matchesResponse.json();
+          
+          if (matches.length === 0) {
+            qualTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center">No qualification matches found</td></tr>';
+            playoffTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center">No playoff matches found</td></tr>';
+            return;
+          }
+          
+          // Separate qualification and playoff matches
+          const qualMatches = matches.filter(match => match.comp_level === 'qm');
+          const playoffMatches = matches.filter(match => match.comp_level !== 'qm');
+          
+          // Sort qualification matches by match number
+          qualMatches.sort((a, b) => a.match_number - b.match_number);
+          
+          // Sort playoff matches by level and then match number
+          playoffMatches.sort((a, b) => {
+            // First sort by comp level (ef, qf, sf, f)
+            if (a.comp_level !== b.comp_level) {
+              const levels = { 'ef': 1, 'qf': 2, 'sf': 3, 'f': 4 };
+              return levels[a.comp_level] - levels[b.comp_level];
+            }
+            // Then by set number
+            if (a.set_number !== b.set_number) {
+              return a.set_number - b.set_number;
+            }
+            // Then by match number
+            return a.match_number - b.match_number;
+          });
+          
+          // Process qualification matches
+          if (qualMatches.length > 0) {
+            qualTable.innerHTML = qualMatches.map(match => generateMatchRow(match, teamKey)).join('');
+          } else {
+            qualTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center">No qualification matches found</td></tr>';
+          }
+          
+          // Process playoff matches
+          if (playoffMatches.length > 0) {
+            playoffTable.innerHTML = playoffMatches.map(match => generateMatchRow(match, teamKey)).join('');
+          } else {
+            playoffTable.innerHTML = '<tr><td colspan="4" class="p-4 text-center">No playoff matches found</td></tr>';
+          }
+          
+        } catch (error) {
+          console.error('Error loading event matches:', error);
+          document.getElementById('team-qual-table').getElementsByTagName('tbody')[0].innerHTML = 
+            '<tr><td colspan="4" class="p-4 text-center text-red-400">Error loading qualification matches</td></tr>';
+          document.getElementById('team-playoff-table').getElementsByTagName('tbody')[0].innerHTML = 
+            '<tr><td colspan="4" class="p-4 text-center text-red-400">Error loading playoff matches</td></tr>';
+        }
+      }
+    </script>
+
+    <!-- Helper function to generate match row HTML -->
+    <script>
+      function generateMatchRow(match, teamKey) {
+        // Determine if team is on blue or red alliance
+        const isBlue = match.alliances.blue.team_keys.includes(teamKey);
+        
+        // Format match number based on match type
+        let matchName = '';
+        if (match.comp_level === 'qm') {
+          matchName = `Qual ${match.match_number}`;
+        } else if (match.comp_level === 'qf') {
+          matchName = `QF ${match.set_number}-${match.match_number}`;
+        } else if (match.comp_level === 'sf') {
+          matchName = `SF ${match.set_number}-${match.match_number}`;
+        } else if (match.comp_level === 'f') {
+          matchName = `Final ${match.match_number}`;
+        }
+        
+        // Determine if match has a winner
+        const hasWinner = match.winning_alliance === 'blue' || match.winning_alliance === 'red';
+        const isTie = match.winning_alliance === 'tie';
+        
+        // Format alliance teams with links
+        const blueTeams = match.alliances.blue.team_keys.map(key => {
+          const teamNum = key.replace('frc', '');
+          const isCurrentTeam = key === teamKey;
+          const isWinner = hasWinner && match.winning_alliance === 'blue';
+          
+          // Priority: 1) Current team (orange), 2) Winner (bold), 3) Regular
+          if (isCurrentTeam) {
+            if (isWinner) {
+            return `<span class="font-bold text-baywatch-orange">${teamNum}</span>`;
+            } else {
+              return `<span class="text-baywatch-orange">${teamNum}</span>`;
+            }
+          } else if (isWinner) {
+            return `<a href="team.html?team=${teamNum}" class="font-bold hover:text-baywatch-orange transition-colors">${teamNum}</a>`;
+          } else {
+            return `<a href="team.html?team=${teamNum}" class="hover:text-baywatch-orange transition-colors">${teamNum}</a>`;
+          }
+        }).join(', ');
+        
+        const redTeams = match.alliances.red.team_keys.map(key => {
+          const teamNum = key.replace('frc', '');
+          const isCurrentTeam = key === teamKey;
+          const isWinner = hasWinner && match.winning_alliance === 'red';
+          
+          // Priority: 1) Current team (orange), 2) Winner (bold), 3) Regular
+          if (isCurrentTeam) {
+            if (isWinner) {
+            return `<span class="font-bold text-baywatch-orange">${teamNum}</span>`;
+            } else {
+              return `<span class="text-baywatch-orange">${teamNum}</span>`;
+            }
+          } else if (isWinner) {
+            return `<a href="team.html?team=${teamNum}" class="font-bold hover:text-baywatch-orange transition-colors">${teamNum}</a>`;
+          } else {
+            return `<a href="team.html?team=${teamNum}" class="hover:text-baywatch-orange transition-colors">${teamNum}</a>`;
+          }
+        }).join(', ');
+        
+        // Format score display
+        let scoreDisplay = 'Not Played';
+        let scoreClass = '';
+        
+        // Check if match has been played
+        if (match.alliances.blue.score !== -1 && match.alliances.red.score !== -1) {
+          // Get scores
+          const blueScore = match.alliances.blue.score;
+          const redScore = match.alliances.red.score;
+          
+          // Set colors based on winner
+          if (match.winning_alliance === 'blue') {
+            scoreDisplay = `<span class="text-blue-400 font-bold">${blueScore}</span> - <span class="text-red-400">${redScore}</span>`;
+            scoreClass = 'text-blue-400';
+          } else if (match.winning_alliance === 'red') {
+            scoreDisplay = `<span class="text-blue-400">${blueScore}</span> - <span class="text-red-400 font-bold">${redScore}</span>`;
+            scoreClass = 'text-red-400';
+          } else if (match.winning_alliance === 'tie') {
+            // Handle ties
+            scoreDisplay = `<span class="text-blue-400">${blueScore}</span> - <span class="text-red-400">${redScore}</span>`;
+            scoreClass = 'text-yellow-400 font-bold';
+          }
+        }
+        
+        return `
+          <tr class="border-t border-gray-700 hover:bg-gray-900/30 transition-colors">
+            <td class="p-4">
+              <a href="match.html?match=${match.key}" 
+                class="flex items-center text-baywatch-orange hover:text-white transition-colors">
+                <span>${matchName}</span>
+                <i class="fas fa-external-link-alt text-xs ml-1"></i>
+              </a>
+            </td>
+            <td class="p-4 text-blue-400">${blueTeams}</td>
+            <td class="p-4 text-red-400">${redTeams}</td>
+            <td class="p-4 ${scoreClass}">${scoreDisplay}</td>
+          </tr>
+        `;
+      }
+    </script>
+
+    <!-- Team Performance Metrics Script -->
+    <script>
+      // Function to load team performance metrics
+      async function loadTeamPerformanceMetrics() {
+        try {
+          // Get team number from URL params
+          const urlParams = new URLSearchParams(window.location.search);
+          const teamNumber = urlParams.get('team');
+          
+          if (!teamNumber) {
+            console.log("No team number found in URL");
+            return;
+          }
+          
+          console.log("Loading metrics for team", teamNumber);
+          
+          // Use the current year
+          const currentYear = new Date().getFullYear();
+          
+          // StatBotics API URL
+          const STATBOTICS_BASE_URL = 'https://api.statbotics.io/v2';
+          
+          // Fetch team year data from Statbotics
+          const response = await fetch(`${STATBOTICS_BASE_URL}/team_year/${teamNumber}/${currentYear}`);
+          
+          if (!response.ok) {
+            console.error(`StatBotics API responded with status: ${response.status}`);
+            throw new Error(`Failed to fetch team data: ${response.status}`);
+          }
+          
+          const teamData = await response.json();
+          console.log("StatBotics data:", teamData);
+          
+          if (teamData) {
+            // Update auto points - using the v2 API fields
+            const avgAutoPoints = teamData.auto || 0;
+            const maxAutoPoints = 20; // Approximate max value for scaling
+            const autoPercentage = Math.min(100, (avgAutoPoints / maxAutoPoints) * 100);
+            
+            document.getElementById('avg-auto-points').textContent = avgAutoPoints.toFixed(1);
+            document.getElementById('auto-points-bar').style.width = `${autoPercentage}%`;
+            
+            // Update teleop points
+            const avgTeleopPoints = teamData.teleop || 0;
+            const maxTeleopPoints = 40; // Approximate max value for scaling
+            const teleopPercentage = Math.min(100, (avgTeleopPoints / maxTeleopPoints) * 100);
+            
+            document.getElementById('avg-teleop-points').textContent = avgTeleopPoints.toFixed(1);
+            document.getElementById('teleop-points-bar').style.width = `${teleopPercentage}%`;
+            
+            // Update EPA total
+            const epaTotal = teamData.total_epa || 0;
+            const maxEpa = 60; // Approximate max value for scaling
+            const epaPercentage = Math.min(100, (epaTotal / maxEpa) * 100);
+            
+            document.getElementById('epa-total').textContent = epaTotal.toFixed(1);
+            document.getElementById('epa-bar').style.width = `${epaPercentage}%`;
+            
+            // Apply color coding based on EPA value
+            if (epaTotal > 40) {
+              document.getElementById('epa-bar').classList.add('bg-green-500');
+              document.getElementById('epa-bar').classList.remove('bg-baywatch-orange');
+            } else if (epaTotal < 20) {
+              document.getElementById('epa-bar').classList.add('bg-red-500');
+              document.getElementById('epa-bar').classList.remove('bg-baywatch-orange');
+            }
+          } else {
+            console.log("No team data found in response");
+            setDefaultMetrics();
+          }
+        } catch (error) {
+          console.error('Error loading team performance metrics:', error);
+          setDefaultMetrics();
+          
+          // Try fallback to v3 API if v2 fails
+          tryFallbackMetrics();
+        }
+      }
+      
+      // Function to try fallback to v3 API
+      async function tryFallbackMetrics() {
+        try {
+          const urlParams = new URLSearchParams(window.location.search);
+          const teamNumber = urlParams.get('team');
+          
+          if (!teamNumber) return;
+          
+          console.log("Trying fallback to v3 API");
+          
+          const STATBOTICS_V3_URL = 'https://api.statbotics.io/v3';
+          const response = await fetch(`${STATBOTICS_V3_URL}/team/${teamNumber}`);
+          
+          if (!response.ok) {
+            throw new Error(`Failed to fetch team data from v3 API: ${response.status}`);
+          }
+          
+          const teamData = await response.json();
+          console.log("StatBotics v3 data:", teamData);
+          
+          if (teamData && teamData.epa) {
+            // Update auto points
+            const avgAutoPoints = teamData.epa.breakdown?.auto_points?.mean || 0;
+            const maxAutoPoints = 20; // Approximate max value for scaling
+            const autoPercentage = Math.min(100, (avgAutoPoints / maxAutoPoints) * 100);
+            
+            document.getElementById('avg-auto-points').textContent = avgAutoPoints.toFixed(1);
+            document.getElementById('auto-points-bar').style.width = `${autoPercentage}%`;
+            
+            // Update teleop points
+            const avgTeleopPoints = teamData.epa.breakdown?.teleop_points?.mean || 0;
+            const maxTeleopPoints = 40; // Approximate max value for scaling
+            const teleopPercentage = Math.min(100, (avgTeleopPoints / maxTeleopPoints) * 100);
+            
+            document.getElementById('avg-teleop-points').textContent = avgTeleopPoints.toFixed(1);
+            document.getElementById('teleop-points-bar').style.width = `${teleopPercentage}%`;
+            
+            // Update EPA total
+            const epaTotal = teamData.epa.total_points?.mean || 0;
+            const maxEpa = 60; // Approximate max value for scaling
+            const epaPercentage = Math.min(100, (epaTotal / maxEpa) * 100);
+            
+            document.getElementById('epa-total').textContent = epaTotal.toFixed(1);
+            document.getElementById('epa-bar').style.width = `${epaPercentage}%`;
+          }
+        } catch (error) {
+          console.error('Fallback v3 API also failed:', error);
+        }
+      }
+      
+      // Function to set default metrics if API fails
+      function setDefaultMetrics() {
+        document.getElementById('avg-auto-points').textContent = 'N/A';
+        document.getElementById('avg-teleop-points').textContent = 'N/A';
+        document.getElementById('epa-total').textContent = 'N/A';
+        
+        document.getElementById('auto-points-bar').style.width = '0%';
+        document.getElementById('teleop-points-bar').style.width = '0%';
+        document.getElementById('epa-bar').style.width = '0%';
+      }
+      
+      // Load metrics on page load and when tab is clicked
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM Content Loaded - Setting up metrics handlers");
+        
+        const statsTab = document.getElementById('tab-stats');
+        
+        if (statsTab) {
+          // Load metrics when stats tab is clicked
+          statsTab.addEventListener('click', function() {
+            console.log("Stats tab clicked - Loading metrics");
+            loadTeamPerformanceMetrics();
+          });
+          
+          // Check if we're already on the stats tab due to URL hash
+          if (window.location.hash === '#stats') {
+            console.log("Hash is #stats - Loading metrics immediately");
+            setTimeout(loadTeamPerformanceMetrics, 500); // Short delay to ensure DOM is ready
+          }
+        }
+        
+        // Also load metrics once everything has settled
+        setTimeout(function() {
+          if (window.location.hash === '#stats' || !window.location.hash) {
+            console.log("Loading metrics after timeout");
+            loadTeamPerformanceMetrics();
+          }
+        }, 2000);
+      });
     </script>
   </body>
 </html>
