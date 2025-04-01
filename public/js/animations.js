@@ -380,7 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mapping = {
       'Lake City Regional': '2025milac',
       'Traverse City Regional': '2025mitvc',
-      'FIM District Championship': '2025micmp',
+      'FIM District Championship': '2025micmp4',
       'FIRST Championship': '2025cmptx'
     };
     return mapping[eventName] || '';

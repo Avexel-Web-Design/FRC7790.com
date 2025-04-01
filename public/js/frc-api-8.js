@@ -10,7 +10,7 @@
   if (window.location.pathname.includes('schedule.html')) {
     document.addEventListener('DOMContentLoaded', async function() {
       // List of event codes to check (all four events on the schedule page)
-      const eventCodes = ['2025milac', '2025mitvc', '2025micmp', '2025cmptx'];
+      const eventCodes = ['2025milac', '2025mitvc', '2025micmp4', '2025cmptx'];
       const countdownTimers = [];
       
       for (const eventCode of eventCodes) {
@@ -33,9 +33,9 @@
             } else if (eventCode === '2025mitvc') {
               // Traverse City Regional
               eventSelector = `a[href="event.html?event=2025mitvc"]`;
-            } else if (eventCode === '2025micmp') {
+            } else if (eventCode === '2025micmp4') {
               // FIM District Championship
-              eventSelector = `a[href="event.html?event=2025micmp"]`;
+              eventSelector = `a[href="event.html?event=2025micmp4"]`;
             } else {
               // Default selector pattern
               eventSelector = `a[href="event.html?event=${eventCode}"]`;
@@ -202,7 +202,7 @@
                 updatedLiveUpdates.insertBefore(eventStatusIndicator, updatedLiveUpdates.firstChild);
   
                 // Only fetch final results for events we actually attended
-                if (eventCode !== '2025cmptx' && eventCode !== '2025micmp') {
+                if (eventCode !== '2025cmptx' && eventCode !== '2025micmp4') {
                   // Fetch team status at event for ranking & record
                   fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
                     if (status) {
