@@ -44,6 +44,24 @@ async function fetchDistrictRankings(districtKey) {
   }
 }
 
+// Helper function to fetch district events
+async function fetchDistrictEvents(districtKey) {
+  try {
+    const response = await fetch(`${window.TBA_BASE_URL}/district/${districtKey}/events`, {
+      headers: { "X-TBA-Auth-Key": window.TBA_AUTH_KEY }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching district events: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching district events:', error);
+    return null;
+  }
+}
+
 // Helper function to fetch team details for displaying names
 async function fetchTeamDetails(teamNumber) {
   try {
@@ -76,6 +94,8 @@ function updateExternalLinks(districtKey) {
 function showError() {
   document.getElementById('district-links')?.classList.add('hidden');
   document.getElementById('rankings-section')?.classList.add('hidden');
+  document.getElementById('events-section')?.classList.add('hidden');
+  document.getElementById('tabs-container')?.classList.add('hidden');
   document.getElementById('error-message')?.classList.remove('hidden');
 }
 
@@ -313,6 +333,123 @@ async function renderDistrictRankingsTable(data, tableBodyElement, teamNameMap) 
   tableBodyElement.innerHTML = rows;
 }
 
+// Function to render district events
+async function renderDistrictEvents(events) {
+  const eventsContainer = document.getElementById('district-events-container');
+  if (!eventsContainer) return;
+  
+  // Sort events by start date
+  events.sort((a, b) => {
+    const dateA = new Date(a.start_date);
+    const dateB = new Date(b.start_date);
+    return dateA - dateB;
+  });
+
+  if (events.length === 0) {
+    eventsContainer.innerHTML = `
+      <div class="col-span-1 md:col-span-2 text-center p-8">
+        <div class="flex flex-col items-center justify-center">
+          <i class="fas fa-calendar-xmark text-gray-600 text-4xl mb-3"></i>
+          <p class="text-lg text-gray-400">No events found in this district</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  // Clear loading indicator
+  eventsContainer.innerHTML = '';
+  
+  // Generate event cards with the "Our Team" about card style from the homepage
+  events.forEach(event => {
+    const startDate = new Date(event.start_date).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    const endDate = new Date(event.end_date).toLocaleDateString('en-US', {
+      month: 'long', 
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    const dateDisplay = startDate === endDate ? 
+      startDate : 
+      `${startDate} - ${endDate}`;
+    
+    const location = event.city ? 
+      (event.state_prov ? `${event.city}, ${event.state_prov}` : event.city) : 
+      'Location not specified';
+    
+    // Determine if the event is upcoming, in progress, or completed
+    const now = new Date();
+    const eventStartDate = new Date(event.start_date);
+    const eventEndDate = new Date(event.end_date);
+    
+    let statusClass = '';
+    let statusLabel = '';
+    
+    if (now < eventStartDate) {
+      // Upcoming event
+      statusClass = 'bg-blue-500/20 text-blue-300';
+      statusLabel = 'Upcoming';
+    } else if (now >= eventStartDate && now <= eventEndDate) {
+      // In progress
+      statusClass = 'bg-green-500/20 text-green-300';
+      statusLabel = 'In Progress';
+    } else {
+      // Completed
+      statusClass = 'bg-gray-500/20 text-gray-300';
+      statusLabel = 'Completed';
+    }
+    
+    const eventCard = document.createElement('div');
+    eventCard.className = 'relative p-6 rounded-2xl bg-black/90 border border-baywatch-orange/30 shadow-xl hover:shadow-baywatch-orange/30 transition-all duration-500 group';
+    eventCard.innerHTML = `
+      <!-- Pattern Overlay -->
+      <div class="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_1px_1px,_rgb(255,107,0,0.2)_1px,_transparent_0)] bg-[size:20px_20px] rounded-2xl pointer-events-none"></div>
+      
+      <div class="flex justify-between items-start mb-3">
+        <h3 class="text-xl font-bold text-white group-hover:text-baywatch-orange transition-colors duration-300">${event.name}</h3>
+        <div class="px-3 py-1 rounded-full text-xs ${statusClass}">
+          ${statusLabel}
+        </div>
+      </div>
+      
+      <div class="space-y-2 text-gray-300 group-hover:text-white transition-colors duration-500 mb-5">
+        <div class="flex items-center">
+          <i class="far fa-calendar-alt text-baywatch-orange mr-2 w-4 text-center"></i>
+          <span>${dateDisplay}</span>
+        </div>
+        <div class="flex items-center">
+          <i class="fas fa-map-marker-alt text-baywatch-orange mr-2 w-4 text-center"></i>
+          <span>${location}</span>
+        </div>
+      </div>
+      
+      <div class="text-center mt-4">
+        <a href="event.html?event=${event.key}" 
+           class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-full text-white font-medium hover:scale-105 transition-all duration-300 group shadow-[0_0_10px_rgba(255,107,0,0.3)] hover:shadow-[0_0_15px_rgba(255,107,0,0.5)]">
+          View Event Details
+          <svg xmlns="http://www.w3.org/2000/svg" 
+               class="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" 
+               fill="none" 
+               viewBox="0 0 24 24" 
+               stroke="currentColor">
+            <path stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </a>
+      </div>
+    `;
+    
+    eventsContainer.appendChild(eventCard);
+  });
+}
+
 // Modified function to set up the table sorting functionality - removing arrows
 function setupTableSorting() {
   const table = document.getElementById('district-rankings-table');
@@ -486,7 +623,7 @@ async function fetchTeamDetailsForSortedData(sortedData, tableBodyElement) {
   renderDistrictRankingsTable(sortedData, tableBodyElement, teamNameMap);
 }
 
-// Function to load district rankings
+// Function to load district rankings and events
 async function loadDistrictRankings(districtKey) {
   if (!districtKey) {
     showError();
@@ -511,6 +648,7 @@ async function loadDistrictRankings(districtKey) {
     // Show sections
     document.getElementById('district-links')?.classList.remove('hidden');
     document.getElementById('rankings-section')?.classList.remove('hidden');
+    document.getElementById('tabs-container')?.classList.remove('hidden');
     document.getElementById('error-message')?.classList.add('hidden');
     
     // Update external links
@@ -524,6 +662,12 @@ async function loadDistrictRankings(districtKey) {
     }
     
     await updateRankingsTable(rankings);
+    
+    // Fetch and display district events
+    const events = await fetchDistrictEvents(districtKey);
+    if (events) {
+      await renderDistrictEvents(events);
+    }
   } catch (error) {
     console.error('Error loading district rankings:', error);
     showError();
@@ -535,4 +679,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const urlParams = new URLSearchParams(window.location.search);
   const districtKey = urlParams.get('district');
   loadDistrictRankings(districtKey);
+  
+  // Handle tab navigation from URL hash if present
+  const hash = window.location.hash.substring(1);
+  if (hash === 'events') {
+    setTimeout(() => {
+      const eventsTab = document.getElementById('tab-events');
+      if (eventsTab) eventsTab.click();
+    }, 500);
+  }
 });
