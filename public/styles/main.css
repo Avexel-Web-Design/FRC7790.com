@@ -983,11 +983,32 @@ footer {
   background-color: #FF6B00;
   border-radius: 2px;
   animation: slideIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  transform-origin: center; /* Add this to ensure animations work from the center */
+}
+
+/* Add new selector for non-active tabs that were previously active */
+.tab-button:not(.tab-active)::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #FF6B00;
+  border-radius: 2px;
+  animation: slideOut 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  transform-origin: center; /* Ensure animations work from the center */
 }
 
 @keyframes slideIn {
   from { transform: scaleX(0); opacity: 0; }
   to { transform: scaleX(1); opacity: 1; }
+}
+
+/* Add slide-out animation */
+@keyframes slideOut {
+  from { transform: scaleX(1); opacity: 1; }
+  to { transform: scaleX(0); opacity: 0; }
 }
 
 /* Tab button tap effect */
