@@ -1,3 +1,11 @@
+/*
+ * FRC API Module 10 - District Rankings & Sorting
+ * 
+ * This file handles district page functionality including district rankings,
+ * table sorting, and team data display. Features include interactive sorting columns,
+ * data fetch optimization, and customizable district event point calculations.
+ */
+
 // Helper function to fetch district list for the current year
 async function fetchDistrictList(year = new Date().getFullYear()) {
   try {

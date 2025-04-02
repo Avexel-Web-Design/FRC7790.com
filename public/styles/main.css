@@ -1189,3 +1189,99 @@ footer {
   95% { transform: translate(calc(var(--uib-size) * 0.4)) scale(0.789472); opacity: 0.72; }
   100% { transform: translate(calc(var(--uib-size) * 0.5)) scale(0.73684); opacity: 0.65; }
 }
+
+/* Tab styling */
+.tab-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.tab-button:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background-color: #FF6B00;
+  transition: all 0.3s;
+  transform: translateX(-50%);
+}
+
+.tab-button.tab-active {
+  color: #FF6B00;
+}
+
+.tab-button.tab-active:after {
+  width: 100%;
+}
+
+/* Ripple effect for tab buttons */
+.tab-button.tab-clicked:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 107, 0, 0.3);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0) translate(-50%, -50%);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(20, 20) translate(-50%, -50%);
+    opacity: 0;
+  }
+}
+
+/* Tab content animation */
+.tab-content {
+  transition: all 0.3s ease;
+}
+
+.tab-content.active {
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tooltip for mobile tab buttons */
+@media (max-width: 640px) {
+  .tab-button {
+    position: relative;
+  }
+  
+  .tab-button:hover:after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 10;
+  }
+}

@@ -1,4 +1,10 @@
-
+/*
+ * FRC API Module 6 - Team Overview Page
+ * 
+ * This file handles the team overview page functionality, including team stats,
+ * current/upcoming events, and team history. Features responsive event countdowns,
+ * match schedules, and event-specific time offsets for accurate timing.
+ */
 
 // New function to load team overview data
 async function loadTeamOverview() {
@@ -8,8 +14,37 @@ async function loadTeamOverview() {
       const teamNumber = urlParams.get('team') || '7790';
       const teamKey = `frc${teamNumber}`;
       
-      // 37 hour offset constant (in milliseconds)
-      const OFFSET_MS = 37 * 3600 * 1000;
+      // Event offset constants (in milliseconds)
+      const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset for district events
+      const MICMP_OFFSET_MS = 20.5 * 3600 * 1000; // 20.5 hour offset for FiM championship
+      const TXCMP_OFFSET_MS = 17.5 * 3600 * 1000; // 17.5 hour offset for FiT championship
+      const NECMP_OFFSET_MS = (17+(1/6)) * 3600 * 1000; // 17.5 hour offset for NE championship
+      
+      // Helper function to determine which offset to use based on event key
+      function getOffsetForEvent(eventKey) {
+        if (!eventKey) return OFFSET_MS;
+        
+        // Convert to lowercase for case-insensitive comparison
+        const eventLower = eventKey.toLowerCase();
+        
+        // Check for Michigan state championship (micmp)
+        if (eventLower.includes('micmp')) {
+          return MICMP_OFFSET_MS;
+        }
+        
+        // Check for Texas state championship (txcmp only)
+        if (eventLower.includes('txcmp')) {
+          return TXCMP_OFFSET_MS;
+        }
+        
+        // Check for New England state championship (necmp)
+        if (eventLower.includes('necmp')) {
+          return NECMP_OFFSET_MS;
+        }
+        
+        // Default offset for district and other events
+        return OFFSET_MS;
+      }
       
       // Update page title to reflect current team
       document.title = `Team ${teamNumber} Overview - FRC`;
@@ -84,23 +119,23 @@ async function loadTeamOverview() {
         // Sort events by start date
         eventsData.sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
         
-        // Calculate which event is current or next, applying the 37-hour offset
+        // Calculate which event is current or next, applying the appropriate offset
         const now = new Date();
         let currentEvent = null;
         let nextEvent = null;
         
         for (const event of eventsData) {
-          // Apply 37-hour offset to start and end dates
-          // Apply 37-hour offset to start and end dates
-          const startDate = new Date(new Date(event.start_date).getTime() + OFFSET_MS);
-          const endDate = new Date(new Date(event.end_date).getTime() + OFFSET_MS);
+          // Apply offset to start and end dates
+          const offset = getOffsetForEvent(event.key);
+          const startDate = new Date(new Date(event.start_date).getTime() + offset);
+          const endDate = new Date(new Date(event.end_date).getTime() + offset);
           endDate.setHours(23, 59, 59); // Set to end of day
           
           if (now >= startDate && now <= endDate) {
             currentEvent = event;
             break;
           } else if (now < startDate) {
-            if (!nextEvent || startDate < new Date(new Date(nextEvent.start_date).getTime() + OFFSET_MS)) {
+            if (!nextEvent || startDate < new Date(new Date(nextEvent.start_date).getTime() + getOffsetForEvent(nextEvent.key))) {
               nextEvent = event;
             }
           }
@@ -149,9 +184,10 @@ async function loadTeamOverview() {
             console.log(`Error fetching details for event ${event.key}:`, error);
           }
           
-          // Format date with 37-hour offset
-          const startDate = new Date(new Date(event.start_date).getTime() + OFFSET_MS);
-          const endDate = new Date(new Date(event.end_date).getTime() + OFFSET_MS);
+          // Format date with appropriate offset
+          const offset = getOffsetForEvent(event.key);
+          const startDate = new Date(new Date(event.start_date).getTime() + offset);
+          const endDate = new Date(new Date(event.end_date).getTime() + offset);
           const dateStr = `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
           
           // Create row
@@ -289,8 +325,8 @@ async function loadTeamOverview() {
                 const upcomingMatch = matches.find(match => !match.actual_time);
                 
                 if (upcomingMatch) {
-                  // Apply the 37-hour offset to the match time
-                  const matchTime = new Date((upcomingMatch.predicted_time * 1000) + OFFSET_MS);
+                  // Apply the appropriate offset to the match time
+                  const matchTime = new Date((upcomingMatch.predicted_time * 1000) + getOffsetForEvent(currentEvent.key));
                   const timeStr = matchTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
                   
                   const isBlue = upcomingMatch.alliances.blue.team_keys.includes(teamKey);
@@ -364,10 +400,11 @@ async function loadTeamOverview() {
             `;
           }
         } else if (nextEvent) {
-          // Show next event countdown with 37-hour offset
+          // Show next event countdown with appropriate offset
           document.getElementById("event-loading").style.display = "none";
           
-          const startDate = new Date(new Date(nextEvent.start_date).getTime() + OFFSET_MS);
+          const offset = getOffsetForEvent(nextEvent.key);
+          const startDate = new Date(new Date(nextEvent.start_date).getTime() + offset);
           const now = new Date();
           
           // Calculate difference with adjusted time
@@ -386,7 +423,7 @@ async function loadTeamOverview() {
                   weekday: 'long',
                   month: 'long', 
                   day: 'numeric'
-                })} - ${new Date(new Date(nextEvent.end_date).getTime() + OFFSET_MS).toLocaleDateString('en-US', {
+                })} - ${new Date(new Date(nextEvent.end_date).getTime() + offset).toLocaleDateString('en-US', {
                   month: 'long', 
                   day: 'numeric'
                 })}

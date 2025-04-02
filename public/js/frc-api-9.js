@@ -1,3 +1,11 @@
+/*
+ * FRC API Module 9 - Team Status & Playoff Analysis
+ * 
+ * This file provides functions to handle team status at events including qualification
+ * rankings, playoff alliance selection, and advanced elimination round analysis.
+ * Features utilities to determine exact playoff placements and format display elements.
+ */
+
 // Helper function to fetch team status at an event
   async function fetchTeamStatusAtEvent(eventCode, teamNumber) {
     try {

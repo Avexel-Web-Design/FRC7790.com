@@ -1,4 +1,11 @@
-
+/*
+ * FRC API Module 4 - Match Breakdown & Score Analysis
+ * 
+ * This file contains functions to process and display detailed match score
+ * breakdowns. Handles different game-specific scoring elements for both
+ * the Crescendo (2024) and Reefscape (2025) games, with special formatting
+ * for penalties, bonuses, and ranking points.
+ */
 
 // Update match breakdown section with more detailed statistics
 function updateMatchBreakdown(matchData) {

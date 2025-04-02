@@ -1,3 +1,11 @@
+/*
+ * FRC API Main Module - Core Functions
+ * 
+ * This file contains core functions for updating team record, next match,
+ * and other essential real-time competition data. These functions power
+ * the main dashboard components and provide live updates during events.
+ */
+
 // FRC API Configuration - Check if constants are already defined (from search.js)
 if (typeof TBA_AUTH_KEY === 'undefined') {
   const TBA_AUTH_KEY =
@@ -13,8 +21,40 @@ window.TBA_AUTH_KEY = window.TBA_AUTH_KEY || "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzba
 window.TBA_BASE_URL = window.TBA_BASE_URL || "https://www.thebluealliance.com/api/v3";
 window.FRC_TEAM_KEY = window.FRC_TEAM_KEY || "frc7790"; // Add team key definition
 
-// Constant for the 37-hour offset (in milliseconds)
-const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset
+// Constant for the start time offsets (in milliseconds)
+const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset for district events
+const MICMP_OFFSET_MS = 20.5 * 3600 * 1000; // 20.5 hour offset for FiM championship
+const TXCMP_OFFSET_MS = 17.5 * 3600 * 1000; // 17.5 hour offset for FiT championship
+const NECMP_OFFSET_MS = (17+(1/6)) * 3600 * 1000; // 17.5 hour offset for NE championship
+
+// Helper function to determine which offset to use based on event key
+function getOffsetForEvent(eventKey) {
+  if (!eventKey) return OFFSET_MS;
+  
+  // Convert to lowercase for case-insensitive comparison
+  const eventLower = eventKey.toLowerCase();
+  
+  // Check for Michigan state championship (micmp)
+  if (eventLower.includes('micmp')) {
+    return MICMP_OFFSET_MS;
+  }
+  
+  // Check for Texas state championship (txcmp only)
+  if (eventLower.includes('txcmp')) {
+    return TXCMP_OFFSET_MS;
+  }
+  
+  // Check for New England state championship (necmp)
+  if (eventLower.includes('necmp')) {
+    return NECMP_OFFSET_MS;
+  }
+  
+  // Default offset for district and other events
+  return OFFSET_MS;
+}
+
+// Make getOffsetForEvent function available globally
+window.getOffsetForEvent = getOffsetForEvent;
 
 // Helper function to format ranking with proper suffix (1st, 2nd, 3rd, etc.)
 function formatRankSuffix(rank) {
@@ -362,8 +402,8 @@ function updateCountdown(startDate) {
   }
 }
 
-// New function for event countdown - Updated to add 37-hour offset
-function updateEventCountdown(startDate) {
+// New function for event countdown - Updated to use event-specific offset
+function updateEventCountdown(startDate, eventKey) {
   const countdownEl = document.getElementById("countdown-timer");
   if (!countdownEl) {
     // No countdown timer element found, possibly on team.html
@@ -371,8 +411,9 @@ function updateEventCountdown(startDate) {
   }
 
   const now = new Date().getTime();
-  // Add the 37-hour offset to the TBA start date to get the actual start time
-  const eventStart = new Date(startDate).getTime() + OFFSET_MS;
+  // Use the appropriate offset based on the event key
+  const offset = getOffsetForEvent(eventKey);
+  const eventStart = new Date(startDate).getTime() + offset;
   let timeLeft = eventStart - now;
   if (timeLeft < 0) timeLeft = 0;
 
@@ -427,10 +468,13 @@ async function initializeEventData() {
     if (currentEvent) {
       const currentDate = new Date().getTime();
       const eventStart = new Date(currentEvent.start_date).getTime();
-      const eventEnd = new Date(currentEvent.end_date).getTime() + OFFSET_MS;
       
-      // Add offset to event start date for comparison
-      const actualEventStart = eventStart + OFFSET_MS;
+      // Use event-specific offset
+      const offset = getOffsetForEvent(currentEvent.key);
+      const eventEnd = new Date(currentEvent.end_date).getTime() + offset;
+      
+      // Add event-specific offset to event start date for comparison
+      const actualEventStart = eventStart + offset;
       // Update the event links to point to the next event
       updateEventLinks(currentEvent.key);
       // Check against actual start time (with offset) for determining if the event has started
@@ -447,9 +491,9 @@ async function initializeEventData() {
           // We're before the actual start time - show countdown
           countdownSection.classList.remove("hidden");
           liveUpdates.classList.add("hidden");
-          // Pass the original TBA date - the function will add the offset
-          updateEventCountdown(currentEvent.start_date);
-          setInterval(() => updateEventCountdown(currentEvent.start_date), 1000);
+          // Pass the original TBA date and event key - the function will add the offset
+          updateEventCountdown(currentEvent.start_date, currentEvent.key);
+          setInterval(() => updateEventCountdown(currentEvent.start_date, currentEvent.key), 1000);
         }
       }
     } else {
@@ -467,8 +511,8 @@ async function initializeEventData() {
       if (countdownSection && liveUpdates) {
         countdownSection.classList.remove("hidden");
         liveUpdates.classList.add("hidden");
-        updateEventCountdown(fallbackDate);
-        setInterval(() => updateEventCountdown(fallbackDate), 1000);
+        updateEventCountdown(fallbackDate, fallbackEvent);
+        setInterval(() => updateEventCountdown(fallbackDate, fallbackEvent), 1000);
       }
     }
   } catch (error) {
@@ -489,8 +533,8 @@ async function initializeEventData() {
     if (countdownSection && liveUpdates) {
       countdownSection.classList.remove("hidden");
       liveUpdates.classList.add("hidden");
-      updateEventCountdown(fallbackDate);
-      setInterval(() => updateEventCountdown(fallbackDate), 1000);
+      updateEventCountdown(fallbackDate, fallbackEvent);
+      setInterval(() => updateEventCountdown(fallbackDate, fallbackEvent), 1000);
     }
   }
 }

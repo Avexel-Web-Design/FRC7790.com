@@ -1,8 +1,16 @@
+/*
+ * FRC API Module 8 - Schedule Management & Event Status
+ * 
+ * This file handles schedule page functionality, event countdown timers,
+ * and real-time competition status updates. Includes functions to check
+ * event phases (upcoming, active, completed) and render appropriate UI.
+ */
+
 // Add this at the end of the file to handle event states on schedule page
   if (window.location.pathname.includes('schedule.html')) {
     document.addEventListener('DOMContentLoaded', async function() {
       // List of event codes to check (all four events on the schedule page)
-      const eventCodes = ['2025milac', '2025mitvc', '2025micmp', '2025cmptx'];
+      const eventCodes = ['2025milac', '2025mitvc', '2025micmp4', '2025cmptx'];
       const countdownTimers = [];
       
       for (const eventCode of eventCodes) {
@@ -25,9 +33,9 @@
             } else if (eventCode === '2025mitvc') {
               // Traverse City Regional
               eventSelector = `a[href="event.html?event=2025mitvc"]`;
-            } else if (eventCode === '2025micmp') {
+            } else if (eventCode === '2025micmp4') {
               // FIM District Championship
-              eventSelector = `a[href="event.html?event=2025micmp"]`;
+              eventSelector = `a[href="event.html?event=2025micmp4"]`;
             } else {
               // Default selector pattern
               eventSelector = `a[href="event.html?event=${eventCode}"]`;
@@ -194,7 +202,7 @@
                 updatedLiveUpdates.insertBefore(eventStatusIndicator, updatedLiveUpdates.firstChild);
   
                 // Only fetch final results for events we actually attended
-                if (eventCode !== '2025cmptx' && eventCode !== '2025micmp') {
+                if (eventCode !== '2025cmptx' && eventCode !== '2025micmp4') {
                   // Fetch team status at event for ranking & record
                   fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
                     if (status) {
@@ -411,9 +419,14 @@
                 // Get the countdown container for this event
                 const countdownTimer = updatedCountdownSection.querySelector('#countdown-timer');
                 if (countdownTimer) {
-                  // Calculate countdown with 37-hour offset
+                  // Get the event-specific offset instead of using hardcoded 37 hours
+                  const eventOffset = window.getOffsetForEvent ? 
+                      window.getOffsetForEvent(eventCode) : 
+                      (37 * 3600 * 1000); // fallback to 37 hours if global function not available
+                  
+                  // Calculate countdown with event-specific offset
                   const startWithOffset = new Date(eventData.start_date);
-                  startWithOffset.setHours(startWithOffset.getHours() + 37);
+                  startWithOffset.setTime(startWithOffset.getTime() + eventOffset);
                   
                   // Store target date as data attribute and add to timers array
                   countdownTimer.dataset.targetDate = startWithOffset.getTime();

@@ -1,3 +1,11 @@
+/*
+ * FRC API Module 3 - Playoff Brackets & Match Details
+ * 
+ * This file handles the display and management of playoff brackets and
+ * detailed match information. Includes functions to visualize tournament
+ * eliminations, match detail pages, and handling for tiebreaker matches.
+ */
+
 // Function to update playoff bracket
 async function updatePlayoffBracket(eventKey) {
     try {
