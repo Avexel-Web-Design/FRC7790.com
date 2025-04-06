@@ -499,9 +499,9 @@ async function initializeEventData() {
     } else {
       console.error("No upcoming events found");
       
-      // Use a hard-coded date for Lake City event as fallback
-      const fallbackDate = "2025-04-03";
-      const fallbackEvent = "2025milac";
+      // Use a hard-coded date for World Championship event as fallback
+      const fallbackDate = "2025-04-16";
+      const fallbackEvent = "2025cmptx";
       console.log("Using fallback date:", fallbackDate);
       
       // Update links to fallback event
@@ -518,9 +518,9 @@ async function initializeEventData() {
   } catch (error) {
     console.error("Error initializing data:", error);
     
-    // Use a hard-coded date for Lake City event as fallback
-    const fallbackDate = "2025-04-03";
-    const fallbackEvent = "2025milac";
+    // Use a hard-coded date for World Championship as fallback
+    const fallbackDate = "2025-04-16";
+    const fallbackEvent = "2025cmptx";
     console.log("Using fallback date due to error:", fallbackDate);
     
     // Update links to fallback event
