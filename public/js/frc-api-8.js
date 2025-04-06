@@ -15,10 +15,9 @@
       
       for (const eventCode of eventCodes) {
         try {
-          // Skip processing FIM District Championship (2025micmp4) entirely
-          // since it has hardcoded results that shouldn't be modified by JS
-          if (eventCode === '2025micmp4') {
-            console.log('Skipping FIM District Championship processing - using hardcoded results');
+          // Skip processing events with hardcoded results - now including Traverse City
+          if (eventCode === '2025micmp4' || eventCode === '2025milac' || eventCode === '2025mitvc') {
+            console.log(`Skipping ${eventCode} processing - using hardcoded results`);
             continue;
           }
           

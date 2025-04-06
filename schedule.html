@@ -390,6 +390,43 @@
                       Lake City, MI
                     </span>
                   </div>
+                  
+                  <!-- Hard-coded Results Section for Lake City Regional -->
+                  <div class="mt-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                      <!-- Final Ranking -->
+                      <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
+                        <h4 class="text-lg font-semibold mb-2">Final Ranking</h4>
+                        <div class="flex items-center justify-center gap-1">
+                          <span class="text-4xl font-bold text-baywatch-orange">15</span>
+                          <span class="text-sm text-gray-400 self-end mb-1">th</span>
+                        </div>
+                        <span class="text-gray-400 block mt-1">of 36 teams</span>
+                        <div class="text-sm text-gray-400 mt-1">6-6-0</div>
+                      </div>
+
+                      <!-- Alliance Selection -->
+                      <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
+                        <h4 class="text-lg font-semibold mb-2">Alliance</h4>
+                        <div class="text-center">
+                          <div class="text-4xl font-bold text-baywatch-orange mb-1">5</div>
+                          <span class="text-sm bg-baywatch-orange/20 px-2 py-1 rounded-full text-white">
+                            <i class="fas fa-crown mr-1"></i>First Pick
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Playoffs -->
+                      <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
+                        <h4 class="text-lg font-semibold mb-2">Playoffs</h4>
+                        <div class="text-center">
+                          <div class="text-4xl font-bold text-baywatch-orange">3rd</div>
+                          <div class="text-sm text-gray-400 mt-1">2-2-0</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div
                     class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors"
                   >
@@ -433,111 +470,43 @@
                       Drive, Traverse City, MI
                     </span>
                   </div>
-                  <!-- Live Updates Section (Initially Hidden) -->
-                  <div id="live-updates" class="mt-6 hidden">
-                    <div
-                      class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center"
-                    >
-                      <!-- Current Ranking -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">
-                          Current Ranking
-                        </h4>
-                        <div class="flex items-center justify-center gap-2">
-                          <span
-                            id="ranking-number"
-                            class="text-4xl font-bold text-baywatch-orange counter"
-                            >--</span
-                          >
-                          <span class="text-xl text-gray-400">th</span>
+                  
+                  <!-- Hard-coded Results Section for Traverse City Regional -->
+                  <div class="mt-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                      <!-- Final Ranking -->
+                      <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
+                        <h4 class="text-lg font-semibold mb-2">Final Ranking</h4>
+                        <div class="flex items-center justify-center gap-1">
+                          <span class="text-4xl font-bold text-baywatch-orange">1</span>
+                          <span class="text-sm text-gray-400 self-end mb-1">st</span>
                         </div>
-                        <span class="text-gray-400 block mt-1" id="total-teams"
-                          >Loading...</span
-                        >
+                        <span class="text-gray-400 block mt-1">of 42 teams</span>
+                        <div class="text-sm text-gray-400 mt-1">9-3-0</div>
                       </div>
 
-                      <!-- Win/Loss Record -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">Event Record</h4>
-                        <div class="flex justify-center items-center gap-4">
-                          <div class="text-center">
-                            <span
-                              id="wins"
-                              class="text-3xl font-bold text-green-500 counter"
-                              >--</span
-                            >
-                            <span class="text-gray-400 block">Wins</span>
-                          </div>
-                          <span class="text-xl text-gray-400">-</span>
-                          <div class="text-center">
-                            <span
-                              id="losses"
-                              class="text-3xl font-bold text-red-500 counter"
-                              >--</span
-                            >
-                            <span class="text-gray-400 block">Losses</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Next Match -->
-                      <div
-                        class="p-4 bg-black/30 rounded-lg flex flex-col items-center"
-                      >
-                        <h4 class="text-lg font-semibold mb-2">Next Match</h4>
+                      <!-- Alliance Selection -->
+                      <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
+                        <h4 class="text-lg font-semibold mb-2">Alliance</h4>
                         <div class="text-center">
-                          <span
-                            id="match-number"
-                            class="text-2xl font-bold text-baywatch-orange"
-                            >Loading...</span
-                          >
-                          <div id="match-time" class="text-gray-400 mt-1">
-                            --:-- --
-                          </div>
-                          <div class="mt-2 flex justify-center gap-2">
-                            <div
-                              id="blue-alliance"
-                              class="text-xs px-2 py-1 bg-blue-500/20 rounded-full text-blue-400"
-                            >
-                              Loading...
-                            </div>
-                            <div
-                              id="red-alliance"
-                              class="text-xs px-2 py-1 bg-red-500/20 rounded-full text-red-400"
-                            >
-                              Loading...
-                            </div>
-                          </div>
+                          <div class="text-4xl font-bold text-baywatch-orange mb-1">1</div>
+                          <span class="text-sm bg-baywatch-orange/20 px-2 py-1 rounded-full text-white">
+                            <i class="fas fa-crown mr-1"></i>Captain
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Playoffs -->
+                      <div class="p-4 bg-black/30 rounded-lg flex flex-col items-center">
+                        <h4 class="text-lg font-semibold mb-2">Playoffs</h4>
+                        <div class="text-center">
+                          <div class="text-4xl font-bold text-yellow-500">1st</div>
+                          <div class="text-sm text-gray-400 mt-1">6-2-1</div>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  <!-- Countdown Section -->
-                  <div
-                    id="countdown-section"
-                    class="mt-6 flex flex-col items-center"
-                  >
-                    <div class="text-center">
-                      <h4 class="text-lg font-semibold mb-2">
-                        Event Countdown
-                      </h4>
-                      <div
-                        id="countdown-timer"
-                        class="text-4xl font-bold text-baywatch-orange"
-                      >
-                        --d --h --m --s
-                      </div>
-                      <p class="text-gray-400 text-sm mt-2">
-                        Live match updates will appear here when the event
-                        starts
-                      </p>
-                    </div>
-                  </div>
+                  
                   <div
                     class="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors"
                   >
