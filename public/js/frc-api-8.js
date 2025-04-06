@@ -15,6 +15,13 @@
       
       for (const eventCode of eventCodes) {
         try {
+          // Skip processing FIM District Championship (2025micmp4) entirely
+          // since it has hardcoded results that shouldn't be modified by JS
+          if (eventCode === '2025micmp4') {
+            console.log('Skipping FIM District Championship processing - using hardcoded results');
+            continue;
+          }
+          
           // Fetch event data
           const eventData = await fetchEventData(eventCode);
           
