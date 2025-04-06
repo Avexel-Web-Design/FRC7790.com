@@ -113,15 +113,206 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
+
+    <!-- Small Screen Optimizations -->
+    <style>
+      @media (max-width: 360px) {
+        .xs-p-smaller {
+          padding: 0.75rem !important;
+        }
+        .xs-text-smaller {
+          font-size: 0.875rem !important;
+        }
+        .xs-py-smaller {
+          padding-top: 0.5rem !important;
+          padding-bottom: 0.5rem !important;
+        }
+        .xs-px-smaller {
+          padding-left: 0.5rem !important;
+          padding-right: 0.5rem !important;
+        }
+      }
+    </style>
   </head>
   <body class="bg-baywatch-dark text-white overflow-x-hidden font-poppins">
-    <!-- Navigation Bar -->
+  <!-- Script to handle popup - Moved to beginning of body for priority execution -->
+  <script>
+    // Force reset localStorage for popup testing (comment out after confirming it works)
+    localStorage.removeItem('donation-popup-dismissed');
+    
+    // Immediately set up popup behavior without waiting for DOMContentLoaded
+    window.showDonationPopup = function() {
+      const popup = document.getElementById('donation-popup');
+      if (popup) {
+        popup.classList.remove('hidden');
+        console.log('Popup manually triggered to show');
+      } else {
+        console.error('Popup element not found');
+      }
+    };
+    
+    // Standard event handler with debugging
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded - initializing popup');
+      const popup = document.getElementById('donation-popup');
+      const closeBtn = document.getElementById('close-popup');
+      
+      if (!popup) {
+        console.error('Popup element not found in DOM');
+        return;
+      }
+      
+      if (!closeBtn) {
+        console.error('Close button not found in DOM');
+      }
+      
+      // Show popup immediately regardless of localStorage
+      popup.classList.remove('hidden');
+      console.log('Popup displayed');
+      
+      // Close popup and store preference
+      if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+          popup.classList.add('animate__fadeOut');
+          setTimeout(() => {
+            popup.classList.add('hidden');
+            popup.classList.remove('animate__fadeOut');
+          }, 500);
+          
+          // Don't show again for 7 days
+          const currentTime = new Date().getTime();
+          const expiryTime = currentTime + (7 * 24 * 60 * 60 * 1000); // 7 days
+          localStorage.setItem('donation-popup-dismissed', expiryTime);
+        });
+      }
+    });
+    
+    // Fallback - show popup after a delay if it's still hidden
+    setTimeout(function() {
+      const popup = document.getElementById('donation-popup');
+      if (popup && popup.classList.contains('hidden')) {
+        console.log('Fallback: forcing popup to show after delay');
+        popup.classList.remove('hidden');
+      }
+    }, 2000);
+  </script>
+
+  <!-- Worlds Qualification Announcement Popup -->
+  <div id="donation-popup" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] hidden animate__animated animate__fadeIn">
+    <div class="relative max-w-md w-full mx-2 sm:mx-4 bg-gradient-to-b from-gray-900 to-black p-4 sm:p-6 rounded-xl border border-baywatch-orange/40 shadow-lg animate__animated animate__zoomIn xs-p-smaller">
+      <!-- Close button -->
+      <button id="close-popup" class="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-white">
+        <i class="fas fa-times"></i>
+      </button>
+      
+      <!-- Medal/Trophy icon -->
+      <div class="flex justify-center mb-3 sm:mb-4">
+        <div class="w-16 h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-full flex items-center justify-center">
+          <i class="fas fa-trophy text-3xl sm:text-4xl text-baywatch-orange"></i>
+        </div>
+      </div>
+      
+      <!-- Announcement heading -->
+      <h2 class="text-xl sm:text-2xl font-bold text-center mb-2">
+        <span class="text-white">We're going to</span>
+        <span class="text-baywatch-orange glow-orange">Worlds!</span>
+      </h2>
+      
+      <!-- Message content -->
+      <p class="text-gray-300 mb-3 sm:mb-4 text-center text-sm sm:text-base">
+        Team 7790 Baywatch Robotics has qualified for the 2025 FIRST Championship in Houston, Texas!
+      </p>
+      
+      <p class="text-gray-300 mb-3 sm:mb-4 text-sm sm:text-base">
+        With one of the smallest budgets of any competing team, we need your support to make this journey possible. Your donation would make a tremendous difference for our students, the furthering of stem education, and an empowering difference in their lives.
+      </p>
+      
+      <div class="bg-black/30 p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 border border-gray-700">
+        <h3 class="font-semibold text-baywatch-orange mb-2 text-sm sm:text-base">How to Donate:</h3>
+        <p class="text-gray-300 mb-2 sm:mb-3 text-sm sm:text-base">
+          Please mail or bring in checks made out to <strong>"Harbor Springs Robotics"</strong> to:
+        </p>
+        <address class="text-white not-italic bg-black/50 p-2 sm:p-3 rounded text-sm sm:text-base">
+          Harbor Springs Baywatch Robotics<br>
+          800 State Road<br>
+          Harbor Springs, MI 49740
+        </address>
+      </div>
+      
+      <p class="text-xs sm:text-sm text-gray-400 text-center">
+        Questions? Contact us at <a href="mailto:frc@harborps.org" class="text-baywatch-orange hover:underline">frc@harborps.org</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Script to handle popup -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const popup = document.getElementById('donation-popup');
+      const closeBtn = document.getElementById('close-popup');
+      
+      // Debug: Log the current localStorage value
+      console.log('Last dismissed:', localStorage.getItem('donation-popup-dismissed'));
+      console.log('Current time:', new Date().getTime());
+      
+      // Check if popup was previously dismissed
+      const lastDismissed = localStorage.getItem('donation-popup-dismissed');
+      const currentTime = new Date().getTime();
+      
+      // Clear localStorage (uncomment to force reset)
+      // localStorage.removeItem('donation-popup-dismissed');
+      
+      // Show popup immediately if never dismissed or 7 days have passed
+      if (!lastDismissed || currentTime > parseInt(lastDismissed)) {
+        console.log('Showing popup');
+        popup.classList.remove('hidden');
+      } else {
+        console.log('Popup hidden due to localStorage settings');
+      }
+      
+      // Close popup and don't show again for current session
+      closeBtn.addEventListener('click', function() {
+        popup.classList.add('animate__fadeOut');
+        setTimeout(() => {
+          popup.classList.add('hidden');
+          popup.classList.remove('animate__fadeOut');
+        }, 500);
+        
+        // Don't show again for 7 days
+        const expiryTime = currentTime + (7 * 24 * 60 * 60 * 1000); // 7 days
+        localStorage.setItem('donation-popup-dismissed', expiryTime);
+      });
+      
+      // Add a global function to manually show the popup (for testing)
+      window.showDonationPopup = function() {
+        popup.classList.remove('hidden');
+      };
+    });
+  </script>
+
+  <!-- Move this script below the popup elements but before other scripts -->
+  <script>
+    // Fix for frc-api-11.js error
+    window.addEventListener('DOMContentLoaded', function() {
+      // Add check before setAttribute calls to prevent errors
+      const originalSetAttribute = Element.prototype.setAttribute;
+      Element.prototype.setAttribute = function(name, value) {
+        try {
+          originalSetAttribute.call(this, name, value);
+        } catch (e) {
+          console.warn('Error setting attribute', name, 'to', value, 'on element', this, e);
+        }
+      };
+    });
+  </script>
+
+  <!-- Navigation Bar -->
     <nav
       class="fixed top-0 w-full z-50 transition-all duration-300"
       id="navbar"
     >
       <div
-        class="container mx-auto px-6 py-4 flex items-center justify-between"
+        class="container mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between"
       >
         <div class="flex items-center space-x-2">
           <a
@@ -131,7 +322,7 @@
             <img
               src="public/assets/images/logo.svg"
               alt="Baywatch Robotics Logo"
-              class="w-20 h-20"
+              class="w-16 h-16 sm:w-20 sm:h-20"
             />
           </a>
         </div>
@@ -378,29 +569,29 @@
       <!-- Removing the blurred background elements -->
 
       <div
-        class="container mx-auto px-6 flex flex-col items-center justify-center relative z-10 -mt-12"
+        class="container mx-auto px-3 sm:px-6 flex flex-col items-center justify-center relative z-10 -mt-12"
       >
         <div class="text-center max-w-4xl mx-auto">
-          <h1 class="mb-8">
+          <h1 class="mb-6 sm:mb-8">
             <div
-              class="flex items-center justify-center gap-4 text-6xl md:text-8xl font-bold animate__animated animate__fadeInUp"
+              class="flex items-center justify-center gap-2 sm:gap-4 text-4xl sm:text-6xl md:text-8xl font-bold animate__animated animate__fadeInUp"
               style="animation-duration: 3s"
             >
               <span class="text-white">FRC</span>
               <span class="text-baywatch-orange glow-orange">7790</span>
             </div>
             <div
-              class="text-5xl md:text-7xl font-bold mt-4 animate__animated animate__fadeInUp"
+              class="text-3xl sm:text-5xl md:text-7xl font-bold mt-2 sm:mt-4 animate__animated animate__fadeInUp"
               style="animation-delay: 1s; animation-duration: 3s"
             >
               <span class="text-white">Baywatch</span>
               <span class="text-baywatch-orange glow-orange">Robotics</span>
             </div>
           </h1>
-          <a href="event.html?event=2025mitvc" class="btn-orange-glow inline-block px-8 py-4 text-xl font-semibold rounded-full hover:scale-105 transition-all duration-300 animate__animated animate__fadeInUp" style="animation-delay: 2s">
+          <a href="event.html?event=2025mitvc" class="btn-orange-glow inline-block px-4 py-2 sm:px-8 sm:py-4 text-base sm:text-xl font-semibold rounded-full hover:scale-105 transition-all duration-300 animate__animated animate__fadeInUp xs-text-smaller xs-px-smaller xs-py-smaller" style="animation-delay: 2s">
             <div>
               <i class="fas fa-trophy text-baywatch-orange"></i>
-              <span class="text-white font-semibold">2025 Traverse City Regional Champions</span>
+              <span class="text-white font-semibold">2025 Traverse City Champions</span>
             </div>
           </a>
         </div>
@@ -413,8 +604,8 @@
 
 
     <!-- Live Event Updates Section -->
-    <section id="live-updates" class="py-20 gradient-section scroll-mt-24 hidden">
-      <div class="container mx-auto px-6">
+    <section id="live-updates" class="py-12 sm:py-20 gradient-section scroll-mt-24 hidden">
+      <div class="container mx-auto px-3 sm:px-6">
         <h2 class="text-4xl font-bold mb-4 text-center">Competition Updates</h2>
         <p class="text-gray-400 text-center mb-12">
           Live updates from The Blue Alliance API
@@ -525,19 +716,19 @@
     </section>
 
     <!-- Countdown Section -->
-    <section id="countdown-section" class="py-20 bg-black scroll-mt-24">
-      <div class="container mx-auto px-6">
+    <section id="countdown-section" class="py-12 sm:py-20 bg-black scroll-mt-24">
+      <div class="container mx-auto px-3 sm:px-6">
         <div
           class="p-6 card-gradient rounded-xl transition-all duration-300 glow-orange hover:scale-105"
         >
-          <h2 class="text-4xl font-bold mb-4 text-center">Event Countdown</h2>
+          <h2 class="text-4xl font-bold mb-4 text-center">Countdown to World Championship</h2>
           <p class="text-gray-400 text-center mb-4">
             Live match updates will automatically appear when the event starts.
           </p>
           <div class="text-center">
             <div
               id="countdown-timer"
-              class="text-5xl font-bold text-baywatch-orange"
+              class="text-3xl sm:text-5xl font-bold text-baywatch-orange"
             >
               --d --h --m --s
             </div>
@@ -550,26 +741,26 @@
     </section>
 
         <!-- Contact Us Section -->
-        <section class="py-16 bg-black relative z-10">
-          <div class="container mx-auto px-6">
+        <section class="py-10 sm:py-16 bg-black relative z-10">
+          <div class="container mx-auto px-3 sm:px-6">
             <div class="max-w-4xl mx-auto">
-              <div class="p-8 card-gradient rounded-xl border border-baywatch-orange/30 shadow-lg hover:shadow-baywatch-orange/20 transition-all duration-300">
-                <h2 class="text-4xl font-bold mb-6 text-center">
+              <div class="p-4 sm:p-8 card-gradient rounded-xl border border-baywatch-orange/30 shadow-lg hover:shadow-baywatch-orange/20 transition-all duration-300">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6 text-center">
                   <span class="text-white">Get In</span>
                   <span class="text-baywatch-orange glow-orange">Touch</span>
                 </h2>
                 
-                <div class="flex flex-col md:flex-row items-center justify-center gap-8 mt-8">
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 sm:gap-8 mt-6 sm:mt-8">
                   <!-- Email with copy functionality -->
-                  <div class="relative group">
+                  <div class="relative group w-full sm:w-auto">
                     <button 
                       id="copy-email-btn"
-                      class="flex items-center px-6 py-3 bg-black/40 hover:bg-black/60 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300"
+                      class="w-full sm:w-auto flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-black/40 hover:bg-black/60 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300"
                       aria-label="Copy email to clipboard"
                     >
-                      <i class="fas fa-envelope text-baywatch-orange mr-3"></i>
-                      <span id="email-text">frc@harborps.org</span>
-                      <i class="fas fa-copy ml-3 text-gray-400 group-hover:text-white"></i>
+                      <i class="fas fa-envelope text-baywatch-orange mr-2 sm:mr-3"></i>
+                      <span id="email-text" class="text-sm sm:text-base">frc@harborps.org</span>
+                      <i class="fas fa-copy ml-2 sm:ml-3 text-gray-400 group-hover:text-white"></i>
                     </button>
                     <span id="copy-tooltip" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-baywatch-orange text-white text-sm px-3 py-1 rounded opacity-0 transition-opacity duration-300">
                       Copied!
@@ -579,14 +770,14 @@
                   <!-- Contact form button -->
                   <a 
                     href="become-a-sponsor.html" 
-                    class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-lg text-white font-semibold hover:scale-105 transition-all duration-300 shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_30px_rgba(255,107,0,0.5)]"
+                    class="w-full sm:w-auto text-center inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-lg text-white font-semibold hover:scale-105 transition-all duration-300 shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_30px_rgba(255,107,0,0.5)]"
                   >
                     <i class="fas fa-paper-plane mr-2"></i>
-                    Contact Form
+                    <span class="text-sm sm:text-base">Contact Form</span>
                   </a>
                 </div>
                 
-                <p class="text-gray-400 text-center mt-8">
+                <p class="text-gray-400 text-center mt-6 sm:mt-8 text-xs sm:text-sm md:text-base">
                   Have questions or want to reach out about a sponsorship. You can reach us at frc@harborps.org or through <a href="become-a-sponsor.html" class="text-baywatch-orange">this contact form.</a>
                 </p>
               </div>
@@ -625,8 +816,8 @@
 
 
     <!-- About Us / Our Team Section -->
-    <section id="about-team" class="py-20 bg-black scroll-mt-24">
-      <div class="container mx-auto px-6">
+    <section id="about-team" class="py-12 sm:py-20 bg-black scroll-mt-24">
+      <div class="container mx-auto px-3 sm:px-6">
         <div class="max-w-4xl mx-auto">
           <div class="relative p-8 rounded-2xl bg-black/90 border border-baywatch-orange/30 shadow-2xl hover:shadow-baywatch-orange/30 transition-all duration-500 animate-fade-in group">
             
@@ -643,10 +834,10 @@
             
             <div class="text-center">
               <a href="become-a-sponsor.html" 
-                 class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_30px_rgba(255,107,0,0.5)] btn-orange-glow">
+                 class="inline-flex items-center px-4 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-full text-white text-sm sm:text-base font-semibold hover:scale-105 transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_30px_rgba(255,107,0,0.5)] btn-orange-glow">
                 Become a Sponsor
                 <svg xmlns="http://www.w3.org/2000/svg" 
-                     class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" 
+                     class="h-4 w-4 sm:h-5 sm:w-5 ml-2 transition-transform group-hover:translate-x-1" 
                      fill="none" 
                      viewBox="0 0 24 24" 
                      stroke="currentColor">
@@ -663,8 +854,8 @@
     </section>
 
     <!-- Robot Section -->
-    <section id="robots" class="py-20 bg-black scroll-mt-24">
-      <div class="container mx-auto px-6">
+    <section id="robots" class="py-12 sm:py-20 bg-black scroll-mt-24">
+      <div class="container mx-auto px-3 sm:px-6">
         <h2 class="text-4xl font-bold mb-4 text-center">Our Robot</h2>
         <p class="text-gray-400 text-center mb-12">
           This is our robot for the 2025 FRC season, REEFSCAPE.
@@ -692,12 +883,12 @@
           </div>
           <a
             href="robots.html"
-            class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-full text-white font-semibold hover:scale-105 transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_30px_rgba(255,107,0,0.5)] btn-orange-glow"
+            class="inline-flex items-center px-4 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-baywatch-orange to-orange-700 rounded-full text-white text-sm sm:text-base font-semibold hover:scale-105 transition-all duration-300 group shadow-[0_0_15px_rgba(255,107,0,0.3)] hover:shadow-[0_0_30px_rgba(255,107,0,0.5)] btn-orange-glow"
           >
             View All Robots
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1"
+              class="h-4 w-4 sm:h-5 sm:w-5 ml-2 transition-transform group-hover:translate-x-1"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -715,69 +906,69 @@
     </section>
 
     <!-- Game Info Section -->
-    <section class="py-20 bg-black">
-      <div class="container mx-auto px-6">
-        <h2 class="text-4xl font-bold mb-8 text-center">REEFSCAPE</h2>
-        <div class="flex flex-col items-center max-w-4xl mx-auto gap-12">
-          <p class="text-gray-400 text-lg text-center">
-            In REEFSCAPE presented by HAAS, alliances of up to three teams each compete to restore coral reef ecosystems by scoring coral and algae into designated areas. The game features additional points awarded during the endgame for parking under the Barge or climbing onto the Cages.
-          </p>
+    <section class="py-12 sm:py-20 bg-black">
+    <div class="container mx-auto px-3 sm:px-6">
+      <h2 class="text-4xl font-bold mb-8 text-center">REEFSCAPE</h2>
+      <div class="flex flex-col items-center max-w-4xl mx-auto gap-12">
+        <p class="text-gray-400 text-lg text-center">
+          In REEFSCAPE presented by HAAS, alliances of up to three teams each compete to restore coral reef ecosystems by scoring coral and algae into designated areas. The game features additional points awarded during the endgame for parking under the Barge or climbing onto the Cages.
+        </p>
 
-          <!-- Video Container -->
-          <div class="w-full aspect-video rounded-xl overflow-hidden">
-            <video 
-              class="w-full h-full"
-              src="public/assets/videos/REEFSCAPE.mp4#t=1"
-              title="REEFSCAPE Game Animation"
-              controls
-              preload="metadata"
-              poster="public/assets/images/video-thumbnail.jpg">
-              Your browser does not support the video tag.
-            </video>
+        <!-- Video Container -->
+        <div class="w-full aspect-video rounded-xl overflow-hidden">
+          <video 
+            class="w-full h-full"
+            src="public/assets/videos/REEFSCAPE.mp4#t=1"
+            title="REEFSCAPE Game Animation"
+            controls
+            preload="metadata"
+            poster="public/assets/images/video-thumbnail.jpg">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <!-- Game Elements Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+          <div class="card-gradient rounded-xl p-4 hover:scale-105">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="fas fa-robot text-baywatch-orange"></i>
+              <h4 class="font-semibold">Match Format</h4>
+            </div>
+            <p class="text-gray-400 text-sm">
+              15s autonomous, 2:15 driver control, with 20s endgame for barge ascent
+            </p>
           </div>
-
-          <!-- Game Elements Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-            <div class="card-gradient rounded-xl p-4 hover:scale-105">
-              <div class="flex items-center gap-3 mb-2">
-                <i class="fas fa-robot text-baywatch-orange"></i>
-                <h4 class="font-semibold">Match Format</h4>
-              </div>
-              <p class="text-gray-400 text-sm">
-                15s autonomous, 2:15 driver control, with 20s endgame for barge ascent
-              </p>
+          <div class="card-gradient rounded-xl p-4 hover:scale-105">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="fas fa-water text-baywatch-orange"></i>
+              <h4 class="font-semibold">Game Elements</h4>
             </div>
-            <div class="card-gradient rounded-xl p-4 hover:scale-105">
-              <div class="flex items-center gap-3 mb-2">
-                <i class="fas fa-water text-baywatch-orange"></i>
-                <h4 class="font-semibold">Game Elements</h4>
-              </div>
-              <p class="text-gray-400 text-sm">
-                Score coral on reefs, harvest algae, and climb onto a cage for points
-              </p>
+            <p class="text-gray-400 text-sm">
+              Score coral on reefs, harvest algae, and climb onto a cage for points
+            </p>
+          </div>
+          <div class="card-gradient rounded-xl p-4 hover:scale-105">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="fas fa-trophy text-baywatch-orange"></i>
+              <h4 class="font-semibold">Ranking Points</h4>
             </div>
-            <div class="card-gradient rounded-xl p-4 hover:scale-105">
-              <div class="flex items-center gap-3 mb-2">
-                <i class="fas fa-trophy text-baywatch-orange"></i>
-                <h4 class="font-semibold">Ranking Points</h4>
-              </div>
-              <p class="text-gray-400 text-sm">
-                Earn up to 6 RPs per match through autonomous, coral, coopertition, and barge tasks
-              </p>
+            <p class="text-gray-400 text-sm">
+              Earn up to 6 RPs per match through autonomous, coral, coopertition, and barge tasks
+            </p>
+          </div>
+          <div class="card-gradient rounded-xl p-4 hover:scale-105">
+            <div class="flex items-center gap-3 mb-2">
+              <i class="fas fa-handshake text-baywatch-orange"></i>
+              <h4 class="font-semibold">Coopertition®</h4>
             </div>
-            <div class="card-gradient rounded-xl p-4 hover:scale-105">
-              <div class="flex items-center gap-3 mb-2">
-                <i class="fas fa-handshake text-baywatch-orange"></i>
-                <h4 class="font-semibold">Coopertition®</h4>
-              </div>
-              <p class="text-gray-400 text-sm">
-                Work together to deliver algae and reduce coral RP requirements
-              </p>
-            </div>
+            <p class="text-gray-400 text-sm">
+              Work together to deliver algae and reduce coral RP requirements
+            </p>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
     <!-- Footer -->
     <footer class="bg-black py-12">
