@@ -319,6 +319,80 @@
         </p>
       </div>
     </section>
+
+    <!-- World Championship Donation Section -->
+    <section class="pb-12 relative z-10">
+      <div class="container mx-auto px-4 sm:px-6">
+        <div class="max-w-4xl mx-auto card-gradient p-6 rounded-xl border border-baywatch-orange/40 shadow-lg mb-8">
+          <div class="flex justify-center mb-4">
+            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-baywatch-orange/20 to-baywatch-orange/30 rounded-full flex items-center justify-center">
+              <i class="fas fa-trophy text-2xl sm:text-3xl text-baywatch-orange"></i>
+            </div>
+          </div>
+          
+          <h2 class="text-xl sm:text-2xl font-bold text-center mb-2">
+            <span class="text-white">Support Our Journey to the </span>
+            <span class="text-baywatch-orange glow-orange">World Championship</span>
+          </h2>
+          
+          <p class="text-gray-300 mb-4 text-center text-sm sm:text-base">
+            Team 7790 has qualified for the 2025 FIRST Championship in Houston, Texas! 
+            We need your support to make this experience possible for our students.
+          </p>
+          
+          <div class="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto mb-2">
+            <a href="https://gofund.me/6aae404b" target="_blank" rel="noopener noreferrer" 
+               class="flex-1 py-2 px-3 bg-[#00B964] hover:bg-[#00A055] text-white font-bold rounded-lg text-center transition-all duration-300 shadow-lg hover:shadow-xl text-sm sm:text-base">
+              <i class="fas fa-heart mr-2"></i>
+              Donate via GoFundMe
+            </a>
+            
+            <button id="toggle-donation-details" 
+                    class="flex-1 py-2 px-3 bg-black/60 hover:bg-black/80 text-white font-bold rounded-lg text-center transition-all duration-300 border border-gray-700 hover:border-baywatch-orange/50 text-sm sm:text-base">
+              <i class="fas fa-info-circle mr-2"></i>
+              Alternative Methods
+            </button>
+          </div>
+          
+          <div id="donation-details" class="mt-3 bg-black/30 p-3 rounded-lg border border-gray-700 max-w-2xl mx-auto hidden text-sm">
+            <h3 class="font-semibold text-baywatch-orange mb-1 text-center"><strong>Alternative Donation Methods:</strong></h3>
+            <p class="text-gray-300 mb-1 text-center">
+              Checks can be made out to <strong>"Harbor Springs Public Schools, Memo: Robotics"</strong> and mailed to:
+            </p>
+            <address class="text-white text-center not-italic bg-black/50 p-2 mb-2 rounded text-xs sm:text-sm">
+              Harbor Springs Superintendents Office<br>
+              800 State Road<br>
+              Harbor Springs, MI 49740
+            </address>
+            <p class="text-gray-300 text-center">
+              <strong>Or bring cash or check into<br>
+                <span class="font-bold text-baywatch-orange">Rocking Horse Toy Store</span></strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Add script to toggle donation details -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.getElementById('toggle-donation-details');
+        const detailsDiv = document.getElementById('donation-details');
+        
+        if (toggleButton && detailsDiv) {
+          toggleButton.addEventListener('click', function() {
+            if (detailsDiv.classList.contains('hidden')) {
+              detailsDiv.classList.remove('hidden');
+              toggleButton.innerHTML = '<i class="fas fa-times-circle mr-2"></i>Hide Details';
+            } else {
+              detailsDiv.classList.add('hidden');
+              toggleButton.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Alternative Methods';
+            }
+          });
+        }
+      });
+    </script>
+
     <div class="flex justify-center mb-16">
       <div class="relative group">
         <div class="absolute -inset-0.5 bg-gradient-to-r from-orange-600 to-red-600 rounded-full blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
