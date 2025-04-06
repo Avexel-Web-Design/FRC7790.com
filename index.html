@@ -170,14 +170,11 @@
       popup.classList.remove('hidden');
       console.log('Popup displayed');
       
-      // Close popup and store preference
+      // Close popup instantly with no animation
       if (closeBtn) {
         closeBtn.addEventListener('click', function() {
-          popup.classList.add('animate__fadeOut');
-          setTimeout(() => {
-            popup.classList.add('hidden');
-            popup.classList.remove('animate__fadeOut');
-          }, 500);
+          // Immediately hide the popup
+          popup.classList.add('hidden');
           
           // Don't show again for 7 days
           const currentTime = new Date().getTime();
@@ -214,8 +211,8 @@
       
       <!-- Announcement heading -->
       <h2 class="text-xl sm:text-2xl font-bold text-center mb-2">
-        <span class="text-white">We're going to</span>
-        <span class="text-baywatch-orange glow-orange">Worlds!</span>
+        <span class="text-white">We're going to the</span><br>
+        <span class="text-baywatch-orange glow-orange">World Championship!</span>
       </h2>
       
       <!-- Message content -->
@@ -228,7 +225,7 @@
       </p>
       
       <div class="bg-black/30 p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 border border-gray-700">
-        <h3 class="font-semibold text-baywatch-orange mb-2 text-sm sm:text-base">How to Donate:</h3>
+        <h3 class="font-semibold text-baywatch-orange mb-2 text-sm sm:text-base">How to Contribute</h3>
         <p class="text-gray-300 mb-2 sm:mb-3 text-sm sm:text-base">
           Please mail or bring in checks made out to <strong>"Harbor Springs Robotics"</strong> to:
         </p>
