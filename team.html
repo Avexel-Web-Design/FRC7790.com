@@ -424,12 +424,19 @@
         <section id="schedule-section" class="tab-content py-8 relative z-10 hidden">
           <h2 class="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
           <div class="card-gradient rounded-xl p-6">
-            <!-- Event selector - Now much wider -->
+            <!-- Event selector - Custom styled -->
             <div class="mb-6">
-              <label for="event-selector" class="block text-sm font-medium text-gray-400 mb-2">Select Event:</label>
-              <select id="event-selector" class="w-full md:w-[32rem] bg-black/50 text-white border border-gray-700 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-baywatch-orange/50">
-                <option value="">Loading events...</option>
-              </select>
+              <label for="event-selector" class="block text-sm font-medium text-gray-300 mb-3">Select Event:</label>
+              <div class="relative">
+                <select id="event-selector" class="w-full appearance-none bg-black/40 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 focus:border-baywatch-orange/70 transition-all duration-300 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-baywatch-orange/30">
+                  <option value="">Loading events...</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-baywatch-orange">
+                  <i class="fas fa-chevron-down transition-all duration-300"></i>
+                </div>
+                <!-- Subtle background effect -->
+                <div class="absolute inset-0 opacity-5 bg-[radial-gradient(circle_at_1px_1px,_rgb(255,107,0,0.2)_1px,_transparent_0)] bg-[size:20px_20px] rounded-lg pointer-events-none"></div>
+              </div>
             </div>
             
             <!-- Qualification Matches -->
