@@ -386,3 +386,312 @@ document.addEventListener('DOMContentLoaded', function() {
     return mapping[eventName] || '';
   }
 });
+
+// Spider Web Cursor Effect with 3D Parallax
+document.addEventListener('DOMContentLoaded', function() {
+  // Helper function to check if donation popup is visible
+  function isDonationPopupVisible() {
+    const popup = document.getElementById('donation-popup');
+    return popup && !popup.classList.contains('hidden');
+  }
+  
+  // Create canvas element
+  const canvas = document.createElement('canvas');
+  canvas.id = 'spider';
+  canvas.className = 'spider';
+  
+  // Set fixed position to make it follow the cursor exactly regardless of scroll
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  canvas.style.pointerEvents = 'none'; // Ensure it doesn't interfere with clicks
+  canvas.style.zIndex = '9999'; // Keep it on top
+  
+  document.body.appendChild(canvas);
+  
+  const ctx = canvas.getContext('2d');
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  
+  // Set canvas size
+  canvas.width = width;
+  canvas.height = height;
+  
+  // Mouse position tracking for cursor and parallax effects
+  let mousePos = { x: width / 2, y: height / 2 };
+  let prevMousePos = { x: width / 2, y: height / 2 };
+  let isMouseMoving = false;
+  let mouseStillTimeout;
+  
+  // Smooth mouse tracking for parallax effect
+  let targetMouseX = width / 2;
+  let targetMouseY = height / 2;
+  let mouseX = width / 2;
+  let mouseY = width / 2;
+  
+  // Web points with depth properties for parallax
+  const points = [];
+  const maxPoints = 60;
+  const distanceThreshold = 150;
+  const pointLife = 200; // Slower fading
+  const movementFactor = 0.03; // How much points move with mouse parallax (lower = more subtle)
+  
+  // Number of depth layers to simulate 3D effect
+  const maxDepth = 5; 
+  
+  // Colors for the web
+  const webColor = '#FF6B00'; // Baywatch orange
+  const webAlpha = 0.4; // Web transparency
+  
+  // Track if mouse is over the window
+  let isMouseOnPage = false;
+  
+  // Counter for consistent point generation
+  let frameCounter = 0;
+  const spawnInterval = 6; // Higher number = more time between spawns
+  
+  // Handle window resize
+  window.addEventListener('resize', function() {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+  });
+  
+  // Function to check if mouse is moving
+  function checkMouseMovement(e) {
+      // First check if donation popup is visible - don't track mouse if it is
+      if (isDonationPopupVisible()) {
+          canvas.style.display = 'none';
+          return;
+      } else {
+          canvas.style.display = 'block';
+      }
+  
+      const currentX = e.clientX;
+      const currentY = e.clientY;
+      
+      // For cursor effect - check if mouse moved more than 2 pixels
+      isMouseMoving = Math.abs(currentX - prevMousePos.x) > 2 || 
+                      Math.abs(currentY - prevMousePos.y) > 2;
+      
+      if (isMouseMoving) {
+          // Update mouse position
+          mousePos.x = currentX;
+          mousePos.y = currentY;
+          
+          // For parallax effect - set target position
+          targetMouseX = currentX;
+          targetMouseY = currentY;
+          
+          // Clear previous timeout and set new one
+          clearTimeout(mouseStillTimeout);
+          mouseStillTimeout = setTimeout(() => {
+              isMouseMoving = false;
+          }, 50); // Consider mouse still after 50ms of no movement
+      }
+      
+      // Update previous position
+      prevMousePos.x = currentX;
+      prevMousePos.y = currentY;
+      
+      // Set mouse on page
+      isMouseOnPage = true;
+  }
+  
+  // Track mouse position and movement
+  document.addEventListener('mousemove', checkMouseMovement);
+  
+  // Track mouse leaving the window
+  document.addEventListener('mouseout', function(e) {
+      // Check if mouse has actually left the window
+      const from = e.relatedTarget || e.toElement;
+      if (!from || from.nodeName === 'HTML') {
+          isMouseOnPage = false;
+      }
+  });
+  
+  // Track mouse entering the window
+  document.addEventListener('mouseover', function() {
+      isMouseOnPage = true;
+  });
+  
+  // Add a point to the web with depth property for parallax
+  function addPoint(x, y) {
+      // Add slight randomness to point position around cursor
+      const randomOffset = 5;
+      x += (Math.random() - 0.5) * randomOffset;
+      y += (Math.random() - 0.5) * randomOffset;
+      
+      points.push({
+          x: x,
+          y: y,
+          // Add random velocity - reduced for slower movement
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: (Math.random() - 0.5) * 0.7,
+          life: pointLife,
+          // Add depth property for parallax effect (random depth layer)
+          depth: (Math.random() * 0.8) + 0.2, // Value between 0.2 and 1.0
+          // Size based on depth (closer = larger)
+          size: 1.5 + (Math.random() * 2.5)
+      });
+  }
+  
+  // Main animation loop
+  function animate() {
+      // Check if donation popup is visible - hide canvas if so
+      if (isDonationPopupVisible()) {
+          canvas.style.display = 'none';
+          requestAnimationFrame(animate);
+          return;
+      } else {
+          canvas.style.display = 'block';
+      }
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+      
+      // Smooth mouse movement for parallax (easing)
+      mouseX += (targetMouseX - mouseX) * 0.05;
+      mouseY += (targetMouseY - mouseY) * 0.05;
+      
+      // Calculate mouse offset from center for parallax effect
+      const offsetX = (mouseX - (width / 2)) * movementFactor;
+      const offsetY = (mouseY - (height / 2)) * movementFactor;
+      
+      // Increment frame counter for consistent spawning
+      frameCounter++;
+      
+      // Add new points at a consistent rate when mouse is on page AND moving
+      if (isMouseOnPage && isMouseMoving && points.length < maxPoints && frameCounter % spawnInterval === 0) {
+          addPoint(mousePos.x, mousePos.y);
+      }
+      
+      // Update and draw web points (regardless of whether mouse is on page or moving)
+      for (let i = 0; i < points.length; i++) {
+          // Calculate parallax shift based on point's depth
+          const parallaxX = offsetX * points[i].depth;
+          const parallaxY = offsetY * points[i].depth;
+          
+          // Apply movement to points
+          points[i].x += points[i].vx;
+          points[i].y += points[i].vy;
+          points[i].life -= 0.5; // Slow fading
+          
+          // Remove points that have expired
+          if (points[i].life <= 0) {
+              points.splice(i, 1);
+              i--;
+              continue;
+          }
+          
+          // Apply parallax to calculate display position
+          const displayX = points[i].x + parallaxX;
+          const displayY = points[i].y + parallaxY;
+          
+          // Draw connections between points that are close enough
+          for (let j = i + 1; j < points.length; j++) {
+              // Apply parallax to second point
+              const parallaxX2 = offsetX * points[j].depth;
+              const parallaxY2 = offsetY * points[j].depth;
+              
+              const displayX2 = points[j].x + parallaxX2;
+              const displayY2 = points[j].y + parallaxY2;
+              
+              const dx = displayX - displayX2;
+              const dy = displayY - displayY2;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              
+              if (dist < distanceThreshold) {
+                  // Line opacity based on distance, point life, and average depth
+                  const avgDepth = (points[i].depth + points[j].depth) / 2;
+                  const opacity = (1 - dist / distanceThreshold) * (points[i].life / pointLife) * webAlpha * avgDepth;
+                  
+                  ctx.beginPath();
+                  ctx.moveTo(displayX, displayY);
+                  ctx.lineTo(displayX2, displayY2);
+                  ctx.strokeStyle = `rgba(255, 107, 0, ${opacity})`;
+                  
+                  // Line width based on distance and depth (greater depth = thicker lines)
+                  ctx.lineWidth = 1.5 * (1 - dist / distanceThreshold) * avgDepth;
+                  ctx.stroke();
+                  ctx.closePath();
+              }
+          }
+          
+          // Connect to mouse position for more interactivity (only when mouse is on page)
+          if (isMouseOnPage) {
+              const dx = displayX - mouseX;
+              const dy = displayY - mouseY;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              
+              if (dist < distanceThreshold * 1.2) {
+                  const opacity = (1 - dist / (distanceThreshold * 1.2)) * (points[i].life / pointLife) * webAlpha;
+                  ctx.beginPath();
+                  ctx.moveTo(displayX, displayY);
+                  ctx.lineTo(mouseX, mouseY);
+                  ctx.strokeStyle = `rgba(255, 107, 0, ${opacity})`;
+                  ctx.lineWidth = 1.5 * (1 - dist / (distanceThreshold * 1.2));
+                  ctx.stroke();
+                  ctx.closePath();
+              }
+          }
+          
+          // Draw point with size based on depth
+          const pointOpacity = (points[i].life / pointLife) * 0.8 * points[i].depth;
+          ctx.beginPath();
+          ctx.arc(displayX, displayY, points[i].size * points[i].depth, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 107, 0, ${pointOpacity})`;
+          ctx.fill();
+          
+          // Add glow effect for larger particles
+          if (points[i].size * points[i].depth > 2.5) {
+              ctx.beginPath();
+              ctx.arc(displayX, displayY, points[i].size * points[i].depth * 1.5, 0, Math.PI * 2);
+              
+              // Glow with gradient
+              const gradient = ctx.createRadialGradient(
+                  displayX, displayY, points[i].size * points[i].depth * 0.5,
+                  displayX, displayY, points[i].size * points[i].depth * 2
+              );
+              gradient.addColorStop(0, `rgba(255, 107, 0, ${pointOpacity * 0.5})`);
+              gradient.addColorStop(1, 'rgba(255, 107, 0, 0)');
+              
+              ctx.fillStyle = gradient;
+              ctx.fill();
+          }
+      }
+      
+      requestAnimationFrame(animate);
+  }
+  
+  // Add event listener to check popup state changes
+  const observePopupChanges = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.attributeName === 'class') {
+        // If popup becomes visible or hidden, update the canvas display
+        if (isDonationPopupVisible()) {
+          canvas.style.display = 'none';
+          // Clear existing points when popup appears to avoid buildup
+          points.length = 0;
+        } else {
+          canvas.style.display = 'block';
+        }
+      }
+    });
+  });
+  
+  // Start observing the popup for class changes
+  const donationPopup = document.getElementById('donation-popup');
+  if (donationPopup) {
+    observePopupChanges.observe(donationPopup, { attributes: true });
+    
+    // Initial check - hide animation if popup is visible on load
+    if (isDonationPopupVisible()) {
+      canvas.style.display = 'none';
+    }
+  }
+  
+  // Start animation
+  animate();
+});
