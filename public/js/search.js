@@ -371,7 +371,59 @@ async function searchTeamsWithTBA(query) {
   }
 }
 
-// Search for events via TBA API - COMPLETELY REMOVE 2025 FOCUS
+// Add this new function for string similarity calculation
+function levenshteinDistance(a, b) {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+
+  const matrix = [];
+
+  // Initialize matrix
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  // Fill matrix
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1, // deletion
+        matrix[i][j - 1] + 1, // insertion
+        matrix[i - 1][j - 1] + cost // substitution
+      );
+    }
+  }
+
+  return matrix[b.length][a.length];
+}
+
+// Helper function to determine if two strings are similar enough (accounting for typos)
+function stringSimilarity(str1, str2, threshold = 0.7) {
+  if (!str1 || !str2) return false;
+  
+  str1 = str1.toLowerCase();
+  str2 = str2.toLowerCase();
+  
+  // Exact match is always a hit
+  if (str1 === str2) return true;
+  
+  // For very short strings, require higher precision
+  if (str1.length <= 3 || str2.length <= 3) {
+    return str1.includes(str2) || str2.includes(str1);
+  }
+  
+  const distance = levenshteinDistance(str1, str2);
+  const maxLength = Math.max(str1.length, str2.length);
+  const similarity = 1 - distance / maxLength;
+  
+  return similarity >= threshold;
+}
+
+// Search for events via TBA API with improved fuzzy matching
 async function searchEventsWithTBA(query) {
   // Check cache first
   const cacheKey = query.toLowerCase();
@@ -491,6 +543,32 @@ async function searchEventsWithTBA(query) {
         const shortCode = eventKey.substring(4); // Remove year prefix
         if (shortCode === queryLower) return true;
         
+        // Check for similar event short codes (fuzzy matching) - NEW!
+        // This handles typos in event codes like "milc" instead of "milac"
+        if (stringSimilarity(shortCode, queryLower, 0.6)) return true;
+        
+        // NEW: Fuzzy match event names for better typo handling
+        // This handles things like "traverse" vs "traversee" or "lake cty" vs "lake city"
+        const eventNameWords = eventName.split(/\s+/);
+        
+        // Check if any word in the query has a fuzzy match with any word in the event name
+        for (const term of queryTerms) {
+          if (term.length <= 2) continue; // Skip very short terms
+          
+          // Try to match the term against the full event name
+          if (stringSimilarity(eventName, term, 0.6)) {
+            return true;
+          }
+          
+          // Try to match the term against individual words in the event name
+          for (const word of eventNameWords) {
+            if (word.length <= 2) continue; // Skip very short words
+            if (stringSimilarity(word, term, 0.7)) {
+              return true;
+            }
+          }
+        }
+        
         // If we have multiple terms, check if all terms appear somewhere in the event data
         if (queryTerms.length > 1) {
           const combinedText = `${eventKey} ${eventName} ${eventLocation}`.toLowerCase();
@@ -518,11 +596,34 @@ async function searchEventsWithTBA(query) {
         };
       });
       
-      // Sort results - prioritize exact matches, then by date
+      // Sort results - prioritize exact matches, then by fuzzy match quality
       results.sort((a, b) => {
         // Exact match priority
         if (a.id.toLowerCase() === queryLower) return -1;
         if (b.id.toLowerCase() === queryLower) return 1;
+        
+        // Next, prioritize short code matches
+        const aShortCode = a.id.toLowerCase().substring(4);
+        const bShortCode = b.id.toLowerCase().substring(4);
+        
+        if (aShortCode === queryLower && bShortCode !== queryLower) return -1;
+        if (aShortCode !== queryLower && bShortCode === queryLower) return 1;
+        
+        // Calculate similarity scores for sorting by match quality
+        const aNameSimilarity = Math.max(
+          stringSimilarity(a.name.toLowerCase(), queryLower) ? 0.8 : 0,
+          stringSimilarity(aShortCode, queryLower) ? 0.7 : 0
+        );
+        
+        const bNameSimilarity = Math.max(
+          stringSimilarity(b.name.toLowerCase(), queryLower) ? 0.8 : 0,
+          stringSimilarity(bShortCode, queryLower) ? 0.7 : 0
+        );
+        
+        // If similarity scores differ significantly, sort by them
+        if (Math.abs(aNameSimilarity - bNameSimilarity) > 0.2) {
+          return bNameSimilarity - aNameSimilarity;
+        }
         
         // Next, prioritize matches in the name
         const aNameMatch = a.name.toLowerCase().includes(queryLower);
@@ -2300,7 +2401,7 @@ async function searchTeams(query) {
   }
 }
 
-// Function to search for events
+// Function to search for events with better fuzzy matching
 async function searchEvents(query) {
   try {
     // Get events for current year and next year
@@ -2323,7 +2424,9 @@ async function searchEvents(query) {
       }
     }
     
-    // Filter events based on query without automatically adding year prefix
+    const queryLower = query.toLowerCase();
+    
+    // Filter events based on query with fuzzy matching
     return events.filter(event => {
       // Extract relevant fields for searching
       const eventName = event.name.toLowerCase();
@@ -2331,11 +2434,32 @@ async function searchEvents(query) {
       const shortName = eventKey.substring(4); // Remove the year prefix (e.g., "2025") for matching
       const eventLocation = `${event.city} ${event.state_prov} ${event.country}`.toLowerCase();
       
-      // Check if any field contains the query string
-      return eventName.includes(query.toLowerCase()) || 
-             eventKey.includes(query.toLowerCase()) ||
-             shortName.includes(query.toLowerCase()) ||
-             eventLocation.includes(query.toLowerCase());
+      // Check if any field contains the query string (exact matches)
+      if (eventName.includes(queryLower) || 
+          eventKey.includes(queryLower) ||
+          shortName.includes(queryLower) ||
+          eventLocation.includes(queryLower)) {
+        return true;
+      }
+      
+      // Fuzzy matching for names and short codes
+      if (stringSimilarity(eventName, queryLower, 0.6)) return true;
+      if (stringSimilarity(shortName, queryLower, 0.7)) return true;
+      
+      // Check individual words in event name for partial matches
+      const nameWords = eventName.split(/\s+/);
+      const queryWords = queryLower.split(/\s+/);
+      
+      for (const queryWord of queryWords) {
+        if (queryWord.length <= 2) continue; // Skip very short words
+        
+        for (const nameWord of nameWords) {
+          if (nameWord.length <= 2) continue; // Skip very short words
+          if (stringSimilarity(nameWord, queryWord, 0.7)) return true;
+        }
+      }
+      
+      return false;
     });
     
   } catch (error) {
