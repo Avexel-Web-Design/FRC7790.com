@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
       'Lake City Regional': '2025milac',
       'Traverse City Regional': '2025mitvc',
       'FIM District Championship': '2025micmp4',
-      'FIRST Championship': '2025cmptx'
+      'FIRST Championship': '2025mil'
     };
     return mapping[eventName] || '';
   }

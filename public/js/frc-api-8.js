@@ -10,7 +10,7 @@
   if (window.location.pathname.includes('schedule.html')) {
     document.addEventListener('DOMContentLoaded', async function() {
       // List of event codes to check (all four events on the schedule page)
-      const eventCodes = ['2025milac', '2025mitvc', '2025micmp4', '2025cmptx'];
+      const eventCodes = ['2025milac', '2025mitvc', '2025micmp4', '2025mil'];
       const countdownTimers = [];
       
       for (const eventCode of eventCodes) {
@@ -30,9 +30,9 @@
             
             // Get elements for this event based on event code
             let eventSelector;
-            if (eventCode === '2025cmptx') {
+            if (eventCode === '2025mil') {
               // FIRST Championship uses external link
-              eventSelector = `a[href="event.html?event=2025cmptx"]`;
+              eventSelector = `a[href="event.html?event=2025mil"]`;
             } else if (eventCode === '2025milac') {
               // Lake City Regional - explicitly set the selector
               eventSelector = `a[href="event.html?event=2025milac"]`;
@@ -208,7 +208,7 @@
                 updatedLiveUpdates.insertBefore(eventStatusIndicator, updatedLiveUpdates.firstChild);
   
                 // Only fetch final results for events we actually attended
-                if (eventCode !== '2025cmptx' && eventCode !== '2025micmp4') {
+                if (eventCode !== '2025mil' && eventCode !== '2025micmp4') {
                   // Fetch team status at event for ranking & record
                   fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
                     if (status) {
@@ -404,7 +404,7 @@
                 updatedLiveUpdates.classList.remove('hidden');
                 
                 // For ongoing events, we could fetch live data here
-                if (eventCode !== '2025cmptx') {
+                if (eventCode !== '2025mil') {
                   fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
                     const rankEl = updatedLiveUpdates.querySelector('#ranking-number');
                     if (status && status.qual && status.qual.ranking && rankEl) {
