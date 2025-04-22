@@ -27,6 +27,9 @@ const MICMP_OFFSET_MS = 20.5 * 3600 * 1000; // 20.5 hour offset for FiM champion
 const TXCMP_OFFSET_MS = 17.5 * 3600 * 1000; // 17.5 hour offset for FiT championship
 const NECMP_OFFSET_MS = (17+(1/6)) * 3600 * 1000; // 17.5 hour offset for NE championship
 
+// Define the FRC kickoff date for next season
+const NEXT_KICKOFF_DATE = new Date('2026-01-10T11:00:00'); // January 10th at 11:00 PM Central for next year's kickoff
+
 // Helper function to determine which offset to use based on event key
 function getOffsetForEvent(eventKey) {
   if (!eventKey) return OFFSET_MS;
@@ -402,28 +405,56 @@ function updateCountdown(startDate) {
   }
 }
 
-// New function for event countdown - Updated to use event-specific offset
-function updateEventCountdown(startDate, eventKey) {
+// Updated function for kickoff countdown
+function updateKickoffCountdown() {
   const countdownEl = document.getElementById("countdown-timer");
   if (!countdownEl) {
-    // No countdown timer element found, possibly on team.html
+    // No countdown timer element found
     return;
   }
 
+  const now = new Date().getTime();
+  const kickoffDate = NEXT_KICKOFF_DATE.getTime();
+  let timeLeft = kickoffDate - now;
+
+  if (timeLeft < 0) timeLeft = 0;
+  
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+  
+  if (countdownEl) {
+    countdownEl.textContent = `${days}d ${hours.toString().padStart(2, '0')}h ${minutes.toString().padStart(2, '0')}m ${seconds.toString().padStart(2, '0')}s`;
+  }
+}
+
+// Legacy function for event countdown - kept for compatibility
+function updateEventCountdown(startDate, eventKey) {
+  // For index page, we'll use the kickoff countdown instead
+  if (window.location.pathname === "/" || window.location.pathname.includes("index.html")) {
+    updateKickoffCountdown();
+    return;
+  }
+
+  // For other pages, continue using the event countdown
+  const countdownEl = document.getElementById("countdown-timer");
+  if (!countdownEl) {
+    // No countdown timer element found
+    return;
+  }
   const now = new Date().getTime();
   // Use the appropriate offset based on the event key
   const offset = getOffsetForEvent(eventKey);
   const eventStart = new Date(startDate).getTime() + offset;
   let timeLeft = eventStart - now;
   if (timeLeft < 0) timeLeft = 0;
-
   const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
   const hours = Math.floor(
     (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
   );
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
   if (countdownEl) {
     countdownEl.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
   }
@@ -449,6 +480,25 @@ function updateEventLinks(eventKey) {
 // Initialize and update all data with loading states
 async function initializeEventData() {
   console.log("Initializing event data...");
+  
+  // Update the heading for countdown section if on index page
+  if (window.location.pathname === "/" || window.location.pathname.includes("index.html")) {
+    const countdownHeading = document.querySelector("#countdown-section h2");
+    if (countdownHeading) {
+      countdownHeading.textContent = "Countdown to Kickoff";
+    }
+    
+    const countdownDesc = document.querySelector("#countdown-section p");
+    if (countdownDesc) {
+      countdownDesc.textContent = "FRC Game Reveal - REBUILT";
+    }
+    
+    // Set up the kickoff countdown timer
+    updateKickoffCountdown();
+    setInterval(updateKickoffCountdown, 1000);
+    return;
+  }
+
   try {
     // Use calculated next event instead of a hardcoded one
     console.log("Fetching next event with team key:", window.FRC_TEAM_KEY);
