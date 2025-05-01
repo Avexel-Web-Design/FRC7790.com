@@ -344,8 +344,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dotToHighlight) {
       console.log(`Highlighting dot at index ${currentPeriod.dotIndex}`);
       
-      // Only add pulse effect if we're NOT during an event
-      if (!currentPeriod.isEvent) {
+      // Only add pulse effect if we're NOT during an event 
+      // AND we haven't reached the FIRST Championship yet (new condition)
+      if (!currentPeriod.isEvent && currentPeriod.name !== 'After all events' && 
+          !(currentPeriod.name === events[3].name || today >= events[3].start)) {
         dotToHighlight.classList.add('dot-pulse');
       }
       
