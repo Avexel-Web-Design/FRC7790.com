@@ -208,7 +208,8 @@
                 updatedLiveUpdates.insertBefore(eventStatusIndicator, updatedLiveUpdates.firstChild);
   
                 // Only fetch final results for events we actually attended
-                if (eventCode !== '2025mil' && eventCode !== '2025micmp4') {
+                // CHANGED: Include 2025mil (Milstein division) as an event we attended
+                if (eventCode !== '2025micmp4') {
                   // Fetch team status at event for ranking & record
                   fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
                     if (status) {
@@ -396,7 +397,131 @@
                   }).catch(err => console.error('Error fetching event awards:', err));
                 } else {
                   // Fix: For events we're not expected to attend, show appropriate message
-                  setQualificationPendingDisplay(updatedLiveUpdates);
+                  if (eventCode !== '2025mil') {
+                    setQualificationPendingDisplay(updatedLiveUpdates);
+                  } else {
+                    // Special handling for Milstein division at Championship
+                    fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
+                      if (status) {
+                        // Update qualification ranking
+                        const rankEl = updatedLiveUpdates.querySelector('#ranking-number');
+                        const recordEl = updatedLiveUpdates.querySelector('#qual-record');
+                        
+                        if (status.qual && status.qual.ranking) {
+                          const ranking = status.qual.ranking;
+                          if (rankEl) rankEl.textContent = ranking.rank || '--';
+                          
+                          // Update suffix using the formatRankSuffix function
+                          const rankSuffix = updatedLiveUpdates.querySelector('#ranking-number + span');
+                          if (rankSuffix && window.formatRankSuffix && ranking.rank) {
+                            rankSuffix.textContent = window.formatRankSuffix(ranking.rank);
+                          }
+                          
+                          if (recordEl) {
+                            recordEl.textContent = `${ranking.record ? ranking.record.wins : '--'}-${ranking.record ? ranking.record.losses : '--'}-${ranking.record ? ranking.record.ties : '--'}`;
+                          }
+                        }
+                        
+                        // Update alliance selection info
+                        const allianceNumberEl = updatedLiveUpdates.querySelector('#alliance-number');
+                        const alliancePickEl = updatedLiveUpdates.querySelector('#alliance-pick');
+                        
+                        if (status.alliance) {
+                          const pickNumber = status.alliance.pick;
+                          
+                          if (allianceNumberEl) {
+                            if (status.playoff && status.playoff.alliance) {
+                              const allianceNumber = status.playoff.alliance;
+                              allianceNumberEl.textContent = `${allianceNumber}`;
+                            } else {
+                              const allianceNumber = status.alliance.number !== undefined ? 
+                                                  status.alliance.number : 
+                                                  Math.floor(status.alliance.picks.indexOf('frc7790') / 3) + 1;
+                              allianceNumberEl.textContent = `${allianceNumber}`;
+                            }
+                          }
+                          
+                          if (pickNumber === 0) {
+                            if (alliancePickEl) alliancePickEl.innerHTML = `<span class="text-yellow-500"><i class="fas fa-crown mr-1"></i>Captain</span>`;
+                          } else {
+                            if (alliancePickEl) alliancePickEl.textContent = `Pick ${pickNumber}`;
+                          }
+                        } else {
+                          if (allianceNumberEl) allianceNumberEl.innerHTML = `<i class="fas fa-times"></i>`;
+                          if (alliancePickEl) alliancePickEl.textContent = '';
+                        }
+                        
+                        // Update playoff results
+                        const playoffResultEl = updatedLiveUpdates.querySelector('#playoff-result');
+                        const playoffRecordEl = updatedLiveUpdates.querySelector('#playoff-record');
+                        
+                        if (status.playoff) {
+                          const playoffStatus = status.playoff.status;
+                          const playoffRecord = status.playoff.record;
+                          
+                          let resultText = '';
+                          let resultClass = '';
+                          
+                          if (playoffStatus === 'won') {
+                            resultText = '1st Place';
+                            resultClass = 'text-yellow-500';
+                          } else if (playoffStatus === 'eliminated') {
+                            const { placementText, placementClass } = determinePlayoffPlacement(status.playoff.level, status.playoff.alliance);
+                            resultText = placementText;
+                            resultClass = placementClass;
+                          } else if (playoffStatus === 'playing') {
+                            resultText = 'In Progress';
+                            resultClass = 'text-baywatch-orange';
+                          } else {
+                            resultText = playoffStatus || 'Unknown';
+                            resultClass = 'text-gray-400';
+                          }
+                          
+                          if (playoffResultEl) {
+                            playoffResultEl.className = `text-4xl font-bold ${resultClass}`;
+                            playoffResultEl.textContent = resultText;
+                          }
+                          
+                          if (playoffRecordEl && playoffRecord) {
+                            playoffRecordEl.textContent = `${playoffRecord.wins || 0}-${playoffRecord.losses || 0}-${playoffRecord.ties || 0}`;
+                          } else if (playoffRecordEl) {
+                            playoffRecordEl.textContent = "Record unavailable";
+                          }
+                        } else {
+                          if (playoffResultEl) playoffResultEl.innerHTML = `<i class="fas fa-minus"></i>`;
+                          if (playoffRecordEl) playoffRecordEl.textContent = "Did not participate";
+                        }
+                      } else {
+                        setFallbackEventDisplay(updatedLiveUpdates, eventCode);
+                      }
+                    }).catch(err => {
+                      console.error('Error fetching Championship status:', err);
+                      setFallbackEventDisplay(updatedLiveUpdates, eventCode);
+                    });
+                    
+                    // Fetch Championship awards
+                    fetchEventAwards(eventCode).then(awards => {
+                      const teamAwards = awards.filter(award => 
+                        award.recipient_list.some(recipient => recipient.team_key === 'frc7790')
+                      );
+                      
+                      if (teamAwards.length > 0) {
+                        const awardsIndicator = document.createElement('div');
+                        awardsIndicator.className = 'mt-4 text-center';
+                        awardsIndicator.innerHTML = `
+                          <div class="text-yellow-500 mb-2"><i class="fas fa-award mr-1"></i> Awards</div>
+                          <div class="flex flex-wrap justify-center gap-2">
+                            ${teamAwards.map(award => 
+                              `<div class="px-3 py-1 bg-yellow-500/20 rounded-full text-yellow-400 text-sm">
+                                ${award.name}
+                              </div>`
+                            ).join('')}
+                          </div>
+                        `;
+                        updatedLiveUpdates.appendChild(awardsIndicator);
+                      }
+                    }).catch(err => console.error('Error fetching event awards:', err));
+                  }
                 }
               } else if (hasStarted) {
                 // Event is ongoing - show live updates
@@ -404,19 +529,18 @@
                 updatedLiveUpdates.classList.remove('hidden');
                 
                 // For ongoing events, we could fetch live data here
-                if (eventCode !== '2025mil') {
-                  fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
-                    const rankEl = updatedLiveUpdates.querySelector('#ranking-number');
-                    if (status && status.qual && status.qual.ranking && rankEl) {
-                      rankEl.textContent = status.qual.ranking.rank || '--';
-                      
-                      const totalEl = updatedLiveUpdates.querySelector('#total-teams');
-                      if (totalEl) {
-                        totalEl.textContent = `of ${status.qual.num_teams} teams`;
-                      }
+                // CHANGED: Include Milstein division (2025mil) in data fetching
+                fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
+                  const rankEl = updatedLiveUpdates.querySelector('#ranking-number');
+                  if (status && status.qual && status.qual.ranking && rankEl) {
+                    rankEl.textContent = status.qual.ranking.rank || '--';
+                    
+                    const totalEl = updatedLiveUpdates.querySelector('#total-teams');
+                    if (totalEl) {
+                      totalEl.textContent = `of ${status.qual.num_teams} teams`;
                     }
-                  }).catch(err => console.error('Error fetching team status:', err));
-                }
+                  }
+                }).catch(err => console.error('Error fetching team status:', err));
               } else {
                 // Event hasn't started - show countdown
                 updatedCountdownSection.classList.remove('hidden');

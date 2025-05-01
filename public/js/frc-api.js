@@ -61,14 +61,24 @@ window.getOffsetForEvent = getOffsetForEvent;
 
 // Helper function to format ranking with proper suffix (1st, 2nd, 3rd, etc.)
 function formatRankSuffix(rank) {
-  if (rank === 1) {
-    return "st";
-  } else if (rank === 2) {
-    return "nd";
-  } else if (rank === 3) {
-    return "rd";
-  } else {
+  // Convert to number in case it's a string
+  const number = Number(rank);
+  
+  // Handle special cases for 11, 12, 13
+  if (number % 100 >= 11 && number % 100 <= 13) {
     return "th";
+  }
+  
+  // Handle standard cases based on last digit
+  switch (number % 10) {
+    case 1:
+      return "st";
+    case 2:
+      return "nd";
+    case 3:
+      return "rd";
+    default:
+      return "th";
   }
 }
 
@@ -551,7 +561,7 @@ async function initializeEventData() {
       
       // Use a hard-coded date for World Championship event as fallback
       const fallbackDate = "2025-04-16";
-      const fallbackEvent = "2025cmptx";
+      const fallbackEvent = "2025mil";
       console.log("Using fallback date:", fallbackDate);
       
       // Update links to fallback event
@@ -570,7 +580,7 @@ async function initializeEventData() {
     
     // Use a hard-coded date for World Championship as fallback
     const fallbackDate = "2025-04-16";
-    const fallbackEvent = "2025cmptx";
+    const fallbackEvent = "2025mil";
     console.log("Using fallback date due to error:", fallbackDate);
     
     // Update links to fallback event
