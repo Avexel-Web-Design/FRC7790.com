@@ -15,8 +15,8 @@
       
       for (const eventCode of eventCodes) {
         try {
-          // Skip processing events with hardcoded results - now including Traverse City
-          if (eventCode === '2025micmp4' || eventCode === '2025milac' || eventCode === '2025mitvc') {
+          // Skip processing events with hardcoded results - now including Traverse City and Championship
+          if (eventCode === '2025micmp4' || eventCode === '2025milac' || eventCode === '2025mitvc' || eventCode === '2025mil') {
             console.log(`Skipping ${eventCode} processing - using hardcoded results`);
             continue;
           }
@@ -25,8 +25,10 @@
           const eventData = await fetchEventData(eventCode);
           
           if (eventData) {
-            const hasStarted = hasEventStarted(eventData.start_date);
-            const hasEnded = hasEventEnded(eventData.end_date);
+            // FIRST Championship (2025mil) should always be shown as completed
+            // This ensures the event status display is consistent and doesn't show countdown
+            const hasStarted = eventCode === '2025mil' ? true : hasEventStarted(eventData.start_date);
+            const hasEnded = eventCode === '2025mil' ? true : hasEventEnded(eventData.end_date);
             
             // Get elements for this event based on event code
             let eventSelector;
@@ -45,6 +47,13 @@
             } else {
               // Default selector pattern
               eventSelector = `a[href="event.html?event=${eventCode}"]`;
+            }
+            
+            // Find if this event has hardcoded results
+            const eventCard = document.querySelector(eventSelector);
+            if (eventCard && eventCard.querySelector('.hardcoded-results')) {
+              console.log(`Skipping dynamic updates for ${eventCode} - hardcoded results found`);
+              continue;
             }
             
             // Find the countdown section and live updates section
@@ -208,7 +217,6 @@
                 updatedLiveUpdates.insertBefore(eventStatusIndicator, updatedLiveUpdates.firstChild);
   
                 // Only fetch final results for events we actually attended
-                // CHANGED: Include 2025mil (Milstein division) as an event we attended
                 if (eventCode !== '2025micmp4') {
                   // Fetch team status at event for ranking & record
                   fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
@@ -529,7 +537,6 @@
                 updatedLiveUpdates.classList.remove('hidden');
                 
                 // For ongoing events, we could fetch live data here
-                // CHANGED: Include Milstein division (2025mil) in data fetching
                 fetchTeamStatusAtEvent(eventCode, '7790').then(status => {
                   const rankEl = updatedLiveUpdates.querySelector('#ranking-number');
                   if (status && status.qual && status.qual.ranking && rankEl) {
