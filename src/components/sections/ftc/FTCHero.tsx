@@ -1,7 +1,7 @@
 export default function FTCHero() {
   return (
     <section className="min-h-screen relative overflow-hidden pt-12 flex items-center justify-center">
-      <div className="absolute inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-90"></div>
+      <div className="absolute inset-0"></div>
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div
