@@ -134,6 +134,18 @@ body {
   transition: all 0.3s ease;
 }
 
+/* Anurati font for robot names */
+@font-face {
+  font-family: 'Anurati';
+  src: url('/assets/fonts/Anurati-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.font-anurati {
+  font-family: 'Anurati', 'Poppins', sans-serif;
+}
+
 /* Additional responsive helpers */
 @media (max-width: 640px) {
   .mobile-text-sm {
