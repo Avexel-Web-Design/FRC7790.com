@@ -18,17 +18,35 @@ const navigationItems: NavigationItem[] = [
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScroll, setLastScroll] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const currentScroll = window.scrollY;
+      
+      // Update scrolled state for background opacity
+      setIsScrolled(currentScroll > 50);
+      
+      // Handle visibility based on scroll direction
+      if (currentScroll <= 0) {
+        setIsVisible(true);
+      } else if (currentScroll > lastScroll && currentScroll > 100) {
+        // Scrolling down - hide navbar
+        setIsVisible(false);
+      } else if (currentScroll < lastScroll) {
+        // Scrolling up - show navbar
+        setIsVisible(true);
+      }
+      
+      setLastScroll(currentScroll);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScroll]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +55,11 @@ export default function Navigation() {
       console.log('Searching for:', searchQuery);
     }
   };
-
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+      className={`fixed top-0 w-full z-50 transition-all duration-300 transform ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      } ${
         isScrolled ? 'bg-baywatch-dark/95 backdrop-blur-sm' : 'bg-transparent'
       }`}
     >
