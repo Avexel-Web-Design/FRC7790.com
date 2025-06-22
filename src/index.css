@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Text selection colors */
+::selection {
+  background-color: rgba(255, 107, 0, 0.3);
+}
+
+::-moz-selection {
+  background-color: rgba(255, 107, 0, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff6b00;
+  border-radius: 4px;
+}
+
+/* Reveal animation */
+.reveal {
+  position: relative;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 1s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes drawPath {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Update flowingGradient keyframes for dynamic movement */
+@keyframes flowingGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.flowing-gradient {
+  background-size: 200% 200%;
+  animation: flowingGradient 8s ease-in-out infinite;
+}
+
+/* Small Screen Optimizations */
+@media (max-width: 360px) {
+  .xs-p-smaller {
+    padding: 0.75rem !important;
+  }
+  .xs-text-smaller {
+    font-size: 0.875rem !important;
+  }
+  .xs-py-smaller {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  .xs-px-smaller {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom utility classes */
+.glow-orange {
+  text-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+}
+
+.btn-orange-glow {
+  box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
+}
+
+.btn-orange-glow:hover {
+  box-shadow: 0 0 30px rgba(255, 107, 0, 0.5);
+}
+
+.card-gradient {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.1), rgba(0, 0, 0, 0.3));
+  backdrop-filter: blur(10px);
+}
+
+.gradient-section {
+  background: linear-gradient(135deg, #1a1a1a, #000000);
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.counter {
+  transition: all 0.3s ease;
+}
+
+/* Additional responsive helpers */
+@media (max-width: 640px) {
+  .mobile-text-sm {
+    font-size: 0.875rem;
+  }
+  
+  .mobile-p-sm {
+    padding: 0.5rem;
+  }
+}
