@@ -191,11 +191,9 @@ export class FRCAPIService {
       return [];
     }
   }
-
   async getNextMatch(eventKey: string): Promise<Match | null> {
     try {
       const matches = await this.getTeamMatches(eventKey);
-      const now = new Date();
       
       // Find unplayed matches
       const unplayed = matches.filter(match => !match.actual_time);

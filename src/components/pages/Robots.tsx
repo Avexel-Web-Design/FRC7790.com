@@ -1,10 +1,13 @@
+import RobotsHero from '../sections/robots/RobotsHero';
+import CurrentRobot from '../sections/robots/CurrentRobot';
+import PreviousRobots from '../sections/robots/PreviousRobots';
+
 export default function Robots() {
   return (
-    <div className="container mx-auto px-6 py-12">
-      <h1 className="text-4xl font-bold text-center mb-8">Our Robots</h1>
-      <p className="text-gray-400 text-center">
-        This page will showcase our FRC robots. Coming soon!
-      </p>
-    </div>
+    <>
+      <RobotsHero />
+      <CurrentRobot />
+      <PreviousRobots />
+    </>
   );
 }
