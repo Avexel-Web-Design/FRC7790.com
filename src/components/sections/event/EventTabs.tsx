@@ -46,13 +46,13 @@ const EventTabs: React.FC<EventTabsProps> = ({ activeTab, onTabChange }) => {
 
   return (
     <div className="container mx-auto px-6 mb-2 mt-16">
-      <div className="border-b border-gray-700 flex justify-center sm:justify-start">
+      <div className="border-b border-gray-700 grid grid-cols-4">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => handleTabClick(tab.id)}
             className={`
-              py-3 px-3 sm:px-6 font-medium focus:outline-none transition-all duration-300 relative
+              w-full flex items-center justify-center py-3 px-3 sm:px-6 font-medium focus:outline-none transition-all duration-300 relative
               ${activeTab === tab.id 
                 ? 'text-baywatch-orange border-b-2 border-baywatch-orange' 
                 : 'text-gray-400 hover:text-white border-b-2 border-transparent hover:border-gray-600'
