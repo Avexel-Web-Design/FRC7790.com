@@ -83,6 +83,25 @@ const Awards: React.FC<AwardsProps> = ({ awards, isLoading }) => {
     window.location.href = `/team?team=${teamNumber}`;
   };
 
+  // Rearrange awards so that Engineering Inspiration appears directly below Winner
+  const sortedAwards = React.useMemo(() => {
+    if (!awards) return [] as Award[];
+
+    const impact = awards.filter(
+      (a) => a.award_type === 0 || /impact/i.test(a.name) || /chairman/i.test(a.name)
+    );
+    const winners = awards.filter((a) => a.award_type === 1 || /winner/i.test(a.name));
+    const engineeringInspiration = awards.filter((a) => /engineering inspiration/i.test(a.name));
+    const others = awards.filter(
+      (a) =>
+        !impact.includes(a) &&
+        !winners.includes(a) &&
+        !engineeringInspiration.includes(a)
+    );
+
+    return [...impact, ...winners, ...engineeringInspiration, ...others];
+  }, [awards]);
+
   if (isLoading) {
     return (
       <section className="tab-content py-8 relative z-10">
@@ -115,7 +134,7 @@ const Awards: React.FC<AwardsProps> = ({ awards, isLoading }) => {
             </div>
           ) : (
             <div className="space-y-6">
-              {awards.map((award, index) => (
+              {sortedAwards.map((award, index) => (
                 <div
                   key={`${award.name}-${index}`}
                   className="bg-black/80 rounded-lg p-6 border border-gray-600 hover:border-baywatch-orange/50 transition-all duration-300"
@@ -139,10 +158,10 @@ const Awards: React.FC<AwardsProps> = ({ awards, isLoading }) => {
                             {recipient.team_key && (
                               <span
                                 className={`
-                                  cursor-pointer hover:text-baywatch-orange transition-colors font-semibold
+                                  cursor-pointer hover:text-baywatch-orange transition-colors
                                   ${formatTeamNumber(recipient.team_key) === '7790' 
-                                    ? 'text-baywatch-orange' 
-                                    : 'text-blue-300'
+                                    ? 'text-baywatch-orange font-bold' 
+                                    : 'text-baywatch-orange'
                                   }
                                 `}
                                 onClick={() => handleTeamClick(formatTeamNumber(recipient.team_key!))}
