@@ -24,7 +24,7 @@ export default function FTCHero() {
               <span className="text-baywatch-orange glow-orange">15814</span>
             </div>
             <div
-              className="text-5xl md:text-7xl font-bold mt-4 animate__animated animate__fadeInUp"
+              className="text-5xl md:text-7xl flex items-center justify-center gap-4 font-bold mt-4 animate__animated animate__fadeInUp"
               style={{ animationDelay: '1s', animationDuration: '3s' }}
             >
               <span className="text-white">Metal</span>

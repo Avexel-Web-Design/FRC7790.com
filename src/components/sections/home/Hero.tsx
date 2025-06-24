@@ -11,9 +11,9 @@ export default function Hero() {
               <span className="text-white">FRC</span>
               <span className="text-baywatch-orange glow-orange">7790</span>
             </div>
-            <div className="text-3xl sm:text-5xl md:text-7xl font-bold mt-2 sm:mt-4 animate__animated animate__fadeInUp"
+            <div className="text-3xl sm:text-5xl flex items-center justify-center gap-4 md:text-7xl font-bold mt-2 sm:mt-4 animate__animated animate__fadeInUp"
                  style={{ animationDelay: '1s', animationDuration: '3s' }}>
-              <span className="text-white">Baywatch </span>
+              <span className="text-white">Baywatch</span>
               <span className="text-baywatch-orange glow-orange">Robotics</span>
             </div>
           </h1>

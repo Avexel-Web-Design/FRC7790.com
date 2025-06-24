@@ -15,7 +15,6 @@ export default function FTCGameInfo() {
             <video
               className="w-full h-full object-cover"
               controls
-              poster="/assets/images/Into the Deep/into the deep outline.png"
             >
               <source src="/assets/videos/INTO THE DEEP.mp4" type="video/mp4" />
               Your browser does not support the video tag.

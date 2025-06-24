@@ -10,11 +10,11 @@ export default function FTCRobots() {
           <h3 className="text-4xl sm:text-5xl md:text-7xl font-bold font-anurati text-orange-500 mb-4 glow-orange tracking-[.25em] text-center">
             COBALT
           </h3>
-          <div className="robot-image-container mx-auto mb-8">
+          <div className="robot-image-container mx-auto mb-8 max-w-md">
             <img
               src="/assets/images/COBALT/Cobalt-Start-non-metal.png"
               alt="COBALT"
-              className="w-full h-full object-contain"
+              className="w-full h-auto object-contain"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto mt-8">
