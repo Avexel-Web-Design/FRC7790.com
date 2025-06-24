@@ -273,6 +273,180 @@ export class FRCAPIService {
       .map(key => key.replace('frc', ''))
       .join(', ');
   }
+
+  async fetchEventData(eventCode: string): Promise<any> {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error fetching event: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching event data:", error);
+      throw error;
+    }
+  }
+
+  async fetchEventTeams(eventCode: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/teams`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error fetching event teams: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching event teams:", error);
+      throw error;
+    }
+  }
+
+  async fetchEventRankings(eventCode: string): Promise<any[]> {
+    try {
+      console.log(`Fetching rankings for event: ${eventCode}`);
+      const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/rankings`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error fetching event rankings: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Raw rankings API response:', data);
+      
+      // The API returns { rankings: [...], sort_order_info: [...] }
+      // We need to process the rankings array and map the data correctly
+      if (data.rankings && Array.isArray(data.rankings)) {
+        const processedRankings = data.rankings.map((ranking: any) => {
+          console.log('Processing ranking:', ranking);
+          return {
+            rank: ranking.rank,
+            team_key: ranking.team_key,
+            wins: ranking.record?.wins || 0,
+            losses: ranking.record?.losses || 0,
+            ties: ranking.record?.ties || 0,
+            ranking_points: ranking.sort_orders?.[0] || 0,
+            qual_average: ranking.sort_orders?.[1] || 0,
+            record: ranking.record || { wins: 0, losses: 0, ties: 0 },
+            sort_orders: ranking.sort_orders || [],
+            matches_played: ranking.matches_played || 0,
+            dq: ranking.dq || 0,
+            extra_stats: ranking.extra_stats || []
+          };
+        });
+        
+        console.log('Processed rankings:', processedRankings);
+        return processedRankings;
+      }
+      
+      // If no rankings data, return empty array
+      console.log('No rankings data found in response');
+      return [];
+    } catch (error) {
+      console.error("Error fetching event rankings:", error);
+      throw error;
+    }
+  }
+
+  async fetchEventMatches(eventCode: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/matches`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error fetching event matches: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching event matches:", error);
+      throw error;
+    }
+  }
+
+  async fetchEventAwards(eventCode: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/awards`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error fetching event awards: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching event awards:", error);
+      throw error;
+    }
+  }
+
+  async fetchStatboticsEPA(eventCode: string): Promise<{ [teamKey: string]: number }> {
+    try {
+      console.log('Fetching EPA data from Statbotics for event:', eventCode);
+      
+      // First get the teams at this event from our existing TBA data
+      const eventTeams = await this.fetchEventTeams(eventCode);
+      console.log(`Found ${eventTeams.length} teams at event`);
+      
+      if (eventTeams.length === 0) {
+        console.log('No teams found for event, cannot fetch EPA data');
+        return {};
+      }
+      
+      // Use Statbotics v3 API - /team_event/{teamNumber}/{eventKey}
+      const STATBOTICS_BASE_URL = 'https://api.statbotics.io/v3';
+      const epaMap: { [teamKey: string]: number } = {};
+      
+      // Fetch EPA data for each team individually
+      const epaPromises = eventTeams.map(async (team) => {
+        try {
+          const teamNumber = team.team_number;
+          const url = `${STATBOTICS_BASE_URL}/team_event/${teamNumber}/${eventCode}`;
+          console.log(`Fetching EPA for team ${teamNumber}:`, url);
+          
+          const response = await fetch(url);
+          
+          if (response.ok) {
+            const teamEventData = await response.json();
+            console.log(`EPA data for team ${teamNumber}:`, teamEventData);
+            
+            // Extract EPA from the response
+            if (teamEventData && teamEventData.epa && teamEventData.epa.total_points) {
+              const epaValue = teamEventData.epa.total_points.mean;
+              if (epaValue !== null && epaValue !== undefined) {
+                epaMap[`frc${teamNumber}`] = epaValue;
+                console.log(`Added EPA for frc${teamNumber}: ${epaValue}`);
+              }
+            }
+          } else {
+            console.log(`No EPA data for team ${teamNumber}: ${response.status}`);
+          }
+        } catch (error) {
+          console.log(`Error fetching EPA for team ${team.team_number}:`, error);
+        }
+      });
+      
+      // Wait for all EPA requests to complete
+      await Promise.all(epaPromises);
+      
+      console.log('Final EPA mapping:', epaMap);
+      return epaMap;
+      
+    } catch (error) {
+      console.error("Error fetching EPA data:", error);
+      return {};
+    }
+  }
 }
 
 // Export singleton instance
