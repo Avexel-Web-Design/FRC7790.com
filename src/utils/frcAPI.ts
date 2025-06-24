@@ -390,7 +390,7 @@ export class FRCAPIService {
     }
   }
 
-  async fetchStatboticsEPA(eventCode: string): Promise<{ [teamKey: string]: number }> {
+  async fetchStatboticsEPA(eventCode: string, progressCallback?: (epaMap: { [teamKey: string]: number }) => void): Promise<{ [teamKey: string]: number }> {
     try {
       console.log('Fetching EPA data from Statbotics for event:', eventCode);
       
@@ -407,49 +407,36 @@ export class FRCAPIService {
       const STATBOTICS_BASE_URL = 'https://api.statbotics.io/v3';
       const epaMap: { [teamKey: string]: number } = {};
       
-      // Batch API calls with limited concurrency to avoid rate limiting
-      const BATCH_SIZE = 10; // Process 10 teams at a time
-      const batches = [];
-      
-      for (let i = 0; i < eventTeams.length; i += BATCH_SIZE) {
-        batches.push(eventTeams.slice(i, i + BATCH_SIZE));
-      }
-      
-      console.log(`Processing ${eventTeams.length} teams in ${batches.length} batches of ${BATCH_SIZE}`);
-      
-      // Process each batch
-      for (const batch of batches) {
-        const batchPromises = batch.map(async (team) => {
-          try {
-            const teamNumber = team.team_number;
-            const url = `${STATBOTICS_BASE_URL}/team_event/${teamNumber}/${eventCode}`;
+      // Process all teams concurrently for maximum speed
+      const allPromises = eventTeams.map(async (team) => {
+        try {
+          const teamNumber = team.team_number;
+          const url = `${STATBOTICS_BASE_URL}/team_event/${teamNumber}/${eventCode}`;
+          
+          const response = await fetch(url);
+          
+          if (response.ok) {
+            const teamEventData = await response.json();
             
-            const response = await fetch(url);
-            
-            if (response.ok) {
-              const teamEventData = await response.json();
-              
-              // Extract EPA from the response
-              if (teamEventData && teamEventData.epa && teamEventData.epa.total_points) {
-                const epaValue = teamEventData.epa.total_points.mean;
-                if (epaValue !== null && epaValue !== undefined) {
-                  epaMap[`frc${teamNumber}`] = epaValue;
+            // Extract EPA from the response
+            if (teamEventData && teamEventData.epa && teamEventData.epa.total_points) {
+              const epaValue = teamEventData.epa.total_points.mean;
+              if (epaValue !== null && epaValue !== undefined) {
+                epaMap[`frc${teamNumber}`] = epaValue;
+                // Call progress callback if provided for incremental updates
+                if (progressCallback) {
+                  progressCallback({ ...epaMap });
                 }
               }
             }
-          } catch (error) {
-            console.log(`Error fetching EPA for team ${team.team_number}:`, error);
           }
-        });
-        
-        // Wait for current batch to complete before starting next batch
-        await Promise.all(batchPromises);
-        
-        // Small delay between batches to be nice to the API
-        if (batches.indexOf(batch) < batches.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (error) {
+          // Silently fail for individual teams to not slow down the rest
         }
-      }
+      });
+      
+      // Wait for all requests to complete
+      await Promise.all(allPromises);
       
       console.log(`Successfully fetched EPA for ${Object.keys(epaMap).length}/${eventTeams.length} teams`);
       return epaMap;

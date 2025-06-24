@@ -184,10 +184,14 @@ export function useEventData(eventCode: string) {
     try {
       console.log('Auto-loading EPA data for event:', eventData.key);
       
-      const epaResults = await frcAPI.fetchStatboticsEPA(eventData.key);
-      console.log('EPA data received:', epaResults);
+      // Use progressive callback to update EPA data as it loads
+      const epaResults = await frcAPI.fetchStatboticsEPA(eventData.key, (progressEpaData) => {
+        setEpaData(prevData => ({ ...prevData, ...progressEpaData }));
+      });
       
+      // Final update to ensure all data is set
       setEpaData(epaResults);
+      console.log('EPA data loading completed:', epaResults);
     } catch (err) {
       console.error('Error fetching EPA data:', err);
     }

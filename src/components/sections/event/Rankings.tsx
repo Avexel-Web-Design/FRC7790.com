@@ -16,7 +16,6 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
   
   // Always show EPA column, but with placeholders until data loads
   const showEPA = true;
-  const epaLoading = Object.keys(epaData).length === 0;
 
   // Debug EPA data when it changes
   React.useEffect(() => {
@@ -194,12 +193,7 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
                     >
                       <div className="flex items-center">
                         EPA
-                        {epaLoading && (
-                          <i className="fas fa-spinner fa-spin ml-2 text-xs text-gray-400"></i>
-                        )}
-                        {!epaLoading && (
-                          <i className={`ml-2 ${getSortIcon('epa')}`}></i>
-                        )}
+                        <i className={`ml-2 ${getSortIcon('epa')}`}></i>
                       </div>
                     </th>
                   )}
