@@ -38,8 +38,7 @@ const Event: React.FC = () => {
     awards,
     teams,
     epaData,
-    refetch,
-    fetchEpaData
+    refetch
   } = useEventData(eventCode);
 
   // Handle tab changes
@@ -120,7 +119,6 @@ const Event: React.FC = () => {
                 rankings={rankings}
                 epaData={epaData}
                 isLoading={isLoading}
-                onLoadEpa={fetchEpaData}
               />
             )}
             

@@ -171,6 +171,28 @@ export function useEventData(eventCode: string) {
     fetchEventData();
   }, [fetchEventData]);
 
+  // Auto-load EPA data when teams are loaded
+  useEffect(() => {
+    if (teams.length > 0 && Object.keys(epaData).length === 0) {
+      loadEpaData();
+    }
+  }, [teams]);
+
+  const loadEpaData = async () => {
+    if (!eventData) return;
+    
+    try {
+      console.log('Auto-loading EPA data for event:', eventData.key);
+      
+      const epaResults = await frcAPI.fetchStatboticsEPA(eventData.key);
+      console.log('EPA data received:', epaResults);
+      
+      setEpaData(epaResults);
+    } catch (err) {
+      console.error('Error fetching EPA data:', err);
+    }
+  };
+
   return {
     eventData,
     rankings,
@@ -182,21 +204,6 @@ export function useEventData(eventCode: string) {
     isLoading,
     error,
     isUpcoming,
-    refetch,
-    fetchEpaData: async () => {
-      if (!eventData) return;
-      
-      try {
-        console.log('Fetching EPA data for event:', eventData.key);
-        
-        const epaResults = await frcAPI.fetchStatboticsEPA(eventData.key);
-        console.log('EPA data received:', epaResults);
-        
-        setEpaData(epaResults);
-      } catch (err) {
-        console.error('Error fetching EPA data:', err);
-        // Don't set the main error state for EPA failures
-      }
-    }
+    refetch
   };
 }

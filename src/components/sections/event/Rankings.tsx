@@ -5,29 +5,18 @@ interface RankingsProps {
   rankings: TeamRanking[];
   epaData: { [teamKey: string]: number };
   isLoading: boolean;
-  onLoadEpa: () => void;
 }
 
 type SortField = 'rank' | 'team_key' | 'ranking_points' | 'record' | 'qual_average' | 'epa';
 type SortDirection = 'asc' | 'desc';
 
-const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading, onLoadEpa }) => {
+const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => {
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [showEPA, setShowEPA] = useState(false);
-  const [isLoadingEpa, setIsLoadingEpa] = useState(false);
-
-  const handleLoadEpa = async () => {
-    setIsLoadingEpa(true);
-    try {
-      await onLoadEpa();
-      setShowEPA(true);
-    } catch (error) {
-      console.error('Failed to load EPA data:', error);
-    } finally {
-      setIsLoadingEpa(false);
-    }
-  };
+  
+  // Always show EPA column, but with placeholders until data loads
+  const showEPA = true;
+  const epaLoading = Object.keys(epaData).length === 0;
 
   // Debug EPA data when it changes
   React.useEffect(() => {
@@ -139,19 +128,6 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading, onLoa
         <h2 className="text-3xl font-bold mb-8 text-center">Team Rankings</h2>
         
         <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
-          {!showEPA && (
-            <div className="mb-4 text-center">
-              <button
-                onClick={handleLoadEpa}
-                disabled={isLoadingEpa}
-                className="text-sm text-baywatch-orange hover:text-baywatch-orange/80 transition-colors disabled:opacity-50"
-              >
-                <i className={`fas ${isLoadingEpa ? 'fa-spinner fa-spin' : 'fa-chart-line'} mr-2`}></i>
-                {isLoadingEpa ? 'Loading EPA...' : 'Load EPA Data'}
-              </button>
-            </div>
-          )}
-          
           <div className="overflow-x-auto">
             {!isLoading && rankings.length === 0 && (
               <div className="text-center py-8 mb-4">
@@ -218,8 +194,12 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading, onLoa
                     >
                       <div className="flex items-center">
                         EPA
-                        <i className={`ml-2 ${getSortIcon('epa')}`}></i>
-                        <i className="fas fa-info-circle text-baywatch-orange ml-1 text-sm" title="EPA data may take a moment to load"></i>
+                        {epaLoading && (
+                          <i className="fas fa-spinner fa-spin ml-2 text-xs text-gray-400"></i>
+                        )}
+                        {!epaLoading && (
+                          <i className={`ml-2 ${getSortIcon('epa')}`}></i>
+                        )}
                       </div>
                     </th>
                   )}
@@ -278,7 +258,13 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading, onLoa
                         <td className="p-4">{getQualAverage(ranking).toFixed(2)}</td>
                         {showEPA && (
                           <td className="p-4">
-                            {epaData[ranking.team_key] !== undefined ? epaData[ranking.team_key].toFixed(1) : '--'}
+                            {epaData[ranking.team_key] !== undefined ? (
+                              epaData[ranking.team_key].toFixed(1)
+                            ) : (
+                              <span className="text-gray-500">
+                                <i className="fas fa-spinner fa-spin text-xs"></i>
+                              </span>
+                            )}
                           </td>
                         )}
                       </tr>
