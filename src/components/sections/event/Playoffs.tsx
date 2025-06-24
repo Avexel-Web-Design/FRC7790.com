@@ -118,8 +118,8 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
     const allianceRowClasses = (color: 'blue' | 'red') => {
       const base =
         color === 'blue'
-          ? 'bg-blue-900/30 text-blue-300 border-blue-400/30'
-          : 'bg-red-900/30 text-red-300 border-red-400/30';
+          ? 'bg-blue-900/30 text-blue-400 border-blue-400/30'
+          : 'bg-red-900/30 text-red-400 border-red-400/30';
       const winnerBonus =
         winner === color ? (color === 'blue' ? 'border-2 border-blue-500 font-bold' : 'border-2 border-red-500 font-bold') : '';
       return `alliance flex justify-between items-center p-3 rounded relative border ${base} ${winnerBonus}`;
@@ -127,7 +127,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
 
     // Badge bubble styles
     const badgeClasses = (color: 'blue' | 'red') =>
-      `absolute -top-3 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[0.65rem] font-bold rounded-full border shadow-md ${
+      `absolute -top-3 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[0.65rem] font-bold backdrop-blur-xl rounded-full border shadow-md ${
         color === 'blue' ? 'bg-blue-500/40 border-blue-300 text-white' : 'bg-red-500/40 border-red-300 text-white'
       }`;
 
@@ -149,7 +149,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
       >
         {/* Match title bubble */}
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/50 backdrop-blur-xl text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md">
-          {displayName}
+          {displayName} <i className="fas fa-arrow-up-right-from-square ml-1"></i>
         </span>
 
         {/* Alliance rows */}
@@ -167,7 +167,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                 </span>
               ))}
             </div>
-            <div className="ml-2 font-semibold text-blue-300">{scores.blue ?? '--'}</div>
+            <div className="ml-2 font-semibold text-blue-400">{scores.blue ?? '--'}</div>
           </div>
 
           {/* Divider */}
@@ -186,7 +186,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                 </span>
               ))}
             </div>
-            <div className="ml-2 font-semibold text-red-300">{scores.red ?? '--'}</div>
+            <div className="ml-2 font-semibold text-red-400">{scores.red ?? '--'}</div>
           </div>
         </div>
       </div>

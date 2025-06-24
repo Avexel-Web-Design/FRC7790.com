@@ -109,8 +109,8 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                         `}
                         style={{ animationDelay: `${index * 0.02}s` }}
                       >
-                        <td className="p-4 font-semibold">
-                          {formatMatchName(match)}
+                        <td className="p-4 font-semibold text-baywatch-orange">
+                          {formatMatchName(match)} <i className="fas fa-arrow-up-right-from-square ml-0.5"></i>
                           {isOurMatch && <i className="fas fa-star text-baywatch-orange ml-2"></i>}
                         </td>
                         <td className="p-4 text-sm text-gray-400">
