@@ -285,7 +285,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
             </div>
 
             {/* ---------------- Divider ---------------- */}
-            <div className="my-16 relative">
+            <div className="my-8 relative">
               <div className="absolute inset-0 flex items-center" aria-hidden="true">
                 <div className="w-full border-t border-gray-700 bg-gradient-to-r from-transparent via-baywatch-orange to-transparent opacity-30"></div>
               </div>
@@ -300,7 +300,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
             <div className="bracket-container mt-48">
               <div className="grid grid-cols-4 gap-8">
                 {/* First Round Losers */}
-                <div className="space-y-8" style={{ marginTop: '-8rem' }}>
+                <div className="space-y-8" style={{ marginTop: '-10rem' }}>
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(4), 'Match 5')}
                     className="match-box group "
@@ -312,7 +312,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                 </div>
 
                 {/* Second Round Losers */}
-                <div className="space-y-8" style={{ marginTop: '-8rem' }}>
+                <div className="space-y-8" style={{ marginTop: '-10rem' }}>
                   {/* Note: order intentionally 10 then 9 to mimic old layout */}
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(9), 'Match 10')}
