@@ -356,6 +356,28 @@ export class FRCAPIService {
     }
   }
 
+  /**
+   * Fetch the full list of alliances for a given event.
+   * @param eventCode The event key, e.g. "2024mimid"
+   * @returns Array of alliance objects in seed order (element 0 = #1 alliance)
+   */
+  async fetchEventAlliances(eventCode: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/alliances`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching event alliances: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching event alliances:", error);
+      throw error;
+    }
+  }
+
   async fetchEventMatches(eventCode: string): Promise<any[]> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/matches`, {

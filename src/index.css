@@ -70,6 +70,38 @@ body {
   padding: 0;
 }
 
+/* Match card (playoff bracket) styles – ported from legacy site */
+.match-box {
+  position: relative;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transition: all 0.5s ease;
+}
+
+.match-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  border-radius: 1rem;
+  pointer-events: none;
+  background: radial-gradient(circle at 1px 1px, rgba(255, 107, 0, 0.2) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+.match-box:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(255, 107, 0, 0.3);
+}
+
+.finals-match {
+  border: 2px solid rgba(255, 107, 0, 0.5);
+  box-shadow: 0 0 15px rgba(255, 107, 0, 0.2);
+}
+
 /* Custom utility classes */
 .glow-orange {
   text-shadow: 0 0 10px rgba(255, 107, 0, 0.5);

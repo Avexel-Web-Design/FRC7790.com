@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import type { Match } from '../../../hooks/useEventData';
 
 interface PlayoffsProps {
@@ -22,21 +22,47 @@ interface BracketMatch {
 }
 
 const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
+  // Alliance mapping (team_key -> alliance number)
+  const [allianceMapping, setAllianceMapping] = useState<Record<string, number>>({});
+  const [isAllianceLoading, setIsAllianceLoading] = useState(false);
+
+  // Derive event key from first playoff match key (e.g. "2025mimid_sf1m1" => "2025mimid")
+  useEffect(() => {
+    const loadMapping = async () => {
+      if (Object.keys(allianceMapping).length > 0) return; // already loaded/cached
+      if (!playoffMatches || playoffMatches.length === 0) return; // nothing yet
+
+      const firstMatchKey = playoffMatches[0].key;
+      const eventKey = firstMatchKey?.split('_')[0];
+      if (!eventKey) return;
+
+      try {
+        setIsAllianceLoading(true);
+        const { frcAPI } = await import('../../../utils/frcAPI');
+        const alliances = await frcAPI.fetchEventAlliances(eventKey);
+        const mapping: Record<string, number> = {};
+        alliances.forEach((alliance: any, index: number) => {
+          const allianceNumber = index + 1;
+          alliance.picks.forEach((teamKey: string) => {
+            mapping[teamKey] = allianceNumber;
+          });
+        });
+        setAllianceMapping(mapping);
+      } catch (err) {
+        console.warn('Failed to load alliance mapping', err);
+      } finally {
+        setIsAllianceLoading(false);
+      }
+    };
+
+    loadMapping();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playoffMatches]);
   const formatTeamNumber = (teamKey: string): string => {
     return teamKey.replace('frc', '');
   };
 
-  const getMatchDisplayName = (match: Match): string => {
-    const levelMap: { [key: string]: string } = {
-      'ef': 'QF',
-      'qf': 'QF',
-      'sf': 'SF',
-      'f': 'F'
-    };
-    
-    const level = levelMap[match.comp_level] || match.comp_level.toUpperCase();
-    return `${level}${match.match_number}`;
-  };
+
 
   // Sort semifinal ("sf") matches in the exact order the old site expected
   const sfMatchesSorted = useMemo(() => {
@@ -82,57 +108,85 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
     };
   };
 
-  const MatchBox: React.FC<{ bracketMatch: BracketMatch; className?: string }> = ({ 
-    bracketMatch, 
-    className = '' 
+  const MatchBox: React.FC<{ bracketMatch: BracketMatch; className?: string }> = ({
+    bracketMatch,
+    className = ''
   }) => {
     const { displayName, teams, scores, winner } = bracketMatch;
-    
+
+    // Helper to build row classes for each alliance
+    const allianceRowClasses = (color: 'blue' | 'red') => {
+      const base =
+        color === 'blue'
+          ? 'bg-blue-900/30 text-blue-300 border-blue-400/30'
+          : 'bg-red-900/30 text-red-300 border-red-400/30';
+      const winnerBonus =
+        winner === color ? (color === 'blue' ? 'border-2 border-blue-500 font-bold' : 'border-2 border-red-500 font-bold') : '';
+      return `alliance flex justify-between items-center p-3 rounded relative border ${base} ${winnerBonus}`;
+    };
+
+    // Badge bubble styles
+    const badgeClasses = (color: 'blue' | 'red') =>
+      `absolute -top-3 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[0.65rem] font-bold rounded-full border shadow-md ${
+        color === 'blue' ? 'bg-blue-500/40 border-blue-300 text-white' : 'bg-red-500/40 border-red-300 text-white'
+      }`;
+
+        // Compute alliance numbers using mapping (fallback to TBD)
+    const blueTeamKeyFull = bracketMatch.match?.alliances.blue.team_keys[0];
+    const redTeamKeyFull = bracketMatch.match?.alliances.red.team_keys[0];
+    const blueAllianceLabel =
+      blueTeamKeyFull && allianceMapping[blueTeamKeyFull]
+        ? `Alliance ${allianceMapping[blueTeamKeyFull]}`
+        : 'TBD';
+    const redAllianceLabel =
+      redTeamKeyFull && allianceMapping[redTeamKeyFull]
+        ? `Alliance ${allianceMapping[redTeamKeyFull]}`
+        : 'TBD';
+
     return (
-      <div className={`bg-gray-800/50 rounded-lg border border-gray-600 p-4 min-w-[200px] ${className}`}>
-        <div className="text-center text-baywatch-orange font-semibold text-sm mb-2">
+      <div
+        className={`relative flex flex-col justify-center p-6 pt-8 rounded-xl bg-black/90 border border-baywatch-orange/30 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition-transform duration-500 hover:scale-105 w-[280px] min-h-[200px] before:content-[''] before:absolute before:inset-0 before:opacity-5 before:rounded-xl before:pointer-events-none before:bg-[radial-gradient(circle_at_1px_1px,_rgba(255,107,0,0.2)_1px,_transparent_0)] before:bg-[length:20px_20px] ${className}`}
+      >
+        {/* Match title bubble */}
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/50 backdrop-blur-xl text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md">
           {displayName}
-        </div>
-        
-        <div className="space-y-1">
+        </span>
+
+        {/* Alliance rows */}
+        <div className="flex flex-col gap-4">
           {/* Blue Alliance */}
-          <div className={`
-            flex justify-between items-center p-2 rounded
-            ${winner === 'blue' ? 'bg-blue-500/20 border border-blue-500' : 'bg-gray-700/50'}
-          `}>
+          <div className={allianceRowClasses('blue')}>
+            <span className={badgeClasses('blue')}>{isAllianceLoading ? 'Loading...' : blueAllianceLabel}</span>
             <div className="flex flex-wrap gap-1">
-              {teams.blue.map(team => (
-                <span 
+              {teams.blue.map((team) => (
+                <span
                   key={team}
-                  className={`text-sm ${team === '7790' ? 'text-baywatch-orange font-bold' : 'text-blue-300'}`}
+                  className={`text-sm ${team === '7790' ? 'text-baywatch-orange font-bold' : ''}`}
                 >
                   {team}
                 </span>
               ))}
             </div>
-            <div className="text-white font-semibold ml-2">
-              {scores.blue || '--'}
-            </div>
+            <div className="ml-2 font-semibold text-blue-300">{scores.blue ?? '--'}</div>
           </div>
-          
+
+          {/* Divider */}
+          <div className="h-px bg-gray-600/50" />
+
           {/* Red Alliance */}
-          <div className={`
-            flex justify-between items-center p-2 rounded
-            ${winner === 'red' ? 'bg-red-500/20 border border-red-500' : 'bg-gray-700/50'}
-          `}>
+          <div className={allianceRowClasses('red')}>
+            <span className={badgeClasses('red')}>{redAllianceLabel}</span>
             <div className="flex flex-wrap gap-1">
-              {teams.red.map(team => (
-                <span 
+              {teams.red.map((team) => (
+                <span
                   key={team}
-                  className={`text-sm ${team === '7790' ? 'text-baywatch-orange font-bold' : 'text-red-300'}`}
+                  className={`text-sm ${team === '7790' ? 'text-baywatch-orange font-bold' : ''}`}
                 >
                   {team}
                 </span>
               ))}
             </div>
-            <div className="text-white font-semibold ml-2">
-              {scores.red || '--'}
-            </div>
+            <div className="ml-2 font-semibold text-red-300">{scores.red ?? '--'}</div>
           </div>
         </div>
       </div>
@@ -191,39 +245,39 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                     <MatchBox
                       key={`sf-first-${idx}`}
                       bracketMatch={createBracketMatch(getSfMatch(idx), `Match ${idx + 1}`)}
-                      className="match-box group animate__animated animate__fadeInUp"
+                      className="match-box group "
                     />
                   ))}
                 </div>
 
                 {/* Second Round Winners */}
-                <div style={{ marginTop: '5rem' }}>
+                <div style={{ marginTop: '7rem' }}>
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(6), 'Match 7')}
-                    className="match-box group animate__animated animate__fadeInUp"
+                    className="match-box group "
                   />
                   {/* Second game lower in the column */}
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(7), 'Match 8')}
-                    className="match-box group animate__animated animate__fadeInUp mt-[13rem]"
+                    className="match-box group  mt-[17rem]"
                   />
                 </div>
 
                 {/* Third Round Winners */}
-                <div style={{ marginTop: '16rem' }}>
+                <div style={{ marginTop: '22rem' }}>
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(10), 'Match 11')}
-                    className="match-box group animate__animated animate__fadeInUp"
+                    className="match-box group "
                   />
                 </div>
 
                 {/* Finals */}
-                <div style={{ marginTop: '16rem' }}>
+                <div style={{ marginTop: '22rem' }}>
                   {finalMatchesSorted.slice(0, 5).map((match) => (
                     <MatchBox
                       key={match.key}
-                      bracketMatch={createBracketMatch(match, `Finals ${match.match_number}`)}
-                      className="match-box group finals-match animate__animated animate__fadeInUp mt-4 first:mt-0"
+                      bracketMatch={createBracketMatch(match, match.match_number === 4 ? 'Overtime 1' : match.match_number === 5 ? 'Overtime 2' : `Finals ${match.match_number}`)}
+                      className="match-box group finals-match  mt-4 first:mt-0"
                     />
                   ))}
                 </div>
@@ -249,11 +303,11 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                 <div className="space-y-8" style={{ marginTop: '-8rem' }}>
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(4), 'Match 5')}
-                    className="match-box group animate__animated animate__fadeInUp"
+                    className="match-box group "
                   />
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(5), 'Match 6')}
-                    className="match-box group animate__animated animate__fadeInUp"
+                    className="match-box group "
                   />
                 </div>
 
@@ -262,11 +316,11 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                   {/* Note: order intentionally 10 then 9 to mimic old layout */}
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(9), 'Match 10')}
-                    className="match-box group animate__animated animate__fadeInUp"
+                    className="match-box group "
                   />
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(8), 'Match 9')}
-                    className="match-box group animate__animated animate__fadeInUp"
+                    className="match-box group "
                   />
                 </div>
 
@@ -274,7 +328,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                 <div className="-mt-12">
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(11), 'Match 12')}
-                    className="match-box group animate__animated animate__fadeInUp"
+                    className="match-box group "
                   />
                 </div>
 
@@ -282,7 +336,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                 <div className="-mt-12">
                   <MatchBox
                     bracketMatch={createBracketMatch(getSfMatch(12), 'Match 13')}
-                    className="match-box group animate__animated animate__fadeInUp"
+                    className="match-box group "
                   />
                 </div>
               </div>
