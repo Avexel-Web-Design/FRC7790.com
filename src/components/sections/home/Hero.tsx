@@ -3,7 +3,7 @@ export default function Hero() {
     <section className="min-h-screen relative overflow-hidden pt-12 flex items-center justify-center">
       <div className="absolute inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-90"></div>
 
-      <div className="container mx-auto px-3 sm:px-6 flex flex-col items-center justify-center relative z-10 -mt-12">
+      <div className="container mx-auto px-3 sm:px-6 flex flex-col items-center justify-center relative z-10 -mt-52">
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="mb-6 sm:mb-8">
             <div className="flex items-center justify-center gap-2 sm:gap-4 text-4xl sm:text-6xl md:text-8xl font-bold animate__animated animate__fadeInUp"
@@ -13,7 +13,7 @@ export default function Hero() {
             </div>
             <div className="text-3xl sm:text-5xl md:text-7xl font-bold mt-2 sm:mt-4 animate__animated animate__fadeInUp"
                  style={{ animationDelay: '1s', animationDuration: '3s' }}>
-              <span className="text-white">Baywatch</span>
+              <span className="text-white">Baywatch </span>
               <span className="text-baywatch-orange glow-orange">Robotics</span>
             </div>
           </h1>
