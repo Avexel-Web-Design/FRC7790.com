@@ -17,7 +17,6 @@ const navigationItems: NavigationItem[] = [
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScroll, setLastScroll] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,9 +25,6 @@ export default function Navigation() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScroll = window.scrollY;
-      
-      // Update scrolled state for background opacity
-      setIsScrolled(currentScroll > 50);
       
       // Handle visibility based on scroll direction
       if (currentScroll <= 0) {
@@ -59,8 +55,6 @@ export default function Navigation() {
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 transform ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
-      } ${
-        isScrolled ? 'bg-baywatch-dark/95 backdrop-blur-sm' : 'bg-transparent'
       }`}
     >
       <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
@@ -131,7 +125,7 @@ export default function Navigation() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-baywatch-dark/95 backdrop-blur-sm border-t border-gray-700">
+        <div className="md:hidden border-t border-gray-700/30">
           <div className="px-4 py-6 space-y-4">
             {/* Mobile Search */}
             <form onSubmit={handleSearch} className="flex items-center bg-black/30 rounded-lg border border-gray-700 px-3 py-2">

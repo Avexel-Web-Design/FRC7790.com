@@ -10,7 +10,7 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen bg-baywatch-dark text-white overflow-x-hidden font-poppins">
       <Navigation />
-      <main className="pt-20">
+      <main>
         {children}
       </main>
       <Footer />
