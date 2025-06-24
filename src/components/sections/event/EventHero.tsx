@@ -10,18 +10,7 @@ interface EventHeroProps {
 const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }) => {
   const getEventCity = () => {
     if (!eventData) return 'Loading';
-    return eventData.city || eventData.name?.split(' ')[0] || 'Event';
-  };
-
-  const getEventType = () => {
-    if (!eventData) return 'Event';
-    
-    // Extract event type from name
-    const name = eventData.name || '';
-    if (name.includes('District')) return 'District';
-    if (name.includes('Championship')) return 'Championship';
-    if (name.includes('Regional')) return 'Regional';
-    return 'Event';
+    return eventData.name || eventData.city || 'Event';
   };
 
   const getEventDetails = () => {
@@ -96,7 +85,6 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
               textShadow: '0 0 20px rgba(255, 107, 0, 0.5)'
             }}
           >
-            {getEventType()}
           </span>
         </h1>
         
