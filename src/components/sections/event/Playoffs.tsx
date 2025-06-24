@@ -38,15 +38,22 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
     return `${level}${match.match_number}`;
   };
 
-  const organizeBracketMatches = useMemo(() => {
-    const semifinals = playoffMatches.filter(m => m.comp_level === 'sf');
-    const finals = playoffMatches.filter(m => m.comp_level === 'f');
-    
-    return {
-      semifinals,
-      finals
-    };
+  // Sort semifinal ("sf") matches in the exact order the old site expected
+  const sfMatchesSorted = useMemo(() => {
+    return playoffMatches
+      .filter((m) => m.comp_level === 'sf')
+      .sort((a, b) => (a.set_number - b.set_number) || (a.match_number - b.match_number));
   }, [playoffMatches]);
+
+  // Finals ("f") matches sorted by match_number (1, 2, 3 …)
+  const finalMatchesSorted = useMemo(() => {
+    return playoffMatches
+      .filter((m) => m.comp_level === 'f')
+      .sort((a, b) => a.match_number - b.match_number);
+  }, [playoffMatches]);
+
+  // Convenience helper – returns the `sfMatchesSorted` item at index or null if out of range
+  const getSfMatch = (index: number): Match | null => sfMatchesSorted[index] ?? null;
 
   const createBracketMatch = (match: Match | null, displayName: string): BracketMatch => {
     if (!match) {
@@ -171,54 +178,115 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
     <section className="tab-content py-8 relative z-10">
       <div className="container mx-auto px-6">
         <h2 className="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
-        
-        <div className="bg-gradient-to-r from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 overflow-x-auto">
-          <div className="min-w-[800px]">
-            {/* Semifinals */}
-            {organizeBracketMatches.semifinals.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-center mb-4 text-baywatch-orange">
-                  Semifinals
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {organizeBracketMatches.semifinals.map((match) => (
+
+        <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 overflow-x-auto">
+          {/* We need extra width so the bracket can breathe on small viewports */}
+          <div className="min-w-[1200px] relative">
+            {/* ---------------- Winners Bracket ---------------- */}
+            <div className="bracket-container">
+              <div className="grid grid-cols-4 gap-8">
+                {/* First Round */}
+                <div className="space-y-8">
+                  {[0, 1, 2, 3].map((idx) => (
+                    <MatchBox
+                      key={`sf-first-${idx}`}
+                      bracketMatch={createBracketMatch(getSfMatch(idx), `Match ${idx + 1}`)}
+                      className="match-box group animate__animated animate__fadeInUp"
+                    />
+                  ))}
+                </div>
+
+                {/* Second Round Winners */}
+                <div style={{ marginTop: '5rem' }}>
+                  <MatchBox
+                    bracketMatch={createBracketMatch(getSfMatch(6), 'Match 7')}
+                    className="match-box group animate__animated animate__fadeInUp"
+                  />
+                  {/* Second game lower in the column */}
+                  <MatchBox
+                    bracketMatch={createBracketMatch(getSfMatch(7), 'Match 8')}
+                    className="match-box group animate__animated animate__fadeInUp mt-[13rem]"
+                  />
+                </div>
+
+                {/* Third Round Winners */}
+                <div style={{ marginTop: '16rem' }}>
+                  <MatchBox
+                    bracketMatch={createBracketMatch(getSfMatch(10), 'Match 11')}
+                    className="match-box group animate__animated animate__fadeInUp"
+                  />
+                </div>
+
+                {/* Finals */}
+                <div style={{ marginTop: '16rem' }}>
+                  {finalMatchesSorted.slice(0, 5).map((match) => (
                     <MatchBox
                       key={match.key}
-                      bracketMatch={createBracketMatch(match, getMatchDisplayName(match))}
-                      className="animate__animated animate__fadeInUp"
+                      bracketMatch={createBracketMatch(match, `Finals ${match.match_number}`)}
+                      className="match-box group finals-match animate__animated animate__fadeInUp mt-4 first:mt-0"
                     />
                   ))}
                 </div>
               </div>
-            )}
-            
-            {/* Finals */}
-            {organizeBracketMatches.finals.length > 0 && (
-              <div className="mb-8">
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-600"></div>
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="px-4 py-1 text-sm text-baywatch-orange bg-black rounded-full border border-baywatch-orange/30">
-                      Finals
-                    </span>
-                  </div>
+            </div>
+
+            {/* ---------------- Divider ---------------- */}
+            <div className="my-16 relative">
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t border-gray-700 bg-gradient-to-r from-transparent via-baywatch-orange to-transparent opacity-30"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-4 py-1 text-sm text-baywatch-orange bg-black rounded-full border border-baywatch-orange/30">
+                  Elimination Bracket
+                </span>
+              </div>
+            </div>
+
+            {/* ---------------- Losers Bracket ---------------- */}
+            <div className="bracket-container mt-48">
+              <div className="grid grid-cols-4 gap-8">
+                {/* First Round Losers */}
+                <div className="space-y-8" style={{ marginTop: '-8rem' }}>
+                  <MatchBox
+                    bracketMatch={createBracketMatch(getSfMatch(4), 'Match 5')}
+                    className="match-box group animate__animated animate__fadeInUp"
+                  />
+                  <MatchBox
+                    bracketMatch={createBracketMatch(getSfMatch(5), 'Match 6')}
+                    className="match-box group animate__animated animate__fadeInUp"
+                  />
                 </div>
-                
-                <div className="flex justify-center">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
-                    {organizeBracketMatches.finals.map((match) => (
-                      <MatchBox
-                        key={match.key}
-                        bracketMatch={createBracketMatch(match, getMatchDisplayName(match))}
-                        className="animate__animated animate__fadeInUp"
-                      />
-                    ))}
-                  </div>
+
+                {/* Second Round Losers */}
+                <div className="space-y-8" style={{ marginTop: '-8rem' }}>
+                  {/* Note: order intentionally 10 then 9 to mimic old layout */}
+                  <MatchBox
+                    bracketMatch={createBracketMatch(getSfMatch(9), 'Match 10')}
+                    className="match-box group animate__animated animate__fadeInUp"
+                  />
+                  <MatchBox
+                    bracketMatch={createBracketMatch(getSfMatch(8), 'Match 9')}
+                    className="match-box group animate__animated animate__fadeInUp"
+                  />
+                </div>
+
+                {/* Third Round Losers */}
+                <div className="-mt-12">
+                  <MatchBox
+                    bracketMatch={createBracketMatch(getSfMatch(11), 'Match 12')}
+                    className="match-box group animate__animated animate__fadeInUp"
+                  />
+                </div>
+
+                {/* Fourth Round Losers */}
+                <div className="-mt-12">
+                  <MatchBox
+                    bracketMatch={createBracketMatch(getSfMatch(12), 'Match 13')}
+                    className="match-box group animate__animated animate__fadeInUp"
+                  />
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

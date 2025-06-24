@@ -26,11 +26,11 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
     });
   };
 
-  const formatScore = (match: Match): string => {
+  const formatScore = (match: Match): React.ReactNode => {
     if (!match.alliances.blue.score && !match.alliances.red.score) {
       return '';
     }
-    return `${match.alliances.blue.score} - ${match.alliances.red.score}`;
+    return <span className="font-bold">{match.alliances.blue.score} - {match.alliances.red.score}</span>;
   };
 
   const getScoreColor = (match: Match): string => {
@@ -127,7 +127,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                                   key={teamKey}
                                   className={`
                                     cursor-pointer hover:text-blue-400 transition-colors
-                                    ${isOurTeam ? 'text-baywatch-orange font-bold' : 'text-blue-300'}
+                                    ${isOurTeam ? 'text-baywatch-orange font-bold' : 'text-blue-400'}
                                     ${isWinner && !isOurTeam ? 'font-bold' : ''}
                                   `}
                                   onClick={() => handleTeamClick(teamNumber)}
@@ -149,7 +149,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                                   key={teamKey}
                                   className={`
                                     cursor-pointer hover:text-red-400 transition-colors
-                                    ${isOurTeam ? 'text-baywatch-orange font-bold' : 'text-red-300'}
+                                    ${isOurTeam ? 'text-baywatch-orange font-bold' : 'text-red-400'}
                                     ${isWinner && !isOurTeam ? 'font-bold' : ''}
                                   `}
                                   onClick={() => handleTeamClick(teamNumber)}
@@ -160,7 +160,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                             })}
                           </div>
                         </td>
-                        <td className={`p-4 font-semibold ${getScoreColor(match)}`}>
+                        <td className={`p-4 ${getScoreColor(match)}`}>
                           {formatScore(match)}
                         </td>
                       </tr>
