@@ -9,8 +9,8 @@ export default function Countdown() {
   });
 
   useEffect(() => {
-    // Set target date for FRC Kickoff (typically first Saturday in January)
-    const targetDate = new Date('2026-01-04T10:30:00-05:00'); // Adjust as needed
+    // Set target date
+    const targetDate = new Date('2025-09-20T08:00:00-04:00'); // The last number is the timezone offset (EDT). Change to -05:00 for EST.
 
     const updateTimer = () => {
       const now = new Date().getTime();
@@ -40,9 +40,9 @@ export default function Countdown() {
     <section id="countdown-section" className="py-12 sm:py-20 bg-black scroll-mt-24">
       <div className="container mx-auto px-3 sm:px-6">
         <div className="p-6 card-gradient rounded-xl transition-all duration-300 glow-orange hover:scale-105">
-          <h2 className="text-4xl font-bold mb-4 text-center">Countdown to Kickoff</h2>
+          <h2 className="text-4xl font-bold mb-4 text-center">Competition Countdown</h2>
           <p className="text-gray-400 text-center mb-4">
-            FRC Game Reveal - REBUILT
+            Kettering Kickoff - Offseason Competition
           </p>
           <div className="text-center">
             <div className="text-3xl sm:text-5xl font-bold text-baywatch-orange">
