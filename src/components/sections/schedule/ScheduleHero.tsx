@@ -9,6 +9,7 @@ export default function ScheduleHero() {
           >
             2025
           </span>
+          {' '}
           <span
             className="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp"
             style={{ animationDelay: '0.4s' }}
