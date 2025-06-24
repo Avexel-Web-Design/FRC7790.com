@@ -1,7 +1,7 @@
 export default function Hero() {
   return (
     <section className="min-h-screen relative overflow-hidden pt-12 flex items-center justify-center">
-      <div className="absolute inset-0 bg-gradient-to-b from-baywatch-dark to-black opacity-90"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-baywatch-dark to-black"></div>
 
       <div className="container mx-auto px-3 sm:px-6 flex flex-col items-center justify-center relative z-10 -mt-12">
         <div className="text-center max-w-4xl mx-auto">

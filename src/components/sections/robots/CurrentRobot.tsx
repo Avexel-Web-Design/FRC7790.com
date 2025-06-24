@@ -41,7 +41,7 @@ export default function CurrentRobot() {
               <i className="fas fa-eye text-3xl text-baywatch-orange mb-4"></i>
               <h3 className="text-xl font-bold mb-2">Advanced Vision</h3>
               <p className="text-gray-400">
-                Meta Quest 3S powered pose estimation system enables precise scoring and autonomous navigation
+                Dual-camera powered pose estimation system enables precise scoring and autonomous navigation
               </p>
             </div>
             <div className="card-gradient rounded-xl p-6 hover:scale-105 transition-all duration-300">
@@ -63,8 +63,7 @@ export default function CurrentRobot() {
                   <li>• Folding Funnel Intake</li>
                   <li>• Processor Placement</li>
                   <li>• Deep Cage Climbing</li>
-                  <li>• QuestNav Pose Estimation</li>
-                  <li>• Initial Pose and Climb Cameras</li>
+                  <li>• Pose Estimation</li>
                   <li>• MK4i Swerve Drive</li>
                 </ul>
               </div>
@@ -76,7 +75,6 @@ export default function CurrentRobot() {
                   <li>• Algae Removal</li>
                   <li>• Autonomous Reef Lineup</li>
                   <li>• 14-17 Coral per Match</li>
-                  <li>• 12-16 Coral/Match + Climb</li>
                 </ul>
               </div>
             </div>
