@@ -18,7 +18,6 @@ const navigationItems: NavigationItem[] = [
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScroll, setLastScroll] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
@@ -27,23 +26,17 @@ export default function Navigation() {
     const handleScroll = () => {
       const currentScroll = window.scrollY;
       
-      // Handle visibility based on scroll direction
-      if (currentScroll <= 0) {
+      // Only show navbar when at the top of the page
+      if (currentScroll === 0) {
         setIsVisible(true);
-      } else if (currentScroll > lastScroll && currentScroll > 100) {
-        // Scrolling down - hide navbar
+      } else {
         setIsVisible(false);
-      } else if (currentScroll < lastScroll) {
-        // Scrolling up - show navbar
-        setIsVisible(true);
       }
-      
-      setLastScroll(currentScroll);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScroll]);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
