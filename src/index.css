@@ -184,6 +184,20 @@ body {
   font-family: 'Anurati', 'Poppins', sans-serif;
 }
 
+/* Remove default focus outline on buttons */
+button:focus,
+button:active,
+button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove Firefox/Chrome inner focus border */
+button::-moz-focus-inner,
+button::-webkit-focus-inner {
+  border: 0 !important;
+}
+
 /* Additional responsive helpers */
 @media (max-width: 640px) {
   .mobile-text-sm {
