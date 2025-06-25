@@ -198,6 +198,25 @@ button::-webkit-focus-inner {
   border: 0 !important;
 }
 
+/* Scroll reveal utility */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Custom scouting checkbox */
+.team-status-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #FF6B00;
+  cursor: pointer;
+}
+
 /* Additional responsive helpers */
 @media (max-width: 640px) {
   .mobile-text-sm {

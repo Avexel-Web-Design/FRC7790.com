@@ -99,6 +99,24 @@ export function formatEventDate(startDate: string, endDate?: string): string {
   }
 }
 
+// Fetch OPR / DPR / CCWM for an event
+export async function fetchEventOPRs(eventKey: string): Promise<{
+  oprs: Record<string, number>;
+  dprs: Record<string, number>;
+  ccwms: Record<string, number>;
+}> {
+  try {
+    const res = await fetch(`${TBA_BASE_URL}/event/${eventKey}/oprs`, {
+      headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY },
+    });
+    if (!res.ok) throw new Error(`TBA error ${res.status}`);
+    return res.json();
+  } catch (e) {
+    console.error('Error fetching OPRs', e);
+    return { oprs: {}, dprs: {}, ccwms: {} };
+  }
+}
+
 // API Service Class
 export class FRCAPIService {
   private static instance: FRCAPIService;
