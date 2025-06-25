@@ -80,8 +80,28 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
           
           // Sort matches
           quals.sort((a: any, b: any) => a.match_number - b.match_number);
+          
+          // Sort playoffs chronologically - semifinals first by set_number then match_number, then finals
           playoffs.sort((a: any, b: any) => {
-            // Sort by comp_level priority, then match_number
+            // If both are semifinals, sort by set_number then match_number
+            if (a.comp_level === 'sf' && b.comp_level === 'sf') {
+              return (a.set_number - b.set_number) || (a.match_number - b.match_number);
+            }
+            
+            // If both are finals, sort by match_number
+            if (a.comp_level === 'f' && b.comp_level === 'f') {
+              return a.match_number - b.match_number;
+            }
+            
+            // Semifinals come before finals
+            if (a.comp_level === 'sf' && b.comp_level === 'f') {
+              return -1;
+            }
+            if (a.comp_level === 'f' && b.comp_level === 'sf') {
+              return 1;
+            }
+            
+            // For any other comp_levels, use original logic
             const levelPriority: { [key: string]: number } = { 'ef': 1, 'qf': 2, 'sf': 3, 'f': 4 };
             const aPriority = levelPriority[a.comp_level] || 0;
             const bPriority = levelPriority[b.comp_level] || 0;
@@ -107,17 +127,36 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
     fetchMatches();
   }, [selectedEvent, teamNumber]);
 
-  const formatMatchName = (match: any) => {
-    const typeMap: { [key: string]: string } = {
-      'qm': 'Q',
-      'ef': 'QF',
-      'qf': 'QF', 
-      'sf': 'SF',
-      'f': 'F'
-    };
+  const formatMatchName = (match: any, _allPlayoffMatches: any[]) => {
+    if (match.comp_level === 'qm') {
+      return `Q${match.match_number}`;
+    }
     
-    const type = typeMap[match.comp_level] || match.comp_level.toUpperCase();
-    return `${type}${match.match_number}`;
+    if (match.comp_level === 'ef') {
+      return `QF${match.set_number}-${match.match_number}`;
+    }
+    
+    if (match.comp_level === 'qf') {
+      return `QF${match.set_number}-${match.match_number}`;
+    }
+    
+    if (match.comp_level === 'sf') {
+      // Use "Playoff" prefix and remove the "-1" suffix for semifinals
+      return `Playoff ${match.set_number}`;
+    }
+    
+    if (match.comp_level === 'f') {
+      if (match.match_number === 4) {
+        return 'Overtime 1';
+      } else if (match.match_number === 5) {
+        return 'Overtime 2';
+      } else {
+        return `Finals ${match.match_number}`;
+      }
+    }
+    
+    // Fallback for any other competition levels
+    return `${match.comp_level.toUpperCase()}${match.match_number}`;
   };
 
   const formatTeamNumbers = (teamKeys: string[], currentTeam: string, alliance: 'blue' | 'red') => {
@@ -226,7 +265,7 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
                         style={{ animationDelay: `${index * 0.02}s` }}
                       >
                         <td className="p-4 font-semibold text-baywatch-orange">
-                          {formatMatchName(match)}
+                          {formatMatchName(match, playoffMatches)}
                         </td>
                         <td className="p-4">
                           <div className="flex flex-wrap gap-1">
