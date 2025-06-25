@@ -9,6 +9,7 @@ import FTC from './components/pages/FTC';
 import BecomeASponsor from './components/pages/BecomeASponsor';
 import Event from './components/pages/Event';
 import Team from './components/pages/Team';
+import Match from './components/pages/Match';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/become-a-sponsor" element={<BecomeASponsor />} />
           <Route path="/event" element={<Event />} />
           <Route path="/team" element={<Team />} />
+          <Route path="/match" element={<Match />} />
         </Routes>
       </Layout>
     </Router>
