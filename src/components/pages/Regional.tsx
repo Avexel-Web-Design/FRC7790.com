@@ -16,7 +16,8 @@ const Regional: React.FC = () => {
   }, [yearParam]);
 
   const { rankings, events, isLoading, error, refetch } = useRegionalData(year);
-  const [activeTab, setActiveTab] = React.useState<'rankings' | 'events'>('rankings');
+  const showRankings = parseInt(year, 10) >= 2025;
+  const [activeTab, setActiveTab] = React.useState<'rankings' | 'events'>(showRankings ? 'rankings' : 'events');
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -35,13 +36,15 @@ const Regional: React.FC = () => {
         )}
       </section>
 
-      <RegionalTabs activeTab={activeTab} onTabChange={(tab)=>setActiveTab(tab as any)} />
+      {showRankings && (
+        <RegionalTabs activeTab={activeTab} onTabChange={(tab)=>setActiveTab(tab as any)} />
+      )}
 
-      {activeTab === 'rankings' && (
+      {showRankings && activeTab === 'rankings' && (
         <RegionalRankings rankings={rankings} isLoading={isLoading} />
       )}
 
-      {activeTab === 'events' && (
+      {(!showRankings || activeTab === 'events') && (
         <RegionalEvents events={events} isLoading={isLoading} />
       )}
     </div>

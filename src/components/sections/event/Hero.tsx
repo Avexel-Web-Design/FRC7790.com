@@ -62,7 +62,7 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
 
   const getDistrictUrl = () => {
     if (eventData?.district) {
-      return `district?district=${eventData.district.key}`;
+      return `/district?district=${eventData.district.key}`;
     }
     return '#';
   };
@@ -70,7 +70,7 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
   const getRegionalUrl = () => {
     if (eventData && eventData.event_type === 0) {
       // first four chars of key are year
-      return `regional?year=${eventData.key.slice(0, 4)}`;
+      return `/regional?year=${eventData.key.slice(0, 4)}`;
     }
     return '#';
   };

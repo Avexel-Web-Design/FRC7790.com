@@ -31,17 +31,20 @@ export function useRegionalData(year: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchRegionalData = useCallback(async () => {
+    const includeRankings = parseInt(year, 10) >= 2025;
     try {
       setIsLoading(true);
       setError(null);
-      const [rankData, eventData] = await Promise.all([
-        frcAPI.fetchRegionalRankings(year),
-        frcAPI.fetchSeasonRegionalEvents(year)
-      ]);
+      const [rankData, eventData] = includeRankings
+        ? await Promise.all([
+            frcAPI.fetchRegionalRankings(year),
+            frcAPI.fetchSeasonRegionalEvents(year)
+          ])
+        : [[], await frcAPI.fetchSeasonRegionalEvents(year)];
       setRankings(rankData);
       setEvents(eventData);
     } catch (err) {
-      console.error('Error fetching regional rankings', err);
+      console.error('Error fetching regional data', err);
       setError(err instanceof Error ? err.message : 'Failed to load regional rankings');
     } finally {
       setIsLoading(false);
