@@ -55,6 +55,14 @@ export default function Navigation() {
       return;
     }
 
+    // If the query does not contain any spaces, treat it as an event code without a year and prepend the current year
+    if (!/\s/.test(query)) {
+      const currentYear = new Date().getFullYear();
+      const eventCodeWithYear = currentYear + query;
+      navigate(`/event?event=${eventCodeWithYear}`);
+      return;
+    }
+
     // Otherwise navigate to search results
     navigate(`/search?q=${encodeURIComponent(query)}`);
   };
