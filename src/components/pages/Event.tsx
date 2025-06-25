@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import LoadingOverlay from '../sections/event/LoadingOverlay';
-import EventHero from '../sections/event/EventHero';
-import EventCountdown from '../sections/event/EventCountdown';
+import EventHero from '../sections/event/Hero';
+import EventCountdown from '../sections/event/Countdown';
 import RegisteredTeams from '../sections/event/RegisteredTeams';
-import EventTabs from '../sections/event/EventTabs';
+import EventTabs from '../sections/event/Tabs';
 import Rankings from '../sections/event/Rankings';
 import Schedule from '../sections/event/Schedule';
 import Playoffs from '../sections/event/Playoffs';

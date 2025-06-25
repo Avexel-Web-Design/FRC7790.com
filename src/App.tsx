@@ -8,6 +8,7 @@ import Scouting from './components/pages/Scouting';
 import FTC from './components/pages/FTC';
 import BecomeASponsor from './components/pages/BecomeASponsor';
 import Event from './components/pages/Event';
+import Team from './components/pages/Team';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/ftc" element={<FTC />} />
           <Route path="/become-a-sponsor" element={<BecomeASponsor />} />
           <Route path="/event" element={<Event />} />
+          <Route path="/team" element={<Team />} />
         </Routes>
       </Layout>
     </Router>

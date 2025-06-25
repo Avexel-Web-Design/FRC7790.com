@@ -30,15 +30,25 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
     if (!match.alliances.blue.score && !match.alliances.red.score) {
       return '';
     }
-    return <span className="font-bold">{match.alliances.blue.score} - {match.alliances.red.score}</span>;
-  };
-
-  const getScoreColor = (match: Match): string => {
-    if (!match.winning_alliance) return 'text-gray-300';
     
-    return match.winning_alliance === 'blue' 
-      ? 'text-blue-400' 
-      : 'text-red-400';
+    const blueScore = match.alliances.blue.score;
+    const redScore = match.alliances.red.score;
+    
+    return (
+      <div className="flex items-center space-x-2">
+        <span className={`${
+          match.winning_alliance === 'blue' ? 'text-blue-400 font-bold' : 'text-gray-400'
+        }`}>
+          {blueScore}
+        </span>
+        <span className="text-gray-500">-</span>
+        <span className={`${
+          match.winning_alliance === 'red' ? 'text-red-400 font-bold' : 'text-gray-400'
+        }`}>
+          {redScore}
+        </span>
+      </div>
+    );
   };
 
   const isWinningTeam = (match: Match, teamKey: string, alliance: 'blue' | 'red'): boolean => {
@@ -160,7 +170,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                             })}
                           </div>
                         </td>
-                        <td className={`p-4 ${getScoreColor(match)}`}>
+                        <td className="p-4">
                           {formatScore(match)}
                         </td>
                       </tr>
