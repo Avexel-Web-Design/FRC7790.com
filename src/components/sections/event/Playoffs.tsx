@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Match } from '../../../hooks/useEventData';
+import NebulaLoader from '../../common/NebulaLoader';
 
 interface PlayoffsProps {
   playoffMatches: Match[];
@@ -211,7 +212,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
           <div className="bg-gradient-to-r from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
             <div className="flex justify-center items-center py-16">
               <div className="text-center">
-                <div className="w-12 h-12 border-4 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin mb-4"></div>
+                <div className="mb-4"><NebulaLoader size={96} /></div>
                 <p className="text-gray-400">Loading playoff bracket...</p>
               </div>
             </div>

@@ -227,3 +227,59 @@ button::-webkit-focus-inner {
     padding: 0.5rem;
   }
 }
+
+/* --------------------------------------------------
+   Nebula Particle Loader (ported from legacy site)
+   -------------------------------------------------- */
+:root {
+  --uib-size: 128px; /* default diameter */
+  --uib-color: #FF6B00; /* default particle color */
+  --uib-speed: 1.8s; /* orbit duration */
+}
+
+.loader-particle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+/* placement / delay for each of 13 particles */
+.loader-particle:nth-child(1)  { --uib-delay: 0;    transform: rotate(8deg);   }
+.loader-particle:nth-child(2)  { --uib-delay: -0.4; transform: rotate(36deg);  }
+.loader-particle:nth-child(3)  { --uib-delay: -0.9; transform: rotate(72deg);  }
+.loader-particle:nth-child(4)  { --uib-delay: -0.5; transform: rotate(90deg);  }
+.loader-particle:nth-child(5)  { --uib-delay: -0.3; transform: rotate(144deg); }
+.loader-particle:nth-child(6)  { --uib-delay: -0.2; transform: rotate(180deg); }
+.loader-particle:nth-child(7)  { --uib-delay: -0.6; transform: rotate(216deg); }
+.loader-particle:nth-child(8)  { --uib-delay: -0.7; transform: rotate(252deg); }
+.loader-particle:nth-child(9)  { --uib-delay: -0.1; transform: rotate(300deg); }
+.loader-particle:nth-child(10) { --uib-delay: -0.8; transform: rotate(324deg); }
+.loader-particle:nth-child(11) { --uib-delay: -1.2; transform: rotate(335deg); }
+.loader-particle:nth-child(12) { --uib-delay: -0.5; transform: rotate(290deg); }
+.loader-particle:nth-child(13) { --uib-delay: -0.2; transform: rotate(240deg); }
+
+.loader-particle::before {
+  content: '';
+  position: absolute;
+  height: 17.5%;
+  width: 17.5%;
+  border-radius: 50%;
+  background-color: var(--uib-color);
+  flex-shrink: 0;
+  --uib-d: calc(var(--uib-delay) * var(--uib-speed));
+  animation: orbit var(--uib-speed) linear var(--uib-d) infinite;
+}
+
+@keyframes orbit {
+  0%   { transform: translate(calc(var(--uib-size) * 0.5))  scale(0.74); opacity: .65; }
+  25%  { transform: translate(0)                               scale(0.47); opacity: .30; }
+  50%  { transform: translate(calc(var(--uib-size) * -0.5)) scale(0.74); opacity: .65; }
+  75%  { transform: translate(0)                               scale(1);    opacity: 1;   }
+  100% { transform: translate(calc(var(--uib-size) * 0.5))  scale(0.74); opacity: .65; }
+}
+

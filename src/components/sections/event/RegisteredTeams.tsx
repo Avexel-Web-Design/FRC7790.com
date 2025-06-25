@@ -1,4 +1,5 @@
 import React from 'react';
+import NebulaLoader from '../../common/NebulaLoader';
 import type { Team } from '../../../hooks/useEventData';
 
 interface RegisteredTeamsProps {
@@ -27,7 +28,7 @@ const RegisteredTeams: React.FC<RegisteredTeamsProps> = ({ teams, isLoading }) =
       <div className="animate__animated animate__fadeIn">
         {isLoading ? (
           <div className="flex justify-center">
-            <div className="w-16 h-16 border-4 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin"></div>
+            <NebulaLoader size={64} />
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import NebulaLoader from '../common/NebulaLoader';
 import { useSearchParams } from 'react-router-dom';
 import TeamHero from '../sections/team/Hero';
 import TeamTabs from '../sections/team/Tabs';
@@ -44,9 +45,7 @@ export default function Team() {
       {loading && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
           <div className="text-center">
-            <div className="loader-container mb-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-            </div>
+            <div className="mb-4"><NebulaLoader size={120} /></div>
             <h2 className="text-xl font-bold text-orange-500 mt-4">Loading Team Data</h2>
             <p className="text-gray-400 mt-2">Retrieving information from The Blue Alliance</p>
           </div>

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import NebulaLoader from '../../common/NebulaLoader';
 import { Link } from 'react-router-dom';
 import type { Match } from '../../../hooks/useEventData';
 
@@ -95,7 +96,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                   <tr>
                     <td colSpan={5} className="p-4 text-center">
                       <div className="flex justify-center items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin"></div>
+                        <NebulaLoader size={24} />
                         <span>Loading schedule...</span>
                       </div>
                     </td>

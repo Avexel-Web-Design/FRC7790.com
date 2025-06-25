@@ -1,3 +1,5 @@
+import NebulaLoader from '../../common/NebulaLoader';
+
 interface Props {
   loading: boolean;
   error: string | null;
@@ -7,8 +9,8 @@ interface Props {
 export default function StatusBanners({ loading, error }: Props) {
   if (loading) {
     return (
-      <div className="flex items-center justify-center mt-8">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-baywatch-orange" />
+      <div className="flex items-center justify-center mt-8 mb-4">
+        <NebulaLoader size={50} />
         <span className="ml-3 text-gray-300">Fetching event data…</span>
       </div>
     );
