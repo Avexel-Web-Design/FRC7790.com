@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { frcAPI } from '../../../utils/frcAPI';
 
 interface TeamHeroProps {
   teamNumber: string;
