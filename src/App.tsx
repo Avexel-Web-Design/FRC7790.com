@@ -12,6 +12,7 @@ import Team from './components/pages/Team';
 import Match from './components/pages/Match';
 import District from './components/pages/District';
 import Regional from './components/pages/Regional';
+import SearchResults from './components/pages/SearchResults';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/match" element={<Match />} />
           <Route path="/district" element={<District />} />
           <Route path="/regional" element={<Regional />} />
+          <Route path="/search" element={<SearchResults />} />
         </Routes>
       </Layout>
     </Router>

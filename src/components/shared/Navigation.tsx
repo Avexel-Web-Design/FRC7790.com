@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 interface NavigationItem {
@@ -21,6 +21,7 @@ export default function Navigation() {
   const [lastScroll, setLastScroll] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,10 +47,23 @@ export default function Navigation() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      // Handle search logic here
-      console.log('Searching for:', searchQuery);
+    const query = searchQuery.trim();
+    if (!query) return;
+
+    // If the query is only digits, treat as team number
+    if (/^\d+$/.test(query)) {
+      navigate(`/team?team=${query}`);
+      return;
     }
+
+    // If the query matches typical event code pattern like 2024miket
+    if (/^\d{4}[a-z0-9]+$/i.test(query)) {
+      navigate(`/event?event=${query}`);
+      return;
+    }
+
+    // Otherwise navigate to search results
+    navigate(`/search?q=${encodeURIComponent(query)}`);
   };
   return (
     <nav

@@ -6,7 +6,7 @@
  */
 
 // API Configuration
-const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
+export const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
 const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 const FRC_TEAM_KEY = "frc7790";
 
