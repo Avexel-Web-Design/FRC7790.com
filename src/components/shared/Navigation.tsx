@@ -94,7 +94,7 @@ export default function Navigation() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search team # or event..."
+              placeholder="Search team or event..."
               className="bg-transparent border-none focus:outline-none text-white w-full"
               aria-label="Search for team or event"
             />
