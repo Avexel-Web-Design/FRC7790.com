@@ -18,7 +18,7 @@ export default function Hero() {
             </div>
           </h1>
           <a 
-            href="/event/2025mitvc" 
+            href="/event/?event=2025mitvc#playoffs" 
             className="btn-orange-glow inline-block px-4 py-2 sm:px-8 sm:py-4 text-base sm:text-xl font-semibold rounded-full hover:scale-105 transition-all duration-300 animate__animated animate__fadeInUp xs-text-smaller xs-px-smaller xs-py-smaller"
             style={{ animationDelay: '2s' }}
           >

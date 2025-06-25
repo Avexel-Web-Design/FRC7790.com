@@ -8,10 +8,20 @@ import TeamHistory from '../sections/team/History';
 
 export default function Team() {
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    const hash = window.location.hash.replace('#', '');
+    return hash || 'overview';
+  });
   const [teamNumber, setTeamNumber] = useState('7790');
   const [teamData, setTeamData] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Keep URL hash in sync when tab changes
+  useEffect(() => {
+    if (activeTab) {
+      window.location.hash = activeTab;
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     // Get team number from URL parameters, default to 7790
@@ -24,6 +34,8 @@ export default function Team() {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    // Update URL hash to persist tab selection
+    window.location.hash = tab;
   };
 
   return (
