@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 interface TeamMatchesProps {
   teamNumber: string;
@@ -265,7 +266,12 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
                         style={{ animationDelay: `${index * 0.02}s` }}
                       >
                         <td className="p-4 font-semibold text-baywatch-orange">
-                          {formatMatchName(match, playoffMatches)}
+                          <Link
+                            to={`/match?match=${match.key}`}
+                            className="inline-flex items-center hover:text-white transition-colors"
+                          >
+                            {formatMatchName(match, playoffMatches)} <i className="fas fa-arrow-up-right-from-square ml-0.5"></i>
+                          </Link>
                         </td>
                         <td className="p-4">
                           <div className="flex flex-wrap gap-1">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   MatchHero,
   MatchScoreboard,
@@ -12,6 +12,7 @@ import { useMatchData } from '../../hooks/useMatchData';
 
 const Match: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const matchKey = searchParams.get('match');
 
   const { matchData, eventData, teamData, loading, error } = useMatchData(matchKey);
@@ -52,7 +53,7 @@ const Match: React.FC = () => {
       <div className="pt-32 pb-4 relative z-10">
         <div className="container mx-auto px-6">
           <button 
-            onClick={() => window.history.back()}
+            onClick={() => navigate(`/event?event=${matchData?.event_key}`)}
             className="inline-flex items-center text-baywatch-orange hover:text-white bg-baywatch-orange/10 hover:bg-baywatch-orange/30 transition-all duration-300 px-4 py-2 rounded-lg"
           >
             <i className="fas fa-arrow-left mr-2"></i> Back to Event

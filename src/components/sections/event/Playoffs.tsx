@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { Match } from '../../../hooks/useEventData';
 
 interface PlayoffsProps {
@@ -148,11 +149,20 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
         className={`relative flex flex-col justify-center p-6 pt-8 rounded-xl bg-black/90 border border-baywatch-orange/30 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition-transform duration-500 hover:scale-105 w-[280px] min-h-[200px] before:content-[''] before:absolute before:inset-0 before:opacity-5 before:rounded-xl before:pointer-events-none before:bg-[radial-gradient(circle_at_1px_1px,_rgba(255,107,0,0.2)_1px,_transparent_0)] before:bg-[length:20px_20px] ${className}`}
       >
         {/* Match title bubble */}
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/50 backdrop-blur-xl text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md">
-          {displayName} <i className="fas fa-arrow-up-right-from-square ml-1"></i>
-        </span>
+        {bracketMatch.match ? (
+           <Link
+             to={`/match?match=${bracketMatch.match.key}`}
+             className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/50 backdrop-blur-xl text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md inline-flex items-center hover:text-white transition-colors"
+           >
+             {displayName} <i className="fas fa-arrow-up-right-from-square ml-1"></i>
+           </Link>
+         ) : (
+           <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/50 backdrop-blur-xl text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md">
+             {displayName}
+           </span>
+         )}
 
-        {/* Alliance rows */}
+         {/* Alliance rows */}
         <div className="flex flex-col gap-4">
           {/* Blue Alliance */}
           <div className={allianceRowClasses('blue')}>
