@@ -453,6 +453,40 @@ export class FRCAPIService {
     }
   }
 
+  /**
+   * Fetch regional advancement rankings for a given season year.
+   * @param year Four-digit season year, e.g. "2025"
+   */
+  async fetchRegionalRankings(year: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/regional_advancement/${year}/rankings`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
+      });
+      if (!response.ok) {
+        throw new Error(`Error fetching regional rankings: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching regional rankings:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch all regional events for a season year.
+   * @param year Four-digit year
+   */
+  async fetchSeasonRegionalEvents(year: string): Promise<any[]> {
+    try {
+      const events: any[] = await this.fetchAPI(`/events/${year}/simple`);
+      // event_type 0 indicates Regional, 99 preseason handled
+      return events.filter(e => e.event_type === 0);
+    } catch (error) {
+      console.error("Error fetching regional events:", error);
+      throw error;
+    }
+  }
+
   /* ------------------------- Event-specific endpoints ---------------------- */
   async fetchEventAwards(eventCode: string): Promise<any[]> {
     try {

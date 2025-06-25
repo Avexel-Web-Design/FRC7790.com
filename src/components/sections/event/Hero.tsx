@@ -67,6 +67,14 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
     return '#';
   };
 
+  const getRegionalUrl = () => {
+    if (eventData && eventData.event_type === 0) {
+      // first four chars of key are year
+      return `regional?year=${eventData.key.slice(0, 4)}`;
+    }
+    return '#';
+  };
+
   return (
     <section className="pt-32 pb-16 relative z-10">
       <div className="container mx-auto px-6">
@@ -114,6 +122,15 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
             <i className="fas fa-chevron-right ml-1 text-xs opacity-70"></i>
           </a>
           
+          {eventData && eventData.event_type === 0 && (
+            <a 
+              href={getRegionalUrl()}
+              className="inline-flex items-center text-gray-300 bg-gray-800/50 hover:bg-gray-800/70 transition-colors duration-300 px-4 py-2 rounded-lg"
+            >
+              <i className="fas fa-trophy mr-2"></i> Regional Rankings
+            </a>
+          )}
+
           {eventData?.district && (
             <a 
               href={getDistrictUrl()}
