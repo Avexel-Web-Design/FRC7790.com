@@ -62,7 +62,7 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
 
   const getDistrictUrl = () => {
     if (eventData?.district) {
-      return `district.html?district=${eventData.district.key}`;
+      return `district?district=${eventData.district.key}`;
     }
     return '#';
   };

@@ -413,6 +413,47 @@ export class FRCAPIService {
     }
   }
 
+  /* ---------------------- District-specific endpoints ---------------------- */
+
+  /**
+   * Fetch the district rankings list.
+   * @param districtKey Full district key, e.g. "2025fim"
+   */
+  async fetchDistrictRankings(districtKey: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/district/${districtKey}/rankings`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY },
+      });
+      if (!response.ok) {
+        throw new Error(`Error fetching district rankings: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching district rankings:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Fetch all events in a district.
+   * @param districtKey Full district key, e.g. "2025fim"
+   */
+  async fetchDistrictEvents(districtKey: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}/district/${districtKey}/events`, {
+        headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY },
+      });
+      if (!response.ok) {
+        throw new Error(`Error fetching district events: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching district events:", error);
+      throw error;
+    }
+  }
+
+  /* ------------------------- Event-specific endpoints ---------------------- */
   async fetchEventAwards(eventCode: string): Promise<any[]> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/awards`, {

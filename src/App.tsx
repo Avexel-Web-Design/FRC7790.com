@@ -10,6 +10,7 @@ import BecomeASponsor from './components/pages/BecomeASponsor';
 import Event from './components/pages/Event';
 import Team from './components/pages/Team';
 import Match from './components/pages/Match';
+import District from './components/pages/District';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/event" element={<Event />} />
           <Route path="/team" element={<Team />} />
           <Route path="/match" element={<Match />} />
+          <Route path="/district" element={<District />} />
         </Routes>
       </Layout>
     </Router>
