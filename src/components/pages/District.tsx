@@ -18,6 +18,8 @@ const District: React.FC = () => {
     districtKey = `2025${districtKey}`;
   }
 
+  const formattedDistrictKey = `${districtKey.slice(0, 4)} ${districtKey.slice(4).toUpperCase()}`;
+
   const { rankings, events, isLoading, error, refetch } = useDistrictData(districtKey);
 
   // Sync tab with hash
@@ -56,8 +58,22 @@ const District: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <section className="pt-16 pb-8 relative z-10 text-center">
-        <h1 className="text-3xl font-bold">{districtKey?.toUpperCase()} District</h1>
+      <section className="pt-32 pb-8 relative z-10 text-center">
+      <h1 className="text-5xl md:text-7xl font-bold text-center">
+          <span 
+            className="text-white inline-block animate__animated animate__fadeInUp" 
+            style={{ animationDelay: '0.2s' }}
+          >
+            {formattedDistrictKey}
+          </span>
+          {' '}
+          <span 
+            className="text-baywatch-orange glow-orange inline-block animate__animated animate__fadeInUp" 
+            style={{ animationDelay: '0.4s' }}
+          >
+            District
+          </span>
+        </h1>
       </section>
 
       <DistrictTabs activeTab={activeTab} onTabChange={handleTabChange} />
