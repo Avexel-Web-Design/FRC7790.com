@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /sponsors.html
-
-Sitemap: https://www.frc7790.com/sitemap.xml

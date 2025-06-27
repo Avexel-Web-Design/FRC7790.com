@@ -1,5 +1,6 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import Layout from './components/shared/Layout';
+import DashboardLayout from './components/shared/DashboardLayout';
 import Home from './components/pages/Home';
 import Robots from './components/pages/Robots';
 import Sponsors from './components/pages/Sponsors';
@@ -24,8 +25,15 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 function App() {
   return (
     <Router>
-      <Layout>
-        <Routes>
+      <Routes>
+        {/* Public Routes */}
+        <Route
+          element={
+            <Layout>
+              <Outlet />
+            </Layout>
+          }
+        >
           <Route path="/" element={<Home />} />
           <Route path="/robots" element={<Robots />} />
           <Route path="/sponsors" element={<Sponsors />} />
@@ -40,42 +48,38 @@ function App() {
           <Route path="/regional" element={<Regional />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/login" element={<Login />} />
-          
-          {/* Protected Routes */}
-          <Route path="/dashboard" element={
+        </Route>
+
+        {/* Protected Routes */}
+        <Route
+          element={
             <ProtectedRoute>
-              <Dashboard />
+              <DashboardLayout>
+                <Outlet />
+              </DashboardLayout>
             </ProtectedRoute>
-          } />
-          <Route path="/calendar" element={
-            <ProtectedRoute>
-              <Calendar />
-            </ProtectedRoute>
-          } />
-          <Route path="/tasks" element={
-            <ProtectedRoute>
-              <Tasks />
-            </ProtectedRoute>
-          } />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } />
-          
-          {/* Admin Routes */}
-          <Route path="/admin" element={
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
+
+        {/* Admin Routes */}
+        <Route
+          element={
             <ProtectedRoute requireAdmin={true}>
-              <Dashboard />
+              <DashboardLayout>
+                <Outlet />
+              </DashboardLayout>
             </ProtectedRoute>
-          } />
-          <Route path="/admin/users" element={
-            <ProtectedRoute requireAdmin={true}>
-              <AdminUsers />
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </Layout>
+          }
+        >
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+        </Route>
+      </Routes>
     </Router>
   );
 }
