@@ -21,7 +21,7 @@ const Tasks: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [filter, setFilter] = useState<'pending' | 'completed'>('pending');
   const [users, setUsers] = useState<any[]>([]);
   const [newTask, setNewTask] = useState({
     title: '',
@@ -143,7 +143,25 @@ const Tasks: React.FC = () => {
   };
 
   const toggleTaskCompletion = async (task: Task) => {
-    await updateTask(task.id, { completed: !task.completed });
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/tasks/${task.id}/complete`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ completed: !task.completed })
+      });
+
+      if (response.ok) {
+        setTasks(tasks.map(t => 
+          t.id === task.id ? { ...t, completed: !t.completed } : t
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating task completion:', error);
+    }
   };
 
   const filteredTasks = tasks.filter(task => {
@@ -291,16 +309,6 @@ const Tasks: React.FC = () => {
         <div className="bg-white shadow rounded-lg p-6 mb-6">
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
-                filter === 'all'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-              }`}
-            >
-              All Tasks
-            </button>
-            <button
               onClick={() => setFilter('pending')}
               className={`px-4 py-2 rounded-md text-sm font-medium ${
                 filter === 'pending'
@@ -327,8 +335,7 @@ const Tasks: React.FC = () => {
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-lg font-medium text-gray-900">
-              {filter === 'all' ? 'All Tasks' : 
-               filter === 'pending' ? 'Pending Tasks' : 'Completed Tasks'}
+              {filter === 'pending' ? 'Pending Tasks' : 'Completed Tasks'}
             </h3>
           </div>
           <div className="divide-y divide-gray-200">

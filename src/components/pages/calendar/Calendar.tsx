@@ -16,14 +16,9 @@ const Calendar: React.FC = () => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentEvent, setCurrentEvent] = useState<Partial<CalendarEvent> | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [newEvent, setNewEvent] = useState({
-    title: '',
-    description: '',
-    event_date: '',
-    event_time: '',
-    location: ''
-  });
 
   useEffect(() => {
     fetchEvents();
@@ -46,31 +41,31 @@ const Calendar: React.FC = () => {
     }
   };
 
-  const createEvent = async () => {
+  const saveEvent = async () => {
+    if (!currentEvent) return;
+
+    const method = isEditMode ? 'PUT' : 'POST';
+    const url = isEditMode ? `/api/calendar/${currentEvent.id}` : '/api/calendar';
+
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/calendar', {
-        method: 'POST',
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(newEvent)
+        body: JSON.stringify(currentEvent)
       });
 
       if (response.ok) {
         await fetchEvents();
         setShowModal(false);
-        setNewEvent({
-          title: '',
-          description: '',
-          event_date: '',
-          event_time: '',
-          location: ''
-        });
+        setCurrentEvent(null);
+        setIsEditMode(false);
       }
     } catch (error) {
-      console.error('Error creating event:', error);
+      console.error('Error saving event:', error);
     }
   };
 
@@ -85,11 +80,27 @@ const Calendar: React.FC = () => {
 
         if (response.ok) {
           setEvents(events.filter(event => event.id !== eventId));
+          setShowModal(false);
+          setCurrentEvent(null);
+          setIsEditMode(false);
         }
       } catch (error) {
         console.error('Error deleting event:', error);
       }
     }
+  };
+
+  const handleDayClick = (day: Date) => {
+    if (day.getMonth() !== currentMonth.getMonth()) return;
+    setIsEditMode(false);
+    setCurrentEvent({ event_date: day.toISOString().split('T')[0] });
+    setShowModal(true);
+  };
+
+  const handleEventClick = (event: CalendarEvent) => {
+    setIsEditMode(true);
+    setCurrentEvent(event);
+    setShowModal(true);
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -142,12 +153,6 @@ const Calendar: React.FC = () => {
               Manage team events, competitions, and meetings
             </p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Add Event
-          </button>
         </div>
 
         <div className="bg-white shadow rounded-lg">
@@ -192,9 +197,10 @@ const Calendar: React.FC = () => {
               return (
                 <div
                   key={dayIdx}
-                  className={`bg-white px-3 py-2 text-sm min-h-[100px] ${
+                  className={`bg-white px-3 py-2 text-sm min-h-[100px] cursor-pointer hover:bg-gray-50 ${
                     !isCurrentMonth ? 'text-gray-400' : 'text-gray-900'
                   } ${isToday ? 'bg-blue-50' : ''}`}
+                  onClick={() => handleDayClick(day)}
                 >
                   <div className={`font-medium ${isToday ? 'text-blue-600' : ''}`}>
                     {day.getDate()}
@@ -204,10 +210,9 @@ const Calendar: React.FC = () => {
                       <div
                         key={event.id}
                         className="text-xs p-1 bg-blue-100 text-blue-800 rounded truncate cursor-pointer hover:bg-blue-200"
-                        onClick={() => {
-                          if (window.confirm(`Event: ${event.title}\nTime: ${event.event_time}\nLocation: ${event.location}\n\nWould you like to delete this event?`)) {
-                            deleteEvent(event.id);
-                          }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEventClick(event);
                         }}
                       >
                         {event.title}
@@ -245,14 +250,12 @@ const Calendar: React.FC = () => {
                       {event.location && ` • ${event.location}`}
                     </div>
                   </div>
-                  {user?.isAdmin && (
-                    <button
-                      onClick={() => deleteEvent(event.id)}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      Delete
-                    </button>
-                  )}
+                  <button
+                    onClick={() => handleEventClick(event)}
+                    className="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    Edit
+                  </button>
                 </div>
               ))}
             {events.filter(event => new Date(event.event_date) >= new Date()).length === 0 && (
@@ -264,18 +267,18 @@ const Calendar: React.FC = () => {
         </div>
       </div>
 
-      {/* Add Event Modal */}
-      {showModal && (
+      {/* Event Modal */}
+      {showModal && currentEvent && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
           <div className="relative p-8 bg-white w-full max-w-md m-auto rounded-lg shadow-lg">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Event</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">{isEditMode ? 'Edit Event' : 'Add New Event'}</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Title</label>
                 <input
                   type="text"
-                  value={newEvent.title}
-                  onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                  value={currentEvent.title || ''}
+                  onChange={(e) => setCurrentEvent({ ...currentEvent, title: e.target.value })}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
@@ -283,8 +286,8 @@ const Calendar: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700">Description</label>
                 <textarea
-                  value={newEvent.description}
-                  onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+                  value={currentEvent.description || ''}
+                  onChange={(e) => setCurrentEvent({ ...currentEvent, description: e.target.value })}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   rows={3}
                 />
@@ -293,8 +296,8 @@ const Calendar: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700">Date</label>
                 <input
                   type="date"
-                  value={newEvent.event_date}
-                  onChange={(e) => setNewEvent({ ...newEvent, event_date: e.target.value })}
+                  value={currentEvent.event_date || ''}
+                  onChange={(e) => setCurrentEvent({ ...currentEvent, event_date: e.target.value })}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                   required
                 />
@@ -303,8 +306,8 @@ const Calendar: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700">Time</label>
                 <input
                   type="time"
-                  value={newEvent.event_time}
-                  onChange={(e) => setNewEvent({ ...newEvent, event_time: e.target.value })}
+                  value={currentEvent.event_time || ''}
+                  onChange={(e) => setCurrentEvent({ ...currentEvent, event_time: e.target.value })}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
@@ -312,25 +315,41 @@ const Calendar: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700">Location</label>
                 <input
                   type="text"
-                  value={newEvent.location}
-                  onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+                  value={currentEvent.location || ''}
+                  onChange={(e) => setCurrentEvent({ ...currentEvent, location: e.target.value })}
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
-            <div className="mt-6 flex justify-end space-x-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createEvent}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
-              >
-                Create Event
-              </button>
+            <div className="mt-6 flex justify-between">
+              <div>
+                {isEditMode && user?.isAdmin && (
+                  <button
+                    onClick={() => deleteEvent(currentEvent.id!)}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    setCurrentEvent(null);
+                    setIsEditMode(false);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveEvent}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                >
+                  {isEditMode ? 'Save Changes' : 'Create Event'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

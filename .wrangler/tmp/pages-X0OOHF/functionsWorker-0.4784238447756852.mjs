@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-hrwSiB/checked-fetch.js
+// ../.wrangler/tmp/bundle-YUET33/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2376,6 +2376,25 @@ tasks.put("/:id", async (c) => {
     return c.json({ error: "Internal server error" }, 500);
   }
 });
+tasks.patch("/:id/complete", async (c) => {
+  try {
+    const { id } = c.req.param();
+    const { completed } = await c.req.json();
+    if (typeof completed !== "boolean") {
+      return c.json({ error: "Invalid completed status" }, 400);
+    }
+    const { success } = await c.env.DB.prepare(
+      "UPDATE tasks SET completed = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+    ).bind(completed ? 1 : 0, id).run();
+    if (success) {
+      return c.json({ message: "Task completion status updated" });
+    }
+    return c.json({ error: "Failed to update task" }, 500);
+  } catch (error) {
+    console.error("Error updating task completion:", error);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
 tasks.delete("/:id", async (c) => {
   try {
     const { id } = c.req.param();
@@ -3033,7 +3052,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-hrwSiB/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-YUET33/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -3065,7 +3084,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-hrwSiB/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-YUET33/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

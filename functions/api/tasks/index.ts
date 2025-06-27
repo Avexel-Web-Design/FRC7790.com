@@ -115,6 +115,32 @@ tasks.put('/:id', async (c) => {
   }
 });
 
+tasks.patch('/:id/complete', async (c) => {
+  try {
+    const { id } = c.req.param();
+    const { completed } = await c.req.json();
+
+    if (typeof completed !== 'boolean') {
+      return c.json({ error: 'Invalid completed status' }, 400);
+    }
+
+    const { success } = await c.env.DB.prepare(
+      'UPDATE tasks SET completed = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+    )
+      .bind(completed ? 1 : 0, id)
+      .run();
+
+    if (success) {
+      return c.json({ message: 'Task completion status updated' });
+    }
+
+    return c.json({ error: 'Failed to update task' }, 500);
+  } catch (error) {
+    console.error('Error updating task completion:', error);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
+});
+
 tasks.delete('/:id', async (c) => {
   try {
     const { id } = c.req.param();
