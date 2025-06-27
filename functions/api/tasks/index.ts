@@ -75,21 +75,33 @@ tasks.post('/', async (c) => {
 tasks.put('/:id', async (c) => {
   try {
     const { id } = c.req.param();
-    const { title, description, is_completed, due_date } = await c.req.json();
+    const { title, description, completed, assigned_to, due_date, priority } = await c.req.json();
 
     if (!title) {
       return c.json({ error: 'Title is required' }, 400);
     }
 
-    // Validate due_date if provided
-    if (due_date && isNaN(Date.parse(due_date))) {
-      return c.json({ error: 'Invalid due date format' }, 400);
+    // Validate priority if provided
+    const validPriorities = ['low', 'medium', 'high'];
+    const taskPriority = priority && validPriorities.includes(priority) ? priority : 'medium';
+
+    // Validate due_date format if provided (YYYY-MM-DD)
+    if (due_date && !/^\d{4}-\d{2}-\d{2}$/.test(due_date)) {
+      return c.json({ error: 'Invalid due date format. Use YYYY-MM-DD' }, 400);
     }
 
     const { success } = await c.env.DB.prepare(
-      'UPDATE tasks SET title = ?, description = ?, is_completed = ?, due_date = ? WHERE id = ?'
+      'UPDATE tasks SET title = ?, description = ?, completed = ?, assigned_to = ?, due_date = ?, priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
     )
-      .bind(title, description || null, is_completed ? 1 : 0, due_date || null, id)
+      .bind(
+        title, 
+        description || null, 
+        completed ? 1 : 0, 
+        assigned_to || null, 
+        due_date || null, 
+        taskPriority,
+        id
+      )
       .run();
 
     if (success) {
