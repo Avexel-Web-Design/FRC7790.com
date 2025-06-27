@@ -142,36 +142,6 @@ export default function Navigation() {
                   Dashboard
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/profile"
-                  className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
-                    location.pathname === '/profile' ? 'text-baywatch-orange' : ''
-                  }`}
-                >
-                  Profile
-                </Link>
-              </li>
-              {user?.isAdmin && (
-                <li>
-                  <Link
-                    to="/admin/users"
-                    className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
-                      location.pathname === '/admin/users' ? 'text-baywatch-orange' : ''
-                    }`}
-                  >
-                    Admin
-                  </Link>
-                </li>
-              )}
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
-                >
-                  Logout
-                </button>
-              </li>
             </>
           ) : (
             <li>
