@@ -7,6 +7,7 @@ CREATE TABLE users (
   username TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   is_admin INTEGER NOT NULL DEFAULT 0,
+  avatar TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -42,4 +43,4 @@ CREATE INDEX idx_tasks_completed ON tasks(is_completed);
 -- Insert default admin user (password: admin123)
 -- SHA-256 hash of "admin123"
 INSERT INTO users (username, password, is_admin) VALUES 
-('admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 1);
+('Carrie Meier', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 1);

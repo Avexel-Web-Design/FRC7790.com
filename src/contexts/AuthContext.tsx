@@ -5,6 +5,7 @@ interface User {
   id: number;
   username: string;
   isAdmin: boolean;
+  avatar?: string;
 }
 
 interface AuthContextType {
@@ -27,20 +28,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const decodedToken = JSON.parse(atob(token.split('.')[1]));
-        setUser({
-          id: decodedToken.id,
-          username: decodedToken.username || '',
-          isAdmin: decodedToken.isAdmin || false,
-        });
-      } catch (error) {
-        localStorage.removeItem('token');
+    const fetchAndSetUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const response = await fetch('/api/profile', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          if (response.ok) {
+            const userData = await response.json();
+            setUser({
+              id: userData.id,
+              username: userData.username,
+              isAdmin: userData.is_admin,
+              avatar: userData.avatar,
+            });
+          } else {
+            localStorage.removeItem('token');
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+          localStorage.removeItem('token');
+        }
       }
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+    fetchAndSetUser();
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
@@ -62,6 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: decodedToken.id,
           username: decodedToken.username || username,
           isAdmin: decodedToken.isAdmin || false,
+          avatar: decodedToken.avatar || '',
         });
         
         return true;

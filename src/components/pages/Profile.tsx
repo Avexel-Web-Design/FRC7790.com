@@ -23,6 +23,19 @@ const Profile: React.FC = () => {
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [usernameMessage, setUsernameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const generateColor = (username: string): string => {
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xFF;
+      color += ('00' + value.toString(16)).substr(-2);
+    }
+    return color;
+  };
+
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -137,14 +150,11 @@ const Profile: React.FC = () => {
             {/* Profile Picture & Basic Info */}
             <div className="flex items-center space-x-6 mb-6">
               <div className="flex-shrink-0">
-                <div className="h-20 w-20 rounded-full bg-gray-300 flex items-center justify-center">
-                  <span className="text-2xl font-medium text-gray-700">
-                    {profile?.username ? (
-                      profile.username.includes(' ') ? 
-                        (profile.username.split(' ')[0].charAt(0) + profile.username.split(' ')[1].charAt(0)).toUpperCase() :
-                        profile.username.charAt(0).toUpperCase()
-                    ) : ''}
-                  </span>
+                <div
+                  className="h-20 w-20 rounded-full flex items-center justify-center text-white font-bold text-3xl"
+                  style={{ backgroundColor: profile?.username ? generateColor(profile.username) : '#cccccc' }}
+                >
+                  {profile?.username ? profile.username.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : ''}
                 </div>
               </div>
               <div>

@@ -31,6 +31,20 @@ const Chat: React.FC = () => {
   ];
 
   const [messages, setMessages] = useState<Message[]>([]);
+  const [userColors, setUserColors] = useState<Map<string, string>>(new Map());
+
+  const generateColor = (username: string): string => {
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xFF;
+      color += ('00' + value.toString(16)).substr(-2);
+    }
+    return color;
+  };
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -40,6 +54,14 @@ const Chat: React.FC = () => {
           if (response.ok) {
             const data = await response.json();
             setMessages(data);
+            // Generate and store colors for new users
+            const newColors = new Map(userColors);
+            data.forEach((message: Message) => {
+              if (!newColors.has(message.sender_username)) {
+                newColors.set(message.sender_username, generateColor(message.sender_username));
+              }
+            });
+            setUserColors(newColors);
           } else {
             console.error('Failed to fetch messages:', response.statusText);
             setMessages([]);
@@ -48,8 +70,6 @@ const Chat: React.FC = () => {
           console.error('Error fetching messages:', error);
           setMessages([]);
         }
-      } else {
-        setMessages([]);
       }
     };
     fetchMessages();
@@ -119,11 +139,12 @@ const Chat: React.FC = () => {
             {selectedChannel ? selectedChannel.name : 'Select a Channel'}
           </h2>
           <div className="flex items-center">
-            <img
-              src={`https://via.placeholder.com/40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${user?.username.charAt(0).toUpperCase()}`}
-              alt="User Avatar"
-              className="w-10 h-10 rounded-full mr-3"
-            />
+            <div
+              className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
+              style={{ backgroundColor: userColors.get(user?.username || '') || '#007bff' }}
+            >
+              {user?.username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+            </div>
             <div>
               <p className="font-semibold">{user?.username}</p>
               <p className="text-sm text-gray-400">Online</p>
@@ -136,11 +157,12 @@ const Chat: React.FC = () => {
           {selectedChannel ? (
             messages.map((message) => (
               <div key={message.id} className="flex items-start mb-4">
-                <img
-                  src={message.avatar}
-                  alt="Avatar"
-                  className="w-10 h-10 rounded-full mr-3"
-                />
+                <div
+                  className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
+                  style={{ backgroundColor: userColors.get(message.sender_username) || '#cccccc' }}
+                >
+                  {message.sender_username.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+                </div>
                 <div>
                   <div className="flex items-baseline">
                     <p className="font-semibold mr-2">{message.sender_username}</p>

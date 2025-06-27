@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import { sign } from 'hono/jwt';
+import { sign } from 'hono/jwt';
 
 interface CloudflareEnv {
   DB: D1Database;
@@ -30,14 +32,36 @@ register.post('/', async (c) => {
 
     const hashedPassword = await hashPassword(password);
 
-    const { success } = await c.env.DB.prepare(
-      'INSERT INTO users (username, password) VALUES (?, ?)'
+    const { success, meta } = await c.env.DB.prepare(
+      'INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)'
     )
-      .bind(username, hashedPassword)
+      .bind(username, hashedPassword, `https://api.dicebear.com/7.x/initials/svg?seed=${username}`)
       .run();
 
     if (success) {
-      return c.json({ message: 'User registered successfully' });
+      const userId = meta.last_row_id;
+      const token = await sign(
+        { 
+          id: userId, 
+          username: username,
+          isAdmin: 0,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+        }, 
+        c.env.JWT_SECRET
+      );
+
+      return c.json({ 
+        token,
+        user: {
+          id: userId,
+          username: username,
+          isAdmin: false,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`
+        },
+        message: 'Registration successful'
+      });
     }
 
     return c.json({ error: 'Failed to register user' }, 500);

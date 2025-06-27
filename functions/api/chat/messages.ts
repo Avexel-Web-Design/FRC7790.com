@@ -13,7 +13,7 @@ export async function getMessages(c: HonoContext<any, any, Env>): Promise<Respon
 
   try {
     const { results } = await c.env.DB.prepare(
-      'SELECT messages.*, users.username as sender_username FROM messages JOIN users ON messages.sender_id = users.id WHERE channel_id = ? ORDER BY timestamp ASC'
+      'SELECT messages.*, users.username as sender_username, users.avatar FROM messages JOIN users ON messages.sender_id = users.id WHERE channel_id = ? ORDER BY timestamp ASC'
     )
       .bind(channelId)
       .all();

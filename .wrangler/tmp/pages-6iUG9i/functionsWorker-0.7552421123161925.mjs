@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-RJaQVT/checked-fetch.js
+// ../.wrangler/tmp/bundle-iMbCbC/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -1618,43 +1618,6 @@ var rateLimitMiddleware = createMiddleware(async (c, next) => {
   await next();
 });
 
-// api/auth/register.ts
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-__name(hashPassword, "hashPassword");
-var register = new Hono2();
-register.post("/", async (c) => {
-  try {
-    const { username, password } = await c.req.json();
-    if (!username || !password) {
-      return c.json({ error: "Username and password are required" }, 400);
-    }
-    if (password.length < 6) {
-      return c.json({ error: "Password must be at least 6 characters long" }, 400);
-    }
-    const hashedPassword = await hashPassword(password);
-    const { success } = await c.env.DB.prepare(
-      "INSERT INTO users (username, password) VALUES (?, ?)"
-    ).bind(username, hashedPassword).run();
-    if (success) {
-      return c.json({ message: "User registered successfully" });
-    }
-    return c.json({ error: "Failed to register user" }, 500);
-  } catch (e) {
-    if (e instanceof Error && e.message.includes("UNIQUE constraint failed")) {
-      return c.json({ error: "Username already exists" }, 409);
-    }
-    console.error("Registration error:", e);
-    return c.json({ error: "Internal server error" }, 500);
-  }
-});
-var register_default = register;
-
 // ../node_modules/hono/dist/utils/encode.js
 var decodeBase64Url = /* @__PURE__ */ __name((str) => {
   return decodeBase64(str.replace(/_|-/g, (m) => ({ _: "/", "-": "+" })[m] ?? m));
@@ -2132,6 +2095,65 @@ var verify2 = Jwt.verify;
 var decode2 = Jwt.decode;
 var sign2 = Jwt.sign;
 
+// api/auth/register.ts
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+__name(hashPassword, "hashPassword");
+var register = new Hono2();
+register.post("/", async (c) => {
+  try {
+    const { username, password } = await c.req.json();
+    if (!username || !password) {
+      return c.json({ error: "Username and password are required" }, 400);
+    }
+    if (password.length < 6) {
+      return c.json({ error: "Password must be at least 6 characters long" }, 400);
+    }
+    const hashedPassword = await hashPassword(password);
+    const { success, meta } = await c.env.DB.prepare(
+      "INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)"
+    ).bind(username, hashedPassword, `https://api.dicebear.com/7.x/initials/svg?seed=${username}`).run();
+    if (success) {
+      const userId = meta.last_row_id;
+      const token = await sign2(
+        {
+          id: userId,
+          username,
+          isAdmin: 0,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`,
+          iat: Math.floor(Date.now() / 1e3),
+          exp: Math.floor(Date.now() / 1e3) + 24 * 60 * 60
+          // 24 hours
+        },
+        c.env.JWT_SECRET
+      );
+      return c.json({
+        token,
+        user: {
+          id: userId,
+          username,
+          isAdmin: false,
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`
+        },
+        message: "Registration successful"
+      });
+    }
+    return c.json({ error: "Failed to register user" }, 500);
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("UNIQUE constraint failed")) {
+      return c.json({ error: "Username already exists" }, 409);
+    }
+    console.error("Registration error:", e);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+var register_default = register;
+
 // api/auth/login.ts
 async function verifyPassword(password, hashedPassword) {
   const encoder = new TextEncoder();
@@ -2441,7 +2463,8 @@ profile.get("/", async (c) => {
       id: dbUser.id,
       username: dbUser.username,
       is_admin: !!dbUser.is_admin,
-      created_at: dbUser.created_at
+      created_at: dbUser.created_at,
+      avatar: dbUser.avatar
     });
   } catch (error) {
     console.error("Error fetching user profile:", error);
@@ -2532,7 +2555,7 @@ async function getMessages(c) {
   }
   try {
     const { results } = await c.env.DB.prepare(
-      "SELECT messages.*, users.username as sender_username FROM messages JOIN users ON messages.sender_id = users.id WHERE channel_id = ? ORDER BY timestamp ASC"
+      "SELECT messages.*, users.username as sender_username, users.avatar FROM messages JOIN users ON messages.sender_id = users.id WHERE channel_id = ? ORDER BY timestamp ASC"
     ).bind(channelId).all();
     return new Response(JSON.stringify(results), {
       headers: { "Content-Type": "application/json" }
@@ -2610,7 +2633,7 @@ app.get("/", (c) => c.json({
 }));
 var onRequest = handle(app);
 
-// ../.wrangler/tmp/pages-MpS5aX/functionsRoutes-0.7167095867161648.mjs
+// ../.wrangler/tmp/pages-6iUG9i/functionsRoutes-0.9753360443008041.mjs
 var routes = [
   {
     routePath: "/api/:path*",
@@ -3108,7 +3131,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-RJaQVT/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-iMbCbC/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -3140,7 +3163,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-RJaQVT/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-iMbCbC/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -3240,4 +3263,4 @@ export {
   __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default as default
 };
-//# sourceMappingURL=functionsWorker-0.26975428422292613.mjs.map
+//# sourceMappingURL=functionsWorker-0.7552421123161925.mjs.map

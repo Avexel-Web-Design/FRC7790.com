@@ -10,6 +10,7 @@ interface AuthUser {
   id: number;
   username: string;
   isAdmin: boolean;
+  avatar: string;
 }
 
 // Simple password hashing using Web Crypto API
@@ -55,7 +56,8 @@ profile.get('/', async (c) => {
       id: dbUser.id,
       username: dbUser.username,
       is_admin: !!dbUser.is_admin,
-      created_at: dbUser.created_at
+      created_at: dbUser.created_at,
+      avatar: dbUser.avatar
     });
   } catch (error) {
     console.error('Error fetching user profile:', error);

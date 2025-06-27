@@ -28,7 +28,7 @@ login.post('/', async (c) => {
 
     const user = await c.env.DB.prepare('SELECT * FROM users WHERE username = ?')
       .bind(username)
-      .first() as { id: number; username: string; password: string; is_admin: number } | null;
+      .first() as { id: number; username: string; password: string; is_admin: number; avatar: string } | null;
 
     if (!user) {
       return c.json({ error: 'Invalid credentials' }, 401);
