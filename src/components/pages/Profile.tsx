@@ -272,33 +272,6 @@ const Profile: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Team Information */}
-        <div className="mt-6 bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Team Information</h3>
-          </div>
-          <div className="px-6 py-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">Team Number</h4>
-                <p className="text-sm text-gray-500">FRC 7790</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">Team Name</h4>
-                <p className="text-sm text-gray-500">Baywatch</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">Location</h4>
-                <p className="text-sm text-gray-500">Unknown</p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-gray-900">Founded</h4>
-                <p className="text-sm text-gray-500">Unknown</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
