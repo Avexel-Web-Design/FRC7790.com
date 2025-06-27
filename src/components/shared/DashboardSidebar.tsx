@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { HomeIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ArrowRightOnRectangleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export default function DashboardSidebar() {
   const { user, logout } = useAuth();
@@ -13,7 +13,7 @@ export default function DashboardSidebar() {
   };
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+    { name: 'Chat', href: '/dashboard', icon: HomeIcon },
     { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
     { name: 'Tasks', href: '/tasks', icon: CheckCircleIcon },
     { name: 'Profile', href: '/profile', icon: UserCircleIcon },
@@ -67,7 +67,7 @@ export default function DashboardSidebar() {
           onClick={handleLogout}
           className="flex items-center w-full px-4 py-2 text-sm font-medium rounded-md hover:bg-gray-700"
         >
-          <ArrowRightOnRectangleIcon className="w-6 h-6 mr-3" />
+          <i className="fa-solid fa-right-from-bracket w-6 h-6 mr-3"></i>
           Logout
         </button>
       </div>

@@ -93,14 +93,16 @@ profile.put('/', async (c) => {
     }
 
     // Handle username update
-    if (body.username) {
-      if (body.username.length < 3) {
+    if (body.username !== undefined) { // Check if username field is present in the request body
+      const newUsername = String(body.username).trim(); // Ensure it's a string and trim whitespace
+
+      if (newUsername.length < 3) {
         return c.json({ error: 'Username must be at least 3 characters long' }, 400);
       }
 
-      // Check if username is already taken by another user
-      const existingUser = await c.env.DB.prepare('SELECT id FROM users WHERE username = ? AND id != ?')
-        .bind(body.username, user.id)
+      // Check if username is already taken by another user (case-insensitive)
+      const existingUser = await c.env.DB.prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?')
+        .bind(newUsername, user.id)
         .first();
 
       if (existingUser) {
@@ -110,7 +112,7 @@ profile.put('/', async (c) => {
       const { success } = await c.env.DB.prepare(
         'UPDATE users SET username = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
       )
-        .bind(body.username, user.id)
+        .bind(newUsername, user.id)
         .run();
 
       if (success) {

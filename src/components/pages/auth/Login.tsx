@@ -47,13 +47,13 @@ const Login: React.FC = () => {
           
           <div>
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-              Username
+              Name
             </label>
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500"
               id="username"
               type="text"
-              placeholder="Username"
+              placeholder="Name"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required

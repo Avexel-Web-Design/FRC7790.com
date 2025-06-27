@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { frcAPI } from '../../utils/frcAPI';
 
 interface Profile {
   id: number;
@@ -12,11 +13,15 @@ const Profile: React.FC = () => {
   const { logout } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
+  const [editingPassword, setEditingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState<string>('');
+
+  const [newUsername, setNewUsername] = useState('');
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [usernameMessage, setUsernameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     fetchProfile();
@@ -31,6 +36,7 @@ const Profile: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setProfile(data);
+        setNewUsername(data.username); // Initialize newUsername with current username
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -39,19 +45,44 @@ const Profile: React.FC = () => {
     }
   };
 
-  const updatePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+  const handleUsernameUpdate = async () => {
+    setUsernameMessage(null);
+    if (newUsername === profile?.username) {
+      setIsEditingUsername(false);
       return;
     }
 
     try {
-      setError('');
+      const response = await frcAPI.put('/profile', { username: newUsername });
+      if (response.ok) {
+        setUsernameMessage({ type: 'success', text: 'Username updated successfully!' });
+        fetchProfile(); // Re-fetch profile to update the displayed username
+      } else {
+        const errorData = await response.json();
+        setUsernameMessage({ type: 'error', text: errorData.error || 'Failed to update username.' });
+      }
+    } catch (error) {
+      console.error('Error updating username:', error);
+      setUsernameMessage({ type: 'error', text: 'Network error or server unreachable.' });
+    } finally {
+      setIsEditingUsername(false);
+      setTimeout(() => setUsernameMessage(null), 5000); // Clear message after 5 seconds
+    }
+  };
+
+  const updatePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters long');
+      return;
+    }
+
+    try {
+      setPasswordError('');
       const token = localStorage.getItem('token');
       const response = await fetch('/api/profile', {
         method: 'PUT',
@@ -63,17 +94,17 @@ const Profile: React.FC = () => {
       });
 
       if (response.ok) {
-        setSuccess('Password updated successfully');
+        setPasswordSuccess('Password updated successfully');
         setNewPassword('');
         setConfirmPassword('');
-        setEditing(false);
-        setTimeout(() => setSuccess(''), 3000);
+        setEditingPassword(false);
+        setTimeout(() => setPasswordSuccess(''), 3000);
       } else {
         const errorData = await response.json();
-        setError(errorData.error || 'Failed to update password');
+        setPasswordError(errorData.error || 'Failed to update password');
       }
     } catch (error) {
-      setError('Error updating password');
+      setPasswordError('Error updating password');
       console.error('Error updating password:', error);
     }
   };
@@ -108,7 +139,11 @@ const Profile: React.FC = () => {
               <div className="flex-shrink-0">
                 <div className="h-20 w-20 rounded-full bg-gray-300 flex items-center justify-center">
                   <span className="text-2xl font-medium text-gray-700">
-                    {profile?.username.charAt(0).toUpperCase()}
+                    {profile?.username ? (
+                      profile.username.includes(' ') ? 
+                        (profile.username.split(' ')[0].charAt(0) + profile.username.split(' ')[1].charAt(0)).toUpperCase() :
+                        profile.username.charAt(0).toUpperCase()
+                    ) : ''}
                   </span>
                 </div>
               </div>
@@ -136,8 +171,39 @@ const Profile: React.FC = () => {
                 <div className="mt-1 text-sm text-gray-900">{profile?.id}</div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Username</label>
-                <div className="mt-1 text-sm text-gray-900">{profile?.username}</div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <div className="mt-1 text-sm text-gray-900 flex items-center">
+                  {isEditingUsername ? (
+                    <input
+                      type="text"
+                      value={newUsername}
+                      onChange={(e) => setNewUsername(e.target.value)}
+                      className="p-1 border rounded text-gray-900 flex-grow"
+                    />
+                  ) : (
+                    <span className="font-medium text-gray-900">{profile?.username}</span>
+                  )}
+                  {!isEditingUsername ? (
+                    <button
+                      onClick={() => setIsEditingUsername(true)}
+                      className="ml-2 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      Edit
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleUsernameUpdate}
+                      className="ml-2 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    >
+                      Save
+                    </button>
+                  )}
+                </div>
+                {usernameMessage && (
+                  <p className={`mt-2 text-sm ${usernameMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                    {usernameMessage.text}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Role</label>
@@ -154,14 +220,14 @@ const Profile: React.FC = () => {
             </div>
 
             {/* Status Messages */}
-            {success && (
+            {passwordSuccess && (
               <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                {success}
+                {passwordSuccess}
               </div>
             )}
-            {error && (
+            {passwordError && (
               <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
+                {passwordError}
               </div>
             )}
 
@@ -169,9 +235,9 @@ const Profile: React.FC = () => {
             <div className="border-t border-gray-200 pt-6">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-lg font-medium text-gray-900">Password</h4>
-                {!editing && (
+                {!editingPassword && (
                   <button
-                    onClick={() => setEditing(true)}
+                    onClick={() => setEditingPassword(true)}
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
                     Change Password
@@ -179,7 +245,7 @@ const Profile: React.FC = () => {
                 )}
               </div>
 
-              {editing ? (
+              {editingPassword ? (
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">New Password</label>
@@ -210,10 +276,10 @@ const Profile: React.FC = () => {
                     </button>
                     <button
                       onClick={() => {
-                        setEditing(false);
+                        setEditingPassword(false);
                         setNewPassword('');
                         setConfirmPassword('');
-                        setError('');
+                        setPasswordError('');
                       }}
                       className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
                     >

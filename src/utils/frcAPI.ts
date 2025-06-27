@@ -147,6 +147,45 @@ export class FRCAPIService {
     }
   }
 
+  // Generic request method for our own backend API
+  async request(method: string, path: string, data?: any): Promise<Response> {
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const config: RequestInit = {
+      method,
+      headers,
+    };
+
+    if (data) {
+      config.body = JSON.stringify(data);
+    }
+
+    return fetch(`/api${path}`, config);
+  }
+
+  async get(path: string): Promise<Response> {
+    return this.request('GET', path);
+  }
+
+  async post(path: string, data: any): Promise<Response> {
+    return this.request('POST', path, data);
+  }
+
+  async put(path: string, data: any): Promise<Response> {
+    return this.request('PUT', path, data);
+  }
+
+  async delete(path: string): Promise<Response> {
+    return this.request('DELETE', path);
+  }
+
   async getTeamEvents(year: number = new Date().getFullYear()): Promise<Event[]> {
     return this.fetchAPI(`/team/${FRC_TEAM_KEY}/events/${year}/simple`);
   }
