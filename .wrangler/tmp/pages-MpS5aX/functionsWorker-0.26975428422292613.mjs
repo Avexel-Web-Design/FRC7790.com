@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-YUET33/checked-fetch.js
+// ../.wrangler/tmp/bundle-RJaQVT/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2465,17 +2465,18 @@ profile.put("/", async (c) => {
       }
       return c.json({ error: "Failed to update password" }, 500);
     }
-    if (body.username) {
-      if (body.username.length < 3) {
+    if (body.username !== void 0) {
+      const newUsername = String(body.username).trim();
+      if (newUsername.length < 3) {
         return c.json({ error: "Username must be at least 3 characters long" }, 400);
       }
-      const existingUser = await c.env.DB.prepare("SELECT id FROM users WHERE username = ? AND id != ?").bind(body.username, user.id).first();
+      const existingUser = await c.env.DB.prepare("SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?").bind(newUsername, user.id).first();
       if (existingUser) {
         return c.json({ error: "Username already taken" }, 409);
       }
       const { success } = await c.env.DB.prepare(
         "UPDATE users SET username = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
-      ).bind(body.username, user.id).run();
+      ).bind(newUsername, user.id).run();
       if (success) {
         return c.json({ message: "Profile updated successfully" });
       }
@@ -2523,6 +2524,60 @@ profile.post("/change-password", async (c) => {
 });
 var profile_default = profile;
 
+// api/chat/messages.ts
+async function getMessages(c) {
+  const { channelId } = c.req.param();
+  if (!channelId) {
+    return new Response("Channel ID is required", { status: 400 });
+  }
+  try {
+    const { results } = await c.env.DB.prepare(
+      "SELECT messages.*, users.username as sender_username FROM messages JOIN users ON messages.sender_id = users.id WHERE channel_id = ? ORDER BY timestamp ASC"
+    ).bind(channelId).all();
+    return new Response(JSON.stringify(results), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return new Response("Error fetching messages", { status: 500 });
+  }
+}
+__name(getMessages, "getMessages");
+async function sendMessage(c) {
+  const { channelId } = c.req.param();
+  if (!channelId) {
+    return new Response("Channel ID is required", { status: 400 });
+  }
+  const { content, sender_id } = await c.req.json();
+  if (!content || !sender_id) {
+    return new Response("Content and sender_id are required", { status: 400 });
+  }
+  try {
+    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+    const { success } = await c.env.DB.prepare(
+      "INSERT INTO messages (channel_id, sender_id, content, timestamp) VALUES (?, ?, ?, ?)"
+    ).bind(channelId, sender_id, content, timestamp).run();
+    if (success) {
+      return new Response(JSON.stringify({ message: "Message sent", id: success.lastRowId }), {
+        status: 201,
+        headers: { "Content-Type": "application/json" }
+      });
+    } else {
+      return new Response("Failed to send message", { status: 500 });
+    }
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return new Response("Error sending message", { status: 500 });
+  }
+}
+__name(sendMessage, "sendMessage");
+
+// api/chat/index.ts
+var chat = new Hono2();
+chat.get("/messages/:channelId", getMessages);
+chat.post("/messages/:channelId", sendMessage);
+var chat_default = chat;
+
 // api/[[path]].ts
 var app = new Hono2().basePath("/api");
 app.use("*", corsMiddleware);
@@ -2534,6 +2589,7 @@ app.route("/admin/users", users_default);
 app.route("/calendar", calendar_default);
 app.route("/tasks", tasks_default);
 app.route("/profile", profile_default);
+app.route("/chat", chat_default);
 app.get("/health", (c) => c.json({
   status: "ok",
   timestamp: (/* @__PURE__ */ new Date()).toISOString(),
@@ -2554,7 +2610,7 @@ app.get("/", (c) => c.json({
 }));
 var onRequest = handle(app);
 
-// ../.wrangler/tmp/pages-X0OOHF/functionsRoutes-0.5928638074789792.mjs
+// ../.wrangler/tmp/pages-MpS5aX/functionsRoutes-0.7167095867161648.mjs
 var routes = [
   {
     routePath: "/api/:path*",
@@ -3052,7 +3108,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-YUET33/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-RJaQVT/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -3084,7 +3140,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-YUET33/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-RJaQVT/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -3184,4 +3240,4 @@ export {
   __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default as default
 };
-//# sourceMappingURL=functionsWorker-0.4784238447756852.mjs.map
+//# sourceMappingURL=functionsWorker-0.26975428422292613.mjs.map

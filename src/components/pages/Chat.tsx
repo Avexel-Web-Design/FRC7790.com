@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { frcAPI } from '../../utils/frcAPI';
 
 interface Message {
   id: number;
@@ -7,6 +8,7 @@ interface Message {
   content: string;
   timestamp: string;
   avatar: string;
+  sender_username: string;
 }
 
 interface Channel {
@@ -31,32 +33,26 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
-    // Simulate fetching messages for the selected channel
-    if (selectedChannel) {
-      // In a real app, you'd fetch from an API based on selectedChannel.id
-      setMessages([
-        { id: 1, sender: 'Bot', content: `Welcome to ${selectedChannel.name}!`, timestamp: '2025-06-26T10:00:00Z', avatar: 'https://via.placeholder.com/40/0000FF/FFFFFF?text=B' },
-        { id: 2, sender: 'Alice', content: 'Hey everyone!', timestamp: '2025-06-26T10:05:00Z', avatar: 'https://via.placeholder.com/40/FF0000/FFFFFF?text=A' },
-        { id: 3, sender: 'Bob', content: 'Hello Alice!', timestamp: '2025-06-26T10:07:00Z', avatar: 'https://via.placeholder.com/40/00FF00/FFFFFF?text=B' },
-        { id: 4, sender: 'Charlie', content: 'What\'s up?', timestamp: '2025-06-26T10:10:00Z', avatar: 'https://via.placeholder.com/40/00FFFF/FFFFFF?text=C' },
-        { id: 5, sender: 'Alice', content: 'Just chilling, how about you?', timestamp: '2025-06-26T10:12:00Z', avatar: 'https://via.placeholder.com/40/FF0000/FFFFFF?text=A' },
-        { id: 6, sender: 'Bot', content: 'Remember to be respectful and follow the community guidelines.', timestamp: '2025-06-26T10:15:00Z', avatar: 'https://via.placeholder.com/40/0000FF/FFFFFF?text=B' },
-        { id: 7, sender: 'Bob', content: 'Anyone working on the new feature?', timestamp: '2025-06-26T10:20:00Z', avatar: 'https://via.placeholder.com/40/00FF00/FFFFFF?text=B' },
-        { id: 8, sender: 'Charlie', content: 'I am! Need any help?', timestamp: '2025-06-26T10:22:00Z', avatar: 'https://via.placeholder.com/40/00FFFF/FFFFFF?text=C' },
-        { id: 9, sender: 'Alice', content: 'I\'m stuck on a bug, any ideas?', timestamp: '2025-06-26T10:25:00Z', avatar: 'https://via.placeholder.com/40/FF0000/FFFFFF?text=A' },
-        { id: 10, sender: 'Bot', content: 'Please describe the bug in detail, Alice.', timestamp: '2025-06-26T10:28:00Z', avatar: 'https://via.placeholder.com/40/0000FF/FFFFFF?text=B' },
-        { id: 11, sender: 'Bob', content: 'I can take a look after lunch.', timestamp: '2025-06-26T10:30:00Z', avatar: 'https://via.placeholder.com/40/00FF00/FFFFFF?text=B' },
-        { id: 12, sender: 'Charlie', content: 'Thanks Bob!', timestamp: '2025-06-26T10:32:00Z', avatar: 'https://via.placeholder.com/40/00FFFF/FFFFFF?text=C' },
-        { id: 13, sender: 'Alice', content: 'It\'s a CSS issue with the new chat component.', timestamp: '2025-06-26T10:35:00Z', avatar: 'https://via.placeholder.com/40/FF0000/FFFFFF?text=A' },
-        { id: 14, sender: 'Bot', content: 'Ah, the irony!', timestamp: '2025-06-26T10:36:00Z', avatar: 'https://via.placeholder.com/40/0000FF/FFFFFF?text=B' },
-        { id: 15, sender: 'Bob', content: 'I\'ll bring coffee.', timestamp: '2025-06-26T10:38:00Z', avatar: 'https://via.placeholder.com/40/00FF00/FFFFFF?text=B' },
-        { id: 16, sender: 'Charlie', content: 'Sounds good!', timestamp: '2025-06-26T10:40:00Z', avatar: 'https://via.placeholder.com/40/00FFFF/FFFFFF?text=C' },
-        { id: 17, sender: 'Alice', content: 'Thanks guys!', timestamp: '2025-06-26T10:42:00Z', avatar: 'https://via.placeholder.com/40/FF0000/FFFFFF?text=A' },
-        { id: 18, sender: 'Bot', content: 'Any other questions?', timestamp: '2025-06-26T10:45:00Z', avatar: 'https://via.placeholder.com/40/0000FF/FFFFFF?text=B' },
-        { id: 19, sender: 'Bob', content: 'Nope, all clear here.', timestamp: '2025-06-26T10:47:00Z', avatar: 'https://via.placeholder.com/40/00FF00/FFFFFF?text=B' },
-        { id: 20, sender: 'Charlie', content: 'Me neither.', timestamp: '2025-06-26T10:48:00Z', avatar: 'https://via.placeholder.com/40/00FFFF/FFFFFF?text=C' },
-      ]);
-    }
+    const fetchMessages = async () => {
+      if (selectedChannel) {
+        try {
+          const response = await frcAPI.get(`/chat/messages/${selectedChannel.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            setMessages(data);
+          } else {
+            console.error('Failed to fetch messages:', response.statusText);
+            setMessages([]);
+          }
+        } catch (error) {
+          console.error('Error fetching messages:', error);
+          setMessages([]);
+        }
+      } else {
+        setMessages([]);
+      }
+    };
+    fetchMessages();
   }, [selectedChannel]);
 
   useEffect(() => {
@@ -64,18 +60,29 @@ const Chat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (messageInput.trim() && selectedChannel && user) {
-      const newMessage: Message = {
-        id: messages.length + 1,
-        sender: user.username,
-        content: messageInput.trim(),
-        timestamp: new Date().toISOString(),
-        avatar: `https://via.placeholder.com/40/${Math.floor(Math.random()*16777215).toString(16)}/FFFFFF?text=${user.username.charAt(0).toUpperCase()}`
-      };
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
-      setMessageInput('');
+      try {
+        const response = await frcAPI.post(`/chat/messages/${selectedChannel.id}`, {
+          content: messageInput.trim(),
+          sender_id: user.id,
+        });
+
+        if (response.ok) {
+          // Re-fetch messages to include the newly sent message
+          const updatedMessagesResponse = await frcAPI.get(`/chat/messages/${selectedChannel.id}`);
+          if (updatedMessagesResponse.ok) {
+            const updatedMessages = await updatedMessagesResponse.json();
+            setMessages(updatedMessages);
+          }
+          setMessageInput('');
+        } else {
+          console.error('Failed to send message:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
     }
   };
 
@@ -136,7 +143,7 @@ const Chat: React.FC = () => {
                 />
                 <div>
                   <div className="flex items-baseline">
-                    <p className="font-semibold mr-2">{message.sender}</p>
+                    <p className="font-semibold mr-2">{message.sender_username}</p>
                     <span className="text-xs text-gray-400">
                       {new Date(message.timestamp).toLocaleTimeString()}
                     </span>

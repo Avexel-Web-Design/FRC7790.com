@@ -10,6 +10,8 @@ import calendar from './calendar';
 import tasks from './tasks';
 import profile from './profile';
 
+import chat from './chat';
+
 const app = new Hono().basePath('/api');
 
 // Apply global middleware
@@ -24,6 +26,8 @@ app.route('/admin/users', adminUsers);
 app.route('/calendar', calendar);
 app.route('/tasks', tasks);
 app.route('/profile', profile);
+app.route('/chat', chat);
+
 
 // Health check endpoint
 app.get('/health', (c) => c.json({ 
