@@ -1,0 +1,24 @@
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  is_admin INTEGER NOT NULL DEFAULT 0
+);
+
+DROP TABLE IF EXISTS calendar_events;
+CREATE TABLE calendar_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  start_time TEXT NOT NULL,
+  end_time TEXT NOT NULL
+);
+
+DROP TABLE IF EXISTS tasks;
+CREATE TABLE tasks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  is_completed INTEGER NOT NULL DEFAULT 0,
+  due_date TEXT
+);

@@ -1,0 +1,1 @@
+{"root":["./functions/api/[[path]].ts","./functions/api/admin/users.ts","./functions/api/auth/login.ts","./functions/api/auth/middleware.ts","./functions/api/auth/register.ts","./functions/api/calendar/index.ts","./functions/api/middleware/index.ts","./functions/api/profile/index.ts","./functions/api/tasks/index.ts","./src/env.d.ts"],"errors":true,"version":"5.8.3"}

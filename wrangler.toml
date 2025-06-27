@@ -1,0 +1,13 @@
+name = "frc7790-com"
+main = "src/index.ts"
+compatibility_date = "2024-06-24"
+pages_build_output_dir = "dist"
+
+# Environment variables
+[vars]
+JWT_SECRET = "your-super-secret-jwt-key-change-this-in-production"
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "frc7790-com"
+database_id = "a389749e-1713-444e-8629-366287025a2e"

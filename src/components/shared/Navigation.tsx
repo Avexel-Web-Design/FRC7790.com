@@ -19,8 +19,14 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, [location]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,6 +72,13 @@ export default function Navigation() {
     // Otherwise navigate to search results
     navigate(`/search?q=${encodeURIComponent(query)}`);
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    navigate('/login');
+  };
+
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 transform ${
@@ -122,6 +135,39 @@ export default function Navigation() {
               </Link>
             </li>
           ))}
+          {isLoggedIn ? (
+            <>
+              <li>
+                <Link
+                  to="/dashboard"
+                  className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
+                    location.pathname === '/dashboard' ? 'text-baywatch-orange' : ''
+                  }`}
+                >
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block"
+                >
+                  Logout
+                </button>
+              </li>
+            </>
+          ) : (
+            <li>
+              <Link
+                to="/login"
+                className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
+                  location.pathname === '/login' ? 'text-baywatch-orange' : ''
+                }`}
+              >
+                Login
+              </Link>
+            </li>
+          )}
         </ul>
 
         {/* Mobile Menu Button */}
@@ -169,6 +215,38 @@ export default function Navigation() {
                 {item.name}
               </Link>
             ))}
+            {isLoggedIn ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                    location.pathname === '/dashboard' ? 'text-baywatch-orange' : ''
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                  className="block py-2 text-lg hover:text-baywatch-orange transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                  location.pathname === '/login' ? 'text-baywatch-orange' : ''
+                }`}
+                onClick={() => setIsOpen(false)}
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       )}

@@ -13,6 +13,10 @@ import Match from './components/pages/Match';
 import District from './components/pages/District';
 import Regional from './components/pages/Regional';
 import SearchResults from './components/pages/SearchResults';
+import Login from './components/pages/auth/Login';
+import Calendar from './components/pages/calendar/Calendar';
+import Tasks from './components/pages/tasks/Tasks';
+import Dashboard from './components/pages/Dashboard';
 
 function App() {
   return (
@@ -32,6 +36,11 @@ function App() {
           <Route path="/district" element={<District />} />
           <Route path="/regional" element={<Regional />} />
           <Route path="/search" element={<SearchResults />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/tasks" element={<Tasks />} />
         </Routes>
       </Layout>
     </Router>
