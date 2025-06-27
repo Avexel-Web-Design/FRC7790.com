@@ -17,6 +17,9 @@ import Login from './components/pages/auth/Login';
 import Calendar from './components/pages/calendar/Calendar';
 import Tasks from './components/pages/tasks/Tasks';
 import Dashboard from './components/pages/Dashboard';
+import Profile from './components/pages/Profile';
+import AdminUsers from './components/pages/admin/AdminUsers';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
   return (
@@ -37,10 +40,40 @@ function App() {
           <Route path="/regional" element={<Regional />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/tasks" element={<Tasks />} />
+          
+          {/* Protected Routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/calendar" element={
+            <ProtectedRoute>
+              <Calendar />
+            </ProtectedRoute>
+          } />
+          <Route path="/tasks" element={
+            <ProtectedRoute>
+              <Tasks />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          
+          {/* Admin Routes */}
+          <Route path="/admin" element={
+            <ProtectedRoute requireAdmin={true}>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/users" element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminUsers />
+            </ProtectedRoute>
+          } />
         </Routes>
       </Layout>
     </Router>

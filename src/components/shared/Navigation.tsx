@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface NavigationItem {
   name: string;
@@ -19,14 +20,9 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsLoggedIn(!!token);
-  }, [location]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,9 +70,8 @@ export default function Navigation() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
-    navigate('/login');
+    logout();
+    navigate('/');
   };
 
   return (
@@ -135,7 +130,7 @@ export default function Navigation() {
               </Link>
             </li>
           ))}
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <>
               <li>
                 <Link
@@ -147,6 +142,28 @@ export default function Navigation() {
                   Dashboard
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/profile"
+                  className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
+                    location.pathname === '/profile' ? 'text-baywatch-orange' : ''
+                  }`}
+                >
+                  Profile
+                </Link>
+              </li>
+              {user?.isAdmin && (
+                <li>
+                  <Link
+                    to="/admin/users"
+                    className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
+                      location.pathname === '/admin/users' ? 'text-baywatch-orange' : ''
+                    }`}
+                  >
+                    Admin
+                  </Link>
+                </li>
+              )}
               <li>
                 <button
                   onClick={handleLogout}
@@ -215,7 +232,7 @@ export default function Navigation() {
                 {item.name}
               </Link>
             ))}
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <>
                 <Link
                   to="/dashboard"
@@ -226,6 +243,44 @@ export default function Navigation() {
                 >
                   Dashboard
                 </Link>
+                <Link
+                  to="/calendar"
+                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                    location.pathname === '/calendar' ? 'text-baywatch-orange' : ''
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Calendar
+                </Link>
+                <Link
+                  to="/tasks"
+                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                    location.pathname === '/tasks' ? 'text-baywatch-orange' : ''
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Tasks
+                </Link>
+                <Link
+                  to="/profile"
+                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                    location.pathname === '/profile' ? 'text-baywatch-orange' : ''
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  Profile
+                </Link>
+                {user?.isAdmin && (
+                  <Link
+                    to="/admin/users"
+                    className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                      location.pathname === '/admin/users' ? 'text-baywatch-orange' : ''
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     handleLogout();

@@ -54,8 +54,8 @@ profile.get('/', async (c) => {
     return c.json({
       id: dbUser.id,
       username: dbUser.username,
-      isAdmin: !!dbUser.is_admin,
-      createdAt: dbUser.created_at
+      is_admin: !!dbUser.is_admin,
+      created_at: dbUser.created_at
     });
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -67,36 +67,60 @@ profile.get('/', async (c) => {
 profile.put('/', async (c) => {
   try {
     const user = c.get('user');
-    const { username } = await c.req.json();
+    const body = await c.req.json();
+    
+    // Handle password update
+    if (body.password) {
+      if (body.password.length < 6) {
+        return c.json({ error: 'Password must be at least 6 characters long' }, 400);
+      }
 
-    if (!username) {
-      return c.json({ error: 'Username is required' }, 400);
+      // Hash new password
+      const hashedPassword = await hashPassword(body.password);
+
+      // Update password
+      const { success } = await c.env.DB.prepare(
+        'UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+      )
+        .bind(hashedPassword, user.id)
+        .run();
+
+      if (success) {
+        return c.json({ message: 'Password updated successfully' });
+      }
+
+      return c.json({ error: 'Failed to update password' }, 500);
     }
 
-    if (username.length < 3) {
-      return c.json({ error: 'Username must be at least 3 characters long' }, 400);
+    // Handle username update
+    if (body.username) {
+      if (body.username.length < 3) {
+        return c.json({ error: 'Username must be at least 3 characters long' }, 400);
+      }
+
+      // Check if username is already taken by another user
+      const existingUser = await c.env.DB.prepare('SELECT id FROM users WHERE username = ? AND id != ?')
+        .bind(body.username, user.id)
+        .first();
+
+      if (existingUser) {
+        return c.json({ error: 'Username already taken' }, 409);
+      }
+
+      const { success } = await c.env.DB.prepare(
+        'UPDATE users SET username = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+      )
+        .bind(body.username, user.id)
+        .run();
+
+      if (success) {
+        return c.json({ message: 'Profile updated successfully' });
+      }
+
+      return c.json({ error: 'Failed to update profile' }, 500);
     }
 
-    // Check if username is already taken by another user
-    const existingUser = await c.env.DB.prepare('SELECT id FROM users WHERE username = ? AND id != ?')
-      .bind(username, user.id)
-      .first();
-
-    if (existingUser) {
-      return c.json({ error: 'Username already taken' }, 409);
-    }
-
-    const { success } = await c.env.DB.prepare(
-      'UPDATE users SET username = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-    )
-      .bind(username, user.id)
-      .run();
-
-    if (success) {
-      return c.json({ message: 'Profile updated successfully' });
-    }
-
-    return c.json({ error: 'Failed to update profile' }, 500);
+    return c.json({ error: 'No valid fields to update' }, 400);
   } catch (error) {
     console.error('Error updating user profile:', error);
     return c.json({ error: 'Internal server error' }, 500);

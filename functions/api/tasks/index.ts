@@ -21,7 +21,15 @@ tasks.use('*', authMiddleware);
 
 tasks.get('/', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare('SELECT * FROM tasks ORDER BY due_date ASC').all();
+    const { results } = await c.env.DB.prepare(`
+      SELECT t.*, 
+             u1.username as creator_username,
+             u2.username as assignee_username
+      FROM tasks t 
+      LEFT JOIN users u1 ON t.created_by = u1.id
+      LEFT JOIN users u2 ON t.assigned_to = u2.id
+      ORDER BY t.due_date ASC, t.created_at DESC
+    `).all();
     return c.json(results);
   } catch (error) {
     console.error('Error fetching tasks:', error);
@@ -31,21 +39,26 @@ tasks.get('/', async (c) => {
 
 tasks.post('/', async (c) => {
   try {
-    const { title, description, due_date } = await c.req.json();
+    const user = c.get('user');
+    const { title, description, assigned_to, due_date, priority } = await c.req.json();
 
     if (!title) {
       return c.json({ error: 'Title is required' }, 400);
     }
 
-    // Validate due_date if provided
-    if (due_date && isNaN(Date.parse(due_date))) {
-      return c.json({ error: 'Invalid due date format' }, 400);
+    // Validate priority
+    const validPriorities = ['low', 'medium', 'high'];
+    const taskPriority = priority && validPriorities.includes(priority) ? priority : 'medium';
+
+    // Validate due_date format if provided (YYYY-MM-DD)
+    if (due_date && !/^\d{4}-\d{2}-\d{2}$/.test(due_date)) {
+      return c.json({ error: 'Invalid due date format. Use YYYY-MM-DD' }, 400);
     }
 
     const { success } = await c.env.DB.prepare(
-      'INSERT INTO tasks (title, description, due_date) VALUES (?, ?, ?)'
+      'INSERT INTO tasks (title, description, assigned_to, created_by, due_date, priority) VALUES (?, ?, ?, ?, ?, ?)'
     )
-      .bind(title, description || null, due_date || null)
+      .bind(title, description || null, assigned_to || null, user.id, due_date || null, taskPriority)
       .run();
 
     if (success) {

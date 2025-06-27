@@ -21,7 +21,7 @@ calendar.use('*', authMiddleware);
 
 calendar.get('/', async (c) => {
   try {
-    const { results } = await c.env.DB.prepare('SELECT * FROM calendar_events ORDER BY start_time ASC').all();
+    const { results } = await c.env.DB.prepare('SELECT * FROM calendar_events ORDER BY event_date ASC, event_time ASC').all();
     return c.json(results);
   } catch (error) {
     console.error('Error fetching calendar events:', error);
@@ -31,21 +31,27 @@ calendar.get('/', async (c) => {
 
 calendar.post('/', async (c) => {
   try {
-    const { title, start_time, end_time } = await c.req.json();
+    const user = c.get('user');
+    const { title, description, event_date, event_time, location } = await c.req.json();
 
-    if (!title || !start_time || !end_time) {
-      return c.json({ error: 'Missing required fields: title, start_time, end_time' }, 400);
+    if (!title || !event_date) {
+      return c.json({ error: 'Missing required fields: title, event_date' }, 400);
     }
 
-    // Validate date format
-    if (isNaN(Date.parse(start_time)) || isNaN(Date.parse(end_time))) {
-      return c.json({ error: 'Invalid date format' }, 400);
+    // Validate date format (YYYY-MM-DD)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(event_date)) {
+      return c.json({ error: 'Invalid date format. Use YYYY-MM-DD' }, 400);
+    }
+
+    // Validate time format if provided (HH:MM)
+    if (event_time && !/^\d{2}:\d{2}$/.test(event_time)) {
+      return c.json({ error: 'Invalid time format. Use HH:MM' }, 400);
     }
 
     const { success } = await c.env.DB.prepare(
-      'INSERT INTO calendar_events (title, start_time, end_time) VALUES (?, ?, ?)'
+      'INSERT INTO calendar_events (title, description, event_date, event_time, location, created_by) VALUES (?, ?, ?, ?, ?, ?)'
     )
-      .bind(title, start_time, end_time)
+      .bind(title, description || null, event_date, event_time || null, location || null, user.id)
       .run();
 
     if (success) {
@@ -62,21 +68,26 @@ calendar.post('/', async (c) => {
 calendar.put('/:id', async (c) => {
   try {
     const { id } = c.req.param();
-    const { title, start_time, end_time } = await c.req.json();
+    const { title, description, event_date, event_time, location } = await c.req.json();
 
-    if (!title || !start_time || !end_time) {
-      return c.json({ error: 'Missing required fields: title, start_time, end_time' }, 400);
+    if (!title || !event_date) {
+      return c.json({ error: 'Missing required fields: title, event_date' }, 400);
     }
 
-    // Validate date format
-    if (isNaN(Date.parse(start_time)) || isNaN(Date.parse(end_time))) {
-      return c.json({ error: 'Invalid date format' }, 400);
+    // Validate date format (YYYY-MM-DD)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(event_date)) {
+      return c.json({ error: 'Invalid date format. Use YYYY-MM-DD' }, 400);
+    }
+
+    // Validate time format if provided (HH:MM)
+    if (event_time && !/^\d{2}:\d{2}$/.test(event_time)) {
+      return c.json({ error: 'Invalid time format. Use HH:MM' }, 400);
     }
 
     const { success } = await c.env.DB.prepare(
-      'UPDATE calendar_events SET title = ?, start_time = ?, end_time = ? WHERE id = ?'
+      'UPDATE calendar_events SET title = ?, description = ?, event_date = ?, event_time = ?, location = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
     )
-      .bind(title, start_time, end_time, id)
+      .bind(title, description || null, event_date, event_time || null, location || null, id)
       .run();
 
     if (success) {
