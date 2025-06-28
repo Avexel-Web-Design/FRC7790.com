@@ -17,7 +17,7 @@ import SearchResults from './components/pages/SearchResults';
 import Login from './components/pages/auth/Login';
 import Calendar from './components/pages/calendar/Calendar';
 import Tasks from './components/pages/tasks/Tasks';
-import Channels from './components/pages/Chat';
+import Channels from './components/pages/Channels';
 import Profile from './components/pages/Profile';
 import AdminUsers from './components/pages/admin/AdminUsers';
 import ProtectedRoute from './components/auth/ProtectedRoute';
