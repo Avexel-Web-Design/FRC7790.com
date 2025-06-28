@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-0GS2gV/checked-fetch.js
+// ../.wrangler/tmp/bundle-vWkOtr/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2609,7 +2609,7 @@ async function getChannels(c) {
   console.log("getChannels: Received request");
   try {
     const { results } = await c.env.DB.prepare(
-      "SELECT * FROM channels ORDER BY name ASC"
+      "SELECT * FROM channels ORDER BY position ASC"
     ).all();
     console.log("getChannels: Found channels", results);
     return new Response(JSON.stringify(results), {
@@ -2635,17 +2635,22 @@ async function createChannel(c) {
     if (existingChannel) {
       return new Response("Channel ID already exists", { status: 409 });
     }
+    const positionResult = await c.env.DB.prepare(
+      "SELECT COALESCE(MAX(position), 0) as max_pos FROM channels"
+    ).first();
+    const position = positionResult ? positionResult.max_pos + 1 : 1;
     const now = (/* @__PURE__ */ new Date()).toISOString();
-    console.log("createChannel: Inserting channel", { id, name, created_by, now });
+    console.log("createChannel: Inserting channel", { id, name, created_by, now, position });
     const result = await c.env.DB.prepare(
-      "INSERT INTO channels (id, name, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
-    ).bind(id, name, created_by, now, now).run();
+      "INSERT INTO channels (id, name, created_by, created_at, updated_at, position) VALUES (?, ?, ?, ?, ?, ?)"
+    ).bind(id, name, created_by, now, now, position).run();
     console.log("createChannel: Insert result", result);
     if (result.success) {
       return new Response(JSON.stringify({
         message: "Channel created",
         id,
-        name
+        name,
+        position
       }), {
         status: 201,
         headers: { "Content-Type": "application/json" }
@@ -2723,6 +2728,36 @@ async function deleteChannel(c) {
   }
 }
 __name(deleteChannel, "deleteChannel");
+async function reorderChannels(c) {
+  console.log("reorderChannels: Received request");
+  try {
+    const { channels } = await c.req.json();
+    console.log("reorderChannels: Parsed channels", channels);
+    if (!channels || !Array.isArray(channels) || channels.length === 0) {
+      return new Response("Channels array is required", { status: 400 });
+    }
+    const db = c.env.DB;
+    for (const channel of channels) {
+      console.log("reorderChannels: Updating channel position", channel);
+      await db.prepare(
+        "UPDATE channels SET position = ? WHERE id = ?"
+      ).bind(channel.position, channel.id).run();
+    }
+    const { results } = await db.prepare(
+      "SELECT * FROM channels ORDER BY position ASC"
+    ).all();
+    return new Response(JSON.stringify({
+      message: "Channels reordered",
+      channels: results
+    }), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Error reordering channels:", error);
+    return new Response("Error reordering channels: " + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
+__name(reorderChannels, "reorderChannels");
 
 // api/chat/index.ts
 var chat = new Hono2();
@@ -2766,6 +2801,7 @@ chat.get("/channels", getChannels);
 chat.post("/channels", createChannel);
 chat.put("/channels/:channelId", updateChannel);
 chat.delete("/channels/:channelId", deleteChannel);
+chat.post("/channels/reorder", reorderChannels);
 var chat_default = chat;
 
 // api/[[path]].ts
@@ -3298,7 +3334,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-0GS2gV/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-vWkOtr/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -3330,7 +3366,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-0GS2gV/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-vWkOtr/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

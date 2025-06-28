@@ -4,7 +4,8 @@ import {
   getChannels, 
   createChannel, 
   updateChannel, 
-  deleteChannel 
+  deleteChannel,
+  reorderChannels
 } from './channels';
 
 const chat = new Hono();
@@ -58,5 +59,6 @@ chat.get('/channels', getChannels);
 chat.post('/channels', createChannel);
 chat.put('/channels/:channelId', updateChannel);
 chat.delete('/channels/:channelId', deleteChannel);
+chat.post('/channels/reorder', reorderChannels);
 
 export default chat;

@@ -14,6 +14,7 @@ interface Message {
 interface Channel {
   id: string;
   name: string;
+  position?: number;
 }
 
 const Chat: React.FC = () => {
@@ -27,6 +28,11 @@ const Chat: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isChannelsLoading, setIsChannelsLoading] = useState(true);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
+  
+  // Drag and drop state
+  const [draggedChannel, setDraggedChannel] = useState<Channel | null>(null);
+  const [dragOverChannelId, setDragOverChannelId] = useState<string | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
   
   // Admin modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -294,6 +300,121 @@ const Chat: React.FC = () => {
       setError('Error deleting channel. Check console for details.');
     }
   };
+  
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, channel: Channel) => {
+    if (!user?.isAdmin) return;
+    
+    console.log('Drag start:', channel.id);
+    setDraggedChannel(channel);
+    
+    // Make the drag image transparent (optional)
+    const dragImg = document.createElement('span');
+    dragImg.innerHTML = channel.name;
+    dragImg.style.position = 'absolute';
+    dragImg.style.top = '-9999px';
+    document.body.appendChild(dragImg);
+    e.dataTransfer.setDragImage(dragImg, 0, 0);
+    e.dataTransfer.effectAllowed = 'move';
+    
+    setTimeout(() => {
+      document.body.removeChild(dragImg);
+    }, 0);
+  };
+  
+  const handleDragOver = (e: React.DragEvent, channelId: string) => {
+    e.preventDefault();
+    if (!user?.isAdmin || !draggedChannel || draggedChannel.id === channelId) return;
+    
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverChannelId(channelId);
+  };
+  
+  const handleDragLeave = () => {
+    setDragOverChannelId(null);
+  };
+  
+  const handleDrop = async (e: React.DragEvent, targetChannel: Channel) => {
+    e.preventDefault();
+    if (!user?.isAdmin || !draggedChannel || draggedChannel.id === targetChannel.id) {
+      setDraggedChannel(null);
+      setDragOverChannelId(null);
+      return;
+    }
+    
+    console.log('Drop:', draggedChannel.id, 'onto', targetChannel.id);
+    setDragOverChannelId(null);
+    
+    // Create a new array with reordered channels
+    const currentChannels = [...channels];
+    
+    // Find indices of source and target
+    const draggedIndex = currentChannels.findIndex(c => c.id === draggedChannel.id);
+    const targetIndex = currentChannels.findIndex(c => c.id === targetChannel.id);
+    
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedChannel(null);
+      return;
+    }
+    
+    // Remove dragged item
+    const [draggedItem] = currentChannels.splice(draggedIndex, 1);
+    
+    // Insert at target position
+    currentChannels.splice(targetIndex, 0, draggedItem);
+    
+    // Update positions
+    const updatedChannels = currentChannels.map((channel, index) => ({
+      ...channel,
+      position: index + 1
+    }));
+    
+    // Optimistically update UI
+    setChannels(updatedChannels);
+    setDraggedChannel(null);
+    
+    // Send update to server
+    try {
+      setIsReordering(true);
+      const response = await frcAPI.post('/chat/channels/reorder', {
+        channels: updatedChannels.map(c => ({ id: c.id, position: c.position }))
+      });
+      
+      if (!response.ok) {
+        // If error, refresh channels to get server state
+        const errorText = await response.text();
+        console.error('Failed to reorder channels:', response.statusText, errorText);
+        setError(`Failed to reorder channels: ${response.status} ${response.statusText}`);
+        
+        // Refresh channels
+        const channelsResponse = await frcAPI.get('/chat/channels');
+        if (channelsResponse.ok) {
+          const serverChannels = await channelsResponse.json();
+          setChannels(serverChannels);
+        }
+      }
+    } catch (error) {
+      console.error('Error reordering channels:', error);
+      setError('Error reordering channels. Check console for details.');
+      
+      // Refresh channels to get server state
+      try {
+        const channelsResponse = await frcAPI.get('/chat/channels');
+        if (channelsResponse.ok) {
+          const serverChannels = await channelsResponse.json();
+          setChannels(serverChannels);
+        }
+      } catch {
+        // Ignore error from refresh attempt
+      }
+    } finally {
+      setIsReordering(false);
+    }
+  };
+
+  const handleChannelClick = (channel: Channel) => {
+    setSelectedChannel(channel);
+  };
 
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100">
@@ -321,13 +442,27 @@ const Chat: React.FC = () => {
         ) : (
           <nav className="flex-1 p-2 space-y-2">
             {channels.map((channel) => (
-              <div key={channel.id} className="flex items-center justify-between">
+              <div 
+                key={channel.id} 
+                className={`flex items-center justify-between ${
+                  dragOverChannelId === channel.id ? 'border-2 border-blue-500 border-dashed bg-blue-900 bg-opacity-25' : ''
+                } ${
+                  draggedChannel?.id === channel.id ? 'opacity-50' : ''
+                } rounded-md`}
+                draggable={user?.isAdmin}
+                onDragStart={(e) => handleDragStart(e, channel)}
+                onDragOver={(e) => handleDragOver(e, channel.id)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, channel)}
+              >
                 <button
-                  onClick={() => setSelectedChannel(channel)}
+                  onClick={() => handleChannelClick(channel)}
                   className={`flex-1 text-left py-2 px-3 rounded-md transition-colors duration-200 ${
-                    selectedChannel?.id === channel.id
-                      ? 'bg-blue-700 text-white'
+                    selectedChannel?.id === channel.id 
+                      ? 'bg-blue-700 text-white' 
                       : 'hover:bg-gray-700'
+                  } ${
+                    user?.isAdmin ? 'cursor-move' : ''
                   }`}
                 >
                   {channel.name}
