@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-8L0ogD/checked-fetch.js
+// ../.wrangler/tmp/bundle-bRSIaV/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2746,13 +2746,17 @@ async function createChannel(c) {
     const position = positionResult ? positionResult.max_pos + 1 : 1;
     const now = (/* @__PURE__ */ new Date()).toISOString();
     console.log("createChannel: Inserting channel", { id, name, created_by, now, position });
+    let memberIds = Array.isArray(members) ? [...members] : [];
+    if (is_private && created_by && !memberIds.includes(Number(created_by))) {
+      memberIds.push(Number(created_by));
+    }
     const result = await c.env.DB.prepare(
       "INSERT INTO channels (id, name, created_by, created_at, updated_at, position, is_private) VALUES (?, ?, ?, ?, ?, ?, ?)"
     ).bind(id, name, created_by, now, now, position, is_private ? 1 : 0).run();
     console.log("createChannel: Insert result", result);
     if (result.success) {
-      if (is_private && Array.isArray(members)) {
-        for (const memberId of members) {
+      if (is_private) {
+        for (const memberId of memberIds) {
           try {
             await c.env.DB.prepare(
               "INSERT INTO channel_members (channel_id, user_id) VALUES (?, ?)"
@@ -2969,7 +2973,7 @@ app.get("/", (c) => c.json({
 }));
 var onRequest = handle(app);
 
-// ../.wrangler/tmp/pages-RCvumC/functionsRoutes-0.16642813117097943.mjs
+// ../.wrangler/tmp/pages-oqvo7q/functionsRoutes-0.43386697715397293.mjs
 var routes = [
   {
     routePath: "/api/:path*",
@@ -3467,7 +3471,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-8L0ogD/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-bRSIaV/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -3499,7 +3503,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-8L0ogD/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-bRSIaV/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -3599,4 +3603,4 @@ export {
   __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default as default
 };
-//# sourceMappingURL=functionsWorker-0.8673010388119462.mjs.map
+//# sourceMappingURL=functionsWorker-0.6205436368097821.mjs.map

@@ -10,11 +10,38 @@ export async function getMessages(c: Context): Promise<Response> {
   const { channelId } = c.req.param();
   console.log("getMessages: Channel ID", channelId);
   
+  const userIdStr = c.req.query('user_id');
+  const userId = userIdStr ? Number(userIdStr) : undefined;
+  
   if (!channelId) {
     return new Response('Channel ID is required', { status: 400 });
   }
 
   try {
+    // Check channel privacy
+    const channelRow = await c.env.DB.prepare('SELECT is_private FROM channels WHERE id = ?').bind(channelId).first();
+    if (!channelRow) {
+      return new Response('Channel not found', { status: 404 });
+    }
+
+    const isPrivate = (channelRow as { is_private: number }).is_private === 1;
+    if (isPrivate) {
+      if (!userId) {
+        return new Response('Unauthorized', { status: 401 });
+      }
+
+      // Check if user is member or admin
+      const adminRow = await c.env.DB.prepare('SELECT is_admin FROM users WHERE id = ?').bind(userId).first();
+      const isAdmin = adminRow && (adminRow as { is_admin: number }).is_admin === 1;
+
+      if (!isAdmin) {
+        const memberRow = await c.env.DB.prepare('SELECT 1 FROM channel_members WHERE channel_id = ? AND user_id = ?').bind(channelId, userId).first();
+        if (!memberRow) {
+          return new Response('Forbidden', { status: 403 });
+        }
+      }
+    }
+
     console.log("getMessages: Fetching messages for channel", channelId);
     const { results } = await c.env.DB.prepare(
       'SELECT messages.*, users.username as sender_username, users.avatar FROM messages JOIN users ON messages.sender_id = users.id WHERE channel_id = ? ORDER BY timestamp ASC'
@@ -37,6 +64,9 @@ export async function sendMessage(c: Context): Promise<Response> {
   const { channelId } = c.req.param();
   console.log("sendMessage: Channel ID", channelId);
   
+  const userIdStr = c.req.query('user_id');
+  const userIdFromQuery = userIdStr ? Number(userIdStr) : undefined;
+
   if (!channelId) {
     return new Response('Channel ID is required', { status: 400 });
   }
@@ -47,6 +77,30 @@ export async function sendMessage(c: Context): Promise<Response> {
     
     if (!content || !sender_id) {
       return new Response('Content and sender_id are required', { status: 400 });
+    }
+
+    const effectiveUserId = userIdFromQuery || Number(sender_id);
+    if (!effectiveUserId) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    // Check channel privacy
+    const chanRow = await c.env.DB.prepare('SELECT is_private FROM channels WHERE id = ?').bind(channelId).first();
+    if (!chanRow) {
+      return new Response('Channel not found', { status: 404 });
+    }
+
+    const isPrivateChan = (chanRow as { is_private: number }).is_private === 1;
+    if (isPrivateChan) {
+      // Allow if admin or member
+      const admRow = await c.env.DB.prepare('SELECT is_admin FROM users WHERE id = ?').bind(effectiveUserId).first();
+      const isAdmin = admRow && (admRow as { is_admin: number }).is_admin === 1;
+      if (!isAdmin) {
+        const membRow = await c.env.DB.prepare('SELECT 1 FROM channel_members WHERE channel_id = ? AND user_id = ?').bind(channelId, effectiveUserId).first();
+        if (!membRow) {
+          return new Response('Forbidden', { status: 403 });
+        }
+      }
     }
 
     const timestamp = new Date().toISOString();

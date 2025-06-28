@@ -15,6 +15,13 @@ interface Channel {
   id: string;
   name: string;
   position?: number;
+  is_private?: number; // 0 = public, 1 = private
+}
+
+interface SimpleUser {
+  id: number;
+  username: string;
+  is_admin?: number;
 }
 
 const Chat: React.FC = () => {
@@ -42,6 +49,11 @@ const Chat: React.FC = () => {
   const [channelId, setChannelId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Privacy & membership state
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState<SimpleUser[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
+
   const generateColor = (username: string): string => {
     let hash = 0;
     for (let i = 0; i < username.length; i++) {
@@ -62,7 +74,7 @@ const Chat: React.FC = () => {
       setError(null);
       try {
         console.log('Fetching channels...');
-        const response = await frcAPI.get('/chat/channels');
+        const response = await frcAPI.get(`/chat/channels?user_id=${user?.id ?? ''}`);
         console.log('Channels response:', response);
         
         if (response.ok) {
@@ -95,7 +107,7 @@ const Chat: React.FC = () => {
       }
     };
     fetchChannels();
-  }, []);
+  }, [user]);
 
   // Fetch messages for selected channel
   useEffect(() => {
@@ -105,7 +117,7 @@ const Chat: React.FC = () => {
         setError(null);
         try {
           console.log(`Fetching messages for channel: ${selectedChannel.id}`);
-          const response = await frcAPI.get(`/chat/messages/${selectedChannel.id}`);
+          const response = await frcAPI.get(`/chat/messages/${selectedChannel.id}?user_id=${user?.id ?? ''}`);
           console.log('Messages response:', response);
           
           if (response.ok) {
@@ -209,20 +221,44 @@ const Chat: React.FC = () => {
     }
   };
 
+  const loadUsers = async () => {
+    try {
+      const resp = await frcAPI.get('/admin/users');
+      if (resp.ok) {
+        const data = await resp.json();
+        setAvailableUsers(data);
+      }
+    } catch (e) {
+      console.error('Error loading users', e);
+    }
+  };
+
   const openCreateModal = () => {
     setModalType('create');
     setChannelName('');
     setChannelId('');
+    setIsPrivate(false);
+    setSelectedMembers(user ? [user.id] : []);
     setIsModalOpen(true);
     setError(null);
+
+    if (user?.isAdmin) {
+      loadUsers();
+    }
   };
 
   const openEditModal = (channel: Channel) => {
     setModalType('edit');
     setChannelName(channel.name.replace('# ', ''));
     setChannelId(channel.id);
+    setIsPrivate(channel.is_private === 1);
+    setSelectedMembers([]);
     setIsModalOpen(true);
     setError(null);
+
+    if (user?.isAdmin) {
+      loadUsers();
+    }
   };
 
   const handleCreateChannel = async () => {
@@ -241,13 +277,15 @@ const Chat: React.FC = () => {
         const response = await frcAPI.post('/chat/channels', {
           id,
           name: `# ${channelName.trim()}`,
-          created_by: user.id
+          created_by: user.id,
+          is_private: isPrivate,
+          members: selectedMembers
         });
         console.log('Create channel response:', response);
         
         if (response.ok) {
           // Refresh channels list
-          const channelsResponse = await frcAPI.get('/chat/channels');
+          const channelsResponse = await frcAPI.get(`/chat/channels?user_id=${user.id}`);
           if (channelsResponse.ok) {
             const updatedChannels = await channelsResponse.json();
             setChannels(updatedChannels);
@@ -257,6 +295,8 @@ const Chat: React.FC = () => {
           setIsModalOpen(false);
           setChannelName('');
           setChannelId('');
+          setIsPrivate(false);
+          setSelectedMembers([]);
         } else {
           const errorText = await response.text();
           console.error('Failed to create channel:', response.statusText, errorText);
@@ -265,13 +305,15 @@ const Chat: React.FC = () => {
       } else {
         console.log('Updating channel:', { id, name: `# ${channelName.trim()}` });
         const response = await frcAPI.put(`/chat/channels/${id}`, {
-          name: `# ${channelName.trim()}`
+          name: `# ${channelName.trim()}`,
+          is_private: isPrivate,
+          members: selectedMembers
         });
         console.log('Update channel response:', response);
         
         if (response.ok) {
           // Refresh channels list
-          const channelsResponse = await frcAPI.get('/chat/channels');
+          const channelsResponse = await frcAPI.get(`/chat/channels?user_id=${user.id}`);
           if (channelsResponse.ok) {
             const updatedChannels = await channelsResponse.json();
             setChannels(updatedChannels);
@@ -281,6 +323,8 @@ const Chat: React.FC = () => {
           setIsModalOpen(false);
           setChannelName('');
           setChannelId('');
+          setIsPrivate(false);
+          setSelectedMembers([]);
         } else {
           const errorText = await response.text();
           console.error('Failed to update channel:', response.statusText, errorText);
@@ -322,7 +366,7 @@ const Chat: React.FC = () => {
         }
         
         // Refresh channels list
-        const channelsResponse = await frcAPI.get('/chat/channels');
+        const channelsResponse = await frcAPI.get(`/chat/channels?user_id=${user?.id ?? ''}`);
         if (channelsResponse.ok) {
           const updatedChannels = await channelsResponse.json();
           setChannels(updatedChannels);
@@ -424,7 +468,7 @@ const Chat: React.FC = () => {
         setError(`Failed to reorder channels: ${response.status} ${response.statusText}`);
         
         // Refresh channels
-        const channelsResponse = await frcAPI.get('/chat/channels');
+        const channelsResponse = await frcAPI.get(`/chat/channels?user_id=${user?.id ?? ''}`);
         if (channelsResponse.ok) {
           const serverChannels = await channelsResponse.json();
           setChannels(serverChannels);
@@ -436,7 +480,7 @@ const Chat: React.FC = () => {
       
       // Refresh channels to get server state
       try {
-        const channelsResponse = await frcAPI.get('/chat/channels');
+        const channelsResponse = await frcAPI.get(`/chat/channels?user_id=${user?.id ?? ''}`);
         if (channelsResponse.ok) {
           const serverChannels = await channelsResponse.json();
           setChannels(serverChannels);
@@ -670,6 +714,46 @@ const Chat: React.FC = () => {
                   />
                 </div>
               </div>
+              {/* Privacy toggle */}
+              <div className="mb-4">
+                <label className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-4 w-4 text-blue-600"
+                    checked={isPrivate}
+                    onChange={(e) => setIsPrivate(e.target.checked)}
+                  />
+                  <span className="ml-2">Private channel</span>
+                </label>
+              </div>
+
+              {/* Members selection if private */}
+              {isPrivate && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Select members</label>
+                  <div className="max-h-40 overflow-y-auto bg-gray-700 border border-gray-600 rounded-md p-2">
+                    {availableUsers.length === 0 && <p className="text-gray-400 text-sm">No users found.</p>}
+                    {availableUsers.map((u) => (
+                      <label key={u.id} className="flex items-center space-x-2 py-1">
+                        <input
+                          type="checkbox"
+                          className="form-checkbox h-4 w-4 text-blue-600"
+                          checked={selectedMembers.includes(u.id)}
+                          onChange={() => {
+                            setSelectedMembers((prev) =>
+                              prev.includes(u.id)
+                                ? prev.filter((id) => id !== u.id)
+                                : [...prev, u.id]
+                            );
+                          }}
+                        />
+                        <span>{u.username}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {error && (
                 <div className="mb-4 bg-red-500 bg-opacity-25 border border-red-500 text-red-100 p-2 rounded">
                   {error}

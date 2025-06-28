@@ -2585,10 +2585,30 @@ async function getMessages(c) {
   console.log("getMessages: Received request");
   const { channelId } = c.req.param();
   console.log("getMessages: Channel ID", channelId);
+  const userIdStr = c.req.query("user_id");
+  const userId = userIdStr ? Number(userIdStr) : void 0;
   if (!channelId) {
     return new Response("Channel ID is required", { status: 400 });
   }
   try {
+    const channelRow = await c.env.DB.prepare("SELECT is_private FROM channels WHERE id = ?").bind(channelId).first();
+    if (!channelRow) {
+      return new Response("Channel not found", { status: 404 });
+    }
+    const isPrivate = channelRow.is_private === 1;
+    if (isPrivate) {
+      if (!userId) {
+        return new Response("Unauthorized", { status: 401 });
+      }
+      const adminRow = await c.env.DB.prepare("SELECT is_admin FROM users WHERE id = ?").bind(userId).first();
+      const isAdmin = adminRow && adminRow.is_admin === 1;
+      if (!isAdmin) {
+        const memberRow = await c.env.DB.prepare("SELECT 1 FROM channel_members WHERE channel_id = ? AND user_id = ?").bind(channelId, userId).first();
+        if (!memberRow) {
+          return new Response("Forbidden", { status: 403 });
+        }
+      }
+    }
     console.log("getMessages: Fetching messages for channel", channelId);
     const { results } = await c.env.DB.prepare(
       "SELECT messages.*, users.username as sender_username, users.avatar FROM messages JOIN users ON messages.sender_id = users.id WHERE channel_id = ? ORDER BY timestamp ASC"
@@ -2608,6 +2628,8 @@ async function sendMessage(c) {
   console.log("sendMessage: Received request");
   const { channelId } = c.req.param();
   console.log("sendMessage: Channel ID", channelId);
+  const userIdStr = c.req.query("user_id");
+  const userIdFromQuery = userIdStr ? Number(userIdStr) : void 0;
   if (!channelId) {
     return new Response("Channel ID is required", { status: 400 });
   }
@@ -2616,6 +2638,25 @@ async function sendMessage(c) {
     console.log("sendMessage: Parsed body", { content, sender_id });
     if (!content || !sender_id) {
       return new Response("Content and sender_id are required", { status: 400 });
+    }
+    const effectiveUserId = userIdFromQuery || Number(sender_id);
+    if (!effectiveUserId) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+    const chanRow = await c.env.DB.prepare("SELECT is_private FROM channels WHERE id = ?").bind(channelId).first();
+    if (!chanRow) {
+      return new Response("Channel not found", { status: 404 });
+    }
+    const isPrivateChan = chanRow.is_private === 1;
+    if (isPrivateChan) {
+      const admRow = await c.env.DB.prepare("SELECT is_admin FROM users WHERE id = ?").bind(effectiveUserId).first();
+      const isAdmin = admRow && admRow.is_admin === 1;
+      if (!isAdmin) {
+        const membRow = await c.env.DB.prepare("SELECT 1 FROM channel_members WHERE channel_id = ? AND user_id = ?").bind(channelId, effectiveUserId).first();
+        if (!membRow) {
+          return new Response("Forbidden", { status: 403 });
+        }
+      }
     }
     const timestamp = (/* @__PURE__ */ new Date()).toISOString();
     console.log("sendMessage: Inserting message", { channelId, sender_id, timestamp });
@@ -2686,11 +2727,31 @@ __name2(deleteMessage, "deleteMessage");
 async function getChannels(c) {
   console.log("getChannels: Received request");
   try {
-    const { results } = await c.env.DB.prepare(
-      "SELECT * FROM channels ORDER BY position ASC"
-    ).all();
-    console.log("getChannels: Found channels", results);
-    return new Response(JSON.stringify(results), {
+    const userIdStr = c.req.query("user_id");
+    let channels;
+    if (userIdStr) {
+      const userId = Number(userIdStr);
+      const adminRow = await c.env.DB.prepare("SELECT is_admin FROM users WHERE id = ?").bind(userId).first();
+      const isAdmin = adminRow && adminRow.is_admin === 1;
+      if (isAdmin) {
+        const { results } = await c.env.DB.prepare("SELECT * FROM channels ORDER BY position ASC").all();
+        channels = results;
+      } else {
+        const { results } = await c.env.DB.prepare(
+          `SELECT DISTINCT channels.*
+           FROM channels
+           LEFT JOIN channel_members ON channels.id = channel_members.channel_id AND channel_members.user_id = ?
+           WHERE channels.is_private = 0 OR channel_members.user_id = ?
+           ORDER BY channels.position ASC`
+        ).bind(userId, userId).all();
+        channels = results;
+      }
+    } else {
+      const { results } = await c.env.DB.prepare("SELECT * FROM channels WHERE is_private = 0 ORDER BY position ASC").all();
+      channels = results;
+    }
+    console.log("getChannels: Found channels", channels);
+    return new Response(JSON.stringify(channels), {
       headers: { "Content-Type": "application/json" }
     });
   } catch (error) {
@@ -2703,8 +2764,8 @@ __name2(getChannels, "getChannels");
 async function createChannel(c) {
   console.log("createChannel: Received request");
   try {
-    const { id, name, created_by } = await c.req.json();
-    console.log("createChannel: Parsed body", { id, name, created_by });
+    const { id, name, created_by, is_private = false, members = [] } = await c.req.json();
+    console.log("createChannel: Parsed body", { id, name, created_by, is_private, members });
     if (!id || !name) {
       return new Response("Channel ID and name are required", { status: 400 });
     }
@@ -2721,15 +2782,27 @@ async function createChannel(c) {
     const now = (/* @__PURE__ */ new Date()).toISOString();
     console.log("createChannel: Inserting channel", { id, name, created_by, now, position });
     const result = await c.env.DB.prepare(
-      "INSERT INTO channels (id, name, created_by, created_at, updated_at, position) VALUES (?, ?, ?, ?, ?, ?)"
-    ).bind(id, name, created_by, now, now, position).run();
+      "INSERT INTO channels (id, name, created_by, created_at, updated_at, position, is_private) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    ).bind(id, name, created_by, now, now, position, is_private ? 1 : 0).run();
     console.log("createChannel: Insert result", result);
     if (result.success) {
+      if (is_private && Array.isArray(members)) {
+        for (const memberId of members) {
+          try {
+            await c.env.DB.prepare(
+              "INSERT INTO channel_members (channel_id, user_id) VALUES (?, ?)"
+            ).bind(id, memberId).run();
+          } catch (memberErr) {
+            console.error("Error adding channel member:", memberErr);
+          }
+        }
+      }
       return new Response(JSON.stringify({
         message: "Channel created",
         id,
         name,
-        position
+        position,
+        is_private
       }), {
         status: 201,
         headers: { "Content-Type": "application/json" }
@@ -2748,22 +2821,35 @@ async function updateChannel(c) {
   console.log("updateChannel: Received request");
   try {
     const { channelId } = c.req.param();
-    const { name } = await c.req.json();
-    console.log("updateChannel: Parsed data", { channelId, name });
+    const { name, is_private, members = [] } = await c.req.json();
+    console.log("updateChannel: Parsed data", { channelId, name, is_private, members });
     if (!name) {
       return new Response("Channel name is required", { status: 400 });
     }
     const now = (/* @__PURE__ */ new Date()).toISOString();
     console.log("updateChannel: Updating channel", { channelId, name, now });
     const result = await c.env.DB.prepare(
-      "UPDATE channels SET name = ?, updated_at = ? WHERE id = ?"
-    ).bind(name, now, channelId).run();
+      "UPDATE channels SET name = ?, is_private = ?, updated_at = ? WHERE id = ?"
+    ).bind(name, is_private ? 1 : 0, now, channelId).run();
     console.log("updateChannel: Update result", result);
     if (result.success) {
+      if (is_private !== void 0) {
+        await c.env.DB.prepare("DELETE FROM channel_members WHERE channel_id = ?").bind(channelId).run();
+        if (is_private && Array.isArray(members)) {
+          for (const memberId of members) {
+            try {
+              await c.env.DB.prepare("INSERT INTO channel_members (channel_id, user_id) VALUES (?, ?)").bind(channelId, memberId).run();
+            } catch (memberErr) {
+              console.error("Error updating channel member:", memberErr);
+            }
+          }
+        }
+      }
       return new Response(JSON.stringify({
         message: "Channel updated",
         id: channelId,
-        name
+        name,
+        is_private
       }), {
         headers: { "Content-Type": "application/json" }
       });
@@ -2785,6 +2871,8 @@ async function deleteChannel(c) {
     if (channelId === "general") {
       return new Response("Cannot delete the general channel", { status: 403 });
     }
+    console.log("deleteChannel: Deleting channel members for channel", channelId);
+    await c.env.DB.prepare("DELETE FROM channel_members WHERE channel_id = ?").bind(channelId).run();
     console.log("deleteChannel: Deleting messages for channel", channelId);
     await c.env.DB.prepare(
       "DELETE FROM messages WHERE channel_id = ?"
