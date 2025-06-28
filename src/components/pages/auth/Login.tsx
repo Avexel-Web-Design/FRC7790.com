@@ -47,7 +47,7 @@ const Login: React.FC = () => {
           
           <div>
             <input
-              className="bg-transparent shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-baywatch-orange leading-tight focus:outline-none focus:shadow-outline focus:border-baywatch-orange"
+              className="bg-transparent shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-baywatch-orange leading-tight focus:outline-none focus:shadow-outline focus:border-baywatch-orange [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:text-baywatch-orange [&:-webkit-autofill]:shadow-[0_0_0_1000px_transparent_inset]"
               id="username"
               type="text"
               placeholder="Name"
@@ -59,7 +59,7 @@ const Login: React.FC = () => {
           
           <div>
             <input
-              className="bg-transparent shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-baywatch-orange leading-tight focus:outline-none focus:shadow-outline focus:border-baywatch-orange"
+              className="bg-transparent shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-baywatch-orange leading-tight focus:outline-none focus:shadow-outline focus:border-baywatch-orange [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:text-baywatch-orange [&:-webkit-autofill]:shadow-[0_0_0_1000px_transparent_inset]"
               id="password"
               type="password"
               placeholder="Password"
@@ -80,6 +80,20 @@ const Login: React.FC = () => {
           </div>
         </form>
       </div>
+      <style>
+        {`
+          /* Global styles to override autofill */
+          input:-webkit-autofill,
+          input:-webkit-autofill:hover,
+          input:-webkit-autofill:focus,
+          input:-webkit-autofill:active {
+            transition: background-color 5000s ease-in-out 0s;
+            -webkit-text-fill-color: rgb(249, 115, 22) !important;
+            box-shadow: 0 0 0 1000px transparent inset !important;
+            background-color: transparent !important;
+          }
+        `}
+      </style>
     </div>
   );
 };
