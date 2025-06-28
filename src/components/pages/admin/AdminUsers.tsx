@@ -315,7 +315,7 @@ const AdminUsers: React.FC = () => {
             )}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Username</label>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
                 <input
                   type="text"
                   value={newUser.username}

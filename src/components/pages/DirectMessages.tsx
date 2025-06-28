@@ -51,14 +51,12 @@ const DirectMessages: React.FC = () => {
       try {
         setIsUsersLoading(true);
         setError(null);
-        // Attempt to fetch via admin endpoint first (works for admins)
-        const resp = await frcAPI.get('/admin/users');
+        const resp = await frcAPI.get('/chat/users');
         if (resp.ok) {
           const data = await resp.json();
           const list = (data as SimpleUser[]).filter(u => u.id !== user?.id);
           setUsers(list);
         } else {
-          // Fallback – try profile endpoint of every user id range (not implemented) or skip
           setUsers([]);
         }
       } catch (err) {

@@ -7,6 +7,7 @@ import {
   deleteChannel,
   reorderChannels
 } from './channels';
+import { getUsers } from './users';
 
 const chat = new Hono();
 
@@ -61,5 +62,8 @@ chat.post('/channels', createChannel);
 chat.put('/channels/:channelId', updateChannel);
 chat.delete('/channels/:channelId', deleteChannel);
 chat.post('/channels/reorder', reorderChannels);
+
+// Users endpoint (public to authenticated users)
+chat.get('/users', getUsers);
 
 export default chat;
