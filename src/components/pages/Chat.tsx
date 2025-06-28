@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { frcAPI } from '../../utils/frcAPI';
+import { generateColor } from '../../utils/color';
 
 interface Message {
   id: number;
@@ -53,19 +54,6 @@ const Chat: React.FC = () => {
   const [isPrivate, setIsPrivate] = useState(false);
   const [availableUsers, setAvailableUsers] = useState<SimpleUser[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
-
-  const generateColor = (username: string): string => {
-    let hash = 0;
-    for (let i = 0; i < username.length; i++) {
-      hash = username.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    let color = '#';
-    for (let i = 0; i < 3; i++) {
-      const value = (hash >> (i * 8)) & 0xFF;
-      color += ('00' + value.toString(16)).substr(-2);
-    }
-    return color;
-  };
 
   // Fetch channels
   useEffect(() => {
@@ -592,7 +580,7 @@ const Chat: React.FC = () => {
           <div className="flex items-center">
             <div
               className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
-              style={{ backgroundColor: userColors.get(user?.username || '') || '#007bff' }}
+              style={{ backgroundColor: user?.username ? generateColor(user.username) : '#007bff' }}
             >
               {user?.username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
             </div>
@@ -623,7 +611,7 @@ const Chat: React.FC = () => {
                 <div key={message.id} className="flex items-start mb-4 group">
                   <div
                     className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
-                    style={{ backgroundColor: userColors.get(message.sender_username) || '#cccccc' }}
+                    style={{ backgroundColor: generateColor(message.sender_username) }}
                   >
                     {message.sender_username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || '??'}
                   </div>

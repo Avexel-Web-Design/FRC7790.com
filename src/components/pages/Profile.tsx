@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { frcAPI } from '../../utils/frcAPI';
+import { generateColor } from '../../utils/color';
 
 interface Profile {
   id: number;
@@ -22,19 +23,6 @@ const Profile: React.FC = () => {
   const [newUsername, setNewUsername] = useState('');
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [usernameMessage, setUsernameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  const generateColor = (username: string): string => {
-    let hash = 0;
-    for (let i = 0; i < username.length; i++) {
-      hash = username.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    let color = '#';
-    for (let i = 0; i < 3; i++) {
-      const value = (hash >> (i * 8)) & 0xFF;
-      color += ('00' + value.toString(16)).substr(-2);
-    }
-    return color;
-  };
 
   useEffect(() => {
     fetchProfile();
