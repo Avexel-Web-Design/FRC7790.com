@@ -21,6 +21,7 @@ import Channels from './components/pages/Channels';
 import Profile from './components/pages/Profile';
 import AdminUsers from './components/pages/admin/AdminUsers';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import DirectMessages from './components/pages/DirectMessages';
 
 function App() {
   return (
@@ -64,6 +65,7 @@ function App() {
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/messages" element={<DirectMessages />} />
         </Route>
 
         {/* Admin Routes */}
