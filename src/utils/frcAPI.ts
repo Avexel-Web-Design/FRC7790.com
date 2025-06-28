@@ -154,6 +154,9 @@ export class FRCAPIService {
       'Content-Type': 'application/json',
     };
 
+    console.log(`API Request: ${method} ${path}`);
+    console.log('Token:', token ? `${token.substring(0, 15)}...` : 'No token');
+
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -165,9 +168,19 @@ export class FRCAPIService {
 
     if (data) {
       config.body = JSON.stringify(data);
+      console.log('Request data:', data);
     }
 
-    return fetch(`/api${path}`, config);
+    console.log('Request headers:', headers);
+    
+    try {
+      const response = await fetch(`/api${path}`, config);
+      console.log(`Response status: ${response.status}`);
+      return response;
+    } catch (error) {
+      console.error(`API request error for ${method} ${path}:`, error);
+      throw error;
+    }
   }
 
   async get(path: string): Promise<Response> {

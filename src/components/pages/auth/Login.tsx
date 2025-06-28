@@ -31,14 +31,14 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gray-500">
+    <div className="min-h-screen flex justify-center items-center bg-black">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-baywatch-orange">
             Sign in to FRC 7790
           </h2>
         </div>
-        <form className="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="card-gradient shadow-lg rounded-lg px-8 pt-6 pb-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
               {error}
@@ -46,11 +46,8 @@ const Login: React.FC = () => {
           )}
           
           <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
-              Name
-            </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500"
+              className="bg-transparent shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-baywatch-orange leading-tight focus:outline-none focus:shadow-outline focus:border-baywatch-orange"
               id="username"
               type="text"
               placeholder="Name"
@@ -61,14 +58,11 @@ const Login: React.FC = () => {
           </div>
           
           <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-              Password
-            </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline focus:border-blue-500"
+              className="bg-transparent shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-baywatch-orange leading-tight focus:outline-none focus:shadow-outline focus:border-baywatch-orange"
               id="password"
               type="password"
-              placeholder="******************"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -77,7 +71,7 @@ const Login: React.FC = () => {
           
           <div>
             <button
-              className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full card-gradient hover:bg-baywatch-orange text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
               disabled={loading}
             >
