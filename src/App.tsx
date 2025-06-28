@@ -17,7 +17,7 @@ import SearchResults from './components/pages/SearchResults';
 import Login from './components/pages/auth/Login';
 import Calendar from './components/pages/calendar/Calendar';
 import Tasks from './components/pages/tasks/Tasks';
-import Chat from './components/pages/Chat';
+import Channels from './components/pages/Chat';
 import Profile from './components/pages/Profile';
 import AdminUsers from './components/pages/admin/AdminUsers';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -60,7 +60,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/dashboard" element={<Chat />} />
+          <Route path="/dashboard" element={<Channels />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/profile" element={<Profile />} />
@@ -76,7 +76,7 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/admin" element={<Chat />} />
+          <Route path="/admin" element={<Channels />} />
           <Route path="/admin/users" element={<AdminUsers />} />
         </Route>
       </Routes>

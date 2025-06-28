@@ -25,7 +25,7 @@ interface SimpleUser {
   is_admin?: number;
 }
 
-const Chat: React.FC = () => {
+const Channels: React.FC = () => {
   const { user } = useAuth();
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>({ id: 'general', name: '# general' });
   const [messageInput, setMessageInput] = useState('');
@@ -771,4 +771,4 @@ const Chat: React.FC = () => {
   );
 };
 
-export default Chat;
+export default Channels;

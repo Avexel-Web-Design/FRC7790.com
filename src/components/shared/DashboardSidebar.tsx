@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { HomeIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { HashtagIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export default function DashboardSidebar() {
   const { user, logout } = useAuth();
@@ -13,7 +13,7 @@ export default function DashboardSidebar() {
   };
 
   const navigation = [
-    { name: 'Chat', href: '/dashboard', icon: HomeIcon },
+    { name: 'Channels', href: '/dashboard', icon: HashtagIcon },
     { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
     { name: 'Tasks', href: '/tasks', icon: CheckCircleIcon },
     { name: 'Profile', href: '/profile', icon: UserCircleIcon },
