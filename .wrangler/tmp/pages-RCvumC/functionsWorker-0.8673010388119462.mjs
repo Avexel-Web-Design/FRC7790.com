@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-LzfZ47/checked-fetch.js
+// ../.wrangler/tmp/bundle-WtUs9I/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2603,6 +2603,50 @@ async function sendMessage(c) {
   }
 }
 __name(sendMessage, "sendMessage");
+async function deleteMessage(c) {
+  console.log("deleteMessage: Received request");
+  const { messageId } = c.req.param();
+  console.log("deleteMessage: Message ID", messageId);
+  if (!messageId) {
+    return new Response("Message ID is required", { status: 400 });
+  }
+  try {
+    const { user_id } = await c.req.json();
+    console.log("deleteMessage: User ID", user_id);
+    if (!user_id) {
+      return new Response("User ID is required", { status: 400 });
+    }
+    const message = await c.env.DB.prepare(
+      "SELECT sender_id FROM messages WHERE id = ?"
+    ).bind(messageId).first();
+    if (!message) {
+      return new Response("Message not found", { status: 404 });
+    }
+    const isAdmin = await c.env.DB.prepare(
+      "SELECT is_admin FROM users WHERE id = ?"
+    ).bind(user_id).first();
+    const isAuthorized = isAdmin && isAdmin.is_admin === 1 || message.sender_id === Number(user_id);
+    if (!isAuthorized) {
+      return new Response("Unauthorized: You can only delete your own messages", { status: 403 });
+    }
+    const result = await c.env.DB.prepare(
+      "DELETE FROM messages WHERE id = ?"
+    ).bind(messageId).run();
+    console.log("deleteMessage: Delete result", result);
+    if (result.success) {
+      return new Response(JSON.stringify({ message: "Message deleted" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    } else {
+      return new Response("Failed to delete message", { status: 500 });
+    }
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    return new Response("Error deleting message: " + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
+__name(deleteMessage, "deleteMessage");
 
 // api/chat/channels.ts
 async function getChannels(c) {
@@ -2797,6 +2841,7 @@ chat.get("/debug", async (c) => {
 });
 chat.get("/messages/:channelId", getMessages);
 chat.post("/messages/:channelId", sendMessage);
+chat.delete("/messages/:messageId", deleteMessage);
 chat.get("/channels", getChannels);
 chat.post("/channels", createChannel);
 chat.put("/channels/:channelId", updateChannel);
@@ -3334,7 +3379,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-LzfZ47/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-WtUs9I/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -3366,7 +3411,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-LzfZ47/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-WtUs9I/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

@@ -4,7 +4,7 @@ import { frcAPI } from '../../utils/frcAPI';
 
 interface Message {
   id: number;
-  sender: string;
+  sender_id: number;
   content: string;
   timestamp: string;
   avatar: string;
@@ -28,6 +28,7 @@ const Chat: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isChannelsLoading, setIsChannelsLoading] = useState(true);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   
   // Drag and drop state
   const [draggedChannel, setDraggedChannel] = useState<Channel | null>(null);
@@ -169,6 +170,42 @@ const Chat: React.FC = () => {
         console.error('Error sending message:', error);
         setError('Error sending message. Check console for details.');
       }
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: number, event?: React.MouseEvent) => {
+    if (!user) return;
+    
+    // Skip confirmation if shift key is pressed
+    const skipConfirmation = event?.shiftKey;
+    
+    // Confirm deletion unless shift is pressed
+    if (!skipConfirmation && !window.confirm('Are you sure you want to delete this message?')) {
+      return;
+    }
+    
+    setError(null);
+    setIsDeletingMessage(true);
+    try {
+      console.log(`Deleting message: ${messageId}`);
+      const response = await frcAPI.request('DELETE', `/chat/messages/${messageId}`, {
+        user_id: user.id,
+      });
+      console.log('Delete message response:', response);
+      
+      if (response.ok) {
+        // Update messages list by removing the deleted message
+        setMessages(messages.filter(msg => msg.id !== messageId));
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to delete message:', response.statusText, errorText);
+        setError(`Failed to delete message: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      setError('Error deleting message. Check console for details.');
+    } finally {
+      setIsDeletingMessage(false);
     }
   };
 
@@ -416,6 +453,12 @@ const Chat: React.FC = () => {
     setSelectedChannel(channel);
   };
 
+  // Check if user can delete a message (owner or admin)
+  const canDeleteMessage = (message: Message): boolean => {
+    if (!user) return false;
+    return user.isAdmin || message.sender_id === user.id;
+  };
+
   return (
     <div className="flex h-screen bg-gray-900 text-gray-100">
       {/* Sidebar */}
@@ -533,19 +576,33 @@ const Chat: React.FC = () => {
           ) : selectedChannel ? (
             messages.length > 0 ? (
               messages.map((message) => (
-                <div key={message.id} className="flex items-start mb-4">
+                <div key={message.id} className="flex items-start mb-4 group">
                   <div
                     className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
                     style={{ backgroundColor: userColors.get(message.sender_username) || '#cccccc' }}
                   >
                     {message.sender_username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || '??'}
                   </div>
-                  <div>
-                    <div className="flex items-baseline">
-                      <p className="font-semibold mr-2">{message.sender_username}</p>
-                      <span className="text-xs text-gray-400">
-                        {new Date(message.timestamp).toLocaleTimeString()}
-                      </span>
+                  <div className="flex-1">
+                    <div className="flex items-baseline justify-between">
+                      <div>
+                        <p className="font-semibold mr-2 inline">{message.sender_username}</p>
+                        <span className="text-xs text-gray-400 inline">
+                          {new Date(message.timestamp).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      {canDeleteMessage(message) && (
+                        <button
+                          onClick={(e) => handleDeleteMessage(message.id, e)}
+                          className="text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          disabled={isDeletingMessage}
+                          title={`Delete message${"\n"}(Hold Shift to skip confirmation)`}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                     <p className="text-gray-300">{message.content}</p>
                   </div>

@@ -73,3 +73,68 @@ export async function sendMessage(c: Context): Promise<Response> {
     return new Response('Error sending message: ' + (error instanceof Error ? error.message : String(error)), { status: 500 });
   }
 }
+
+export async function deleteMessage(c: Context): Promise<Response> {
+  console.log("deleteMessage: Received request");
+  const { messageId } = c.req.param();
+  console.log("deleteMessage: Message ID", messageId);
+  
+  if (!messageId) {
+    return new Response('Message ID is required', { status: 400 });
+  }
+
+  try {
+    // Get user ID from request body
+    const { user_id } = await c.req.json();
+    console.log("deleteMessage: User ID", user_id);
+    
+    if (!user_id) {
+      return new Response('User ID is required', { status: 400 });
+    }
+
+    // Check if message exists and get sender_id
+    const message = await c.env.DB.prepare(
+      'SELECT sender_id FROM messages WHERE id = ?'
+    )
+      .bind(messageId)
+      .first();
+
+    if (!message) {
+      return new Response('Message not found', { status: 404 });
+    }
+
+    // Check if user is the sender or an admin
+    const isAdmin = await c.env.DB.prepare(
+      'SELECT is_admin FROM users WHERE id = ?'
+    )
+      .bind(user_id)
+      .first();
+
+    const isAuthorized = isAdmin && (isAdmin as { is_admin: number }).is_admin === 1 || (message as { sender_id: number }).sender_id === Number(user_id);
+
+    if (!isAuthorized) {
+      return new Response('Unauthorized: You can only delete your own messages', { status: 403 });
+    }
+
+    // Delete the message
+    const result = await c.env.DB.prepare(
+      'DELETE FROM messages WHERE id = ?'
+    )
+      .bind(messageId)
+      .run();
+
+    console.log("deleteMessage: Delete result", result);
+
+    if (result.success) {
+      return new Response(JSON.stringify({ message: 'Message deleted' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } else {
+      return new Response('Failed to delete message', { status: 500 });
+    }
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    return new Response('Error deleting message: ' + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}

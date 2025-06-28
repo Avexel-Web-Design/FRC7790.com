@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { getMessages, sendMessage } from './messages';
+import { getMessages, sendMessage, deleteMessage } from './messages';
 import { 
   getChannels, 
   createChannel, 
@@ -53,6 +53,7 @@ chat.get('/debug', async (c) => {
 // Messages endpoints
 chat.get('/messages/:channelId', getMessages);
 chat.post('/messages/:channelId', sendMessage);
+chat.delete('/messages/:messageId', deleteMessage);
 
 // Channels endpoints
 chat.get('/channels', getChannels);

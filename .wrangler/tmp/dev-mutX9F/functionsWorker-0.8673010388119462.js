@@ -2638,6 +2638,51 @@ async function sendMessage(c) {
 }
 __name(sendMessage, "sendMessage");
 __name2(sendMessage, "sendMessage");
+async function deleteMessage(c) {
+  console.log("deleteMessage: Received request");
+  const { messageId } = c.req.param();
+  console.log("deleteMessage: Message ID", messageId);
+  if (!messageId) {
+    return new Response("Message ID is required", { status: 400 });
+  }
+  try {
+    const { user_id } = await c.req.json();
+    console.log("deleteMessage: User ID", user_id);
+    if (!user_id) {
+      return new Response("User ID is required", { status: 400 });
+    }
+    const message = await c.env.DB.prepare(
+      "SELECT sender_id FROM messages WHERE id = ?"
+    ).bind(messageId).first();
+    if (!message) {
+      return new Response("Message not found", { status: 404 });
+    }
+    const isAdmin = await c.env.DB.prepare(
+      "SELECT is_admin FROM users WHERE id = ?"
+    ).bind(user_id).first();
+    const isAuthorized = isAdmin && isAdmin.is_admin === 1 || message.sender_id === Number(user_id);
+    if (!isAuthorized) {
+      return new Response("Unauthorized: You can only delete your own messages", { status: 403 });
+    }
+    const result = await c.env.DB.prepare(
+      "DELETE FROM messages WHERE id = ?"
+    ).bind(messageId).run();
+    console.log("deleteMessage: Delete result", result);
+    if (result.success) {
+      return new Response(JSON.stringify({ message: "Message deleted" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    } else {
+      return new Response("Failed to delete message", { status: 500 });
+    }
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    return new Response("Error deleting message: " + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
+__name(deleteMessage, "deleteMessage");
+__name2(deleteMessage, "deleteMessage");
 async function getChannels(c) {
   console.log("getChannels: Received request");
   try {
@@ -2833,6 +2878,7 @@ chat.get("/debug", async (c) => {
 });
 chat.get("/messages/:channelId", getMessages);
 chat.post("/messages/:channelId", sendMessage);
+chat.delete("/messages/:messageId", deleteMessage);
 chat.get("/channels", getChannels);
 chat.post("/channels", createChannel);
 chat.put("/channels/:channelId", updateChannel);
