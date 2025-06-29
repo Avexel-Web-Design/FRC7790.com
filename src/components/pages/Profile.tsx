@@ -316,23 +316,6 @@ const Profile: React.FC = () => {
                   Logout
                 </button>
               </div>
-
-              {profile?.is_admin && (
-                <div className="border-t border-gray-700 pt-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-white">Admin Dashboard</h4>
-                      <p className="text-sm text-gray-400">Access administrative functions</p>
-                    </div>
-                    <a
-                      href="/admin/users"
-                      className="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-500 rounded-md"
-                    >
-                      Go to Admin
-                    </a>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

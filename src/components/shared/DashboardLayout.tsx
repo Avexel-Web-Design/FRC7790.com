@@ -10,7 +10,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex h-screen bg-gray-100">
       <DashboardSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-black">
           {children}
         </main>
       </div>
