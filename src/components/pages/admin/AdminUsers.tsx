@@ -228,9 +228,6 @@ const AdminUsers: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Created
-                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Actions
                   </th>
@@ -267,9 +264,6 @@ const AdminUsers: React.FC = () => {
                         {userItem.is_admin ? 'Admin' : 'User'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(userItem.created_at).toLocaleDateString()}
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <button
@@ -303,8 +297,8 @@ const AdminUsers: React.FC = () => {
       {/* Add User Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="relative p-8 bg-white w-full max-w-md m-auto rounded-lg shadow-lg">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Add New User</h3>
+          <div className="relative p-8 bg-black w-full max-w-md m-auto rounded-lg shadow-lg">
+            <h3 className="text-lg font-medium text-white mb-4">Add New User</h3>
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                 {error}
@@ -312,35 +306,51 @@ const AdminUsers: React.FC = () => {
             )}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Name</label>
                 <input
                   type="text"
+                  placeholder="Name"
                   value={newUser.username}
                   onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="bg-transparent mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:outline-none"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Password</label>
                 <input
                   type="password"
+                  placeholder="Password"
                   value={newUser.password}
                   onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="bg-transparent mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:outline-none"
                   required
                 />
               </div>
               <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isAdmin"
-                  checked={newUser.is_admin}
-                  onChange={(e) => setNewUser({ ...newUser, is_admin: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="isAdmin" className="ml-2 block text-sm text-gray-900">
-                  Admin privileges
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    id="isAdmin"
+                    checked={newUser.is_admin}
+                    onChange={(e) => setNewUser({ ...newUser, is_admin: e.target.checked })}
+                    className="sr-only"
+                  />
+                  <label 
+                    htmlFor="isAdmin" 
+                    className={`w-4 h-4 border-2 rounded flex items-center justify-center ${
+                      newUser.is_admin 
+                        ? 'bg-baywatch-orange border-baywatch-orange' 
+                        : 'border-gray-300 bg-transparent'
+                    }`}
+                  >
+                    {newUser.is_admin && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </label>
+                </div>
+                <label htmlFor="isAdmin" className="ml-2 block text-sm text-gray-300">
+                  Admin
                 </label>
               </div>
             </div>
@@ -357,7 +367,7 @@ const AdminUsers: React.FC = () => {
               </button>
               <button
                 onClick={createUser}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-white bg-baywatch-orange hover:bg-baywatch-orange/70 rounded-md"
               >
                 Create User
               </button>

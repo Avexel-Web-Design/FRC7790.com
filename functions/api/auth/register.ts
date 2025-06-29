@@ -1,10 +1,16 @@
 import { Hono } from 'hono';
-import { sign } from 'hono/jwt';
-import { sign } from 'hono/jwt';
+import { sign, verify } from 'hono/jwt';
+import { authMiddleware } from './middleware';
 
 interface CloudflareEnv {
   DB: D1Database;
   JWT_SECRET: string;
+}
+
+interface AuthUser {
+  id: number;
+  username: string;
+  isAdmin: boolean;
 }
 
 // Simple password hashing using Web Crypto API
@@ -16,11 +22,39 @@ async function hashPassword(password: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-const register = new Hono<{ Bindings: CloudflareEnv }>();
+const register = new Hono<{ 
+  Bindings: CloudflareEnv;
+  Variables: { user: AuthUser };
+}>();
 
 register.post('/', async (c) => {
   try {
-    const { username, password } = await c.req.json();
+    const { username, password, is_admin } = await c.req.json();
+    
+    // Check if this is an admin creating a user with admin privileges
+    const authHeader = c.req.header('Authorization');
+    let isAdmin = false;
+    
+    if (is_admin === true) {
+      // Admin privileges requested, verify if requester is an admin
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return c.json({ error: 'Admin privileges cannot be assigned by non-admin users' }, 403);
+      }
+      
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = await verify(token, c.env.JWT_SECRET);
+        if (!(decoded.isAdmin === true || decoded.isAdmin === 1)) {
+          return c.json({ error: 'Only administrators can create admin users' }, 403);
+        }
+        isAdmin = true;
+      } catch (e) {
+        return c.json({ error: 'Invalid authorization for admin user creation' }, 401);
+      }
+    }
+    
+    // Convert isAdmin to integer for DB
+    const isAdminValue = isAdmin ? 1 : 0;
 
     if (!username || !password) {
       return c.json({ error: 'Username and password are required' }, 400);
@@ -33,9 +67,14 @@ register.post('/', async (c) => {
     const hashedPassword = await hashPassword(password);
 
     const { success, meta } = await c.env.DB.prepare(
-      'INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)'
+      'INSERT INTO users (username, password, avatar, is_admin) VALUES (?, ?, ?, ?)'
     )
-      .bind(username, hashedPassword, `https://api.dicebear.com/7.x/initials/svg?seed=${username}`)
+      .bind(
+        username, 
+        hashedPassword, 
+        `https://api.dicebear.com/7.x/initials/svg?seed=${username}`,
+        isAdminValue
+      )
       .run();
 
     if (success) {
@@ -44,7 +83,7 @@ register.post('/', async (c) => {
         { 
           id: userId, 
           username: username,
-          isAdmin: 0,
+          isAdmin: isAdminValue,
           avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`,
           iat: Math.floor(Date.now() / 1000),
           exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
@@ -57,7 +96,7 @@ register.post('/', async (c) => {
         user: {
           id: userId,
           username: username,
-          isAdmin: false,
+          isAdmin: isAdminValue === 1,
           avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`
         },
         message: 'Registration successful'

@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// ../.wrangler/tmp/bundle-K4y7v9/checked-fetch.js
+// ../.wrangler/tmp/bundle-51va92/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -2107,7 +2107,25 @@ __name(hashPassword, "hashPassword");
 var register = new Hono2();
 register.post("/", async (c) => {
   try {
-    const { username, password } = await c.req.json();
+    const { username, password, is_admin } = await c.req.json();
+    const authHeader = c.req.header("Authorization");
+    let isAdmin = false;
+    if (is_admin === true) {
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return c.json({ error: "Admin privileges cannot be assigned by non-admin users" }, 403);
+      }
+      try {
+        const token = authHeader.split(" ")[1];
+        const decoded = await verify2(token, c.env.JWT_SECRET);
+        if (!(decoded.isAdmin === true || decoded.isAdmin === 1)) {
+          return c.json({ error: "Only administrators can create admin users" }, 403);
+        }
+        isAdmin = true;
+      } catch (e) {
+        return c.json({ error: "Invalid authorization for admin user creation" }, 401);
+      }
+    }
+    const isAdminValue = isAdmin ? 1 : 0;
     if (!username || !password) {
       return c.json({ error: "Username and password are required" }, 400);
     }
@@ -2116,15 +2134,20 @@ register.post("/", async (c) => {
     }
     const hashedPassword = await hashPassword(password);
     const { success, meta } = await c.env.DB.prepare(
-      "INSERT INTO users (username, password, avatar) VALUES (?, ?, ?)"
-    ).bind(username, hashedPassword, `https://api.dicebear.com/7.x/initials/svg?seed=${username}`).run();
+      "INSERT INTO users (username, password, avatar, is_admin) VALUES (?, ?, ?, ?)"
+    ).bind(
+      username,
+      hashedPassword,
+      `https://api.dicebear.com/7.x/initials/svg?seed=${username}`,
+      isAdminValue
+    ).run();
     if (success) {
       const userId = meta.last_row_id;
       const token = await sign2(
         {
           id: userId,
           username,
-          isAdmin: 0,
+          isAdmin: isAdminValue,
           avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`,
           iat: Math.floor(Date.now() / 1e3),
           exp: Math.floor(Date.now() / 1e3) + 24 * 60 * 60
@@ -2137,7 +2160,7 @@ register.post("/", async (c) => {
         user: {
           id: userId,
           username,
-          isAdmin: false,
+          isAdmin: isAdminValue === 1,
           avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`
         },
         message: "Registration successful"
@@ -2240,6 +2263,42 @@ users.get("/", async (c) => {
     return c.json(results);
   } catch (error) {
     console.error("Error fetching users:", error);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+users.put("/:userId", async (c) => {
+  const currentUser = c.get("user");
+  if (!currentUser.isAdmin) {
+    return c.json({ error: "Forbidden" }, 403);
+  }
+  const userId = parseInt(c.req.param("userId"), 10);
+  const body = await c.req.json();
+  if (userId === currentUser.id) {
+    return c.json({ error: "Cannot modify your own admin status" }, 400);
+  }
+  try {
+    const isAdmin = body.is_admin === true ? 1 : 0;
+    await c.env.DB.prepare("UPDATE users SET is_admin = ? WHERE id = ?").bind(isAdmin, userId).run();
+    return c.json({ success: true });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+users.delete("/:userId", async (c) => {
+  const currentUser = c.get("user");
+  if (!currentUser.isAdmin) {
+    return c.json({ error: "Forbidden" }, 403);
+  }
+  const userId = parseInt(c.req.param("userId"), 10);
+  if (userId === currentUser.id) {
+    return c.json({ error: "Cannot delete your own account" }, 400);
+  }
+  try {
+    await c.env.DB.prepare("DELETE FROM users WHERE id = ?").bind(userId).run();
+    return c.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting user:", error);
     return c.json({ error: "Internal server error" }, 500);
   }
 });
@@ -3488,7 +3547,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// ../.wrangler/tmp/bundle-K4y7v9/middleware-insertion-facade.js
+// ../.wrangler/tmp/bundle-51va92/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -3520,7 +3579,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// ../.wrangler/tmp/bundle-K4y7v9/middleware-loader.entry.ts
+// ../.wrangler/tmp/bundle-51va92/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
