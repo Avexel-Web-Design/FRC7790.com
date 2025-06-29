@@ -34,7 +34,7 @@ export default function DashboardSidebar() {
           </Link>
         </div>
       </div>
-      <nav className="flex-1 px-2 py-4 space-y-2">
+      <nav className="flex-1 px-3 py-4 space-y-2">
         {navigation.map((item) => (
           <Link
             key={item.name}
