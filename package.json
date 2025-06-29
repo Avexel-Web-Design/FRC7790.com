@@ -1,0 +1,52 @@
+{
+  "name": "frc7790-com",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b tsconfig.app.json && vite build",
+    "build:functions": "tsc -b tsconfig.functions.json --noEmit",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "functions:dev": "wrangler pages dev dist --compatibility-date=2024-06-24 --port=8788",
+    "functions:deploy": "wrangler pages deploy dist",
+    "dev:full": "npm run build && npm run functions:dev",
+    "dev:api": "wrangler pages dev --compatibility-date=2024-06-24 --port=8788 --local",
+    "start": "concurrently \"npm run dev\" \"npm run dev:api\"",
+    "db:migrate": "wrangler d1 execute frc7790-com --file=migrations/001_initial_schema.sql",
+    "db:migrate:dev": "wrangler d1 execute frc7790-com-dev --file=migrations/001_initial_schema.sql",
+    "db:migrate:prod": "wrangler d1 execute frc7790-com --remote --file=migrations/001_initial_schema.sql",
+    "db:backup": "wrangler d1 export frc7790-com --output=backup.sql",
+    "deploy:prod": "wrangler pages deploy dist --env production"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20250627.0",
+    "@heroicons/react": "^2.2.0",
+    "@types/react-router-dom": "^5.3.3",
+    "hono": "^4.8.3",
+    "lucide-react": "^0.522.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2",
+    "wrangler": "^4.22.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@tsconfig/strictest": "^2.0.5",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vite": "^6.3.5"
+  }
+}

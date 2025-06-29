@@ -1,66 +1,24 @@
-# Node.js dependencies
-/node_modules/
-
-# VSCode settings
-.vscode/
-
-# JetBrains IDE settings
-.idea/
-
-# OS-specific files
-# macOS
-.DS_Store
-
-# Windows
-Thumbs.db
-Desktop.ini
-
-# Linux
-*~
-
-# Log files
+# Logs
+logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Environment files
-.env
-.env.local
-.env.*.local
+node_modules
+dist
+dist-ssr
+*.local
 
-# Build output
-/dist/
-/build/
-
-# Temporary files
-*.tmp
-*.swp
-*.bak
-*.backup
-
-# IDE-specific files (JetBrains, VSCode, etc.)
-*.sublime-workspace
-*.sublime-project
-.vscode/settings.json
-.vscode/tasks.json
-.vscode/launch.json
-
-# NPM logs
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-
-# Coverage reports
-/coverage/
-
-# Archive files
-*.tar.gz
-*.zip
-*.tar.bz2
-
-# Package-lock or Yarn lock files should be included, but if you want to ignore them:
-# package-lock.json
-# yarn.lock
-
-# Other
-*.swo
-*.swn
-*.pid
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,0 +1,22 @@
+name = "frc7790-com"
+compatibility_date = "2024-06-24"
+pages_build_output_dir = "dist"
+
+# Development environment variables
+[vars]
+JWT_SECRET = "dev-jwt-secret-for-local-development"
+
+# Development D1 database
+[[d1_databases]]
+binding = "DB"
+database_name = "frc7790-com-dev"
+database_id = "c3e6bd17-db32-4f95-a9d1-1103a1e71e1c"
+
+# Production environment (used by Pages automatic deployments)
+[env.production]
+vars = { JWT_SECRET = "frc7790-baywatch-production-jwt-secret-2025-secure-key-change-if-needed" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "frc7790-com"
+database_id = "0eee2b56-cbe7-4dc6-97b6-adb6b93c4ca1"

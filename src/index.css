@@ -1,0 +1,285 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Text selection colors */
+::selection {
+  background-color: rgba(255, 107, 0, 0.3);
+}
+
+::-moz-selection {
+  background-color: rgba(255, 107, 0, 0.3);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff6b00;
+  border-radius: 4px;
+}
+
+/* Reveal animation */
+.reveal {
+  position: relative;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 1s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes drawPath {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Small Screen Optimizations */
+@media (max-width: 360px) {
+  .xs-p-smaller {
+    padding: 0.75rem !important;
+  }
+  .xs-text-smaller {
+    font-size: 0.875rem !important;
+  }
+  .xs-py-smaller {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  .xs-px-smaller {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Match card (playoff bracket) styles – ported from legacy site */
+.match-box {
+  position: relative;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 107, 0, 0.3);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transition: all 0.5s ease;
+}
+
+.match-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  border-radius: 1rem;
+  pointer-events: none;
+  background: radial-gradient(circle at 1px 1px, rgba(255, 107, 0, 0.2) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+.match-box:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(255, 107, 0, 0.3);
+}
+
+.finals-match {
+  border: 2px solid rgba(255, 107, 0, 0.5);
+  box-shadow: 0 0 15px rgba(255, 107, 0, 0.2);
+}
+
+/* Custom utility classes */
+.glow-orange {
+  text-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
+}
+
+.btn-orange-glow {
+  box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
+}
+
+.btn-orange-glow:hover {
+  box-shadow: 0 0 30px rgba(255, 107, 0, 0.5);
+}
+
+.card-gradient {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 0, 0.15) 0%,
+    rgba(26, 26, 26, 0.5) 25%,
+    rgba(255, 107, 0, 0.15) 50%,
+    rgba(26, 26, 26, 0.5) 75%,
+    rgba(255, 107, 0, 0.15) 100%
+  );
+  background-size: 400% 400%;
+  animation: flowingGradient 15s ease-in-out infinite;
+  border: 1px solid rgba(255, 107, 0, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.card-gradient:hover {
+  background-size: 200% 200%;
+  animation: flowingGradient 8s ease-in-out infinite;
+  border-color: rgba(255, 107, 0, 0.3);
+}
+
+@keyframes flowingGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gradient-section {
+  background: linear-gradient(135deg, #1a1a1a, #000000);
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.counter {
+  transition: all 0.3s ease;
+}
+
+/* Anurati font for robot names */
+@font-face {
+  font-family: 'Anurati';
+  src: url('/assets/fonts/Anurati-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.font-anurati {
+  font-family: 'Anurati', 'Poppins', sans-serif;
+}
+
+/* Remove default focus outline on buttons */
+button:focus,
+button:active,
+button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove Firefox/Chrome inner focus border */
+button::-moz-focus-inner,
+button::-webkit-focus-inner {
+  border: 0 !important;
+}
+
+/* Scroll reveal utility */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Custom scouting checkbox */
+.team-status-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #FF6B00;
+  cursor: pointer;
+}
+
+/* Additional responsive helpers */
+@media (max-width: 640px) {
+  .mobile-text-sm {
+    font-size: 0.875rem;
+  }
+  
+  .mobile-p-sm {
+    padding: 0.5rem;
+  }
+}
+
+/* --------------------------------------------------
+   Nebula Particle Loader (ported from legacy site)
+   -------------------------------------------------- */
+:root {
+  --uib-size: 128px; /* default diameter */
+  --uib-color: #FF6B00; /* default particle color */
+  --uib-speed: 1.8s; /* orbit duration */
+}
+
+.loader-particle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+/* placement / delay for each of 13 particles */
+.loader-particle:nth-child(1)  { --uib-delay: 0;    transform: rotate(8deg);   }
+.loader-particle:nth-child(2)  { --uib-delay: -0.4; transform: rotate(36deg);  }
+.loader-particle:nth-child(3)  { --uib-delay: -0.9; transform: rotate(72deg);  }
+.loader-particle:nth-child(4)  { --uib-delay: -0.5; transform: rotate(90deg);  }
+.loader-particle:nth-child(5)  { --uib-delay: -0.3; transform: rotate(144deg); }
+.loader-particle:nth-child(6)  { --uib-delay: -0.2; transform: rotate(180deg); }
+.loader-particle:nth-child(7)  { --uib-delay: -0.6; transform: rotate(216deg); }
+.loader-particle:nth-child(8)  { --uib-delay: -0.7; transform: rotate(252deg); }
+.loader-particle:nth-child(9)  { --uib-delay: -0.1; transform: rotate(300deg); }
+.loader-particle:nth-child(10) { --uib-delay: -0.8; transform: rotate(324deg); }
+.loader-particle:nth-child(11) { --uib-delay: -1.2; transform: rotate(335deg); }
+.loader-particle:nth-child(12) { --uib-delay: -0.5; transform: rotate(290deg); }
+.loader-particle:nth-child(13) { --uib-delay: -0.2; transform: rotate(240deg); }
+
+.loader-particle::before {
+  content: '';
+  position: absolute;
+  height: 17.5%;
+  width: 17.5%;
+  border-radius: 50%;
+  background-color: var(--uib-color);
+  flex-shrink: 0;
+  --uib-d: calc(var(--uib-delay) * var(--uib-speed));
+  animation: orbit var(--uib-speed) linear var(--uib-d) infinite;
+}
+
+@keyframes orbit {
+  0%   { transform: translate(calc(var(--uib-size) * 0.5))  scale(0.74); opacity: .65; }
+  25%  { transform: translate(0)                               scale(0.47); opacity: .30; }
+  50%  { transform: translate(calc(var(--uib-size) * -0.5)) scale(0.74); opacity: .65; }
+  75%  { transform: translate(0)                               scale(1);    opacity: 1;   }
+  100% { transform: translate(calc(var(--uib-size) * 0.5))  scale(0.74); opacity: .65; }
+}
+

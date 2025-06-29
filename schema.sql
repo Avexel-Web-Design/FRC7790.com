@@ -1,0 +1,35 @@
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  is_admin INTEGER NOT NULL DEFAULT 0,
+  avatar TEXT
+);
+
+DROP TABLE IF EXISTS calendar_events;
+CREATE TABLE calendar_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  start_time TEXT NOT NULL,
+  end_time TEXT NOT NULL
+);
+
+DROP TABLE IF EXISTS tasks;
+CREATE TABLE tasks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  description TEXT,
+  is_completed INTEGER NOT NULL DEFAULT 0,
+  due_date TEXT
+);
+
+DROP TABLE IF EXISTS messages;
+CREATE TABLE messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  channel_id TEXT NOT NULL,
+  sender_id INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  timestamp TEXT NOT NULL,
+  FOREIGN KEY (sender_id) REFERENCES users(id)
+);
