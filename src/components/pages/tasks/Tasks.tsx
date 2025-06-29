@@ -206,25 +206,25 @@ const Tasks: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-baywatch-orange"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-black text-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="sm:flex sm:items-center sm:justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Task Management</h1>
-            <p className="mt-2 text-sm text-gray-700">
+            <h1 className="text-3xl font-bold text-white">Task Management</h1>
+            <p className="mt-2 text-sm text-gray-400">
               Track and manage team tasks and assignments
             </p>
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-baywatch-orange hover:bg-baywatch-orange/70 text-white transition-colors"
           >
             Add Task
           </button>
@@ -232,25 +232,25 @@ const Tasks: React.FC = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-black border border-gray-700 rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                  <div className="w-8 h-8 bg-baywatch-orange rounded-md flex items-center justify-center">
                     <span className="text-white font-bold">{stats.pending}</span>
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Pending</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.pending}</dd>
+                    <dt className="text-sm font-medium text-gray-400 truncate">Pending</dt>
+                    <dd className="text-lg font-medium text-white">{stats.pending}</dd>
                   </dl>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-black border border-gray-700 rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -260,15 +260,15 @@ const Tasks: React.FC = () => {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Completed</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.completed}</dd>
+                    <dt className="text-sm font-medium text-gray-400 truncate">Completed</dt>
+                    <dd className="text-lg font-medium text-white">{stats.completed}</dd>
                   </dl>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white overflow-hidden shadow rounded-lg">
+          <div className="bg-black border border-gray-700 rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
@@ -278,8 +278,8 @@ const Tasks: React.FC = () => {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Overdue</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.overdue}</dd>
+                    <dt className="text-sm font-medium text-gray-400 truncate">Overdue</dt>
+                    <dd className="text-lg font-medium text-white">{stats.overdue}</dd>
                   </dl>
                 </div>
               </div>
@@ -288,14 +288,14 @@ const Tasks: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <div className="bg-black border border-gray-700 rounded-lg p-6 mb-6">
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setFilter('pending')}
               className={`px-4 py-2 rounded-md text-sm font-medium ${
                 filter === 'pending'
-                  ? 'bg-blue-100 text-blue-800'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                  ? 'bg-baywatch-orange/25 text-baywatch-orange'
+                  : 'bg-gray-800 text-gray-400 hover:text-baywatch-orange'
               }`}
             >
               Pending
@@ -304,8 +304,8 @@ const Tasks: React.FC = () => {
               onClick={() => setFilter('completed')}
               className={`px-4 py-2 rounded-md text-sm font-medium ${
                 filter === 'completed'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                  ? 'bg-green-500/25 text-green-500'
+                  : 'bg-gray-800 text-gray-400 hover:text-green-500'
               }`}
             >
               Completed
@@ -314,13 +314,13 @@ const Tasks: React.FC = () => {
         </div>
 
         {/* Tasks List */}
-        <div className="bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">
+        <div className="bg-black border border-gray-700 rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-700">
+            <h3 className="text-lg font-medium text-white">
               {filter === 'pending' ? 'Pending Tasks' : 'Completed Tasks'}
             </h3>
           </div>
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-700">
             {filteredTasks.length > 0 ? (
               filteredTasks.map((task) => (
                 <div key={task.id} className="px-6 py-4">
@@ -330,11 +330,11 @@ const Tasks: React.FC = () => {
                         type="checkbox"
                         checked={task.completed}
                         onChange={() => toggleTaskCompletion(task)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-baywatch-orange focus:ring-baywatch-orange border-gray-600 rounded bg-black"
                       />
                       <div className="flex-1">
                         <h4 className={`text-sm font-medium ${
-                          task.completed ? 'text-gray-500 line-through' : 'text-gray-900'
+                          task.completed ? 'text-gray-500 line-through' : 'text-white'
                         }`}>
                           {task.title}
                         </h4>
@@ -364,13 +364,13 @@ const Tasks: React.FC = () => {
                         <>
                           <button
                             onClick={() => setEditingTask(task)}
-                            className="text-blue-600 hover:text-blue-800 text-sm"
+                            className="text-baywatch-orange hover:text-white text-sm"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => deleteTask(task.id)}
-                            className="text-red-600 hover:text-red-800 text-sm"
+                            className="text-red-600 hover:text-red-500 text-sm"
                           >
                             Delete
                           </button>
@@ -381,7 +381,7 @@ const Tasks: React.FC = () => {
                 </div>
               ))
             ) : (
-              <div className="px-6 py-8 text-center text-gray-500">
+              <div className="px-6 py-8 text-center text-gray-400">
                 No tasks found
               </div>
             )}
@@ -391,9 +391,9 @@ const Tasks: React.FC = () => {
 
       {/* Add/Edit Task Modal */}
       {(showModal || editingTask) && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="relative p-8 bg-white w-full max-w-md m-auto rounded-lg shadow-lg">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+          <div className="relative p-8 bg-black w-full max-w-md m-auto rounded-lg shadow-lg border border-gray-700">
+            <h3 className="text-lg font-medium text-white mb-4">
               {editingTask ? 'Edit Task' : 'Add New Task'}
             </h3>
             <div className="space-y-4">
@@ -401,24 +401,26 @@ const Tasks: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700">Title</label>
                 <input
                   type="text"
+                  placeholder="Title"
                   value={editingTask ? editingTask.title : newTask.title}
                   onChange={(e) => editingTask 
                     ? setEditingTask({ ...editingTask, title: e.target.value })
                     : setNewTask({ ...newTask, title: e.target.value })
                   }
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Description</label>
                 <textarea
+                  placeholder="Description"
                   value={editingTask ? editingTask.description : newTask.description}
                   onChange={(e) => editingTask
                     ? setEditingTask({ ...editingTask, description: e.target.value })
                     : setNewTask({ ...newTask, description: e.target.value })
                   }
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                   rows={3}
                 />
               </div>
@@ -430,7 +432,7 @@ const Tasks: React.FC = () => {
                     ? setEditingTask({ ...editingTask, priority: e.target.value as 'low' | 'medium' | 'high' })
                     : setNewTask({ ...newTask, priority: e.target.value as 'low' | 'medium' | 'high' })
                   }
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -446,7 +448,7 @@ const Tasks: React.FC = () => {
                     ? setEditingTask({ ...editingTask, due_date: e.target.value })
                     : setNewTask({ ...newTask, due_date: e.target.value })
                   }
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                 />
               </div>
               {user?.isAdmin && (
@@ -458,7 +460,7 @@ const Tasks: React.FC = () => {
                       ? setEditingTask({ ...editingTask, assigned_to: e.target.value ? parseInt(e.target.value) : null })
                       : setNewTask({ ...newTask, assigned_to: e.target.value })
                     }
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                   >
                     <option value="">Unassigned</option>
                     {users.map((user) => (
@@ -476,7 +478,7 @@ const Tasks: React.FC = () => {
                   setShowModal(false);
                   setEditingTask(null);
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-white bg-transparent hover:text-baywatch-orange rounded-md"
               >
                 Cancel
               </button>
@@ -488,7 +490,7 @@ const Tasks: React.FC = () => {
                     createTask();
                   }
                 }}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-white bg-baywatch-orange hover:bg-baywatch-orange/70 rounded-md"
               >
                 {editingTask ? 'Update' : 'Create'} Task
               </button>

@@ -137,30 +137,30 @@ const Calendar: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-baywatch-orange"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-black text-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="sm:flex sm:items-center sm:justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Team Calendar</h1>
-            <p className="mt-2 text-sm text-gray-700">
+            <h1 className="text-3xl font-bold text-white">Team Calendar</h1>
+            <p className="mt-2 text-sm text-gray-400">
               Manage team events, competitions, and meetings
             </p>
           </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg">
+        <div className="bg-black border border-gray-700 rounded-lg">
           {/* Calendar Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
             <button
               onClick={() => navigateMonth(-1)}
-              className="p-2 rounded-md hover:bg-gray-100"
+              className="p-2 rounded-md hover:bg-gray-800"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -171,7 +171,7 @@ const Calendar: React.FC = () => {
             </h2>
             <button
               onClick={() => navigateMonth(1)}
-              className="p-2 rounded-md hover:bg-gray-100"
+              className="p-2 rounded-md hover:bg-gray-800"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -180,10 +180,10 @@ const Calendar: React.FC = () => {
           </div>
 
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 gap-px bg-gray-200">
+          <div className="grid grid-cols-7 gap-px bg-gray-700">
             {/* Day headers */}
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day} className="bg-gray-50 px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+              <div key={day} className="bg-black px-3 py-2 text-center text-xs font-medium text-gray-400 uppercase">
                 {day}
               </div>
             ))}
@@ -197,19 +197,19 @@ const Calendar: React.FC = () => {
               return (
                 <div
                   key={dayIdx}
-                  className={`bg-white px-3 py-2 text-sm min-h-[100px] cursor-pointer hover:bg-gray-50 ${
-                    !isCurrentMonth ? 'text-gray-400' : 'text-gray-900'
-                  } ${isToday ? 'bg-blue-50' : ''}`}
+                  className={`bg-black px-3 py-2 text-sm min-h-[100px] cursor-pointer hover:bg-gray-800 ${
+                    !isCurrentMonth ? 'text-gray-500' : 'text-gray-100'
+                  } ${isToday ? 'bg-baywatch-orange/20' : ''}`}
                   onClick={() => handleDayClick(day)}
                 >
-                  <div className={`font-medium ${isToday ? 'text-blue-600' : ''}`}>
+                  <div className={`font-medium ${isToday ? 'text-baywatch-orange' : ''}`}>
                     {day.getDate()}
                   </div>
                   <div className="mt-1 space-y-1">
                     {dayEvents.slice(0, 3).map((event) => (
                       <div
                         key={event.id}
-                        className="text-xs p-1 bg-blue-100 text-blue-800 rounded truncate cursor-pointer hover:bg-blue-200"
+                        className="text-xs p-1 bg-baywatch-orange/25 text-baywatch-orange rounded truncate cursor-pointer hover:bg-baywatch-orange/40"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEventClick(event);
@@ -231,11 +231,11 @@ const Calendar: React.FC = () => {
         </div>
 
         {/* Upcoming Events */}
-        <div className="mt-8 bg-white shadow rounded-lg">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Upcoming Events</h3>
+        <div className="mt-8 bg-black border border-gray-700 rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-700">
+            <h3 className="text-lg font-medium text-white">Upcoming Events</h3>
           </div>
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-700">
             {events
               .filter(event => new Date(event.event_date) >= new Date())
               .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
@@ -243,23 +243,23 @@ const Calendar: React.FC = () => {
               .map((event) => (
                 <div key={event.id} className="px-6 py-4 flex items-center justify-between">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-900">{event.title}</h4>
-                    <p className="text-sm text-gray-500">{event.description}</p>
-                    <div className="mt-1 text-xs text-gray-400">
+                    <h4 className="text-sm font-medium text-white">{event.title}</h4>
+                    <p className="text-sm text-gray-400">{event.description}</p>
+                    <div className="mt-1 text-xs text-gray-500">
                       {new Date(event.event_date).toLocaleDateString()} at {event.event_time}
                       {event.location && ` • ${event.location}`}
                     </div>
                   </div>
                   <button
                     onClick={() => handleEventClick(event)}
-                    className="text-blue-600 hover:text-blue-800 text-sm"
+                    className="text-baywatch-orange hover:text-white text-sm"
                   >
                     Edit
                   </button>
                 </div>
               ))}
             {events.filter(event => new Date(event.event_date) >= new Date()).length === 0 && (
-              <div className="px-6 py-8 text-center text-gray-500">
+              <div className="px-6 py-8 text-center text-gray-400">
                 No upcoming events
               </div>
             )}
@@ -269,26 +269,28 @@ const Calendar: React.FC = () => {
 
       {/* Event Modal */}
       {showModal && currentEvent && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="relative p-8 bg-white w-full max-w-md m-auto rounded-lg shadow-lg">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">{isEditMode ? 'Edit Event' : 'Add New Event'}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+          <div className="relative p-8 bg-black w-full max-w-md m-auto rounded-lg shadow-lg border border-gray-700">
+            <h3 className="text-lg font-medium text-white mb-4">{isEditMode ? 'Edit Event' : 'Add New Event'}</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Title</label>
                 <input
                   type="text"
+                  placeholder="Title"
                   value={currentEvent.title || ''}
                   onChange={(e) => setCurrentEvent({ ...currentEvent, title: e.target.value })}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Description</label>
                 <textarea
+                  placeholder="Description"
                   value={currentEvent.description || ''}
                   onChange={(e) => setCurrentEvent({ ...currentEvent, description: e.target.value })}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                   rows={3}
                 />
               </div>
@@ -298,7 +300,7 @@ const Calendar: React.FC = () => {
                   type="date"
                   value={currentEvent.event_date || ''}
                   onChange={(e) => setCurrentEvent({ ...currentEvent, event_date: e.target.value })}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                   required
                 />
               </div>
@@ -308,16 +310,17 @@ const Calendar: React.FC = () => {
                   type="time"
                   value={currentEvent.event_time || ''}
                   onChange={(e) => setCurrentEvent({ ...currentEvent, event_time: e.target.value })}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Location</label>
                 <input
                   type="text"
+                  placeholder="Location"
                   value={currentEvent.location || ''}
                   onChange={(e) => setCurrentEvent({ ...currentEvent, location: e.target.value })}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full bg-black border-gray-600 text-gray-100 rounded-md shadow-sm focus:outline-none"
                 />
               </div>
             </div>
@@ -326,7 +329,7 @@ const Calendar: React.FC = () => {
                 {isEditMode && user?.isAdmin && (
                   <button
                     onClick={() => deleteEvent(currentEvent.id!)}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+                    className="px-4 py-2 text-sm font-medium text-white bg-transparent hover:text-baywatch-orange rounded-md"
                   >
                     Delete
                   </button>
@@ -339,13 +342,13 @@ const Calendar: React.FC = () => {
                     setCurrentEvent(null);
                     setIsEditMode(false);
                   }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-white bg-transparent hover:text-baywatch-orange rounded-md"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={saveEvent}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                  className="px-4 py-2 text-sm font-medium text-white bg-baywatch-orange hover:bg-baywatch-orange/70 rounded-md"
                 >
                   {isEditMode ? 'Save Changes' : 'Create Event'}
                 </button>

@@ -160,15 +160,17 @@ const DirectMessages: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-100">
+    <div className="flex h-screen bg-black text-gray-100">
       {/* Sidebar */}
-      <div className="w-64 bg-gray-800 flex flex-col">
-        <div className="p-4 border-b border-gray-700">
-          <h2 className="text-xl font-bold">Messages</h2>
+      <div className="w-64 bg-black flex flex-col">
+        <div className="px-2">
+          <div className="p-4 border-b border-gray-700">
+            <h2 className="text-xl font-bold">Messages</h2>
+          </div>
         </div>
         {isUsersLoading ? (
           <div className="flex items-center justify-center p-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-baywatch-orange"></div>
           </div>
         ) : (
           <nav className="flex-1 p-2 space-y-2 overflow-y-auto custom-scrollbar">
@@ -176,8 +178,8 @@ const DirectMessages: React.FC = () => {
               <button
                 key={u.id}
                 onClick={() => setSelectedUser(u)}
-                className={`w-full flex items-center space-x-3 py-2 px-3 rounded-md transition-colors duration-150 ${
-                  selectedUser?.id === u.id ? 'bg-blue-700 text-white' : 'hover:bg-gray-700'
+                className={`w-full flex items-center space-x-3 py-2 px-3 rounded-md transition-colors duration-200 ${
+                  selectedUser?.id === u.id ? 'bg-baywatch-orange text-white hover:text-white' : 'hover:text-baywatch-orange'
                 }`}
               >
                 <div
@@ -201,20 +203,22 @@ const DirectMessages: React.FC = () => {
       {/* Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-gray-800 p-4 border-b border-gray-700 flex items-center justify-between">
-          <h2 className="text-xl font-bold">
-            {selectedUser ? selectedUser.username : 'Select a user'}
-          </h2>
-          <div className="flex items-center">
-            <div
-              className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
-              style={{ backgroundColor: user?.username ? generateColor(user.username) : '#007bff' }}
-            >
-              {user?.username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
-            </div>
-            <div>
-              <p className="font-semibold">{user?.username}</p>
-              <p className="text-sm text-gray-400">Online</p>
+        <div className="bg-black px-2">
+          <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+            <h2 className="text-xl font-bold">
+              {selectedUser ? selectedUser.username : 'Select a user'}
+            </h2>
+            <div className="flex items-center">
+              <div
+                className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
+                style={{ backgroundColor: user?.username ? generateColor(user.username) : '#007bff' }}
+              >
+                {user?.username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+              </div>
+              <div>
+                <p className="font-semibold">{user?.username}</p>
+                <p className="text-sm text-gray-400">Online</p>
+              </div>
             </div>
           </div>
         </div>
@@ -233,7 +237,7 @@ const DirectMessages: React.FC = () => {
         <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
           {isMessagesLoading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-baywatch-orange"></div>
             </div>
           ) : selectedUser ? (
             messages.length > 0 ? (
@@ -298,24 +302,26 @@ const DirectMessages: React.FC = () => {
         </div>
 
         {/* Message input */}
-        <div className="bg-gray-800 p-4 border-t border-gray-700">
-          <form onSubmit={handleSendMessage} className="flex">
-            <input
-              type="text"
-              value={messageInput}
-              onChange={e => setMessageInput(e.target.value)}
-              placeholder={selectedUser ? `Message ${selectedUser.username}` : 'Select a user...'}
-              className="flex-1 bg-gray-700 text-gray-100 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={!selectedUser}
-            />
-            <button
-              type="submit"
-              className="ml-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200"
-              disabled={!selectedUser || !messageInput.trim()}
-            >
-              Send
-            </button>
-          </form>
+        <div className="bg-black px-2">
+          <div className="p-4 border-t border-gray-700">
+            <form onSubmit={handleSendMessage} className="flex">
+              <input
+                type="text"
+                value={messageInput}
+                onChange={e => setMessageInput(e.target.value)}
+                placeholder={selectedUser ? `Message ${selectedUser.username}` : 'Select a user...'}
+                className="flex-1 bg-black text-gray-100 rounded-md px-4 py-2 focus:outline-none"
+                disabled={!selectedUser}
+              />
+              <button
+                type="submit"
+                className="ml-3 bg-baywatch-orange hover:bg-baywatch-orange/70 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200"
+                disabled={!selectedUser || !messageInput.trim()}
+              >
+                Send
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

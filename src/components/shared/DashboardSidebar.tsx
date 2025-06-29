@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { HashtagIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import { HashtagIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon, ChatBubbleLeftRightIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
 
 export default function DashboardSidebar() {
   const { user, logout } = useAuth();
@@ -25,52 +25,53 @@ export default function DashboardSidebar() {
   ];
 
   return (
-    <div className="flex flex-col w-64 bg-gray-800 text-white">
-      <div className="flex items-center justify-center h-20 border-b border-gray-700">
-        <Link to="/" className="flex items-center space-x-2">
-          <img src="/assets/images/logo.svg" alt="Baywatch Robotics Logo" className="w-12 h-12" />
-          <span className="text-xl font-bold">Baywatch</span>
-        </Link>
+    <div className="flex flex-col w-16 bg-black text-white">
+      {/* Header with inset divider */}
+      <div className="flex items-center justify-center h-16 px-2">
+        <div className="flex-1 flex items-center justify-center border-b border-gray-700">
+          <Link to="/" className="flex items-center mb-2 space-x-2">
+            <img src="/assets/images/logo.svg" alt="Baywatch Robotics  Logo" className="w-12 h-12" />
+          </Link>
+        </div>
       </div>
       <nav className="flex-1 px-2 py-4 space-y-2">
         {navigation.map((item) => (
           <Link
             key={item.name}
             to={item.href}
-            className={`flex items-center px-4 py-2 text-sm font-medium rounded-md hover:bg-gray-700 ${
-              location.pathname === item.href ? 'bg-gray-900' : ''
+            className={`flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
+              location.pathname === item.href ? 'bg-baywatch-orange text-white hover:text-white' : ''
             }`}
           >
-            <item.icon className="w-6 h-6 mr-3" />
-            {item.name}
+            <item.icon className="w-6 h-6" />
           </Link>
         ))}
         {user?.isAdmin && (
           <div className="pt-4 mt-4 space-y-2 border-t border-gray-700">
-            <h3 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</h3>
             {adminNavigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center px-4 py-2 text-sm font-medium rounded-md hover:bg-gray-700 ${
-                  location.pathname === item.href ? 'bg-gray-900' : ''
+                className={`flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
+                  location.pathname === item.href ? 'bg-baywatch-orange text-white hover:text-white' : ''
                 }`}
               >
-                <item.icon className="w-6 h-6 mr-3" />
-                {item.name}
+                <item.icon className="w-6 h-6" />
               </Link>
             ))}
           </div>
         )}
       </nav>
-      <div className="border-t border-gray-700 p-4">
-        <button
-          onClick={handleLogout}
-          className="flex items-center w-full px-4 py-2 text-sm font-medium rounded-md hover:bg-gray-700"
-        >
-          <i className="fa-solid fa-right-from-bracket w-6 h-6 mr-3"></i>
-          Logout
-        </button>
+      {/* Footer with inset divider */}
+      <div className="px-2">
+        <div className="border-t border-gray-700 p-4">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange"
+          >
+            <ArrowRightStartOnRectangleIcon className="w-6 h-6" />
+          </button>
+        </div>
       </div>
     </div>
   );

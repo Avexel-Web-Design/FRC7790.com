@@ -492,101 +492,103 @@ const Channels: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900 text-gray-100">
+    <div className="flex h-screen bg-black text-gray-100">
       {/* Sidebar */}
-      <div className="w-64 bg-gray-800 flex flex-col">
-        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-          <h2 className="text-xl font-bold">Channels</h2>
-          {user?.isAdmin && (
-            <button
-              onClick={openCreateModal}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-1"
-              title="Create new channel"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </button>
+      <div className="w-64 bg-black flex flex-col">
+        <div className="px-2">
+          <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+            <h2 className="text-xl font-bold">Channels</h2>
+            {user?.isAdmin && (
+              <button
+                onClick={openCreateModal}
+                className="bg-black hover:bg-baywatch-orange text-baywatch-orange hover:text-white rounded-full p-1"
+                title="Create new channel"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
+          </div>
+          
+          {isChannelsLoading ? (
+            <div className="flex items-center justify-center p-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-baywatch-orange"></div>
+            </div>
+          ) : (
+            <nav className="flex-1 p-2 space-y-2">
+              {channels.map((channel) => (
+                <div 
+                  key={channel.id} 
+                  className={`flex items-center justify-between ${
+                    dragOverChannelId === channel.id ? 'border-2 border-baywatch-orange border-dashed bg-baywatch-orange bg-opacity-25' : ''
+                  } ${
+                    draggedChannel?.id === channel.id ? 'opacity-50' : ''
+                  } rounded-md`}
+                  draggable={user?.isAdmin}
+                  onDragStart={(e) => handleDragStart(e, channel)}
+                  onDragOver={(e) => handleDragOver(e, channel.id)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, channel)}
+                >
+                  <button
+                    onClick={() => handleChannelClick(channel)}
+                    className={`flex-1 text-left py-2 px-3 rounded-md transition-colors duration-200 ${
+                      selectedChannel?.id === channel.id 
+                        ? 'bg-baywatch-orange text-white hover:text-white' 
+                        : 'hover:text-baywatch-orange'
+                    }`}
+                  >
+                    {channel.name}
+                  </button>
+                  {user?.isAdmin && channel.id !== 'general' && (
+                    <div className="flex space-x-1 pr-2">
+                      <button
+                        onClick={() => openEditModal(channel)}
+                        className="text-gray-400 hover:text-baywatch-orange"
+                        title="Edit channel"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteChannel(channel)}
+                        className="text-gray-400 hover:text-red-500"
+                        title="Delete channel"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
           )}
         </div>
-        
-        {isChannelsLoading ? (
-          <div className="flex items-center justify-center p-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : (
-          <nav className="flex-1 p-2 space-y-2">
-            {channels.map((channel) => (
-              <div 
-                key={channel.id} 
-                className={`flex items-center justify-between ${
-                  dragOverChannelId === channel.id ? 'border-2 border-blue-500 border-dashed bg-blue-900 bg-opacity-25' : ''
-                } ${
-                  draggedChannel?.id === channel.id ? 'opacity-50' : ''
-                } rounded-md`}
-                draggable={user?.isAdmin}
-                onDragStart={(e) => handleDragStart(e, channel)}
-                onDragOver={(e) => handleDragOver(e, channel.id)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, channel)}
-              >
-                <button
-                  onClick={() => handleChannelClick(channel)}
-                  className={`flex-1 text-left py-2 px-3 rounded-md transition-colors duration-200 ${
-                    selectedChannel?.id === channel.id 
-                      ? 'bg-blue-700 text-white' 
-                      : 'hover:bg-gray-700'
-                  } ${
-                    user?.isAdmin ? 'cursor-move' : ''
-                  }`}
-                >
-                  {channel.name}
-                </button>
-                {user?.isAdmin && channel.id !== 'general' && (
-                  <div className="flex space-x-1 pr-2">
-                    <button
-                      onClick={() => openEditModal(channel)}
-                      className="text-gray-400 hover:text-white"
-                      title="Edit channel"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleDeleteChannel(channel)}
-                      className="text-gray-400 hover:text-red-500"
-                      title="Delete channel"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
-        )}
       </div>
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Chat Header */}
-        <div className="bg-gray-800 p-4 border-b border-gray-700 flex items-center justify-between">
-          <h2 className="text-xl font-bold">
-            {selectedChannel ? selectedChannel.name : 'Select a Channel'}
-          </h2>
-          <div className="flex items-center">
-            <div
-              className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
-              style={{ backgroundColor: user?.username ? generateColor(user.username) : '#007bff' }}
-            >
-              {user?.username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
-            </div>
-            <div>
-              <p className="font-semibold">{user?.username}</p>
-              <p className="text-sm text-gray-400">Online</p>
+        <div className="bg-black px-2">
+          <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+            <h2 className="text-xl font-bold">
+              {selectedChannel ? selectedChannel.name : 'Select a Channel'}
+            </h2>
+            <div className="flex items-center">
+              <div
+                className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
+                style={{ backgroundColor: user?.username ? generateColor(user.username) : '#007bff' }}
+              >
+                {user?.username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+              </div>
+              <div>
+                <p className="font-semibold">{user?.username}</p>
+                <p className="text-sm text-gray-400">Online</p>
+              </div>
             </div>
           </div>
         </div>
@@ -603,7 +605,7 @@ const Channels: React.FC = () => {
         <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
           {isMessagesLoading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-baywatch-orange"></div>
             </div>
           ) : selectedChannel ? (
             messages.length > 0 ? (
@@ -654,31 +656,33 @@ const Channels: React.FC = () => {
         </div>
 
         {/* Message Input */}
-        <div className="bg-gray-800 p-4 border-t border-gray-700">
-          <form onSubmit={handleSendMessage} className="flex">
-            <input
-              type="text"
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              placeholder={selectedChannel ? `Message ${selectedChannel.name}` : 'Select a channel to type...'}
-              className="flex-1 bg-gray-700 text-gray-100 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={!selectedChannel}
-            />
-            <button
-              type="submit"
-              className="ml-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200"
-              disabled={!selectedChannel || !messageInput.trim()}
-            >
-              Send
-            </button>
-          </form>
+        <div className="bg-black px-2">
+          <div className="p-4 border-t border-gray-700">
+            <form onSubmit={handleSendMessage} className="flex">
+              <input
+                type="text"
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                placeholder={selectedChannel ? `Message ${selectedChannel.name}` : 'Select a channel to type...'}
+                className="flex-1 bg-black text-gray-100 rounded-md px-4 py-2 focus:outline-none"
+                disabled={!selectedChannel}
+              />
+              <button
+                type="submit"
+                className="ml-3 bg-baywatch-orange hover:bg-baywatch-orange/70 text-white cursor-pointer font-bold py-2 px-4 rounded-md transition-colors duration-200"
+                disabled={!selectedChannel || !messageInput.trim()}
+              >
+                Send
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
       {/* Channel Management Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+          <div className="bg-gray-900 rounded-lg shadow-xl p-6 w-full max-w-md">
             <h3 className="text-xl font-bold mb-4">
               {modalType === 'create' ? 'Create New Channel' : 'Edit Channel'}
             </h3>
@@ -696,7 +700,7 @@ const Channels: React.FC = () => {
                     id="channelName"
                     value={channelName}
                     onChange={(e) => setChannelName(e.target.value)}
-                    className="flex-1 bg-gray-700 text-gray-100 border border-gray-600 rounded-r-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 bg-gray-700 text-gray-100 border border-gray-600 rounded-r-md px-3 py-2 focus:outline-none"
                     placeholder="channel-name"
                     required
                   />
@@ -707,7 +711,7 @@ const Channels: React.FC = () => {
                 <label className="inline-flex items-center">
                   <input
                     type="checkbox"
-                    className="form-checkbox h-4 w-4 text-blue-600"
+                    className="form-checkbox h-4 w-4 text-baywatch-orange"
                     checked={isPrivate}
                     onChange={(e) => setIsPrivate(e.target.checked)}
                   />
@@ -725,7 +729,7 @@ const Channels: React.FC = () => {
                       <label key={u.id} className="flex items-center space-x-2 py-1">
                         <input
                           type="checkbox"
-                          className="form-checkbox h-4 w-4 text-blue-600"
+                          className="form-checkbox h-4 w-4 text-baywatch-orange"
                           checked={selectedMembers.includes(u.id)}
                           onChange={() => {
                             setSelectedMembers((prev) =>
@@ -751,14 +755,14 @@ const Channels: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-md transition-colors"
+                  className="px-4 py-2 bg-transparent hover:text-baywatch-orange text-white font-medium rounded-md transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!channelName.trim() || isLoading}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-transparent hover:text-baywatch-orange text-white font-medium rounded-md transition-colors disabled:opacity-50"
                 >
                   {isLoading ? 'Processing...' : modalType === 'create' ? 'Create' : 'Save'}
                 </button>
