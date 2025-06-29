@@ -41,7 +41,6 @@ const Channels: React.FC = () => {
   // Drag and drop state
   const [draggedChannel, setDraggedChannel] = useState<Channel | null>(null);
   const [dragOverChannelId, setDragOverChannelId] = useState<string | null>(null);
-  const [isReordering, setIsReordering] = useState(false);
   
   // Admin modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -444,7 +443,6 @@ const Channels: React.FC = () => {
     
     // Send update to server
     try {
-      setIsReordering(true);
       const response = await frcAPI.post('/chat/channels/reorder', {
         channels: updatedChannels.map(c => ({ id: c.id, position: c.position }))
       });
@@ -476,8 +474,6 @@ const Channels: React.FC = () => {
       } catch {
         // Ignore error from refresh attempt
       }
-    } finally {
-      setIsReordering(false);
     }
   };
 
