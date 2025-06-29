@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { UserIcon, UsersIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { generateColor } from '../../../utils/color';
 
 interface User {
   id: number;
@@ -239,9 +240,12 @@ const AdminUsers: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-300">
-                              {userItem.username.charAt(0).toUpperCase()}
+                          <div 
+                            className="h-10 w-10 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: generateColor(userItem.username) }}
+                          >
+                            <span className="text-md font-bold text-white">
+                              {userItem.username.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
                             </span>
                           </div>
                         </div>
