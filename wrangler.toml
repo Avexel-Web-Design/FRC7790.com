@@ -10,7 +10,7 @@ JWT_SECRET = "dev-jwt-secret-for-local-development"
 [[d1_databases]]
 binding = "DB"
 database_name = "frc7790-com-dev"
-database_id = "c3e6bd17-db32-4f95-a9d1-1103a1e71e1c"
+database_id = "278373e6-1ee1-4452-a3d1-805776a2ef1f"
 
 # Production environment (used by Pages automatic deployments)
 [env.production]
@@ -19,4 +19,4 @@ vars = { JWT_SECRET = "frc7790-baywatch-production-jwt-secret-2025-secure-key-ch
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "frc7790-com"
-database_id = "0eee2b56-cbe7-4dc6-97b6-adb6b93c4ca1"
+database_id = "b0e149bc-8221-4d2d-9c84-a51ae18968c6"
