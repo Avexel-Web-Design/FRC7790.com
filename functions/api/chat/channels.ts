@@ -23,21 +23,23 @@ export async function getChannels(c: Context): Promise<Response> {
       const isAdmin = adminRow && (adminRow as { is_admin: number }).is_admin === 1;
 
       if (isAdmin) {
-        const { results } = await c.env.DB.prepare('SELECT * FROM channels ORDER BY position ASC').all();
+        // Filter out DM channels (those starting with "dm_")
+        const { results } = await c.env.DB.prepare('SELECT * FROM channels WHERE id NOT LIKE "dm_%" ORDER BY position ASC').all();
         channels = results;
       } else {
+        // Filter out DM channels for non-admin users too
         const { results } = await c.env.DB.prepare(
           `SELECT DISTINCT channels.*
            FROM channels
            LEFT JOIN channel_members ON channels.id = channel_members.channel_id AND channel_members.user_id = ?
-           WHERE channels.is_private = 0 OR channel_members.user_id = ?
+           WHERE channels.id NOT LIKE "dm_%" AND (channels.is_private = 0 OR channel_members.user_id = ?)
            ORDER BY channels.position ASC`
         ).bind(userId, userId).all();
         channels = results;
       }
     } else {
-      // No user specified – return only public channels
-      const { results } = await c.env.DB.prepare('SELECT * FROM channels WHERE is_private = 0 ORDER BY position ASC').all();
+      // No user specified – return only public channels, excluding DMs
+      const { results } = await c.env.DB.prepare('SELECT * FROM channels WHERE is_private = 0 AND id NOT LIKE "dm_%" ORDER BY position ASC').all();
       channels = results;
     }
 

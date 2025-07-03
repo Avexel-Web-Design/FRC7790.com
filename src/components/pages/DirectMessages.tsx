@@ -78,19 +78,12 @@ const DirectMessages: React.FC = () => {
       setIsMessagesLoading(true);
       setError(null);
       try {
-        const resp = await frcAPI.get(`/chat/messages/${convId}?user_id=${user.id}`);
+        const resp = await frcAPI.get(`/chat/messages/dm/${convId}?user_id=${user.id}`);
         if (resp.ok) {
           const data = await resp.json();
           setMessages(data);
         } else if (resp.status === 404) {
-          // Conversation not yet created – attempt to create hidden channel
-          await frcAPI.post('/chat/channels', {
-            id: convId,
-            name: `DM with ${selectedUser.username}`,
-            created_by: user.id,
-            is_private: true,
-            members: [user.id, selectedUser.id]
-          });
+          // No messages yet - that's fine, we'll create them when sending
           setMessages([]);
         } else {
           setError(`Failed to fetch messages: ${resp.statusText}`);
@@ -118,12 +111,12 @@ const DirectMessages: React.FC = () => {
     if (!messageInput.trim() || !selectedUser || !user) return;
     const convId = getConversationId(user.id, selectedUser.id);
     try {
-      const resp = await frcAPI.post(`/chat/messages/${convId}`, {
+      const resp = await frcAPI.post(`/chat/messages/dm/${convId}`, {
         content: messageInput.trim(),
         sender_id: user.id,
       });
       if (resp.ok) {
-        const updated = await frcAPI.get(`/chat/messages/${convId}?user_id=${user.id}`);
+        const updated = await frcAPI.get(`/chat/messages/dm/${convId}?user_id=${user.id}`);
         if (updated.ok) {
           setMessages(await updated.json());
         }
