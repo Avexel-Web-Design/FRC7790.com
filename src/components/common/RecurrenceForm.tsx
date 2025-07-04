@@ -59,7 +59,7 @@ const RecurrenceForm: React.FC<RecurrenceFormProps> = ({ recurrence, onChange, e
   };
 
   const toggleDayOfWeek = (day: string) => {
-    const current = recurrence.daysOfWeek || [];
+    const current = recurrence.daysOfWeek || [getEventDayOfWeek()];
     const updated = current.includes(day)
       ? current.filter(d => d !== day)
       : [...current, day];
