@@ -3087,6 +3087,87 @@ async function getUsers(c) {
 }
 __name(getUsers, "getUsers");
 __name2(getUsers, "getUsers");
+async function getUsersByRecentActivity(c) {
+  try {
+    const userIdStr = c.req.query("user_id");
+    if (!userIdStr) {
+      return new Response("User ID is required", { status: 400 });
+    }
+    const userId = Number(userIdStr);
+    const userIdString = userIdStr;
+    console.log(`getUsersByRecentActivity called for user ${userId}`);
+    const { results: allUsers } = await c.env.DB.prepare(
+      "SELECT id, username, is_admin FROM users WHERE id != ? ORDER BY username COLLATE NOCASE ASC"
+    ).bind(userId).all();
+    console.log(`Found ${allUsers.length} users (excluding current user)`);
+    const { results: recentMessages } = await c.env.DB.prepare(`
+      SELECT 
+        m.channel_id,
+        MAX(m.timestamp) as last_message_time
+      FROM messages m
+      WHERE m.channel_id LIKE 'dm_%'
+        AND (
+          m.channel_id LIKE 'dm_' || ? || '_%' 
+          OR m.channel_id LIKE 'dm_%_' || ?
+        )
+      GROUP BY m.channel_id
+      ORDER BY last_message_time DESC
+    `).bind(userIdString, userIdString).all();
+    console.log(`Found ${recentMessages.length} DM conversations:`, recentMessages);
+    const { results: allDMMessages } = await c.env.DB.prepare(`
+      SELECT channel_id, timestamp, sender_id 
+      FROM messages 
+      WHERE channel_id LIKE 'dm_%' 
+      ORDER BY timestamp DESC 
+      LIMIT 10
+    `).all();
+    console.log(`Sample DM messages in database:`, allDMMessages);
+    const userLastMessageMap = /* @__PURE__ */ new Map();
+    for (const msg of recentMessages) {
+      const channelId = msg.channel_id;
+      const parts = channelId.split("_");
+      if (parts.length === 3) {
+        const user1Id = parseInt(parts[1]);
+        const user2Id = parseInt(parts[2]);
+        const otherUserId = user1Id === userId ? user2Id : user1Id;
+        if (!userLastMessageMap.has(otherUserId)) {
+          userLastMessageMap.set(otherUserId, msg.last_message_time);
+          console.log(`Mapped user ${otherUserId} to timestamp ${msg.last_message_time}`);
+        }
+      }
+    }
+    const usersWithActivity = allUsers.map((user) => ({
+      ...user,
+      last_message_time: userLastMessageMap.get(user.id) || ""
+    }));
+    usersWithActivity.sort((a, b) => {
+      const aHasMessages = !!a.last_message_time;
+      const bHasMessages = !!b.last_message_time;
+      if (aHasMessages && bHasMessages) {
+        return b.last_message_time.localeCompare(a.last_message_time);
+      } else if (aHasMessages && !bHasMessages) {
+        return -1;
+      } else if (!aHasMessages && bHasMessages) {
+        return 1;
+      } else {
+        return a.username.localeCompare(b.username, void 0, { sensitivity: "base" });
+      }
+    });
+    console.log("Final sorted result:", usersWithActivity.map((u) => ({
+      id: u.id,
+      username: u.username,
+      last_message_time: u.last_message_time
+    })));
+    return new Response(JSON.stringify(usersWithActivity), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Error fetching users by recent activity", error);
+    return new Response("Error fetching users by recent activity", { status: 500 });
+  }
+}
+__name(getUsersByRecentActivity, "getUsersByRecentActivity");
+__name2(getUsersByRecentActivity, "getUsersByRecentActivity");
 var chat = new Hono2();
 chat.get("/debug", async (c) => {
   const authHeader = c.req.header("Authorization");
@@ -3133,6 +3214,7 @@ chat.put("/channels/:channelId", updateChannel);
 chat.delete("/channels/:channelId", deleteChannel);
 chat.post("/channels/reorder", reorderChannels);
 chat.get("/users", getUsers);
+chat.get("/users/recent", getUsersByRecentActivity);
 var chat_default = chat;
 var app = new Hono2().basePath("/api");
 app.use("*", corsMiddleware);

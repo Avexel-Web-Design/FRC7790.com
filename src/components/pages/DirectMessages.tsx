@@ -16,6 +16,7 @@ interface SimpleUser {
   id: number;
   username: string;
   is_admin?: number;
+  last_message_time?: string;
 }
 
 const DirectMessages: React.FC = () => {
@@ -45,28 +46,42 @@ const DirectMessages: React.FC = () => {
     return `dm_${a}_${b}`;
   };
 
-  /** Fetch list of users (excluding current) */
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
+  /** Fetch list of users (excluding current) sorted by recent activity */
+  const fetchUsers = async (maintainSelection: boolean = false) => {
+    if (!user) return;
+    
+    try {
+      if (!maintainSelection) {
         setIsUsersLoading(true);
-        setError(null);
-        const resp = await frcAPI.get('/chat/users');
-        if (resp.ok) {
-          const data = await resp.json();
-          const list = (data as SimpleUser[]).filter(u => u.id !== user?.id);
+      }
+      setError(null);
+      const resp = await frcAPI.get(`/chat/users/recent?user_id=${user.id}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        setUsers(data as SimpleUser[]);
+      } else {
+        // Fallback to basic user list if recent activity endpoint fails
+        const fallbackResp = await frcAPI.get('/chat/users');
+        if (fallbackResp.ok) {
+          const fallbackData = await fallbackResp.json();
+          const list = (fallbackData as SimpleUser[]).filter(u => u.id !== user?.id);
           setUsers(list);
         } else {
           setUsers([]);
         }
-      } catch (err) {
-        console.error('Error fetching users', err);
-        setError('Error loading users.');
-      } finally {
+      }
+    } catch (err) {
+      console.error('Error fetching users', err);
+      setError('Error loading users.');
+    } finally {
+      if (!maintainSelection) {
         setIsUsersLoading(false);
       }
-    };
+    }
+  };
 
+  /** Fetch list of users (excluding current) */
+  useEffect(() => {
     if (user) fetchUsers();
   }, [user]);
 
@@ -110,17 +125,36 @@ const DirectMessages: React.FC = () => {
     e.preventDefault();
     if (!messageInput.trim() || !selectedUser || !user) return;
     const convId = getConversationId(user.id, selectedUser.id);
+    const currentTime = new Date().toISOString();
+    
     try {
       const resp = await frcAPI.post(`/chat/messages/dm/${convId}`, {
         content: messageInput.trim(),
         sender_id: user.id,
       });
       if (resp.ok) {
+        // Clear the input immediately for better UX
+        setMessageInput('');
+        
+        // Immediately move the selected user to the top with the current timestamp
+        setUsers(currentUsers => {
+          const userIndex = currentUsers.findIndex(u => u.id === selectedUser.id);
+          if (userIndex >= 0) {
+            const updatedUsers = [...currentUsers];
+            const [movedUser] = updatedUsers.splice(userIndex, 1);
+            // Update the last_message_time to current time
+            movedUser.last_message_time = currentTime;
+            updatedUsers.unshift(movedUser);
+            return updatedUsers;
+          }
+          return currentUsers;
+        });
+        
+        // Refresh messages for current conversation
         const updated = await frcAPI.get(`/chat/messages/dm/${convId}?user_id=${user.id}`);
         if (updated.ok) {
           setMessages(await updated.json());
         }
-        setMessageInput('');
       }
     } catch (err) {
       console.error('Error sending message', err);
@@ -175,16 +209,18 @@ const DirectMessages: React.FC = () => {
                   selectedUser?.id === u.id ? 'bg-baywatch-orange text-white hover:text-white' : 'hover:text-baywatch-orange'
                 }`}
               >
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: generateColor(u.username) }}
-                >
-                  {u.username
-                    .split(' ')
-                    .map(n => n[0])
-                    .join('')
-                    .toUpperCase()
-                    .substring(0, 2)}
+                <div className="relative">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                    style={{ backgroundColor: generateColor(u.username) }}
+                  >
+                    {u.username
+                      .split(' ')
+                      .map(n => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .substring(0, 2)}
+                  </div>
                 </div>
                 <span>{u.username}</span>
               </button>
