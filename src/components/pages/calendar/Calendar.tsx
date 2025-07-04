@@ -2,6 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import RecurrenceForm from '../../common/RecurrenceForm';
 
+// Utility function to format time from 24-hour to 12-hour format
+const formatTime = (time24: string): string => {
+  if (!time24) return '';
+  
+  const [hours, minutes] = time24.split(':');
+  const hour24 = parseInt(hours, 10);
+  const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+  const ampm = hour24 >= 12 ? 'PM' : 'AM';
+  
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
 interface RecurrenceConfig {
   type: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
   interval: number;
@@ -29,6 +41,19 @@ interface CalendarEvent {
   recurrence?: RecurrenceConfig;
   parent_event_id?: number;
   is_recurring_instance?: boolean;
+  update_series?: boolean; // For editing recurring series
+  // Raw database fields for recurrence
+  recurrence_type?: string;
+  recurrence_interval?: number;
+  recurrence_days_of_week?: string;
+  recurrence_day_of_month?: number;
+  recurrence_week_of_month?: number;
+  recurrence_day_of_week?: string;
+  recurrence_months?: string;
+  recurrence_end_type?: string;
+  recurrence_end_date?: string;
+  recurrence_occurrences?: number;
+  recurrence_exceptions?: string;
 }
 
 const Calendar: React.FC = () => {
@@ -74,16 +99,41 @@ const Calendar: React.FC = () => {
     if (!currentEvent) return;
 
     const method = isEditMode ? 'PUT' : 'POST';
-    const eventId = typeof currentEvent.id === 'string' && currentEvent.id.includes('_') 
-      ? currentEvent.parent_event_id 
-      : currentEvent.id;
+    
+    // For recurring instances, we need to send the parent event ID since
+    // the instance ID doesn't exist in the database
+    let eventId = currentEvent.id;
+    if (typeof currentEvent.id === 'string' && currentEvent.id.includes('_')) {
+      // This is a recurring instance - use the parent ID
+      eventId = currentEvent.parent_event_id;
+    }
+    
     const url = isEditMode ? `/api/calendar/${eventId}` : '/api/calendar';
 
     const eventData = {
       ...currentEvent,
-      is_recurring: showRecurrenceOptions,
-      recurrence: showRecurrenceOptions ? currentEvent.recurrence : undefined
+      is_recurring: isEditMode 
+        ? (currentEvent.is_recurring || currentEvent.is_recurring_instance || showRecurrenceOptions)
+        : showRecurrenceOptions,
+      recurrence: (isEditMode && (currentEvent.is_recurring || currentEvent.is_recurring_instance)) || showRecurrenceOptions 
+        ? currentEvent.recurrence 
+        : undefined,
+      update_series: currentEvent.update_series || false,
+      // For recurring instances, include the original instance date for backend reference
+      original_instance_date: typeof currentEvent.id === 'string' && currentEvent.id.includes('_') 
+        ? currentEvent.id.split('_')[1] 
+        : undefined
     };
+
+    // Debug logging
+    console.log('saveEvent Debug Info:');
+    console.log('currentEvent.id:', currentEvent.id);
+    console.log('currentEvent.is_recurring_instance:', currentEvent.is_recurring_instance);
+    console.log('original_instance_date:', eventData.original_instance_date);
+    console.log('update_series:', eventData.update_series);
+    console.log('URL:', url);
+    console.log('Method:', method);
+    console.log('EventData:', eventData);
 
     try {
       const token = localStorage.getItem('token');
@@ -109,39 +159,68 @@ const Calendar: React.FC = () => {
   };
 
   const deleteEvent = async (eventId: number | string) => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      try {
-        const token = localStorage.getItem('token');
+    // Check if this is a recurring event or instance
+    const isRecurringInstance = typeof eventId === 'string' && eventId.includes('_');
+    const isRecurringEvent = currentEvent?.is_recurring || currentEvent?.is_recurring_instance;
+    
+    let deleteAllSeries = false;
+    
+    if (isRecurringInstance || isRecurringEvent) {
+      // For recurring events, check if the user wants to delete the entire series
+      // If they have the "Apply to all events in series" checkbox checked, use that
+      if (currentEvent?.update_series) {
+        deleteAllSeries = true;
+      } else {
+        // Otherwise, ask them what they want to do
+        const result = window.confirm(
+          'This is a recurring event. Do you want to delete:\n\n' +
+          'OK = Just this instance\n' +
+          'Cancel = Delete the entire series'
+        );
         
-        // Handle recurring event instances
-        const actualId = typeof eventId === 'string' && eventId.includes('_') 
-          ? eventId.split('_')[0] 
-          : eventId;
-          
-        const response = await fetch(`/api/calendar/${actualId}`, {
-          method: 'DELETE',
-          headers: { 
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` 
-          },
-          body: JSON.stringify({
-            delete_series: typeof eventId === 'string' && eventId.includes('_'),
-            exception_date: typeof eventId === 'string' && eventId.includes('_') 
-              ? eventId.split('_')[1] 
-              : undefined
-          })
-        });
-
-        if (response.ok) {
-          await fetchEvents();
-          setShowModal(false);
-          setCurrentEvent(null);
-          setIsEditMode(false);
-          setShowRecurrenceOptions(false);
+        deleteAllSeries = !result; // If they click Cancel, delete all series
+        
+        if (result === null) {
+          return; // User cancelled with X button
         }
-      } catch (error) {
-        console.error('Error deleting event:', error);
       }
+    } else {
+      if (!window.confirm('Are you sure you want to delete this event?')) {
+        return;
+      }
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Handle recurring event instances
+      const actualId = isRecurringInstance 
+        ? eventId.split('_')[0] 
+        : eventId;
+        
+      const response = await fetch(`/api/calendar/${actualId}`, {
+        method: 'DELETE',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          delete_series: deleteAllSeries,
+          exception_date: isRecurringInstance && !deleteAllSeries
+            ? eventId.split('_')[1] 
+            : undefined
+        })
+      });
+
+      if (response.ok) {
+        await fetchEvents();
+        setShowModal(false);
+        setCurrentEvent(null);
+        setIsEditMode(false);
+        setShowRecurrenceOptions(false);
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
     }
   };
 
@@ -160,26 +239,81 @@ const Calendar: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleEventClick = (event: CalendarEvent) => {
+  const handleEventClick = async (event: CalendarEvent) => {
     setIsEditMode(true);
     setShowRecurrenceOptions(!!event.is_recurring);
     
-    // If this is a recurring instance, we need to handle it differently
+    // If this is a recurring instance, fetch the parent event data for recurrence settings
     if (event.is_recurring_instance && event.parent_event_id) {
-      // For recurring instances, we might want to fetch the parent event data
-      // For now, we'll just edit this instance
+      try {
+        const response = await fetch(`/api/calendar/${event.parent_event_id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (response.ok) {
+          const parentEvent = await response.json();
+          setCurrentEvent({
+            ...event,
+            recurrence: {
+              type: parentEvent.recurrence_type || 'weekly',
+              interval: parentEvent.recurrence_interval || 1,
+              daysOfWeek: parentEvent.recurrence_days_of_week ? JSON.parse(parentEvent.recurrence_days_of_week) : undefined,
+              dayOfMonth: parentEvent.recurrence_day_of_month,
+              weekOfMonth: parentEvent.recurrence_week_of_month,
+              dayOfWeek: parentEvent.recurrence_day_of_week,
+              months: parentEvent.recurrence_months ? JSON.parse(parentEvent.recurrence_months) : undefined,
+              endType: parentEvent.recurrence_end_type || 'never',
+              endDate: parentEvent.recurrence_end_date,
+              occurrences: parentEvent.recurrence_occurrences,
+              exceptions: parentEvent.recurrence_exceptions ? JSON.parse(parentEvent.recurrence_exceptions) : []
+            }
+          });
+        } else {
+          // Fallback if parent event fetch fails
+          setCurrentEvent({
+            ...event,
+            recurrence: {
+              type: 'weekly',
+              interval: 1,
+              endType: 'never'
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching parent event:', error);
+        setCurrentEvent({
+          ...event,
+          recurrence: {
+            type: 'weekly',
+            interval: 1,
+            endType: 'never'
+          }
+        });
+      }
+    } else if (event.is_recurring) {
+      // This is a parent recurring event, build recurrence config from event data
       setCurrentEvent({
         ...event,
         recurrence: {
-          type: 'weekly',
-          interval: 1,
-          endType: 'never'
+          type: (event.recurrence_type as 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom') || 'weekly',
+          interval: event.recurrence_interval || 1,
+          daysOfWeek: event.recurrence_days_of_week ? JSON.parse(event.recurrence_days_of_week) : undefined,
+          dayOfMonth: event.recurrence_day_of_month,
+          weekOfMonth: event.recurrence_week_of_month,
+          dayOfWeek: event.recurrence_day_of_week,
+          months: event.recurrence_months ? JSON.parse(event.recurrence_months) : undefined,
+          endType: (event.recurrence_end_type as 'never' | 'after_occurrences' | 'end_date') || 'never',
+          endDate: event.recurrence_end_date,
+          occurrences: event.recurrence_occurrences,
+          exceptions: event.recurrence_exceptions ? JSON.parse(event.recurrence_exceptions) : []
         }
       });
     } else {
       setCurrentEvent({
         ...event,
-        recurrence: event.recurrence || {
+        recurrence: {
           type: 'weekly',
           interval: 1,
           endType: 'never'
@@ -316,8 +450,8 @@ const Calendar: React.FC = () => {
                         </div>
                         {event.event_time && (
                           <div className="text-xs opacity-75 mt-0.5">
-                            {event.event_time}
-                            {event.event_end_time && ` - ${event.event_end_time}`}
+                            {formatTime(event.event_time)}
+                            {event.event_end_time && ` - ${formatTime(event.event_end_time)}`}
                           </div>
                         )}
                       </div>
@@ -366,8 +500,8 @@ const Calendar: React.FC = () => {
                     <p className="text-sm text-gray-400 mt-1">{event.description}</p>
                     <div className="mt-1 text-xs text-gray-500">
                       {new Date(event.event_date).toLocaleDateString()}
-                      {event.event_time && ` at ${event.event_time}`}
-                      {event.event_end_time && ` - ${event.event_end_time}`}
+                      {event.event_time && ` at ${formatTime(event.event_time)}`}
+                      {event.event_end_time && ` - ${formatTime(event.event_end_time)}`}
                       {event.location && ` • ${event.location}`}
                     </div>
                   </div>
@@ -467,20 +601,71 @@ const Calendar: React.FC = () => {
                 />
               </div>
 
-              {/* Recurring Options Toggle */}
-              {!currentEvent.is_recurring_instance && (
-                <div>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={showRecurrenceOptions}
-                      onChange={(e) => setShowRecurrenceOptions(e.target.checked)}
-                      className="rounded border-gray-600 text-baywatch-orange focus:ring-baywatch-orange"
-                    />
-                    <span className="text-gray-300">Make this a recurring event</span>
-                  </label>
-                </div>
-              )}
+              {/* Recurring Options */}
+              <div className="space-y-4">
+                {/* For new events */}
+                {!isEditMode && (
+                  <div>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={showRecurrenceOptions}
+                        onChange={(e) => setShowRecurrenceOptions(e.target.checked)}
+                        className="rounded border-gray-600 text-baywatch-orange focus:ring-baywatch-orange"
+                      />
+                      <span className="text-gray-300">Make this a recurring event</span>
+                    </label>
+                  </div>
+                )}
+
+                {/* For editing existing events */}
+                {isEditMode && (currentEvent.is_recurring || currentEvent.is_recurring_instance) && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-300">
+                        {currentEvent.is_recurring_instance ? 'Part of recurring series' : 'Recurring event'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowRecurrenceOptions(!showRecurrenceOptions)}
+                        className="text-sm text-baywatch-orange hover:text-baywatch-orange/80"
+                      >
+                        {showRecurrenceOptions ? 'Hide' : 'Edit'} recurrence settings
+                      </button>
+                    </div>
+                    
+                    {currentEvent.is_recurring_instance && (
+                      <div className="text-sm text-gray-400 bg-gray-800 p-3 rounded border border-gray-600">
+                        <p className="mb-2">You're editing a single occurrence of a recurring event.</p>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={currentEvent.update_series || false}
+                            onChange={(e) => setCurrentEvent({ ...currentEvent, update_series: e.target.checked })}
+                            className="rounded border-gray-600 text-baywatch-orange focus:ring-baywatch-orange"
+                          />
+                          <span>Apply changes to entire series</span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* For non-recurring events being edited */}
+                {isEditMode && !currentEvent.is_recurring && !currentEvent.is_recurring_instance && (
+                  <div>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={showRecurrenceOptions}
+                        onChange={(e) => setShowRecurrenceOptions(e.target.checked)}
+                        className="rounded border-gray-600 text-baywatch-orange focus:ring-baywatch-orange"
+                      />
+                      <span className="text-gray-300">Make this a recurring event</span>
+                    </label>
+                  </div>
+                )}
+              </div>
 
               {/* Recurrence Form */}
               {showRecurrenceOptions && currentEvent.recurrence && (

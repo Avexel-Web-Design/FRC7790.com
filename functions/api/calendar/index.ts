@@ -215,6 +215,18 @@ calendar.get('/', async (c) => {
     const params = startDate && endDate ? [startDate, endDate, startDate, endDate] : [];
     const { results } = await c.env.DB.prepare(query).bind(...params).all();
     
+    // Also get standalone instances (modified recurring instances) in the date range
+    let standaloneInstances = [];
+    if (startDate && endDate) {
+      const { results: standalone } = await c.env.DB.prepare(`
+        SELECT * FROM calendar_events 
+        WHERE parent_event_id IS NOT NULL AND parent_event_id != 0 
+        AND event_date BETWEEN ? AND ?
+        ORDER BY event_date ASC, event_time ASC
+      `).bind(startDate, endDate).all();
+      standaloneInstances = standalone;
+    }
+    
     // Generate recurring event instances if date range is provided
     if (startDate && endDate) {
       const expandedEvents = [];
@@ -229,6 +241,9 @@ calendar.get('/', async (c) => {
           expandedEvents.push(event);
         }
       }
+      
+      // Add standalone instances (these are modified recurring instances)
+      expandedEvents.push(...standaloneInstances);
       
       return c.json(expandedEvents.sort((a, b) => {
         const dateA = new Date(a.event_date + ' ' + (a.event_time || '00:00'));
@@ -321,7 +336,7 @@ calendar.post('/', async (c) => {
 
     const { success } = await c.env.DB.prepare(`
       INSERT INTO calendar_events (
-        title, description, event_date, event_time, recurrence_end_time, location, created_by,
+        title, description, event_date, event_time, event_end_time, location, created_by,
         is_recurring, recurrence_type, recurrence_interval, recurrence_days_of_week,
         recurrence_day_of_month, recurrence_week_of_month, recurrence_day_of_week,
         recurrence_months, recurrence_end_type, recurrence_end_date, 
@@ -362,6 +377,26 @@ calendar.post('/', async (c) => {
   }
 });
 
+// Get individual event by ID
+calendar.get('/:id', async (c) => {
+  try {
+    const { id } = c.req.param();
+    
+    const { results } = await c.env.DB.prepare(
+      'SELECT * FROM calendar_events WHERE id = ?'
+    ).bind(id).all();
+    
+    if (results.length === 0) {
+      return c.json({ error: 'Event not found' }, 404);
+    }
+    
+    return c.json(results[0]);
+  } catch (error) {
+    console.error('Error fetching event:', error);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
+});
+
 calendar.put('/:id', async (c) => {
   try {
     const { id } = c.req.param();
@@ -374,7 +409,8 @@ calendar.put('/:id', async (c) => {
       location, 
       is_recurring, 
       recurrence,
-      update_series
+      update_series,
+      original_instance_date
     } = await c.req.json();
 
     if (!title || !event_date) {
@@ -406,77 +442,171 @@ calendar.put('/:id', async (c) => {
 
     const existingEvent = existingEvents[0];
     
-    // If editing a recurring series (update_series = true), update the parent event
-    const targetId = update_series && existingEvent.parent_event_id ? existingEvent.parent_event_id : id;
+    // Debug logging
+    console.log('PUT /calendar/:id Debug Info:');
+    console.log('ID:', id);
+    console.log('original_instance_date:', original_instance_date);
+    console.log('update_series:', update_series);
+    console.log('existingEvent.is_recurring:', existingEvent.is_recurring);
+    console.log('existingEvent.parent_event_id:', existingEvent.parent_event_id);
+    console.log('existingEvent.recurrence_exceptions:', existingEvent.recurrence_exceptions);
+    
+    // Handle different update scenarios
+    if (original_instance_date && !update_series) {
+      // Editing a single recurring instance - create a new standalone event
+      // and add the original date to the parent's exceptions
+      
+      const parentEvent = existingEvent;
+      
+      // Check if this specific date already has an exception or standalone event
+      const { results: existingStandalone } = await c.env.DB.prepare(
+        'SELECT * FROM calendar_events WHERE parent_event_id = ? AND event_date = ?'
+      ).bind(id, original_instance_date).all();
+      
+      if (existingStandalone.length > 0) {
+        // Update the existing standalone event instead of creating a new one
+        const { success } = await c.env.DB.prepare(`
+          UPDATE calendar_events SET 
+            title = ?, description = ?, event_date = ?, event_time = ?, 
+            event_end_time = ?, location = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `).bind(
+          title,
+          description || null,
+          event_date,
+          event_time || null,
+          event_end_time || null,
+          location || null,
+          existingStandalone[0].id
+        ).run();
+        
+        if (success) {
+          return c.json({ message: 'Recurring instance updated successfully' });
+        }
+        return c.json({ error: 'Failed to update recurring instance' }, 500);
+      } else {
+        // Add the original instance date to exceptions and create new standalone event
+        const currentExceptions = parentEvent.recurrence_exceptions ? 
+          JSON.parse(parentEvent.recurrence_exceptions as string) : [];
+        const updatedExceptions = [...currentExceptions];
+        
+        if (!updatedExceptions.includes(original_instance_date)) {
+          updatedExceptions.push(original_instance_date);
+        }
+        
+        // Update the parent event to include the new exception
+        await c.env.DB.prepare(`
+          UPDATE calendar_events SET 
+            recurrence_exceptions = ?,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `).bind(JSON.stringify(updatedExceptions), id).run();
+        
+        // Create a new standalone event for the modified instance
+        const { success } = await c.env.DB.prepare(`
+          INSERT INTO calendar_events (
+            title, description, event_date, event_time, event_end_time, location, 
+            created_by, is_recurring, parent_event_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
+        `).bind(
+          title,
+          description || null,
+          event_date,
+          event_time || null,
+          event_end_time || null,
+          location || null,
+          parentEvent.created_by,
+          id // Reference to parent for tracking
+        ).run();
+        
+        if (success) {
+          return c.json({ message: 'Recurring instance updated successfully' });
+        }
+        return c.json({ error: 'Failed to update recurring instance' }, 500);
+      }
+      
+    } else {
+      // Either updating the entire series or a regular event
+      // If we have original_instance_date, it means we're editing from a recurring instance
+      // and the ID is already the parent event ID
+      const targetId = id;
+      
+      console.log('Updating series/regular event:');
+      console.log('targetId:', targetId);
+      console.log('is_recurring:', is_recurring);
+      console.log('recurrence provided:', !!recurrence);
 
-    // Prepare recurring event fields
-    const recurrenceFields = is_recurring && recurrence ? {
-      is_recurring: 1,
-      recurrence_type: recurrence.type,
-      recurrence_interval: recurrence.interval || 1,
-      recurrence_days_of_week: recurrence.daysOfWeek ? JSON.stringify(recurrence.daysOfWeek) : null,
-      recurrence_day_of_month: recurrence.dayOfMonth || null,
-      recurrence_week_of_month: recurrence.weekOfMonth || null,
-      recurrence_day_of_week: recurrence.dayOfWeek || null,
-      recurrence_months: recurrence.months ? JSON.stringify(recurrence.months) : null,
-      recurrence_end_type: recurrence.endType || 'never',
-      recurrence_end_date: recurrence.endDate || null,
-      recurrence_occurrences: recurrence.occurrences || null,
-      recurrence_exceptions: recurrence.exceptions ? JSON.stringify(recurrence.exceptions) : null
-    } : {
-      is_recurring: 0,
-      recurrence_type: null,
-      recurrence_interval: null,
-      recurrence_days_of_week: null,
-      recurrence_day_of_month: null,
-      recurrence_week_of_month: null,
-      recurrence_day_of_week: null,
-      recurrence_months: null,
-      recurrence_end_type: null,
-      recurrence_end_date: null,
-      recurrence_occurrences: null,
-      recurrence_exceptions: null
-    };
+      // Prepare recurring event fields
+      const recurrenceFields = is_recurring && recurrence ? {
+        is_recurring: 1,
+        recurrence_type: recurrence.type,
+        recurrence_interval: recurrence.interval || 1,
+        recurrence_days_of_week: recurrence.daysOfWeek ? JSON.stringify(recurrence.daysOfWeek) : null,
+        recurrence_day_of_month: recurrence.dayOfMonth || null,
+        recurrence_week_of_month: recurrence.weekOfMonth || null,
+        recurrence_day_of_week: recurrence.dayOfWeek || null,
+        recurrence_months: recurrence.months ? JSON.stringify(recurrence.months) : null,
+        recurrence_end_type: recurrence.endType || 'never',
+        recurrence_end_date: recurrence.endDate || null,
+        recurrence_occurrences: recurrence.occurrences || null,
+        // Always preserve existing exceptions when updating a series
+        recurrence_exceptions: existingEvent.recurrence_exceptions
+      } : {
+        is_recurring: 0,
+        recurrence_type: null,
+        recurrence_interval: null,
+        recurrence_days_of_week: null,
+        recurrence_day_of_month: null,
+        recurrence_week_of_month: null,
+        recurrence_day_of_week: null,
+        recurrence_months: null,
+        recurrence_end_type: null,
+        recurrence_end_date: null,
+        recurrence_occurrences: null,
+        recurrence_exceptions: null
+      };
+      
+      console.log('recurrenceFields.recurrence_exceptions:', recurrenceFields.recurrence_exceptions);
+      console.log('About to update event with targetId:', targetId);
 
-    const { success } = await c.env.DB.prepare(`
-      UPDATE calendar_events SET 
-        title = ?, description = ?, event_date = ?, event_time = ?, recurrence_end_time = ?, 
-        location = ?, updated_at = CURRENT_TIMESTAMP,
-        is_recurring = ?, recurrence_type = ?, recurrence_interval = ?, 
-        recurrence_days_of_week = ?, recurrence_day_of_month = ?, 
-        recurrence_week_of_month = ?, recurrence_day_of_week = ?, 
-        recurrence_months = ?, recurrence_end_type = ?, recurrence_end_date = ?, 
-        recurrence_occurrences = ?, recurrence_exceptions = ?
-      WHERE id = ?
-    `)
-      .bind(
-        title, 
-        description || null, 
-        event_date, 
-        event_time || null, 
-        event_end_time || null,
-        location || null,
-        recurrenceFields.is_recurring,
-        recurrenceFields.recurrence_type,
-        recurrenceFields.recurrence_interval,
-        recurrenceFields.recurrence_days_of_week,
-        recurrenceFields.recurrence_day_of_month,
-        recurrenceFields.recurrence_week_of_month,
-        recurrenceFields.recurrence_day_of_week,
-        recurrenceFields.recurrence_months,
-        recurrenceFields.recurrence_end_type,
-        recurrenceFields.recurrence_end_date,
-        recurrenceFields.recurrence_occurrences,
-        recurrenceFields.recurrence_exceptions,
-        targetId
-      )
-      .run();
+      const { success } = await c.env.DB.prepare(`
+        UPDATE calendar_events SET 
+          title = ?, description = ?, event_time = ?, event_end_time = ?, 
+          location = ?, updated_at = CURRENT_TIMESTAMP,
+          is_recurring = ?, recurrence_type = ?, recurrence_interval = ?, 
+          recurrence_days_of_week = ?, recurrence_day_of_month = ?, 
+          recurrence_week_of_month = ?, recurrence_day_of_week = ?, 
+          recurrence_months = ?, recurrence_end_type = ?, recurrence_end_date = ?, 
+          recurrence_occurrences = ?, recurrence_exceptions = ?
+        WHERE id = ?
+      `)
+        .bind(
+          title, 
+          description || null, 
+          event_time || null, 
+          event_end_time || null,
+          location || null,
+          recurrenceFields.is_recurring,
+          recurrenceFields.recurrence_type,
+          recurrenceFields.recurrence_interval,
+          recurrenceFields.recurrence_days_of_week,
+          recurrenceFields.recurrence_day_of_month,
+          recurrenceFields.recurrence_week_of_month,
+          recurrenceFields.recurrence_day_of_week,
+          recurrenceFields.recurrence_months,
+          recurrenceFields.recurrence_end_type,
+          recurrenceFields.recurrence_end_date,
+          recurrenceFields.recurrence_occurrences,
+          recurrenceFields.recurrence_exceptions,
+          targetId
+        )
+        .run();
 
-    if (success) {
-      return c.json({ message: 'Event updated successfully' });
+      if (success) {
+        return c.json({ message: 'Event updated successfully' });
+      }
+      return c.json({ error: 'Failed to update event' }, 500);
     }
-
-    return c.json({ error: 'Failed to update event' }, 500);
   } catch (error) {
     console.error('Error updating event:', error);
     return c.json({ error: 'Internal server error' }, 500);
@@ -499,11 +629,15 @@ calendar.delete('/:id', async (c) => {
 
     const existingEvent = existingEvents[0];
 
-    if (exception_date && existingEvent.parent_event_id) {
-      // Add exception to recurring series instead of deleting
+    // Handle recurring event instance deletion
+    if (exception_date && !delete_series) {
+      // This is deleting a single instance from a recurring series
+      let parentEventId = existingEvent.parent_event_id || id;
+      
+      // Get the parent event
       const { results: parentEvents } = await c.env.DB.prepare(
         'SELECT * FROM calendar_events WHERE id = ?'
-      ).bind(existingEvent.parent_event_id).all();
+      ).bind(parentEventId).all();
 
       if (parentEvents.length > 0) {
         const parentEvent = parentEvents[0];
@@ -515,22 +649,37 @@ calendar.delete('/:id', async (c) => {
           
           await c.env.DB.prepare(
             'UPDATE calendar_events SET recurrence_exceptions = ? WHERE id = ?'
-          ).bind(JSON.stringify(exceptions), existingEvent.parent_event_id).run();
+          ).bind(JSON.stringify(exceptions), parentEventId).run();
         }
 
-        return c.json({ message: 'Event occurrence skipped successfully' });
+        return c.json({ message: 'Event occurrence deleted successfully' });
       }
     }
 
-    // If delete_series is true and this is a recurring event, delete the parent
-    const targetId = delete_series && existingEvent.parent_event_id ? existingEvent.parent_event_id : id;
+    // Handle series deletion or regular event deletion
+    if (delete_series) {
+      // Delete the entire recurring series - the ID should already be the parent event ID
+      const { success } = await c.env.DB.prepare('DELETE FROM calendar_events WHERE id = ?')
+        .bind(id)
+        .run();
 
-    const { success } = await c.env.DB.prepare('DELETE FROM calendar_events WHERE id = ?')
-      .bind(targetId)
-      .run();
+      if (success) {
+        // Also delete any standalone instances that were created from this series
+        await c.env.DB.prepare('DELETE FROM calendar_events WHERE parent_event_id = ?')
+          .bind(id)
+          .run();
+        
+        return c.json({ message: 'Event series deleted successfully' });
+      }
+    } else {
+      // Delete just this single event (could be a regular event or standalone instance)
+      const { success } = await c.env.DB.prepare('DELETE FROM calendar_events WHERE id = ?')
+        .bind(id)
+        .run();
 
-    if (success) {
-      return c.json({ message: 'Event deleted successfully' });
+      if (success) {
+        return c.json({ message: 'Event deleted successfully' });
+      }
     }
 
     return c.json({ error: 'Failed to delete event' }, 500);
