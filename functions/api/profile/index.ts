@@ -44,9 +44,9 @@ profile.get('/', async (c) => {
   try {
     const user = c.get('user');
     
-    const dbUser = await c.env.DB.prepare('SELECT id, username, is_admin, created_at FROM users WHERE id = ?')
+    const dbUser = await c.env.DB.prepare('SELECT id, username, is_admin, created_at, avatar_color FROM users WHERE id = ?')
       .bind(user.id)
-      .first() as { id: number; username: string; is_admin: number; created_at: string } | null;
+      .first() as { id: number; username: string; is_admin: number; created_at: string; avatar_color: string | null } | null;
 
     if (!dbUser) {
       return c.json({ error: 'User not found' }, 404);
@@ -57,7 +57,7 @@ profile.get('/', async (c) => {
       username: dbUser.username,
       is_admin: !!dbUser.is_admin,
       created_at: dbUser.created_at,
-      avatar: dbUser.avatar
+      avatar_color: dbUser.avatar_color
     });
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -92,6 +92,21 @@ profile.put('/', async (c) => {
       }
 
       return c.json({ error: 'Failed to update password' }, 500);
+    }
+
+    // Handle avatar color update
+    if (body.avatar_color !== undefined) {
+      const { success } = await c.env.DB.prepare(
+        'UPDATE users SET avatar_color = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+      )
+        .bind(body.avatar_color, user.id)
+        .run();
+
+      if (success) {
+        return c.json({ message: 'Avatar color updated successfully' });
+      }
+
+      return c.json({ error: 'Failed to update avatar color' }, 500);
     }
 
     // Handle username update

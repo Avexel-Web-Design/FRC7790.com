@@ -6,6 +6,7 @@ interface User {
   username: string;
   isAdmin: boolean;
   avatar?: string;
+  avatarColor?: string;
 }
 
 interface AuthContextType {
@@ -13,6 +14,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<boolean>;
   register: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -44,6 +46,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               username: userData.username,
               isAdmin: userData.is_admin,
               avatar: userData.avatar,
+              avatarColor: userData.avatar_color,
             });
           } else {
             localStorage.removeItem('token');
@@ -78,6 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           username: decodedToken.username || username,
           isAdmin: decodedToken.isAdmin || false,
           avatar: decodedToken.avatar || '',
+          avatarColor: decodedToken.avatarColor || null,
         });
         
         return true;
@@ -106,6 +110,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      setUser({ ...user, ...userData });
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
@@ -116,6 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
+    updateUser,
     isAuthenticated: !!user,
     isLoading,
   };

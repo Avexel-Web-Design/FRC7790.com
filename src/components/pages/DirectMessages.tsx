@@ -212,7 +212,7 @@ const DirectMessages: React.FC = () => {
                 <div className="relative">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                    style={{ backgroundColor: generateColor(u.username) }}
+                    style={{ backgroundColor: generateColor(u.username, null) }}
                   >
                     {u.username
                       .split(' ')
@@ -240,7 +240,7 @@ const DirectMessages: React.FC = () => {
             <div className="flex items-center">
               <div
                 className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
-                style={{ backgroundColor: user?.username ? generateColor(user.username) : '#007bff' }}
+                style={{ backgroundColor: user?.username ? generateColor(user.username, user.avatarColor) : '#007bff' }}
               >
                 {user?.username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
               </div>
@@ -274,7 +274,7 @@ const DirectMessages: React.FC = () => {
                 <div key={msg.id} className="flex items-start mb-4 group">
                   <div
                     className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
-                    style={{ backgroundColor: generateColor(msg.sender_username) }}
+                    style={{ backgroundColor: generateColor(msg.sender_username, msg.sender_username === user?.username ? user.avatarColor : null) }}
                   >
                     {msg.sender_username
                       .split(' ')

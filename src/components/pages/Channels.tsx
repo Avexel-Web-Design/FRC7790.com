@@ -115,7 +115,7 @@ const Channels: React.FC = () => {
             const newColors = new Map(userColors);
             data.forEach((message: Message) => {
               if (!newColors.has(message.sender_username)) {
-                newColors.set(message.sender_username, generateColor(message.sender_username));
+                newColors.set(message.sender_username, generateColor(message.sender_username, null));
               }
             });
             setUserColors(newColors);
@@ -577,7 +577,7 @@ const Channels: React.FC = () => {
             <div className="flex items-center">
               <div
                 className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
-                style={{ backgroundColor: user?.username ? generateColor(user.username) : '#007bff' }}
+                style={{ backgroundColor: user?.username ? generateColor(user.username, user.avatarColor) : '#007bff' }}
               >
                 {user?.username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
               </div>
@@ -609,7 +609,7 @@ const Channels: React.FC = () => {
                 <div key={message.id} className="flex items-start mb-4 group">
                   <div
                     className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
-                    style={{ backgroundColor: generateColor(message.sender_username) }}
+                    style={{ backgroundColor: generateColor(message.sender_username, message.sender_username === user?.username ? user.avatarColor : null) }}
                   >
                     {message.sender_username?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || '??'}
                   </div>

@@ -8,6 +8,7 @@ interface User {
   username: string;
   is_admin: boolean;
   created_at: string;
+  avatar_color?: string;
 }
 
 const AdminUsers: React.FC = () => {
@@ -242,7 +243,7 @@ const AdminUsers: React.FC = () => {
                         <div className="flex-shrink-0 h-10 w-10">
                           <div 
                             className="h-10 w-10 rounded-full flex items-center justify-center"
-                            style={{ backgroundColor: generateColor(userItem.username) }}
+                            style={{ backgroundColor: userItem.avatar_color || generateColor(userItem.username, null) }}
                           >
                             <span className="text-md font-bold text-white">
                               {userItem.username.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}

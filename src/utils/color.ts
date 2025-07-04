@@ -1,4 +1,9 @@
-export const generateColor = (username: string): string => {
+export const generateColor = (username: string, customColor?: string | null): string => {
+  // Use custom color if available
+  if (customColor) {
+    return customColor;
+  }
+
   // Fallback color when username is empty or undefined
   if (!username) {
     return "#cccccc";

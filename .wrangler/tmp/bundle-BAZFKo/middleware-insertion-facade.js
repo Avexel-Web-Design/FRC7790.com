@@ -1,8 +1,8 @@
-				import worker, * as OTHER_EXPORTS from "C:\\Users\\gavin\\OneDrive\\Documents\\Github\\FRC7790.com\\.wrangler\\tmp\\pages-edz073\\functionsWorker-0.7205603786612749.mjs";
+				import worker, * as OTHER_EXPORTS from "C:\\Users\\gavin\\OneDrive\\Documents\\Github\\FRC7790.com\\.wrangler\\tmp\\pages-UNYtpZ\\functionsWorker-0.34965517508690436.mjs";
 				import * as __MIDDLEWARE_0__ from "C:\\Users\\gavin\\OneDrive\\Documents\\Github\\FRC7790.com\\node_modules\\wrangler\\templates\\middleware\\middleware-ensure-req-body-drained.ts";
 import * as __MIDDLEWARE_1__ from "C:\\Users\\gavin\\OneDrive\\Documents\\Github\\FRC7790.com\\node_modules\\wrangler\\templates\\middleware\\middleware-miniflare3-json-error.ts";
 
-				export * from "C:\\Users\\gavin\\OneDrive\\Documents\\Github\\FRC7790.com\\.wrangler\\tmp\\pages-edz073\\functionsWorker-0.7205603786612749.mjs";
+				export * from "C:\\Users\\gavin\\OneDrive\\Documents\\Github\\FRC7790.com\\.wrangler\\tmp\\pages-UNYtpZ\\functionsWorker-0.34965517508690436.mjs";
 				const MIDDLEWARE_TEST_INJECT = "__INJECT_FOR_TESTING_WRANGLER_MIDDLEWARE__";
 				export const __INTERNAL_WRANGLER_MIDDLEWARE__ = [
 					

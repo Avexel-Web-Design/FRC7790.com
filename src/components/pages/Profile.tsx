@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
+import { PencilIcon } from '@heroicons/react/24/outline';
+import '@melloware/coloris/dist/coloris.css';
 
 interface Profile {
   id: number;
   username: string;
   is_admin: boolean;
   created_at: string;
+  avatar_color?: string;
 }
 
 const Profile: React.FC = () => {
-  const { logout } = useAuth();
+  const { logout, updateUser } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingPassword, setEditingPassword] = useState(false);
@@ -19,14 +22,97 @@ const Profile: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState<string>('');
+  const colorInputRef = useRef<HTMLInputElement>(null);
 
   const [newUsername, setNewUsername] = useState('');
   const [isEditingUsername, setIsEditingUsername] = useState(false);
   const [usernameMessage, setUsernameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [tempAvatarColor, setTempAvatarColor] = useState<string>('');
+  const updateTimeoutRef = useRef<number | null>(null);
+
+  // Calculate avatar color directly
+  const avatarColor = tempAvatarColor || profile?.avatar_color || generateColor(profile?.username || '');
 
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+    // Cleanup timeout on unmount
+    return () => {
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    // Initialize Coloris after component mounts
+    const initColoris = async () => {
+      try {
+        const coloris = await import('@melloware/coloris');
+        coloris.init();
+        coloris.setInstance('#avatar-color-picker', {
+          theme: 'polaroid',
+          themeMode: 'dark',
+          formatToggle: false,
+          clearButton: false,
+          swatches: [
+            '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
+            '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43',
+            '#feca57', '#48dbfb', '#0abde3', '#006ba6', '#ffa8a8'
+          ]
+        });
+      } catch (error) {
+        console.error('Error initializing coloris:', error);
+      }
+    };
+    
+    // Small delay to ensure DOM is ready
+    setTimeout(initColoris, 100);
+  }, []);
+
+  const updateAvatarColor = async (color: string) => {
+    console.log('Updating avatar color to:', color);
+    try {
+      const response = await frcAPI.put('/profile', { avatar_color: color });
+      if (response.ok) {
+        setProfile((prev: Profile | null) => prev ? { ...prev, avatar_color: color } : null);
+        updateUser({ avatarColor: color });
+        setTempAvatarColor(''); // Clear temp color since we've saved to server
+        console.log('Avatar color updated successfully');
+      } else {
+        console.error('Failed to update avatar color on server');
+      }
+    } catch (error) {
+      console.error('Error updating avatar color:', error);
+    }
+  };
+
+  const handleColorChange = (color: string) => {
+    // Update the temporary color immediately for visual feedback
+    setTempAvatarColor(color);
+    
+    // Clear any existing timeout
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+    
+    // Set a new timeout to update the server after user stops changing color
+    updateTimeoutRef.current = window.setTimeout(() => {
+      updateAvatarColor(color);
+    }, 500); // Wait 500ms after user stops changing color
+  };
+
+  const openColorPicker = () => {
+    console.log('Avatar clicked! Opening color picker...');
+    if (colorInputRef.current) {
+      console.log('Color input ref found, triggering click');
+      colorInputRef.current.click();
+    } else {
+      console.error('Color input ref not found');
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -137,13 +223,40 @@ const Profile: React.FC = () => {
           <div className="px-6 py-6">
             {/* Profile Picture & Basic Info */}
             <div className="flex items-center space-x-6 mb-6">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 relative group">
                 <div
-                  className="h-20 w-20 rounded-full flex items-center justify-center text-white font-bold text-3xl"
-                  style={{ backgroundColor: profile?.username ? generateColor(profile.username) : '#cccccc' }}
+                  className="h-20 w-20 rounded-full flex items-center justify-center text-white font-bold text-3xl transition-opacity relative overflow-hidden"
+                  style={{ backgroundColor: avatarColor }}
+                  onClick={openColorPicker}
+                  title="Click to change avatar color"
                 >
-                  {profile?.username ? profile.username.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : ''}
+                  {profile?.username ? profile.username.split(' ').map((n: string) => n[0]).join('').toUpperCase().substring(0, 2) : ''}
+                  
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <PencilIcon className="h-8 w-8 text-white" />
+                  </div>
                 </div>
+                <input
+                  ref={colorInputRef}
+                  id="avatar-color-picker"
+                  type="text"
+                  style={{ 
+                    position: 'absolute', 
+                    top: '0', 
+                    left: '0', 
+                    width: '100%', 
+                    height: '100%', 
+                    opacity: 0, 
+                    cursor: 'pointer',
+                    border: 'none',
+                    background: 'transparent'
+                  }}
+                  value={avatarColor}
+                  data-coloris
+                  onChange={(e) => handleColorChange(e.target.value)}
+                  onInput={(e) => handleColorChange((e.target as HTMLInputElement).value)}
+                />
               </div>
               <div>
                 <h4 className="text-xl font-bold text-white">{profile?.username}</h4>

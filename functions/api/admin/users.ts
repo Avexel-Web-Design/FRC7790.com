@@ -27,7 +27,7 @@ users.get('/', async (c) => {
   }
 
   try {
-    const { results } = await c.env.DB.prepare('SELECT id, username, is_admin FROM users').all();
+    const { results } = await c.env.DB.prepare('SELECT id, username, is_admin, created_at, avatar_color FROM users').all();
     return c.json(results);
   } catch (error) {
     console.error('Error fetching users:', error);
