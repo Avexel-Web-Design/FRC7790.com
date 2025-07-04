@@ -5,7 +5,12 @@ import {
   createChannel, 
   updateChannel, 
   deleteChannel,
-  reorderChannels
+  reorderChannels,
+  getChannelMembers,
+  getGroupChats,
+  createGroupChat,
+  updateGroupChat,
+  deleteGroupChat
 } from './channels';
 import { getUsers, getUsersByRecentActivity } from './users';
 
@@ -65,7 +70,14 @@ chat.get('/channels', getChannels);
 chat.post('/channels', createChannel);
 chat.put('/channels/:channelId', updateChannel);
 chat.delete('/channels/:channelId', deleteChannel);
+chat.get('/channels/:channelId/members', getChannelMembers);
 chat.post('/channels/reorder', reorderChannels);
+
+// Group chat endpoints
+chat.get('/groups', getGroupChats);
+chat.post('/groups', createGroupChat);
+chat.put('/groups/:groupId', updateGroupChat);
+chat.delete('/groups/:groupId', deleteGroupChat);
 
 // Users endpoint (public to authenticated users)
 chat.get('/users', getUsers);

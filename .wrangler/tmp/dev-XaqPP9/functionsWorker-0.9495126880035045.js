@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-Sw0jYS/checked-fetch.js
+// .wrangler/tmp/bundle-x5NzLs/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -27,7 +27,7 @@ globalThis.fetch = new Proxy(globalThis.fetch, {
   }
 });
 
-// .wrangler/tmp/pages-rWflkq/functionsWorker-0.6076937232308657.mjs
+// .wrangler/tmp/pages-DndtY4/functionsWorker-0.9495126880035045.mjs
 var __defProp2 = Object.defineProperty;
 var __name2 = /* @__PURE__ */ __name((target, value) => __defProp2(target, "name", { value, configurable: true }), "__name");
 var urls2 = /* @__PURE__ */ new Set();
@@ -2882,20 +2882,20 @@ async function getChannels(c) {
       const adminRow = await c.env.DB.prepare("SELECT is_admin FROM users WHERE id = ?").bind(userId).first();
       const isAdmin = adminRow && adminRow.is_admin === 1;
       if (isAdmin) {
-        const { results } = await c.env.DB.prepare('SELECT * FROM channels WHERE id NOT LIKE "dm_%" ORDER BY position ASC').all();
+        const { results } = await c.env.DB.prepare('SELECT * FROM channels WHERE id NOT LIKE "dm_%" AND id NOT LIKE "group_%" ORDER BY position ASC').all();
         channels = results;
       } else {
         const { results } = await c.env.DB.prepare(
           `SELECT DISTINCT channels.*
            FROM channels
            LEFT JOIN channel_members ON channels.id = channel_members.channel_id AND channel_members.user_id = ?
-           WHERE channels.id NOT LIKE "dm_%" AND (channels.is_private = 0 OR channel_members.user_id = ?)
+           WHERE channels.id NOT LIKE "dm_%" AND channels.id NOT LIKE "group_%" AND (channels.is_private = 0 OR channel_members.user_id = ?)
            ORDER BY channels.position ASC`
         ).bind(userId, userId).all();
         channels = results;
       }
     } else {
-      const { results } = await c.env.DB.prepare('SELECT * FROM channels WHERE is_private = 0 AND id NOT LIKE "dm_%" ORDER BY position ASC').all();
+      const { results } = await c.env.DB.prepare('SELECT * FROM channels WHERE is_private = 0 AND id NOT LIKE "dm_%" AND id NOT LIKE "group_%" ORDER BY position ASC').all();
       channels = results;
     }
     console.log("getChannels: Found channels", channels);
@@ -3081,6 +3081,191 @@ async function reorderChannels(c) {
 }
 __name(reorderChannels, "reorderChannels");
 __name2(reorderChannels, "reorderChannels");
+async function getGroupChats(c) {
+  console.log("getGroupChats: Received request");
+  try {
+    const userIdStr = c.req.query("user_id");
+    if (!userIdStr) {
+      return new Response("User ID is required", { status: 400 });
+    }
+    const userId = Number(userIdStr);
+    const { results } = await c.env.DB.prepare(
+      `SELECT DISTINCT 
+         channels.*,
+         COALESCE(MAX(messages.timestamp), channels.created_at) as last_activity
+       FROM channels 
+       JOIN channel_members ON channels.id = channel_members.channel_id 
+       LEFT JOIN messages ON channels.id = messages.channel_id
+       WHERE channels.id LIKE 'group_%' AND channel_members.user_id = ?
+       GROUP BY channels.id, channels.name, channels.created_by, channels.created_at, channels.updated_at, channels.position, channels.is_private
+       ORDER BY last_activity DESC`
+    ).bind(userId).all();
+    console.log("getGroupChats: Found group chats", results);
+    return new Response(JSON.stringify(results), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Error fetching group chats:", error);
+    return new Response("Error fetching group chats: " + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
+__name(getGroupChats, "getGroupChats");
+__name2(getGroupChats, "getGroupChats");
+async function createGroupChat(c) {
+  console.log("createGroupChat: Received request");
+  try {
+    const { name, created_by, members = [] } = await c.req.json();
+    console.log("createGroupChat: Parsed body", { name, created_by, members });
+    if (!name || !created_by) {
+      return new Response("Group name and creator ID are required", { status: 400 });
+    }
+    if (!Array.isArray(members) || members.length === 0) {
+      return new Response("At least one member is required", { status: 400 });
+    }
+    const groupId = `group_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    let memberIds = [...members];
+    if (!memberIds.includes(Number(created_by))) {
+      memberIds.push(Number(created_by));
+    }
+    console.log("createGroupChat: Creating group", { groupId, name, created_by, now, memberIds });
+    const result = await c.env.DB.prepare(
+      "INSERT INTO channels (id, name, created_by, created_at, updated_at, position, is_private) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    ).bind(groupId, name, created_by, now, now, 0, 1).run();
+    console.log("createGroupChat: Insert result", result);
+    if (result.success) {
+      for (const memberId of memberIds) {
+        try {
+          await c.env.DB.prepare(
+            "INSERT INTO channel_members (channel_id, user_id) VALUES (?, ?)"
+          ).bind(groupId, memberId).run();
+        } catch (memberErr) {
+          console.error("Error adding group member:", memberErr);
+        }
+      }
+      return new Response(JSON.stringify({
+        message: "Group chat created",
+        id: groupId,
+        name,
+        members: memberIds
+      }), {
+        status: 201,
+        headers: { "Content-Type": "application/json" }
+      });
+    } else {
+      return new Response("Failed to create group chat", { status: 500 });
+    }
+  } catch (error) {
+    console.error("Error creating group chat:", error);
+    return new Response("Error creating group chat: " + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
+__name(createGroupChat, "createGroupChat");
+__name2(createGroupChat, "createGroupChat");
+async function updateGroupChat(c) {
+  console.log("updateGroupChat: Received request");
+  try {
+    const { groupId } = c.req.param();
+    const { name, members = [] } = await c.req.json();
+    console.log("updateGroupChat: Parsed data", { groupId, name, members });
+    if (!name) {
+      return new Response("Group name is required", { status: 400 });
+    }
+    if (!groupId.startsWith("group_")) {
+      return new Response("Invalid group ID", { status: 400 });
+    }
+    const now = (/* @__PURE__ */ new Date()).toISOString();
+    console.log("updateGroupChat: Updating group", { groupId, name, now });
+    const result = await c.env.DB.prepare(
+      "UPDATE channels SET name = ?, updated_at = ? WHERE id = ?"
+    ).bind(name, now, groupId).run();
+    console.log("updateGroupChat: Update result", result);
+    if (result.success) {
+      if (Array.isArray(members) && members.length > 0) {
+        await c.env.DB.prepare("DELETE FROM channel_members WHERE channel_id = ?").bind(groupId).run();
+        for (const memberId of members) {
+          try {
+            await c.env.DB.prepare("INSERT INTO channel_members (channel_id, user_id) VALUES (?, ?)").bind(groupId, memberId).run();
+          } catch (memberErr) {
+            console.error("Error updating group member:", memberErr);
+          }
+        }
+      }
+      return new Response(JSON.stringify({
+        message: "Group chat updated",
+        id: groupId,
+        name,
+        members
+      }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    } else {
+      return new Response("Group chat not found", { status: 404 });
+    }
+  } catch (error) {
+    console.error("Error updating group chat:", error);
+    return new Response("Error updating group chat: " + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
+__name(updateGroupChat, "updateGroupChat");
+__name2(updateGroupChat, "updateGroupChat");
+async function getChannelMembers(c) {
+  console.log("getChannelMembers: Received request");
+  try {
+    const { channelId } = c.req.param();
+    console.log("getChannelMembers: Channel ID", channelId);
+    const { results } = await c.env.DB.prepare(
+      `SELECT channel_members.user_id, users.username 
+       FROM channel_members 
+       JOIN users ON channel_members.user_id = users.id 
+       WHERE channel_members.channel_id = ?`
+    ).bind(channelId).all();
+    console.log("getChannelMembers: Found members", results);
+    return new Response(JSON.stringify(results), {
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("Error fetching channel members:", error);
+    return new Response("Error fetching channel members: " + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
+__name(getChannelMembers, "getChannelMembers");
+__name2(getChannelMembers, "getChannelMembers");
+async function deleteGroupChat(c) {
+  console.log("deleteGroupChat: Received request");
+  try {
+    const { groupId } = c.req.param();
+    console.log("deleteGroupChat: Group ID", groupId);
+    if (!groupId.startsWith("group_")) {
+      return new Response("Invalid group ID", { status: 400 });
+    }
+    console.log("deleteGroupChat: Deleting group members for group", groupId);
+    await c.env.DB.prepare("DELETE FROM channel_members WHERE channel_id = ?").bind(groupId).run();
+    console.log("deleteGroupChat: Deleting messages for group", groupId);
+    await c.env.DB.prepare(
+      "DELETE FROM messages WHERE channel_id = ?"
+    ).bind(groupId).run();
+    console.log("deleteGroupChat: Deleting group", groupId);
+    const result = await c.env.DB.prepare(
+      "DELETE FROM channels WHERE id = ?"
+    ).bind(groupId).run();
+    console.log("deleteGroupChat: Delete result", result);
+    if (result.success) {
+      return new Response(JSON.stringify({
+        message: "Group chat deleted"
+      }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    } else {
+      return new Response("Group chat not found", { status: 404 });
+    }
+  } catch (error) {
+    console.error("Error deleting group chat:", error);
+    return new Response("Error deleting group chat: " + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
+__name(deleteGroupChat, "deleteGroupChat");
+__name2(deleteGroupChat, "deleteGroupChat");
 async function getUsers(c) {
   try {
     const { results } = await c.env.DB.prepare(
@@ -3221,7 +3406,12 @@ chat.get("/channels", getChannels);
 chat.post("/channels", createChannel);
 chat.put("/channels/:channelId", updateChannel);
 chat.delete("/channels/:channelId", deleteChannel);
+chat.get("/channels/:channelId/members", getChannelMembers);
 chat.post("/channels/reorder", reorderChannels);
+chat.get("/groups", getGroupChats);
+chat.post("/groups", createGroupChat);
+chat.put("/groups/:groupId", updateGroupChat);
+chat.delete("/groups/:groupId", deleteGroupChat);
 chat.get("/users", getUsers);
 chat.get("/users/recent", getUsersByRecentActivity);
 var chat_default = chat;
@@ -3929,7 +4119,7 @@ var jsonError2 = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx
 }, "jsonError");
 var middleware_miniflare3_json_error_default2 = jsonError2;
 
-// .wrangler/tmp/bundle-Sw0jYS/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-x5NzLs/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__2 = [
   middleware_ensure_req_body_drained_default2,
   middleware_miniflare3_json_error_default2
@@ -3961,7 +4151,7 @@ function __facade_invoke__2(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__2, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-Sw0jYS/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-x5NzLs/middleware-loader.entry.ts
 var __Facade_ScheduledController__2 = class ___Facade_ScheduledController__2 {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -4061,4 +4251,4 @@ export {
   __INTERNAL_WRANGLER_MIDDLEWARE__2 as __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default2 as default
 };
-//# sourceMappingURL=functionsWorker-0.6076937232308657.js.map
+//# sourceMappingURL=functionsWorker-0.9495126880035045.js.map

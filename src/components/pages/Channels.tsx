@@ -704,15 +704,32 @@ const Channels: React.FC = () => {
               </div>
               {/* Privacy toggle */}
               <div className="mb-4">
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox h-4 w-4 text-baywatch-orange"
-                    checked={isPrivate}
-                    onChange={(e) => setIsPrivate(e.target.checked)}
-                  />
-                  <span className="ml-2">Private channel</span>
-                </label>
+                <div className="flex items-center">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      id="isPrivate"
+                      checked={isPrivate}
+                      onChange={(e) => setIsPrivate(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <label 
+                      htmlFor="isPrivate" 
+                      className={`w-4 h-4 border-2 rounded flex items-center justify-center cursor-pointer ${
+                        isPrivate
+                          ? 'bg-baywatch-orange border-baywatch-orange' 
+                          : 'border-gray-300 bg-transparent'
+                      }`}
+                    >
+                      {isPrivate && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </label>
+                  </div>
+                  <label htmlFor="isPrivate" className="ml-2 cursor-pointer">Private channel</label>
+                </div>
               </div>
 
               {/* Members selection if private */}
@@ -722,21 +739,38 @@ const Channels: React.FC = () => {
                   <div className="max-h-40 overflow-y-auto bg-gray-700 border border-gray-600 rounded-md p-2">
                     {availableUsers.length === 0 && <p className="text-gray-400 text-sm">No users found.</p>}
                     {availableUsers.map((u) => (
-                      <label key={u.id} className="flex items-center space-x-2 py-1">
-                        <input
-                          type="checkbox"
-                          className="form-checkbox h-4 w-4 text-baywatch-orange"
-                          checked={selectedMembers.includes(u.id)}
-                          onChange={() => {
-                            setSelectedMembers((prev) =>
-                              prev.includes(u.id)
-                                ? prev.filter((id) => id !== u.id)
-                                : [...prev, u.id]
-                            );
-                          }}
-                        />
-                        <span>{u.username}</span>
-                      </label>
+                      <div key={u.id} className="flex items-center space-x-2 py-1">
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            id={`channel-user-${u.id}`}
+                            checked={selectedMembers.includes(u.id)}
+                            onChange={() => {
+                              setSelectedMembers((prev) =>
+                                prev.includes(u.id)
+                                  ? prev.filter((id) => id !== u.id)
+                                  : [...prev, u.id]
+                              );
+                            }}
+                            className="sr-only"
+                          />
+                          <label 
+                            htmlFor={`channel-user-${u.id}`} 
+                            className={`w-4 h-4 border-2 rounded flex items-center justify-center cursor-pointer ${
+                              selectedMembers.includes(u.id)
+                                ? 'bg-baywatch-orange border-baywatch-orange' 
+                                : 'border-gray-300 bg-transparent'
+                            }`}
+                          >
+                            {selectedMembers.includes(u.id) && (
+                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </label>
+                        </div>
+                        <label htmlFor={`channel-user-${u.id}`} className="cursor-pointer">{u.username}</label>
+                      </div>
                     ))}
                   </div>
                 </div>
