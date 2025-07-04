@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { UserIcon, UsersIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { generateColor } from '../../../utils/color';
+import NebulaLoader from '../../common/NebulaLoader';
 
 interface User {
   id: number;
@@ -130,7 +131,7 @@ const AdminUsers: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-baywatch-orange"></div>
+        <NebulaLoader size={128} />
       </div>
     );
   }

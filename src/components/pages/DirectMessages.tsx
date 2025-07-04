@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
+import NebulaLoader from '../common/NebulaLoader';
 
 interface Message {
   id: number;
@@ -438,7 +439,7 @@ const DirectMessages: React.FC = () => {
         </div>
         {isChatsLoading ? (
           <div className="flex items-center justify-center p-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-baywatch-orange"></div>
+            <NebulaLoader size={48} />
           </div>
         ) : (
           <nav className="flex-1 p-2 space-y-2 overflow-y-auto custom-scrollbar">
@@ -545,7 +546,7 @@ const DirectMessages: React.FC = () => {
         <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
           {isMessagesLoading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-baywatch-orange"></div>
+              <NebulaLoader size={64} />
             </div>
           ) : selectedChat ? (
             messages.length > 0 ? (

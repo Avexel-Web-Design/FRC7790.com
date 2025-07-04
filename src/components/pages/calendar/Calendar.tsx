@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import RecurrenceForm from '../../common/RecurrenceForm';
+import NebulaLoader from '../../common/NebulaLoader';
 
 // Utility function to format time from 24-hour to 12-hour format
 const formatTime = (time24: string): string => {
@@ -358,7 +359,7 @@ const Calendar: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-baywatch-orange"></div>
+        <NebulaLoader size={128} />
       </div>
     );
   }

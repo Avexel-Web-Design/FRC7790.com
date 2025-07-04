@@ -4,6 +4,7 @@ import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
 import { PencilIcon } from '@heroicons/react/24/outline';
 import '@melloware/coloris/dist/coloris.css';
+import NebulaLoader from '../common/NebulaLoader';
 
 interface Profile {
   id: number;
@@ -199,7 +200,7 @@ const Profile: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-baywatch-orange"></div>
+        <NebulaLoader size={128} />
       </div>
     );
   }

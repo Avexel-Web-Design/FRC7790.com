@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
+import NebulaLoader from '../../common/NebulaLoader';
 
 interface Task {
   id: number;
@@ -206,7 +207,7 @@ const Tasks: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-baywatch-orange"></div>
+        <NebulaLoader size={128} />
       </div>
     );
   }
