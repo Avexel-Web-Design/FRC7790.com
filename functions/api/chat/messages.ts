@@ -192,3 +192,108 @@ export async function deleteMessage(c: Context): Promise<Response> {
     return new Response('Error deleting message: ' + (error instanceof Error ? error.message : String(error)), { status: 500 });
   }
 }
+
+// Direct Message specific functions
+export async function getDMMessages(c: Context): Promise<Response> {
+  console.log("getDMMessages: Received request");
+  const { dmId } = c.req.param();
+  console.log("getDMMessages: DM ID", dmId);
+  
+  const userIdStr = c.req.query('user_id');
+  const userId = userIdStr ? Number(userIdStr) : undefined;
+  
+  if (!dmId || !dmId.startsWith('dm_')) {
+    return new Response('Invalid DM ID', { status: 400 });
+  }
+
+  if (!userId) {
+    return new Response('User ID is required', { status: 401 });
+  }
+
+  try {
+    // Extract user IDs from DM ID (format: dm_<smallerId>_<largerId>)
+    const dmParts = dmId.split('_');
+    if (dmParts.length !== 3) {
+      return new Response('Invalid DM ID format', { status: 400 });
+    }
+
+    const user1Id = parseInt(dmParts[1]);
+    const user2Id = parseInt(dmParts[2]);
+
+    // Verify the requesting user is one of the participants
+    if (userId !== user1Id && userId !== user2Id) {
+      return new Response('Unauthorized: You can only view your own DMs', { status: 403 });
+    }
+
+    console.log("getDMMessages: Fetching DM messages for", dmId);
+    const { results } = await c.env.DB.prepare(
+      'SELECT messages.*, users.username as sender_username, users.avatar FROM messages JOIN users ON messages.sender_id = users.id WHERE channel_id = ? ORDER BY timestamp ASC'
+    )
+      .bind(dmId)
+      .all();
+
+    console.log(`getDMMessages: Found ${results.length} messages`);
+    return new Response(JSON.stringify(results), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Error fetching DM messages:', error);
+    return new Response('Error fetching DM messages: ' + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
+
+export async function sendDMMessage(c: Context): Promise<Response> {
+  console.log("sendDMMessage: Received request");
+  const { dmId } = c.req.param();
+  console.log("sendDMMessage: DM ID", dmId);
+  
+  if (!dmId || !dmId.startsWith('dm_')) {
+    return new Response('Invalid DM ID', { status: 400 });
+  }
+
+  try {
+    const { content, sender_id } = await c.req.json();
+    console.log("sendDMMessage: Parsed body", { content, sender_id });
+    
+    if (!content || !sender_id) {
+      return new Response('Content and sender_id are required', { status: 400 });
+    }
+
+    // Extract user IDs from DM ID (format: dm_<smallerId>_<largerId>)
+    const dmParts = dmId.split('_');
+    if (dmParts.length !== 3) {
+      return new Response('Invalid DM ID format', { status: 400 });
+    }
+
+    const user1Id = parseInt(dmParts[1]);
+    const user2Id = parseInt(dmParts[2]);
+
+    // Verify the sender is one of the participants
+    if (sender_id !== user1Id && sender_id !== user2Id) {
+      return new Response('Unauthorized: You can only send messages in your own DMs', { status: 403 });
+    }
+
+    const timestamp = new Date().toISOString();
+    console.log("sendDMMessage: Inserting message", { dmId, sender_id, timestamp });
+    
+    const result = await c.env.DB.prepare(
+      'INSERT INTO messages (channel_id, sender_id, content, timestamp) VALUES (?, ?, ?, ?)'
+    )
+      .bind(dmId, sender_id, content, timestamp)
+      .run();
+
+    console.log("sendDMMessage: Insert result", result);
+
+    if (result.success) {
+      return new Response(JSON.stringify({ message: 'DM message sent' }), {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } else {
+      return new Response('Failed to send DM message', { status: 500 });
+    }
+  } catch (error) {
+    console.error('Error sending DM message:', error);
+    return new Response('Error sending DM message: ' + (error instanceof Error ? error.message : String(error)), { status: 500 });
+  }
+}
