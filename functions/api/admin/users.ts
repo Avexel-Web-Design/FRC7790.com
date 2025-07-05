@@ -12,6 +12,15 @@ interface AuthUser {
   isAdmin: boolean;
 }
 
+// Simple password hashing using Web Crypto API
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 const users = new Hono<{ 
   Bindings: CloudflareEnv;
   Variables: { user: AuthUser };
@@ -35,7 +44,7 @@ users.get('/', async (c) => {
   }
 });
 
-// Update user (for changing admin status)
+// Update user (for changing admin status, username, or password)
 users.put('/:userId', async (c) => {
   const currentUser = c.get('user');
   if (!currentUser.isAdmin) {
@@ -46,15 +55,52 @@ users.put('/:userId', async (c) => {
   const body = await c.req.json();
   
   // Prevent changing your own admin status
-  if (userId === currentUser.id) {
+  if (userId === currentUser.id && body.is_admin !== undefined) {
     return c.json({ error: 'Cannot modify your own admin status' }, 400);
   }
   
   try {
-    const isAdmin = body.is_admin === true ? 1 : 0;
-    await c.env.DB.prepare('UPDATE users SET is_admin = ? WHERE id = ?')
-      .bind(isAdmin, userId)
-      .run();
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    // Handle admin status update
+    if (body.is_admin !== undefined) {
+      const isAdmin = body.is_admin === true ? 1 : 0;
+      updates.push('is_admin = ?');
+      values.push(isAdmin);
+    }
+
+    // Handle username update
+    if (body.username !== undefined && body.username.trim() !== '') {
+      // Check if username already exists (excluding current user)
+      const existingUser = await c.env.DB.prepare('SELECT id FROM users WHERE username = ? AND id != ?')
+        .bind(body.username.trim(), userId)
+        .first();
+      
+      if (existingUser) {
+        return c.json({ error: 'Username already exists' }, 400);
+      }
+      
+      updates.push('username = ?');
+      values.push(body.username.trim());
+    }
+
+    // Handle password update
+    if (body.password !== undefined && body.password.trim() !== '') {
+      const hashedPassword = await hashPassword(body.password.trim());
+      updates.push('password = ?');
+      values.push(hashedPassword);
+    }
+
+    if (updates.length === 0) {
+      return c.json({ error: 'No valid fields to update' }, 400);
+    }
+
+    // Add user ID to the end of values array
+    values.push(userId);
+
+    const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+    await c.env.DB.prepare(query).bind(...values).run();
     
     return c.json({ success: true });
   } catch (error) {

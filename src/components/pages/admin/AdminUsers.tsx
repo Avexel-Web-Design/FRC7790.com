@@ -17,12 +17,20 @@ const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState({
     username: '',
     password: '',
     is_admin: false
   });
+  const [editUser, setEditUser] = useState({
+    username: '',
+    password: '',
+    is_admin: false
+  });
   const [error, setError] = useState('');
+  const [editError, setEditError] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -90,6 +98,75 @@ const AdminUsers: React.FC = () => {
         ));
       }
     } catch (error) {
+      console.error('Error updating user:', error);
+    }
+  };
+
+  const openEditModal = (userToEdit: User) => {
+    setEditingUser(userToEdit);
+    setEditUser({
+      username: userToEdit.username,
+      password: '', // Don't populate existing password
+      is_admin: userToEdit.is_admin
+    });
+    setEditError('');
+    setShowEditModal(true);
+  };
+
+  const updateUser = async () => {
+    if (!editingUser) return;
+
+    try {
+      setEditError('');
+      const token = localStorage.getItem('token');
+      
+      // Only send fields that have been changed
+      const updateData: any = {};
+      
+      if (editUser.username.trim() !== editingUser.username) {
+        updateData.username = editUser.username.trim();
+      }
+      
+      if (editUser.password.trim() !== '') {
+        updateData.password = editUser.password.trim();
+      }
+      
+      if (editUser.is_admin !== editingUser.is_admin) {
+        updateData.is_admin = editUser.is_admin;
+      }
+
+      // Don't send request if nothing changed
+      if (Object.keys(updateData).length === 0) {
+        setShowEditModal(false);
+        return;
+      }
+
+      const response = await fetch(`/api/admin/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      if (response.ok) {
+        // Update the local users state
+        setUsers(users.map(u => 
+          u.id === editingUser.id ? { 
+            ...u, 
+            username: updateData.username || u.username,
+            is_admin: updateData.is_admin !== undefined ? updateData.is_admin : u.is_admin
+          } : u
+        ));
+        setShowEditModal(false);
+        setEditingUser(null);
+      } else {
+        const errorData = await response.json();
+        setEditError(errorData.error || 'Failed to update user');
+      }
+    } catch (error) {
+      setEditError('Error updating user');
       console.error('Error updating user:', error);
     }
   };
@@ -273,6 +350,12 @@ const AdminUsers: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <button
+                          onClick={() => openEditModal(userItem)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          Edit
+                        </button>
+                        <button
                           onClick={() => updateUserAdmin(userItem.id, !userItem.is_admin)}
                           disabled={userItem.id === user?.id}
                           className={`text-blue-600 hover:text-blue-900 ${
@@ -376,6 +459,94 @@ const AdminUsers: React.FC = () => {
                 className="px-4 py-2 text-sm font-medium text-white bg-baywatch-orange hover:bg-baywatch-orange/70 rounded-md"
               >
                 Create User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && editingUser && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+          <div className="relative p-8 bg-black w-full max-w-md m-auto rounded-lg shadow-lg">
+            <h3 className="text-lg font-medium text-white mb-4">Edit User: {editingUser.username}</h3>
+            {editError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {editError}
+              </div>
+            )}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
+                <input
+                  type="text"
+                  placeholder="Name"
+                  value={editUser.username}
+                  onChange={(e) => setEditUser({ ...editUser, username: e.target.value })}
+                  className="bg-transparent mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  New Password (leave blank to keep current)
+                </label>
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  value={editUser.password}
+                  onChange={(e) => setEditUser({ ...editUser, password: e.target.value })}
+                  className="bg-transparent mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:outline-none"
+                />
+              </div>
+              <div className="flex items-center">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    id="editIsAdmin"
+                    checked={editUser.is_admin}
+                    onChange={(e) => setEditUser({ ...editUser, is_admin: e.target.checked })}
+                    disabled={editingUser.id === user?.id}
+                    className="sr-only"
+                  />
+                  <label 
+                    htmlFor="editIsAdmin" 
+                    className={`w-4 h-4 border-2 rounded flex items-center justify-center ${
+                      editUser.is_admin 
+                        ? 'bg-baywatch-orange border-baywatch-orange' 
+                        : 'border-gray-300 bg-transparent'
+                    } ${editingUser.id === user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {editUser.is_admin && (
+                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </label>
+                </div>
+                <label htmlFor="editIsAdmin" className={`ml-2 block text-sm text-gray-300 ${
+                  editingUser.id === user?.id ? 'opacity-50' : ''
+                }`}>
+                  Admin {editingUser.id === user?.id ? '(cannot modify your own status)' : ''}
+                </label>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditError('');
+                  setEditingUser(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={updateUser}
+                className="px-4 py-2 text-sm font-medium text-white bg-baywatch-orange hover:bg-baywatch-orange/70 rounded-md"
+              >
+                Update User
               </button>
             </div>
           </div>
