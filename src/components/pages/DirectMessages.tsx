@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
 import NebulaLoader from '../common/NebulaLoader';
+import NotificationDot from '../common/NotificationDot';
 
 interface Message {
   id: number;
@@ -34,6 +36,7 @@ type ChatItem = (SimpleUser & { type: 'dm' }) | (GroupChat & { type: 'group' });
 
 const DirectMessages: React.FC = () => {
   const { user } = useAuth();
+  const { unreadCounts, markChannelAsRead, refreshNotifications, setActiveChannel } = useNotifications();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // List of users and group chats
@@ -188,6 +191,41 @@ const DirectMessages: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  /** Clear active channel on component unmount */
+  useEffect(() => {
+    return () => {
+      setActiveChannel(null);
+    };
+  }, [setActiveChannel]);
+
+  /** Set active channel when selected chat changes */
+  useEffect(() => {
+    if (selectedChat && user) {
+      const channelId = selectedChat.type === 'dm' 
+        ? getConversationId(user.id, selectedChat.id)
+        : selectedChat.id.toString();
+      setActiveChannel(channelId);
+    }
+  }, [selectedChat, user, setActiveChannel]);
+
+  const handleChatClick = (chat: ChatItem) => {
+    setSelectedChat(chat);
+    
+    // Determine the channel ID for notifications
+    let channelId: string;
+    if (chat.type === 'dm' && user) {
+      channelId = getConversationId(user.id, chat.id);
+    } else {
+      channelId = chat.id.toString();
+    }
+    
+    // Set as active channel to suppress notifications
+    setActiveChannel(channelId);
+    
+    // Mark as read
+    markChannelAsRead(channelId);
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageInput.trim() || !selectedChat || !user) return;
@@ -255,6 +293,8 @@ const DirectMessages: React.FC = () => {
             setMessages(await updated.json());
           }
         }
+        // Refresh notifications since a new message was sent
+        refreshNotifications();
       }
     } catch (err) {
       console.error('Error sending message', err);
@@ -446,7 +486,7 @@ const DirectMessages: React.FC = () => {
             {chatItems.map(chat => (
               <div key={`${chat.type}-${chat.id}`} className="flex items-center justify-between">
                 <button
-                  onClick={() => setSelectedChat(chat)}
+                  onClick={() => handleChatClick(chat)}
                   className={`flex-1 flex items-center space-x-3 py-2 px-3 rounded-md transition-colors duration-200 ${
                     selectedChat?.type === chat.type && selectedChat?.id === chat.id 
                       ? 'bg-baywatch-orange text-white hover:text-white' 
@@ -473,10 +513,26 @@ const DirectMessages: React.FC = () => {
                           .substring(0, 2)}
                       </div>
                     )}
+                    {(() => {
+                      const chatId = chat.type === 'dm' && user 
+                        ? getConversationId(user.id, chat.id)
+                        : chat.id.toString();
+                      const unreadCount = unreadCounts[chatId] || 0;
+                      
+                      return unreadCount > 0 && (
+                        <NotificationDot 
+                          count={unreadCount} 
+                          position="top-right"
+                          size="medium"
+                        />
+                      );
+                    })()}
                   </div>
-                  <span className="truncate">
-                    {chat.type === 'group' ? chat.name : chat.username}
-                  </span>
+                  <div className="flex-1 truncate">
+                    <span className="truncate">
+                      {chat.type === 'group' ? chat.name : chat.username}
+                    </span>
+                  </div>
                 </button>
                 {chat.type === 'group' && user && (chat.created_by === user.id || user.isAdmin) && (
                   <div className="flex space-x-1 pr-2">

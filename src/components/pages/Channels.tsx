@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
 import NebulaLoader from '../common/NebulaLoader';
+import NotificationDot from '../common/NotificationDot';
 
 interface Message {
   id: number;
@@ -28,6 +30,7 @@ interface SimpleUser {
 
 const Channels: React.FC = () => {
   const { user } = useAuth();
+  const { unreadCounts, markChannelAsRead, refreshNotifications, setActiveChannel } = useNotifications();
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>({ id: 'general', name: '# general' });
   const [messageInput, setMessageInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -142,6 +145,27 @@ const Channels: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Clear active channel on component unmount
+  useEffect(() => {
+    return () => {
+      setActiveChannel(null);
+    };
+  }, [setActiveChannel]);
+
+  // Set initial active channel immediately on mount
+  useEffect(() => {
+    if (user) {
+      setActiveChannel('general');
+    }
+  }, [user, setActiveChannel]);
+
+  // Set initial active channel
+  useEffect(() => {
+    if (selectedChannel) {
+      setActiveChannel(selectedChannel.id);
+    }
+  }, [selectedChannel, setActiveChannel]);
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -162,6 +186,8 @@ const Channels: React.FC = () => {
             setMessages(updatedMessages);
           }
           setMessageInput('');
+          // Refresh notifications since a new message was sent
+          refreshNotifications();
         } else {
           console.error('Failed to send message:', response.statusText);
           setError(`Failed to send message: ${response.status} ${response.statusText}`);
@@ -480,6 +506,8 @@ const Channels: React.FC = () => {
 
   const handleChannelClick = (channel: Channel) => {
     setSelectedChannel(channel);
+    setActiveChannel(channel.id);
+    markChannelAsRead(channel.id);
   };
 
   // Check if user can delete a message (owner or admin)
@@ -534,9 +562,12 @@ const Channels: React.FC = () => {
                       selectedChannel?.id === channel.id 
                         ? 'bg-baywatch-orange text-white hover:text-white' 
                         : 'hover:text-baywatch-orange'
-                    }`}
+                    } relative flex items-center justify-between`}
                   >
-                    {channel.name}
+                    <span>{channel.name}</span>
+                    {unreadCounts[channel.id] > 0 && (
+                      <NotificationDot count={unreadCounts[channel.id]} />
+                    )}
                   </button>
                   {user?.isAdmin && channel.id !== 'general' && (
                     <div className="flex space-x-1 pr-2">

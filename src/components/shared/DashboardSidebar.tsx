@@ -1,9 +1,12 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { HashtagIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon, ChatBubbleLeftRightIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
+import NotificationDot from '../common/NotificationDot';
 
 export default function DashboardSidebar() {
   const { user, logout } = useAuth();
+  const { channelsHaveUnread, messagesHaveUnread } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -39,11 +42,19 @@ export default function DashboardSidebar() {
           <Link
             key={item.name}
             to={item.href}
-            className={`flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
+            className={`relative flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
               location.pathname === item.href ? 'bg-baywatch-orange text-white hover:text-white' : ''
             }`}
           >
             <item.icon className="w-6 h-6" />
+            {/* Show notification dot for channels */}
+            {item.name === 'Channels' && channelsHaveUnread && (
+              <NotificationDot show={true} position="top-right" size="small" />
+            )}
+            {/* Show notification dot for messages */}
+            {item.name === 'Messages' && messagesHaveUnread && (
+              <NotificationDot show={true} position="top-right" size="small" />
+            )}
           </Link>
         ))}
         {user?.isAdmin && (
