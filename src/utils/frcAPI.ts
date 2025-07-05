@@ -147,14 +147,14 @@ export class FRCAPIService {
     }
   }
 
-  // Generic request method for our own backend API
-  async request(method: string, path: string, data?: any): Promise<Response> {
+  // Generic request method for our own backend API with retry logic
+  async request(method: string, path: string, data?: any, retryCount = 0): Promise<Response> {
     const token = localStorage.getItem('token');
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
     };
 
-    console.log(`API Request: ${method} ${path}`);
+    console.log(`API Request: ${method} ${path} (attempt ${retryCount + 1})`);
     console.log('Token:', token ? `${token.substring(0, 15)}...` : 'No token');
 
     if (token) {
@@ -176,6 +176,18 @@ export class FRCAPIService {
     try {
       const response = await fetch(`/api${path}`, config);
       console.log(`Response status: ${response.status}`);
+      
+      // Handle rate limiting with exponential backoff
+      if (response.status === 429 && retryCount < 3) {
+        const retryAfter = response.headers.get('Retry-After');
+        const backoffDelay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, retryCount) * 1000;
+        
+        console.log(`Rate limited, retrying after ${backoffDelay}ms (attempt ${retryCount + 1}/3)`);
+        
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+        return this.request(method, path, data, retryCount + 1);
+      }
+      
       return response;
     } catch (error) {
       console.error(`API request error for ${method} ${path}:`, error);

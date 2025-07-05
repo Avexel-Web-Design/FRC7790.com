@@ -29,6 +29,106 @@ export async function markChannelAsRead(c: Context): Promise<Response> {
   }
 }
 
+// Get all notification data in a single call to reduce API requests
+export async function getAllNotificationData(c: Context): Promise<Response> {
+  try {
+    const userIdStr = c.req.query('user_id');
+    if (!userIdStr) {
+      return new Response('User ID is required', { status: 400 });
+    }
+    
+    const userId = Number(userIdStr);
+    
+    // Get all channels the user has access to
+    const { results: channels } = await c.env.DB.prepare(`
+      SELECT DISTINCT channels.*
+      FROM channels
+      LEFT JOIN channel_members ON channels.id = channel_members.channel_id AND channel_members.user_id = ?
+      WHERE channels.id NOT LIKE "dm_%" AND channels.id NOT LIKE "group_%" 
+        AND (channels.is_private = 0 OR channel_members.user_id = ?)
+      ORDER BY channels.position ASC
+    `).bind(userId, userId).all();
+    
+    // Get all DM conversations for this user
+    const { results: dmConversations } = await c.env.DB.prepare(`
+      SELECT DISTINCT channel_id
+      FROM messages
+      WHERE channel_id LIKE 'dm_%'
+        AND (
+          channel_id LIKE 'dm_' || ? || '_%' 
+          OR channel_id LIKE 'dm_%_' || ?
+        )
+    `).bind(userIdStr, userIdStr).all();
+    
+    // Get all group chats the user is a member of
+    const { results: groupChats } = await c.env.DB.prepare(`
+      SELECT DISTINCT channels.*
+      FROM channels
+      LEFT JOIN channel_members ON channels.id = channel_members.channel_id
+      WHERE channels.id LIKE "group_%" 
+        AND channel_members.user_id = ?
+    `).bind(userId).all();
+    
+    // Combine all channel/DM/group IDs
+    const allChannelIds = [
+      ...channels.map((c: any) => c.id),
+      ...dmConversations.map((dm: any) => dm.channel_id),
+      ...groupChats.map((g: any) => g.id)
+    ];
+    
+    const unreadCounts: Record<string, number> = {};
+    let channelsUnread = 0;
+    let messagesUnread = 0;
+    
+    // For each channel, count unread messages
+    for (const channelId of allChannelIds) {
+      try {
+        // Get user's last read timestamp for this channel
+        const readStatus = await c.env.DB.prepare(
+          'SELECT last_read_timestamp FROM user_read_status WHERE user_id = ? AND channel_id = ?'
+        ).bind(userId, channelId).first();
+        
+        const lastReadTimestamp = readStatus?.last_read_timestamp || '1970-01-01T00:00:00.000Z';
+        
+        // Count messages after the last read timestamp
+        const unreadResult = await c.env.DB.prepare(`
+          SELECT COUNT(*) as count
+          FROM messages
+          WHERE channel_id = ? 
+            AND timestamp > ?
+            AND sender_id != ?
+        `).bind(channelId, lastReadTimestamp, userId).first();
+        
+        const count = (unreadResult as any)?.count || 0;
+        if (count > 0) {
+          unreadCounts[channelId] = count;
+          
+          // Categorize by channel type for totals
+          if (channelId.startsWith('dm_') || channelId.startsWith('group_')) {
+            messagesUnread += count;
+          } else {
+            channelsUnread += count;
+          }
+        }
+      } catch (error) {
+        console.error(`Error counting unread for channel ${channelId}:`, error);
+      }
+    }
+    
+    return new Response(JSON.stringify({
+      unreadCounts,
+      totalUnread: channelsUnread + messagesUnread,
+      channelsUnread,
+      messagesUnread
+    }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    console.error('Error getting notification data:', error);
+    return new Response('Error getting notification data', { status: 500 });
+  }
+}
+
 // Get unread message counts for all channels/DMs for a user
 export async function getUnreadCounts(c: Context): Promise<Response> {
   try {

@@ -44,7 +44,13 @@ export const rateLimitMiddleware = createMiddleware(async (c, next) => {
   const clientIP = c.req.header('CF-Connecting-IP') || c.req.header('X-Forwarded-For') || 'unknown';
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
-  const maxRequests = 100; // max requests per window
+  
+  // Check if this is a notification endpoint - be more generous with these
+  const path = c.req.path;
+  const isNotificationEndpoint = path.includes('/notifications/');
+  
+  // Different limits for different endpoint types
+  const maxRequests = isNotificationEndpoint ? 200 : 150; // Higher limit for notifications
   
   const clientData = requestCounts.get(clientIP);
   
@@ -53,9 +59,19 @@ export const rateLimitMiddleware = createMiddleware(async (c, next) => {
   } else {
     clientData.count++;
     if (clientData.count > maxRequests) {
-      return c.json({ error: 'Rate limit exceeded' }, 429);
+      console.log(`Rate limit exceeded for IP ${clientIP}: ${clientData.count}/${maxRequests} requests`);
+      return c.json({ 
+        error: 'Rate limit exceeded',
+        message: `Too many requests. Limit: ${maxRequests} per 15 minutes.`,
+        retryAfter: Math.ceil((clientData.resetTime - now) / 1000)
+      }, 429);
     }
   }
+  
+  // Add rate limit headers
+  c.header('X-RateLimit-Limit', maxRequests.toString());
+  c.header('X-RateLimit-Remaining', Math.max(0, maxRequests - (clientData?.count || 0)).toString());
+  c.header('X-RateLimit-Reset', Math.ceil((clientData?.resetTime || now + windowMs) / 1000).toString());
   
   await next();
 });
