@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
+import NotificationDot from '../common/NotificationDot';
 
 interface NavigationItem {
   name: string;
@@ -21,6 +23,13 @@ export default function Navigation() {
   const [isVisible, setIsVisible] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const { isAuthenticated, user, logout } = useAuth();
+  const { 
+    channelsHaveUnread, 
+    messagesHaveUnread, 
+    calendarHasUpdates, 
+    tasksHaveUpdates, 
+    notificationCounts
+  } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -132,7 +141,7 @@ export default function Navigation() {
           ))}
           {isAuthenticated ? (
             <>
-              <li>
+              <li className="relative">
                 <Link
                   to="/dashboard"
                   className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
@@ -140,6 +149,72 @@ export default function Navigation() {
                   }`}
                 >
                   Dashboard
+                  {channelsHaveUnread && (
+                    <NotificationDot 
+                      show={true} 
+                      position="top-right" 
+                      size="small"
+                      count={notificationCounts.channels}
+                      showCount={notificationCounts.channels > 1}
+                    />
+                  )}
+                </Link>
+              </li>
+              <li className="relative">
+                <Link
+                  to="/messages"
+                  className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
+                    location.pathname === '/messages' ? 'text-baywatch-orange' : ''
+                  }`}
+                >
+                  Messages
+                  {messagesHaveUnread && (
+                    <NotificationDot 
+                      show={true} 
+                      position="top-right" 
+                      size="small"
+                      count={notificationCounts.messages}
+                      showCount={notificationCounts.messages > 1}
+                    />
+                  )}
+                </Link>
+              </li>
+              <li className="relative">
+                <Link
+                  to="/calendar"
+                  className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
+                    location.pathname === '/calendar' ? 'text-baywatch-orange' : ''
+                  }`}
+                >
+                  Calendar
+                  {calendarHasUpdates && (
+                    <NotificationDot 
+                      show={true} 
+                      position="top-right" 
+                      size="small"
+                      color="blue"
+                      animate={true}
+                    />
+                  )}
+                </Link>
+              </li>
+              <li className="relative">
+                <Link
+                  to="/tasks"
+                  className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
+                    location.pathname === '/tasks' ? 'text-baywatch-orange' : ''
+                  }`}
+                >
+                  Tasks
+                  {tasksHaveUpdates && (
+                    <NotificationDot 
+                      show={true} 
+                      position="top-right" 
+                      size="small"
+                      color="green"
+                      animate={true}
+                    />
+                  )}
                 </Link>
               </li>
             </>
@@ -204,33 +279,90 @@ export default function Navigation() {
             ))}
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/dashboard"
-                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                    location.pathname === '/dashboard' ? 'text-baywatch-orange' : ''
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/calendar"
-                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                    location.pathname === '/calendar' ? 'text-baywatch-orange' : ''
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Calendar
-                </Link>
-                <Link
-                  to="/tasks"
-                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                    location.pathname === '/tasks' ? 'text-baywatch-orange' : ''
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Tasks
-                </Link>
+                <div className="relative">
+                  <Link
+                    to="/dashboard"
+                    className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                      location.pathname === '/dashboard' ? 'text-baywatch-orange' : ''
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Dashboard
+                    {channelsHaveUnread && (
+                      <NotificationDot 
+                        show={true} 
+                        position="inline" 
+                        size="small"
+                        className="ml-2 inline-block"
+                        count={notificationCounts.channels}
+                        showCount={notificationCounts.channels > 1}
+                      />
+                    )}
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Link
+                    to="/messages"
+                    className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                      location.pathname === '/messages' ? 'text-baywatch-orange' : ''
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Messages
+                    {messagesHaveUnread && (
+                      <NotificationDot 
+                        show={true} 
+                        position="inline" 
+                        size="small"
+                        className="ml-2 inline-block"
+                        count={notificationCounts.messages}
+                        showCount={notificationCounts.messages > 1}
+                      />
+                    )}
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Link
+                    to="/calendar"
+                    className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                      location.pathname === '/calendar' ? 'text-baywatch-orange' : ''
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Calendar
+                    {calendarHasUpdates && (
+                      <NotificationDot 
+                        show={true} 
+                        position="inline" 
+                        size="small"
+                        className="ml-2 inline-block"
+                        color="blue"
+                        animate={true}
+                      />
+                    )}
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Link
+                    to="/tasks"
+                    className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
+                      location.pathname === '/tasks' ? 'text-baywatch-orange' : ''
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Tasks
+                    {tasksHaveUpdates && (
+                      <NotificationDot 
+                        show={true} 
+                        position="inline" 
+                        size="small"
+                        className="ml-2 inline-block"
+                        color="green"
+                        animate={true}
+                      />
+                    )}
+                  </Link>
+                </div>
                 <Link
                   to="/profile"
                   className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${

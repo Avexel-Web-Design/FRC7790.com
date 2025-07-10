@@ -3,10 +3,19 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { HashtagIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon, ChatBubbleLeftRightIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
 import NotificationDot from '../common/NotificationDot';
+import NotificationStatus from '../common/NotificationStatus';
 
 export default function DashboardSidebar() {
   const { user, logout } = useAuth();
-  const { channelsHaveUnread, messagesHaveUnread } = useNotifications();
+  const { 
+    channelsHaveUnread, 
+    messagesHaveUnread, 
+    calendarHasUpdates, 
+    tasksHaveUpdates, 
+    notificationCounts, 
+    markCalendarAsViewed,
+    markTasksAsViewed
+  } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -42,18 +51,60 @@ export default function DashboardSidebar() {
           <Link
             key={item.name}
             to={item.href}
-            className={`relative flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
+            className={`relative flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange transition-all duration-200 ${
               location.pathname === item.href ? 'bg-baywatch-orange text-white hover:text-white' : ''
             }`}
+            onClick={() => {
+              // Mark sections as viewed when clicked
+              if (item.name === 'Calendar' && calendarHasUpdates) {
+                markCalendarAsViewed();
+              } else if (item.name === 'Tasks' && tasksHaveUpdates) {
+                markTasksAsViewed();
+              }
+            }}
           >
             <item.icon className="w-6 h-6" />
             {/* Show notification dot for channels */}
             {item.name === 'Channels' && channelsHaveUnread && (
-              <NotificationDot show={true} position="top-right" size="small" />
+              <NotificationDot 
+                show={true} 
+                position="top-right" 
+                size="small" 
+                showCount={notificationCounts.channels > 1}
+                count={notificationCounts.channels}
+              />
             )}
             {/* Show notification dot for messages */}
             {item.name === 'Messages' && messagesHaveUnread && (
-              <NotificationDot show={true} position="top-right" size="small" />
+              <NotificationDot 
+                show={true} 
+                position="top-right" 
+                size="small"
+                showCount={notificationCounts.messages > 1}
+                count={notificationCounts.messages}
+              />
+            )}
+            {/* Show notification dot for calendar */}
+            {item.name === 'Calendar' && calendarHasUpdates && (
+              <NotificationDot 
+                show={true} 
+                position="top-right" 
+                size="small"
+                showCount={false}
+                color="blue"
+                animate={true}
+              />
+            )}
+            {/* Show notification dot for tasks */}
+            {item.name === 'Tasks' && tasksHaveUpdates && (
+              <NotificationDot 
+                show={true} 
+                position="top-right" 
+                size="small"
+                showCount={false}
+                color="green"
+                animate={true}
+              />
             )}
           </Link>
         ))}
@@ -75,7 +126,12 @@ export default function DashboardSidebar() {
       </nav>
       {/* Footer with inset divider */}
       <div className="px-2">
-        <div className="border-t border-gray-700 p-4">
+        <div className="border-t border-gray-700 p-4 space-y-3">
+          {/* Notification Status */}
+          <div className="text-center">
+            <NotificationStatus />
+          </div>
+          
           <button
             onClick={handleLogout}
             className="flex items-center w-full justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange"
