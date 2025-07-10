@@ -172,7 +172,7 @@ const Channels: React.FC = () => {
     if (messageInput.trim() && selectedChannel && user) {
       try {
         console.log(`Sending message to ${selectedChannel.id}:`, messageInput);
-        const response = await frcAPI.post(`/chat/messages/${selectedChannel.id}`, {
+        const response = await frcAPI.post(`/chat/messages/${selectedChannel.id}?user_id=${user.id}`, {
           content: messageInput.trim(),
           sender_id: user.id,
         });
@@ -180,7 +180,7 @@ const Channels: React.FC = () => {
 
         if (response.ok) {
           // Re-fetch messages to include the newly sent message
-          const updatedMessagesResponse = await frcAPI.get(`/chat/messages/${selectedChannel.id}`);
+          const updatedMessagesResponse = await frcAPI.get(`/chat/messages/${selectedChannel.id}?user_id=${user.id}`);
           if (updatedMessagesResponse.ok) {
             const updatedMessages = await updatedMessagesResponse.json();
             setMessages(updatedMessages);

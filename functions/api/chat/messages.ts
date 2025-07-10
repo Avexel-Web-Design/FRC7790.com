@@ -50,6 +50,24 @@ export async function getMessages(c: Context): Promise<Response> {
       .all();
 
     console.log(`getMessages: Found ${results.length} messages`);
+    
+    // If user is provided and there are messages, mark channel as read
+    if (userId && results.length > 0) {
+      try {
+        const timestamp = new Date().toISOString();
+        await c.env.DB.prepare(`
+          INSERT INTO user_read_status (user_id, channel_id, last_read_timestamp)
+          VALUES (?, ?, ?)
+          ON CONFLICT(user_id, channel_id) DO UPDATE SET
+            last_read_timestamp = excluded.last_read_timestamp
+        `).bind(userId, channelId, timestamp).run();
+        console.log("getMessages: Marked channel as read for user");
+      } catch (error) {
+        console.error("getMessages: Error marking channel as read:", error);
+        // Don't fail the get messages if read status update fails
+      }
+    }
+
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
     });
@@ -113,8 +131,21 @@ export async function sendMessage(c: Context): Promise<Response> {
       .run();
 
     console.log("sendMessage: Insert result", result);
-
     if (result.success) {
+      // Automatically mark this channel as read for the sender
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO user_read_status (user_id, channel_id, last_read_timestamp)
+          VALUES (?, ?, ?)
+          ON CONFLICT(user_id, channel_id) DO UPDATE SET
+            last_read_timestamp = excluded.last_read_timestamp
+        `).bind(sender_id, channelId, timestamp).run();
+        console.log("sendMessage: Marked channel as read for sender");
+      } catch (error) {
+        console.error("sendMessage: Error marking channel as read:", error);
+        // Don't fail the message send if read status update fails
+      }
+
       return new Response(JSON.stringify({ message: 'Message sent' }), {
         status: 201,
         headers: { 'Content-Type': 'application/json' },
@@ -233,6 +264,24 @@ export async function getDMMessages(c: Context): Promise<Response> {
       .all();
 
     console.log(`getDMMessages: Found ${results.length} messages`);
+    
+    // Mark DM channel as read for the requesting user
+    if (results.length > 0) {
+      try {
+        const timestamp = new Date().toISOString();
+        await c.env.DB.prepare(`
+          INSERT INTO user_read_status (user_id, channel_id, last_read_timestamp)
+          VALUES (?, ?, ?)
+          ON CONFLICT(user_id, channel_id) DO UPDATE SET
+            last_read_timestamp = excluded.last_read_timestamp
+        `).bind(userId, dmId, timestamp).run();
+        console.log("getDMMessages: Marked DM as read for user");
+      } catch (error) {
+        console.error("getDMMessages: Error marking DM as read:", error);
+        // Don't fail the get messages if read status update fails
+      }
+    }
+
     return new Response(JSON.stringify(results), {
       headers: { 'Content-Type': 'application/json' },
     });
@@ -247,6 +296,9 @@ export async function sendDMMessage(c: Context): Promise<Response> {
   const { dmId } = c.req.param();
   console.log("sendDMMessage: DM ID", dmId);
   
+  const userIdStr = c.req.query('user_id');
+  const userIdFromQuery = userIdStr ? Number(userIdStr) : undefined;
+  
   if (!dmId || !dmId.startsWith('dm_')) {
     return new Response('Invalid DM ID', { status: 400 });
   }
@@ -257,6 +309,11 @@ export async function sendDMMessage(c: Context): Promise<Response> {
     
     if (!content || !sender_id) {
       return new Response('Content and sender_id are required', { status: 400 });
+    }
+
+    const effectiveUserId = userIdFromQuery || Number(sender_id);
+    if (!effectiveUserId) {
+      return new Response('Unauthorized', { status: 401 });
     }
 
     // Extract user IDs from DM ID (format: dm_<smallerId>_<largerId>)
@@ -285,6 +342,20 @@ export async function sendDMMessage(c: Context): Promise<Response> {
     console.log("sendDMMessage: Insert result", result);
 
     if (result.success) {
+      // Automatically mark this DM channel as read for the sender
+      try {
+        await c.env.DB.prepare(`
+          INSERT INTO user_read_status (user_id, channel_id, last_read_timestamp)
+          VALUES (?, ?, ?)
+          ON CONFLICT(user_id, channel_id) DO UPDATE SET
+            last_read_timestamp = excluded.last_read_timestamp
+        `).bind(sender_id, dmId, timestamp).run();
+        console.log("sendDMMessage: Marked DM as read for sender");
+      } catch (error) {
+        console.error("sendDMMessage: Error marking DM as read:", error);
+        // Don't fail the message send if read status update fails
+      }
+
       return new Response(JSON.stringify({ message: 'DM message sent' }), {
         status: 201,
         headers: { 'Content-Type': 'application/json' },

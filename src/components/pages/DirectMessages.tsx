@@ -238,14 +238,14 @@ const DirectMessages: React.FC = () => {
       
       if (selectedChat.type === 'dm') {
         const convId = getConversationId(user.id, selectedChat.id);
-        endpoint = `/chat/messages/dm/${convId}`;
+        endpoint = `/chat/messages/dm/${convId}?user_id=${user.id}`;
         payload = {
           content: messageInput.trim(),
           sender_id: user.id,
         };
       } else {
         // Group chat
-        endpoint = `/chat/messages/${selectedChat.id}`;
+        endpoint = `/chat/messages/${selectedChat.id}?user_id=${user.id}`;
         payload = {
           content: messageInput.trim(),
           sender_id: user.id,
