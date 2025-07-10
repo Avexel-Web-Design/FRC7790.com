@@ -65,8 +65,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     total: 0
   });
 
-  // Cache duration - only allow refresh if last one was more than 30 seconds ago
-  const CACHE_DURATION = 30000; // 30 seconds
+  // Cache duration - only allow refresh if last one was more than 3 minutes ago
+  const CACHE_DURATION = 180000; // 3 minutes
 
   // LocalStorage keys for tracking last viewed times
   const STORAGE_KEYS = {
@@ -308,7 +308,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     } finally {
       setIsRefreshing(false);
     }
-  }, [user, activeChannel, lastRefresh, CACHE_DURATION, checkCalendarUpdates, checkTasksUpdates]);
+  }, [user, activeChannel, checkCalendarUpdates, checkTasksUpdates]);
 
   // Force refresh notifications bypassing cache (for immediate updates)
   const forceRefreshNotifications = useCallback(async () => {
@@ -362,30 +362,178 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }));
   }, []);
 
-  // Auto-refresh notifications every 30 seconds for near real-time updates
+  // Auto-refresh notifications every 5 minutes for periodic updates
   useEffect(() => {
-    if (user) {
-      refreshNotifications();
-      const interval = setInterval(refreshNotifications, 30000); // 30 seconds
-      return () => clearInterval(interval);
-    }
-  }, [user, refreshNotifications]);
+    if (!user) return;
+    
+    // Create a stable refresh function that doesn't depend on changing callbacks
+    const doRefresh = async () => {
+      if (!user) return;
+
+      // Check if we should skip this refresh due to caching
+      const now = Date.now();
+      if (now - lastRefresh < 300000) { // 5 minutes
+        return;
+      }
+
+      setIsRefreshing(true);
+      try {
+        setLastRefresh(now);
+        setLastRefreshTime(now);
+        
+        // Use the new combined endpoint to get all notification data in one call
+        const allDataUrl = `/chat/notifications/all?user_id=${user.id}`;
+        const response = await frcAPI.get(allDataUrl);
+        
+        if (response.ok) {
+          const data = await response.json();
+          const { unreadCounts, totalUnread, channelsUnread, messagesUnread } = data;
+          
+          // Get the original unread count for the active channel (before filtering)
+          const activeChannelUnreadCount = activeChannel && unreadCounts[activeChannel] ? unreadCounts[activeChannel] : 0;
+          
+          // Filter out the active channel from unread counts
+          const filteredCounts = { ...unreadCounts };
+          if (activeChannel && filteredCounts[activeChannel]) {
+            delete filteredCounts[activeChannel];
+          }
+          
+          setUnreadCounts(filteredCounts);
+          
+          // Subtract active channel's unread count from totals
+          const adjustedTotal = Math.max(0, totalUnread - activeChannelUnreadCount);
+          
+          // Determine if active channel is a regular channel or DM/group
+          const isActiveChannelRegular = activeChannel && !activeChannel.startsWith('dm_') && !activeChannel.startsWith('group_');
+          const adjustedChannelsUnread = isActiveChannelRegular 
+            ? Math.max(0, channelsUnread - activeChannelUnreadCount)
+            : channelsUnread;
+          const adjustedMessagesUnread = !isActiveChannelRegular 
+            ? Math.max(0, messagesUnread - activeChannelUnreadCount)
+            : messagesUnread;
+          
+          setTotalUnread(adjustedTotal);
+          setChannelsHaveUnread(adjustedChannelsUnread > 0);
+          setMessagesHaveUnread(adjustedMessagesUnread > 0);
+
+          // Check for calendar and tasks updates using simplified inline checks
+          const calendarUpdates = await checkForCalendarUpdates();
+          const tasksUpdates = await checkForTasksUpdates();
+
+          setCalendarHasUpdates(calendarUpdates);
+          setTasksHaveUpdates(tasksUpdates);
+
+          // Update enhanced notification counts
+          setNotificationCounts({
+            channels: adjustedChannelsUnread,
+            messages: adjustedMessagesUnread,
+            calendar: calendarUpdates ? 1 : 0,
+            tasks: tasksUpdates ? 1 : 0,
+            total: adjustedTotal + (calendarUpdates ? 1 : 0) + (tasksUpdates ? 1 : 0)
+          });
+        }
+      } catch (error) {
+        console.error('Error refreshing notifications:', error);
+      } finally {
+        setIsRefreshing(false);
+      }
+    };
+
+    // Simple inline functions for calendar and tasks checks
+    const checkForCalendarUpdates = async () => {
+      try {
+        const lastViewedTime = getLastViewedTime(STORAGE_KEYS.lastCalendarView);
+        const response = await frcAPI.get(`/calendar/stats?lastViewed=${lastViewedTime}`);
+        if (response.ok) {
+          const { hasUpdates } = await response.json();
+          return hasUpdates;
+        }
+      } catch {
+        // Ignore errors for now
+      }
+      return false;
+    };
+
+    const checkForTasksUpdates = async () => {
+      try {
+        const lastViewedTime = getLastViewedTime(STORAGE_KEYS.lastTasksView);
+        const response = await frcAPI.get(`/tasks/stats?lastViewed=${lastViewedTime}`);
+        if (response.ok) {
+          const { hasUpdates } = await response.json();
+          return hasUpdates;
+        }
+      } catch {
+        // Ignore errors for now
+      }
+      return false;
+    };
+    
+    // Initial refresh
+    doRefresh();
+    
+    // Set up interval for periodic refreshes every 5 minutes
+    const interval = setInterval(doRefresh, 300000); // 5 minutes
+    
+    return () => clearInterval(interval);
+  }, [user?.id]); // Only depend on user.id, not the entire user object or any functions
 
   // Debounced refresh when active channel changes (avoid immediate refresh)
   useEffect(() => {
     if (user && activeChannel !== null) {
       const timeoutId = setTimeout(() => {
-        forceRefreshNotifications(); // Use force refresh for more responsive updates
+        // Use force refresh for more responsive updates when switching channels
+        setLastRefresh(0); // Reset cache
+        // Trigger a refresh by calling the inline refresh function
+        const doImmediateRefresh = async () => {
+          if (!user) return;
+          setIsRefreshing(true);
+          try {
+            const now = Date.now();
+            setLastRefresh(now);
+            setLastRefreshTime(now);
+            
+            const allDataUrl = `/chat/notifications/all?user_id=${user.id}`;
+            const response = await frcAPI.get(allDataUrl);
+            
+            if (response.ok) {
+              const data = await response.json();
+              const { unreadCounts, totalUnread, channelsUnread, messagesUnread } = data;
+              
+              const activeChannelUnreadCount = activeChannel && unreadCounts[activeChannel] ? unreadCounts[activeChannel] : 0;
+              const filteredCounts = { ...unreadCounts };
+              if (activeChannel && filteredCounts[activeChannel]) {
+                delete filteredCounts[activeChannel];
+              }
+              
+              setUnreadCounts(filteredCounts);
+              const adjustedTotal = Math.max(0, totalUnread - activeChannelUnreadCount);
+              const isActiveChannelRegular = activeChannel && !activeChannel.startsWith('dm_') && !activeChannel.startsWith('group_');
+              const adjustedChannelsUnread = isActiveChannelRegular 
+                ? Math.max(0, channelsUnread - activeChannelUnreadCount)
+                : channelsUnread;
+              const adjustedMessagesUnread = !isActiveChannelRegular 
+                ? Math.max(0, messagesUnread - activeChannelUnreadCount)
+                : messagesUnread;
+              
+              setTotalUnread(adjustedTotal);
+              setChannelsHaveUnread(adjustedChannelsUnread > 0);
+              setMessagesHaveUnread(adjustedMessagesUnread > 0);
+            }
+          } catch (error) {
+            console.error('Error refreshing notifications on channel change:', error);
+          } finally {
+            setIsRefreshing(false);
+          }
+        };
+        doImmediateRefresh();
       }, 1000); // Wait 1 second before refreshing
       return () => clearTimeout(timeoutId);
     }
-  }, [activeChannel, user, forceRefreshNotifications]);
+  }, [activeChannel, user?.id]);
 
-  // Initial load when user logs in
+  // Clear notifications when user logs out
   useEffect(() => {
-    if (user) {
-      refreshNotifications();
-    } else {
+    if (!user) {
       // Clear notifications when user logs out
       setUnreadCounts({});
       setTotalUnread(0);
@@ -402,7 +550,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         total: 0
       });
     }
-  }, [user, refreshNotifications]);
+  }, [user]);
 
   const value = {
     unreadCounts,
