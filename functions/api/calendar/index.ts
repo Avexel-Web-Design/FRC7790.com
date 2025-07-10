@@ -812,34 +812,4 @@ calendar.get('/test/:id', async (c) => {
   }
 });
 
-// Get basic stats for notifications (for detecting new calendar events)
-calendar.get('/stats', async (c) => {
-  try {
-    const user = c.get('user');
-    
-    // Get the count of events and the most recent event timestamp
-    const { results: eventStats } = await c.env.DB.prepare(`
-      SELECT 
-        COUNT(*) as total_events,
-        MAX(DATETIME(created_at)) as latest_created_at,
-        MAX(DATETIME(event_date)) as latest_event_date
-      FROM calendar_events 
-      WHERE created_by = ? OR created_by IN (
-        SELECT id FROM users WHERE is_admin = 1
-      )
-    `).bind(user.id).all();
-    
-    const stats = eventStats[0] || {
-      total_events: 0,
-      latest_created_at: null,
-      latest_event_date: null
-    };
-    
-    return c.json(stats);
-  } catch (error) {
-    console.error('Error getting calendar stats:', error);
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-});
-
 export default calendar;

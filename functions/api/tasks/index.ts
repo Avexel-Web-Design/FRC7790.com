@@ -160,36 +160,4 @@ tasks.delete('/:id', async (c) => {
   }
 });
 
-// Get basic stats for notifications (for detecting new/updated tasks)
-tasks.get('/stats', async (c) => {
-  try {
-    const user = c.get('user');
-    
-    // Get the count of tasks and the most recent task timestamp
-    const { results: taskStats } = await c.env.DB.prepare(`
-      SELECT 
-        COUNT(*) as total_tasks,
-        COUNT(CASE WHEN completed = 0 THEN 1 END) as pending_tasks,
-        MAX(DATETIME(created_at)) as latest_created_at,
-        MAX(DATETIME(COALESCE(updated_at, created_at))) as latest_updated_at
-      FROM tasks 
-      WHERE created_by = ? OR assigned_to = ? OR created_by IN (
-        SELECT id FROM users WHERE is_admin = 1
-      )
-    `).bind(user.id, user.id).all();
-    
-    const stats = taskStats[0] || {
-      total_tasks: 0,
-      pending_tasks: 0,
-      latest_created_at: null,
-      latest_updated_at: null
-    };
-    
-    return c.json(stats);
-  } catch (error) {
-    console.error('Error getting task stats:', error);
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-});
-
 export default tasks;

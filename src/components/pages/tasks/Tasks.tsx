@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useNotifications } from '../../../contexts/NotificationContext';
 import NebulaLoader from '../../common/NebulaLoader';
 
 interface Task {
@@ -19,7 +18,6 @@ interface Task {
 
 const Tasks: React.FC = () => {
   const { user } = useAuth();
-  const { markTasksAsViewed } = useNotifications();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -33,11 +31,6 @@ const Tasks: React.FC = () => {
     due_date: '',
     priority: 'medium' as 'low' | 'medium' | 'high'
   });
-
-  // Mark tasks as viewed when component mounts
-  useEffect(() => {
-    markTasksAsViewed();
-  }, [markTasksAsViewed]);
 
   useEffect(() => {
     fetchTasks();

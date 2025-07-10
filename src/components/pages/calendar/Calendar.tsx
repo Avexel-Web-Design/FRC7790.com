@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useNotifications } from '../../../contexts/NotificationContext';
 import RecurrenceForm from '../../common/RecurrenceForm';
 import NebulaLoader from '../../common/NebulaLoader';
 
@@ -60,7 +59,6 @@ interface CalendarEvent {
 
 const Calendar: React.FC = () => {
   const { user } = useAuth();
-  const { markCalendarAsViewed } = useNotifications();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -68,11 +66,6 @@ const Calendar: React.FC = () => {
   const [currentEvent, setCurrentEvent] = useState<Partial<CalendarEvent> | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showRecurrenceOptions, setShowRecurrenceOptions] = useState(false);
-
-  // Mark calendar as viewed when component mounts
-  useEffect(() => {
-    markCalendarAsViewed();
-  }, [markCalendarAsViewed]);
 
   useEffect(() => {
     fetchEvents();
