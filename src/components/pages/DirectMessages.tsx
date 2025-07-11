@@ -460,9 +460,9 @@ const DirectMessages: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-black text-gray-100">
-      {/* Sidebar */}
-      <div className="w-64 bg-black flex flex-col">
+    <div className="flex h-full md:h-full min-h-screen bg-black text-gray-100">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex w-64 bg-black flex-col">
         <div className="px-2">
           <div className="p-4 border-b border-gray-700 flex justify-between items-center">
             <h2 className="text-xl font-bold">Messages</h2>
@@ -562,18 +562,106 @@ const DirectMessages: React.FC = () => {
         )}
       </div>
 
+      {/* Mobile Chat Selector */}
+      <div className="md:hidden">
+        {!selectedChat ? (
+          <div className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Messages</h2>
+              <button
+                onClick={openCreateGroupModal}
+                className="bg-black hover:bg-baywatch-orange text-baywatch-orange hover:text-white rounded-full p-2"
+                title="Create new group chat"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            
+            {isChatsLoading ? (
+              <div className="flex items-center justify-center p-8">
+                <NebulaLoader size={48} />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {chatItems.map(chat => (
+                  <button
+                    key={`${chat.type}-${chat.id}`}
+                    onClick={() => handleChatClick(chat)}
+                    className="w-full text-left py-4 px-4 rounded-xl border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 active:bg-gray-700 transition-all duration-200 flex items-center justify-between mobile-touch-target"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        {chat.type === 'group' ? (
+                          <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div
+                            className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base"
+                            style={{ backgroundColor: generateColor(chat.username, null) }}
+                          >
+                            {chat.username
+                              .split(' ')
+                              .map(n => n[0])
+                              .join('')
+                              .toUpperCase()
+                              .substring(0, 2)}
+                          </div>
+                        )}
+                        {(() => {
+                          const chatId = chat.type === 'dm' && user 
+                            ? getConversationId(user.id, chat.id)
+                            : chat.id.toString();
+                          const unreadCount = unreadCounts[chatId] || 0;
+                          
+                          return unreadCount > 0 && (
+                            <NotificationDot 
+                              count={unreadCount} 
+                              position="top-right"
+                              size="medium"
+                            />
+                          );
+                        })()}
+                      </div>
+                      <span className="font-medium text-base">
+                        {chat.type === 'group' ? chat.name : chat.username}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
+
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col ${!selectedChat ? 'hidden md:flex' : ''}`}>
         {/* Header */}
         <div className="bg-black px-2">
           <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-            <h2 className="text-xl font-bold">
-              {selectedChat 
-                ? (selectedChat.type === 'group' ? selectedChat.name : selectedChat.username)
-                : 'Select a chat'
-              }
-            </h2>
             <div className="flex items-center">
+              {/* Mobile Back Button */}
+              <button
+                onClick={() => setSelectedChat(null)}
+                className="md:hidden mr-3 p-2 hover:text-baywatch-orange hover:bg-gray-800 rounded-lg transition-colors mobile-touch-target"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="text-lg md:text-xl font-bold truncate">
+                {selectedChat 
+                  ? (selectedChat.type === 'group' ? selectedChat.name : selectedChat.username)
+                  : 'Select a chat'
+                }
+              </h2>
+            </div>
+            <div className="hidden md:flex items-center">
               <div
                 className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
                 style={{ backgroundColor: user?.username ? generateColor(user.username, user.avatarColor) : '#007bff' }}
@@ -599,7 +687,7 @@ const DirectMessages: React.FC = () => {
         )}
 
         {/* Messages */}
-        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar pb-20 md:pb-4">
           {isMessagesLoading ? (
             <div className="flex items-center justify-center h-full">
               <NebulaLoader size={64} />
@@ -667,9 +755,9 @@ const DirectMessages: React.FC = () => {
         </div>
 
         {/* Message input */}
-        <div className="bg-black px-2">
+        <div className="bg-black px-2 pb-safe sticky bottom-0 md:relative md:bottom-auto">
           <div className="p-4 border-t border-gray-700">
-            <form onSubmit={handleSendMessage} className="flex">
+            <form onSubmit={handleSendMessage} className="flex space-x-2">
               <input
                 type="text"
                 value={messageInput}
@@ -678,15 +766,18 @@ const DirectMessages: React.FC = () => {
                   ? `Message ${selectedChat.type === 'group' ? selectedChat.name : selectedChat.username}`
                   : 'Select a chat...'
                 }
-                className="flex-1 bg-black text-gray-100 rounded-md px-4 py-2 focus:outline-none"
+                className="flex-1 bg-gray-800 text-gray-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-baywatch-orange border border-gray-600"
                 disabled={!selectedChat}
               />
               <button
                 type="submit"
-                className="ml-3 bg-baywatch-orange hover:bg-baywatch-orange/70 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200"
+                className="bg-baywatch-orange hover:bg-baywatch-orange/80 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={!selectedChat || !messageInput.trim()}
               >
-                Send
+                <span className="hidden sm:inline">Send</span>
+                <svg className="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
               </button>
             </form>
           </div>

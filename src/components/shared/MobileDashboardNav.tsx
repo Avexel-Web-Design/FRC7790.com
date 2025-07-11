@@ -28,16 +28,16 @@ export default function MobileDashboardNav() {
   ];
 
   return (
-    <div className="bg-black border-t border-gray-700 px-1 py-2 sticky bottom-0 z-30">
-      <nav className="flex items-center justify-around">
+    <div className="bg-black border-t border-gray-700 px-1 py-2 sticky bottom-0 z-30 safe-area-inset">
+      <nav className="flex items-center justify-around max-w-screen-sm mx-auto">
         {navigation.map((item) => (
           <Link
             key={item.name}
             to={item.href}
-            className={`relative flex flex-col items-center justify-center py-1 px-1 rounded-lg transition-colors min-w-0 ${
+            className={`relative flex flex-col items-center justify-center py-2 px-2 rounded-lg transition-all duration-200 min-w-0 mobile-touch-target ${
               location.pathname === item.href 
-                ? 'bg-baywatch-orange text-white' 
-                : 'text-gray-400 hover:text-white'
+                ? 'bg-baywatch-orange text-white transform scale-105' 
+                : 'text-gray-400 hover:text-white hover:bg-gray-800'
             }`}
           >
             <div className="relative">
@@ -46,7 +46,7 @@ export default function MobileDashboardNav() {
                 <NotificationDot show={true} position="top-right" size="small" />
               )}
             </div>
-            <span className="text-xs mt-0.5 font-medium truncate max-w-full">
+            <span className="text-xs mt-1 font-medium truncate max-w-full leading-tight">
               {item.name}
             </span>
           </Link>
