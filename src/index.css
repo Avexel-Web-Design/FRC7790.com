@@ -233,6 +233,11 @@ button::-webkit-focus-inner {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
+/* pb-safe class for mobile keyboard handling */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+}
+
 /* Smooth transitions for mobile menus */
 @media (max-width: 768px) {
   .mobile-menu-slide {
@@ -259,6 +264,25 @@ button::-webkit-focus-inner {
   .mobile-container {
     overflow-x: hidden;
     width: 100%;
+  }
+  
+  /* Mobile chat improvements */
+  .mobile-chat-container {
+    height: calc(100vh - env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - env(safe-area-inset-bottom, 0px));
+  }
+  
+  /* Better mobile scrolling */
+  .mobile-scroll-area {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Improved mobile input styling */
+  .mobile-input-focus:focus {
+    transform: scale(1.02);
+    transition: transform 0.2s ease;
   }
 }
 

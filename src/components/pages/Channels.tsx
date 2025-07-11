@@ -517,7 +517,7 @@ const Channels: React.FC = () => {
   };
 
   return (
-    <div className="flex h-full bg-black text-gray-100">
+    <div className="flex h-full md:h-full min-h-screen bg-black text-gray-100">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex w-64 bg-black flex-col">
         <div className="px-2">
@@ -684,7 +684,7 @@ const Channels: React.FC = () => {
         )}
 
         {/* Messages */}
-        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar pb-20 md:pb-4">
           {isMessagesLoading ? (
             <div className="flex items-center justify-center h-full">
               <NebulaLoader size={64} />
@@ -738,7 +738,7 @@ const Channels: React.FC = () => {
         </div>
 
         {/* Message Input */}
-        <div className="bg-black px-2 pb-safe">
+        <div className="bg-black px-2 pb-safe sticky bottom-0 md:relative md:bottom-auto">
           <div className="p-4 border-t border-gray-700">
             <form onSubmit={handleSendMessage} className="flex space-x-2">
               <input
