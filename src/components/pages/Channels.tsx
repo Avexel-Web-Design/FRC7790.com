@@ -517,9 +517,9 @@ const Channels: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-black text-gray-100">
-      {/* Sidebar */}
-      <div className="w-64 bg-black flex flex-col">
+    <div className="flex h-full bg-black text-gray-100">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:flex w-64 bg-black flex-col">
         <div className="px-2">
           <div className="p-4 border-b border-gray-700 flex justify-between items-center">
             <h2 className="text-xl font-bold">Channels</h2>
@@ -541,7 +541,7 @@ const Channels: React.FC = () => {
               <NebulaLoader size={48} />
             </div>
           ) : (
-            <nav className="flex-1 p-2 space-y-2">
+            <nav className="flex-1 p-2 space-y-2 overflow-y-auto">
               {channels.map((channel) => (
                 <div 
                   key={channel.id} 
@@ -598,15 +598,69 @@ const Channels: React.FC = () => {
         </div>
       </div>
 
+      {/* Mobile Channel Selector */}
+      <div className="md:hidden">
+        {!selectedChannel ? (
+          <div className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Channels</h2>
+              {user?.isAdmin && (
+                <button
+                  onClick={openCreateModal}
+                  className="bg-black hover:bg-baywatch-orange text-baywatch-orange hover:text-white rounded-full p-2"
+                  title="Create new channel"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            
+            {isChannelsLoading ? (
+              <div className="flex items-center justify-center p-8">
+                <NebulaLoader size={48} />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {channels.map((channel) => (
+                  <button
+                    key={channel.id}
+                    onClick={() => handleChannelClick(channel)}
+                    className="w-full text-left py-3 px-4 rounded-lg border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 transition-colors duration-200 flex items-center justify-between"
+                  >
+                    <span className="font-medium">{channel.name}</span>
+                    {unreadCounts[channel.id] > 0 && (
+                      <NotificationDot count={unreadCounts[channel.id]} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
+
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col ${!selectedChannel ? 'hidden md:flex' : ''}`}>
         {/* Chat Header */}
         <div className="bg-black px-2">
           <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-            <h2 className="text-xl font-bold">
-              {selectedChannel ? selectedChannel.name : 'Select a Channel'}
-            </h2>
             <div className="flex items-center">
+              {/* Mobile Back Button */}
+              <button
+                onClick={() => setSelectedChannel(null)}
+                className="md:hidden mr-3 p-1 hover:text-baywatch-orange"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h2 className="text-xl font-bold">
+                {selectedChannel ? selectedChannel.name : 'Select a Channel'}
+              </h2>
+            </div>
+            <div className="hidden md:flex items-center">
               <div
                 className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
                 style={{ backgroundColor: user?.username ? generateColor(user.username, user.avatarColor) : '#007bff' }}
@@ -684,23 +738,26 @@ const Channels: React.FC = () => {
         </div>
 
         {/* Message Input */}
-        <div className="bg-black px-2">
+        <div className="bg-black px-2 pb-safe">
           <div className="p-4 border-t border-gray-700">
-            <form onSubmit={handleSendMessage} className="flex">
+            <form onSubmit={handleSendMessage} className="flex space-x-2">
               <input
                 type="text"
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 placeholder={selectedChannel ? `Message ${selectedChannel.name}` : 'Select a channel to type...'}
-                className="flex-1 bg-black text-gray-100 rounded-md px-4 py-2 focus:outline-none"
+                className="flex-1 bg-gray-800 text-gray-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-baywatch-orange border border-gray-600"
                 disabled={!selectedChannel}
               />
               <button
                 type="submit"
-                className="ml-3 bg-baywatch-orange hover:bg-baywatch-orange/70 text-white cursor-pointer font-bold py-2 px-4 rounded-md transition-colors duration-200"
+                className="bg-baywatch-orange hover:bg-baywatch-orange/80 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={!selectedChannel || !messageInput.trim()}
               >
-                Send
+                <span className="hidden sm:inline">Send</span>
+                <svg className="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
               </button>
             </form>
           </div>

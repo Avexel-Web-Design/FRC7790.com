@@ -4,7 +4,7 @@ interface NotificationDotProps {
   count?: number;
   show?: boolean;
   size?: 'small' | 'medium' | 'large';
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'inline';
+  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'inline' | 'absolute-right';
   className?: string;
 }
 
@@ -30,6 +30,7 @@ const NotificationDot: React.FC<NotificationDotProps> = ({
     'top-left': 'absolute -top-1 -left-1',
     'bottom-right': 'absolute -bottom-1 -right-1',
     'bottom-left': 'absolute -bottom-1 -left-1',
+    'absolute-right': 'absolute top-1/2 right-2 transform -translate-y-1/2',
     'inline': 'relative inline-block'
   };
 

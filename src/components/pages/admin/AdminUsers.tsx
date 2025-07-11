@@ -214,26 +214,26 @@ const AdminUsers: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-gray-100 py-8">
+    <div className="min-h-screen bg-black text-gray-100 py-4 md:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="sm:flex sm:items-center sm:justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold text-white">User Management</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">User Management</h1>
             <p className="mt-2 text-sm text-gray-400">
               Manage team members and their permissions
             </p>
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-baywatch-orange hover:bg-baywatch-orange/70 text-white"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium bg-baywatch-orange hover:bg-baywatch-orange/70 text-white"
           >
             Add User
           </button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
           <div className="bg-black border border-gray-700 rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
@@ -293,8 +293,8 @@ const AdminUsers: React.FC = () => {
           </div>
         </div>
 
-        {/* Users Table */}
-        <div className="bg-black border border-gray-700 rounded-lg">
+        {/* Users Table - Desktop */}
+        <div className="hidden md:block bg-black border border-gray-700 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-700">
             <h3 className="text-lg font-medium text-white">All Users</h3>
           </div>
@@ -381,12 +381,83 @@ const AdminUsers: React.FC = () => {
             </table>
           </div>
         </div>
+
+        {/* Users Cards - Mobile */}
+        <div className="md:hidden space-y-4">
+          <h3 className="text-lg font-medium text-white px-4">All Users</h3>
+          {users.map((userItem) => (
+            <div key={userItem.id} className="bg-black border border-gray-700 rounded-lg mx-4">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-12 w-12">
+                      <div 
+                        className="h-12 w-12 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: userItem.avatar_color || generateColor(userItem.username, null) }}
+                      >
+                        <span className="text-lg font-bold text-white">
+                          {userItem.username.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-3">
+                      <div className="text-sm font-medium text-gray-300">
+                        {userItem.username}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        ID: {userItem.id}
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    userItem.is_admin 
+                      ? 'bg-purple-500/25 text-purple-500' 
+                      : 'bg-green-500/25 text-green-500'
+                  }`}>
+                    {userItem.is_admin ? 'Admin' : 'User'}
+                  </span>
+                </div>
+                
+                <div className="flex flex-col space-y-2">
+                  <button
+                    onClick={() => openEditModal(userItem)}
+                    className="w-full bg-gray-800 hover:bg-gray-700 text-indigo-400 hover:text-indigo-300 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    Edit User
+                  </button>
+                  <button
+                    onClick={() => updateUserAdmin(userItem.id, !userItem.is_admin)}
+                    disabled={userItem.id === user?.id}
+                    className={`w-full px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      userItem.id === user?.id 
+                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed' 
+                        : 'bg-blue-900/50 hover:bg-blue-800/50 text-blue-400 hover:text-blue-300'
+                    }`}
+                  >
+                    {userItem.is_admin ? 'Remove Admin' : 'Make Admin'}
+                  </button>
+                  <button
+                    onClick={() => deleteUser(userItem.id)}
+                    disabled={userItem.id === user?.id}
+                    className={`w-full px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      userItem.id === user?.id 
+                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed' 
+                        : 'bg-red-900/50 hover:bg-red-800/50 text-red-400 hover:text-red-300'
+                    }`}
+                  >
+                    Delete User
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Add User Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="relative p-8 bg-black w-full max-w-md m-auto rounded-lg shadow-lg">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
+          <div className="relative p-6 md:p-8 bg-black w-full max-w-md m-auto rounded-lg shadow-lg border border-gray-700">
             <h3 className="text-lg font-medium text-white mb-4">Add New User</h3>
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -400,7 +471,7 @@ const AdminUsers: React.FC = () => {
                   placeholder="Name"
                   value={newUser.username}
                   onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-                  className="bg-transparent mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:outline-none"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-baywatch-orange focus:border-transparent"
                   required
                 />
               </div>
@@ -410,7 +481,7 @@ const AdminUsers: React.FC = () => {
                   placeholder="Password"
                   value={newUser.password}
                   onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                  className="bg-transparent mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:outline-none"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-baywatch-orange focus:border-transparent"
                   required
                 />
               </div>
@@ -425,7 +496,7 @@ const AdminUsers: React.FC = () => {
                   />
                   <label 
                     htmlFor="isAdmin" 
-                    className={`w-4 h-4 border-2 rounded flex items-center justify-center ${
+                    className={`w-4 h-4 border-2 rounded flex items-center justify-center cursor-pointer ${
                       newUser.is_admin 
                         ? 'bg-baywatch-orange border-baywatch-orange' 
                         : 'border-gray-300 bg-transparent'
@@ -438,25 +509,25 @@ const AdminUsers: React.FC = () => {
                     )}
                   </label>
                 </div>
-                <label htmlFor="isAdmin" className="ml-2 block text-sm text-gray-300">
+                <label htmlFor="isAdmin" className="ml-2 block text-sm text-gray-300 cursor-pointer">
                   Admin
                 </label>
               </div>
             </div>
-            <div className="mt-6 flex justify-end space-x-3">
+            <div className="mt-6 flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => {
                   setShowModal(false);
                   setError('');
                   setNewUser({ username: '', password: '', is_admin: false });
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={createUser}
-                className="px-4 py-2 text-sm font-medium text-white bg-baywatch-orange hover:bg-baywatch-orange/70 rounded-md"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-baywatch-orange hover:bg-baywatch-orange/70 rounded-md transition-colors"
               >
                 Create User
               </button>
@@ -467,8 +538,8 @@ const AdminUsers: React.FC = () => {
 
       {/* Edit User Modal */}
       {showEditModal && editingUser && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="relative p-8 bg-black w-full max-w-md m-auto rounded-lg shadow-lg">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50 p-4">
+          <div className="relative p-6 md:p-8 bg-black w-full max-w-md m-auto rounded-lg shadow-lg border border-gray-700">
             <h3 className="text-lg font-medium text-white mb-4">Edit User: {editingUser.username}</h3>
             {editError && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -483,7 +554,7 @@ const AdminUsers: React.FC = () => {
                   placeholder="Name"
                   value={editUser.username}
                   onChange={(e) => setEditUser({ ...editUser, username: e.target.value })}
-                  className="bg-transparent mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:outline-none"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-baywatch-orange focus:border-transparent"
                   required
                 />
               </div>
@@ -496,7 +567,7 @@ const AdminUsers: React.FC = () => {
                   placeholder="New Password"
                   value={editUser.password}
                   onChange={(e) => setEditUser({ ...editUser, password: e.target.value })}
-                  className="bg-transparent mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:outline-none"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-baywatch-orange focus:border-transparent"
                 />
               </div>
               <div className="flex items-center">
@@ -515,7 +586,7 @@ const AdminUsers: React.FC = () => {
                       editUser.is_admin 
                         ? 'bg-baywatch-orange border-baywatch-orange' 
                         : 'border-gray-300 bg-transparent'
-                    } ${editingUser.id === user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    } ${editingUser.id === user?.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     {editUser.is_admin && (
                       <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -525,26 +596,26 @@ const AdminUsers: React.FC = () => {
                   </label>
                 </div>
                 <label htmlFor="editIsAdmin" className={`ml-2 block text-sm text-gray-300 ${
-                  editingUser.id === user?.id ? 'opacity-50' : ''
+                  editingUser.id === user?.id ? 'opacity-50' : 'cursor-pointer'
                 }`}>
                   Admin {editingUser.id === user?.id ? '(cannot modify your own status)' : ''}
                 </label>
               </div>
             </div>
-            <div className="mt-6 flex justify-end space-x-3">
+            <div className="mt-6 flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => {
                   setShowEditModal(false);
                   setEditError('');
                   setEditingUser(null);
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={updateUser}
-                className="px-4 py-2 text-sm font-medium text-white bg-baywatch-orange hover:bg-baywatch-orange/70 rounded-md"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-baywatch-orange hover:bg-baywatch-orange/70 rounded-md transition-colors"
               >
                 Update User
               </button>
