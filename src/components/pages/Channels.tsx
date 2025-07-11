@@ -622,14 +622,14 @@ const Channels: React.FC = () => {
                 <NebulaLoader size={48} />
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {channels.map((channel) => (
                   <button
                     key={channel.id}
                     onClick={() => handleChannelClick(channel)}
-                    className="w-full text-left py-3 px-4 rounded-lg border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 transition-colors duration-200 flex items-center justify-between"
+                    className="w-full text-left py-4 px-4 rounded-xl border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 active:bg-gray-700 transition-all duration-200 flex items-center justify-between mobile-touch-target"
                   >
-                    <span className="font-medium">{channel.name}</span>
+                    <span className="font-medium text-base">{channel.name}</span>
                     {unreadCounts[channel.id] > 0 && (
                       <NotificationDot count={unreadCounts[channel.id]} />
                     )}
@@ -650,13 +650,13 @@ const Channels: React.FC = () => {
               {/* Mobile Back Button */}
               <button
                 onClick={() => setSelectedChannel(null)}
-                className="md:hidden mr-3 p-1 hover:text-baywatch-orange"
+                className="md:hidden mr-3 p-2 hover:text-baywatch-orange hover:bg-gray-800 rounded-lg transition-colors mobile-touch-target"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h2 className="text-xl font-bold">
+              <h2 className="text-lg md:text-xl font-bold truncate">
                 {selectedChannel ? selectedChannel.name : 'Select a Channel'}
               </h2>
             </div>

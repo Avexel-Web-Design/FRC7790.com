@@ -584,24 +584,24 @@ const DirectMessages: React.FC = () => {
                 <NebulaLoader size={48} />
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {chatItems.map(chat => (
                   <button
                     key={`${chat.type}-${chat.id}`}
                     onClick={() => handleChatClick(chat)}
-                    className="w-full text-left py-3 px-4 rounded-lg border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 transition-colors duration-200 flex items-center justify-between"
+                    className="w-full text-left py-4 px-4 rounded-xl border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 active:bg-gray-700 transition-all duration-200 flex items-center justify-between mobile-touch-target"
                   >
                     <div className="flex items-center space-x-3">
                       <div className="relative">
                         {chat.type === 'group' ? (
-                          <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                             </svg>
                           </div>
                         ) : (
                           <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                            className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base"
                             style={{ backgroundColor: generateColor(chat.username, null) }}
                           >
                             {chat.username
@@ -627,7 +627,7 @@ const DirectMessages: React.FC = () => {
                           );
                         })()}
                       </div>
-                      <span className="font-medium">
+                      <span className="font-medium text-base">
                         {chat.type === 'group' ? chat.name : chat.username}
                       </span>
                     </div>
@@ -648,13 +648,13 @@ const DirectMessages: React.FC = () => {
               {/* Mobile Back Button */}
               <button
                 onClick={() => setSelectedChat(null)}
-                className="md:hidden mr-3 p-1 hover:text-baywatch-orange"
+                className="md:hidden mr-3 p-2 hover:text-baywatch-orange hover:bg-gray-800 rounded-lg transition-colors mobile-touch-target"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <h2 className="text-xl font-bold">
+              <h2 className="text-lg md:text-xl font-bold truncate">
                 {selectedChat 
                   ? (selectedChat.type === 'group' ? selectedChat.name : selectedChat.username)
                   : 'Select a chat'

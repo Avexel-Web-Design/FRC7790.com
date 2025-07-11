@@ -226,6 +226,38 @@ button::-webkit-focus-inner {
   .mobile-p-sm {
     padding: 0.5rem;
   }
+  
+  /* Better mobile form styling */
+  .mobile-form-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+  }
+  
+  /* Improved mobile button styling */
+  .mobile-button {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+  }
+  
+  /* Better mobile text readability */
+  .mobile-text-base {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  /* Improved mobile spacing */
+  .mobile-space-y-4 > * + * {
+    margin-top: 1rem;
+  }
+  
+  .mobile-space-y-6 > * + * {
+    margin-top: 1.5rem;
+  }
 }
 
 /* Mobile Dashboard Enhancements */
