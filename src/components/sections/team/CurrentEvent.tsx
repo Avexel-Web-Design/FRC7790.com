@@ -246,7 +246,7 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800" style={{animationDelay: '0.3s'}}>
+    <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800" style={{animationDelay: '0.3s'}}>
       <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
       {currentEventData.isCurrent ? renderCurrentEvent() : renderNextEvent()}
     </div>

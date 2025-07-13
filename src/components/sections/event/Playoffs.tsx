@@ -32,6 +32,9 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
   const [isChampionshipEvent, setIsChampionshipEvent] = useState(false);
   const [isAllianceLoading, setIsAllianceLoading] = useState(false);
   const [bracketType, setBracketType] = useState<'2-team' | '4-team' | '8-team'>('8-team');
+  // Alliance data for the listing section
+  const [alliances, setAlliances] = useState<any[]>([]);
+  const [isAlliancesLoading, setIsAlliancesLoading] = useState(false);
 
   // Derive event key from first playoff match key (e.g. "2025mimid_sf1m1" => "2025mimid")
   useEffect(() => {
@@ -45,6 +48,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
 
       try {
         setIsAllianceLoading(true);
+        setIsAlliancesLoading(true);
         
         // Use the new division utility function
         const { isChampionshipEvent: isChampEvent, divisionMapping: divMapping, allianceMapping: allianceMap } = 
@@ -53,6 +57,11 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
         setIsChampionshipEvent(isChampEvent);
         setDivisionMapping(divMapping);
         setAllianceMapping(allianceMap);
+        
+        // Also fetch full alliance data for the listing
+        const { frcAPI } = await import('../../../utils/frcAPI');
+        const allianceData = await frcAPI.fetchEventAlliances(eventKey);
+        setAlliances(allianceData);
         
         // Determine bracket type based on number of alliances
         const uniqueAlliances = new Set(Object.values(allianceMap));
@@ -70,6 +79,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
         console.warn('Failed to load alliance mapping', err);
       } finally {
         setIsAllianceLoading(false);
+        setIsAlliancesLoading(false);
       }
     };
 
@@ -304,6 +314,81 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
     </div>
   );
 
+  // Render alliance listing section
+  const renderAllianceListing = () => {
+    if (isAlliancesLoading) {
+      return (
+        <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 mt-8">
+          <div className="flex justify-center items-center py-8">
+            <div className="text-center">
+              <div className="mb-4"><NebulaLoader size={48} /></div>
+              <p className="text-gray-400">Loading alliances...</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (alliances.length === 0) return null;
+
+    return (
+      <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 mt-8">
+        <h3 className="text-2xl font-bold mb-6 text-center">Alliance Selection</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {alliances.map((alliance, index) => {
+            const allianceNumber = index + 1;
+            const displayName = getAllianceDisplayName(allianceNumber, isChampionshipEvent, divisionMapping, `Alliance ${allianceNumber}`);
+            
+            return (
+              <div 
+                key={index} 
+                className="bg-black rounded-lg p-4 border border-gray-700/50 transform transition-all duration-300 hover:scale-105 hover:bg-black/60 hover:border-baywatch-orange/50 hover:shadow-[0_20px_40px_-12px_rgba(255,107,0,0.3)]"
+              >
+                <h4 className="text-lg font-semibold text-baywatch-orange mb-3 text-center">
+                  {displayName}
+                </h4>
+                <div className="space-y-2">
+                  {alliance.picks.map((teamKey: string, pickIndex: number) => {
+                    const teamNumber = teamKey.replace('frc', '');
+                    const is7790 = teamNumber === '7790';
+                    const pickLabels = ['Captain', 'Pick 1', 'Pick 2', 'Pick 3'];
+                    
+                    return (
+                      <Link
+                        key={teamKey}
+                        to={`/team?team=${teamNumber}`}
+                        className={`flex items-center justify-between p-2 rounded transition-all duration-200 hover:translate-x-1 hover:shadow-md cursor-pointer group outline-none focus:outline-none focus-visible:outline-none active:outline-none ${
+                          is7790 
+                            ? 'bg-baywatch-orange/20 border border-baywatch-orange/50 hover:bg-baywatch-orange/30 hover:border-baywatch-orange' 
+                            : 'bg-gray-800/50 border border-transparent hover:bg-gray-700/50 hover:border-gray-600'
+                        }`}
+                        style={{ outline: 'none', boxShadow: 'none' }}
+                      >
+                        <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
+                          {pickLabels[pickIndex] || `Pick ${pickIndex}`}
+                        </span>
+                        <div className="flex items-center">
+                          <span className={`font-semibold transition-colors ${
+                            is7790 
+                              ? 'text-baywatch-orange group-hover:text-white' 
+                              : 'text-white group-hover:text-baywatch-orange'
+                          }`}>
+                            {teamNumber}
+                          </span>
+                          <i className="fas fa-arrow-up-right-from-square ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity text-gray-400"></i>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const createBracketMatch = (match: Match | null, displayName: string): BracketMatch => {
     if (!match) {
       return {
@@ -391,12 +476,13 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
             <span className={badgeClasses('blue')}>{blueAllianceLabel}</span>
             <div className="flex flex-wrap gap-1">
               {teams.blue.map((team) => (
-                <span
+                <Link
                   key={team}
-                  className={`text-sm ${team === '7790' ? 'text-baywatch-orange font-bold' : ''}`}
+                  to={`/team?team=${team}`}
+                  className={`text-sm transition-colors cursor-pointer ${team === '7790' ? 'text-baywatch-orange font-bold hover:text-orange-600' : 'hover:text-blue-600'}`}
                 >
                   {team}
-                </span>
+                </Link>
               ))}
             </div>
             <div className="ml-2 font-semibold text-blue-400">{scores.blue ?? '--'}</div>
@@ -410,12 +496,13 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
             <span className={badgeClasses('red')}>{redAllianceLabel}</span>
             <div className="flex flex-wrap gap-1">
               {teams.red.map((team) => (
-                <span
+                <Link
                   key={team}
-                  className={`text-sm ${team === '7790' ? 'text-baywatch-orange font-bold' : ''}`}
+                  to={`/team?team=${team}`}
+                  className={`text-sm transition-colors cursor-pointer ${team === '7790' ? 'text-baywatch-orange font-bold hover:text-orange-600' : 'hover:text-red-600'}`}
                 >
                   {team}
-                </span>
+                </Link>
               ))}
             </div>
             <div className="ml-2 font-semibold text-red-400">{scores.red ?? '--'}</div>
@@ -430,7 +517,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
       <section className="tab-content py-8 relative z-10">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
-          <div className="bg-gradient-to-r from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+          <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
             <div className="flex justify-center items-center py-16">
               <div className="text-center">
                 <div className="mb-4"><NebulaLoader size={96} /></div>
@@ -448,7 +535,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
       <section className="tab-content py-8 relative z-10">
         <div className="container mx-auto px-6">
           <h2 className="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
-          <div className="bg-gradient-to-r from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+          <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
             <div className="text-center py-16">
               <i className="fas fa-info-circle text-4xl text-gray-500 mb-4"></i>
               <h3 className="text-xl font-semibold mb-2">Playoffs Haven't Started</h3>
@@ -471,6 +558,9 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
           {bracketType === '4-team' && render4TeamBracket()}
           {bracketType === '8-team' && render8TeamBracket()}
         </div>
+
+        {/* Alliance Selection Section */}
+        {renderAllianceListing()}
       </div>
     </section>
   );

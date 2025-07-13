@@ -111,7 +111,7 @@ const Event: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Hero Section */}
       <EventHero 
         eventData={eventData}
@@ -119,62 +119,65 @@ const Event: React.FC = () => {
         isLoading={isLoading}
       />
 
-      {/* Upcoming Event Section */}
-      {isUpcoming && eventData && (
-        <div>
-          <EventCountdown 
-            eventData={eventData}
-            isLoading={isLoading}
-          />
-          <RegisteredTeams 
-            teams={teams}
-            isLoading={isLoading}
-          />
-        </div>
-      )}
-
-      {/* Competition Data Section */}
-      {!isUpcoming && (
-        <div id="competition-data-container">
-          <EventTabs 
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-            isChampionshipEvent={isChampionshipEvent}
-          />
-
-          {/* Tab Content */}
-          <div className="relative">
-            {activeTab === 'rankings' && (
-              <Rankings 
-                rankings={rankings}
-                epaData={epaData}
-                isLoading={isLoading}
-              />
-            )}
-            
-            {activeTab === 'schedule' && (
-              <Schedule 
-                matches={matches}
-                isLoading={isLoading}
-              />
-            )}
-            
-            {activeTab === 'playoff' && (
-              <Playoffs 
-                playoffMatches={playoffMatches}
-                isLoading={isLoading}
-              />
-            )}
-            
-            {activeTab === 'awards' && (
-              <Awards 
-                awards={awards}
-                isLoading={isLoading}
-              />
-            )}
+      {/* Content Area - grows to fill available space */}
+      <div className="flex-1 bg-black">
+        {/* Upcoming Event Section */}
+        {isUpcoming && eventData && (
+          <div>
+            <EventCountdown 
+              eventData={eventData}
+              isLoading={isLoading}
+            />
+            <RegisteredTeams 
+              teams={teams}
+              isLoading={isLoading}
+            />
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Competition Data Section */}
+        {!isUpcoming && (
+          <div id="competition-data-container">
+            <EventTabs 
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              isChampionshipEvent={isChampionshipEvent}
+            />
+
+            {/* Tab Content */}
+            <div className="relative">
+              {activeTab === 'rankings' && (
+                <Rankings 
+                  rankings={rankings}
+                  epaData={epaData}
+                  isLoading={isLoading}
+                />
+              )}
+              
+              {activeTab === 'schedule' && (
+                <Schedule 
+                  matches={matches}
+                  isLoading={isLoading}
+                />
+              )}
+              
+              {activeTab === 'playoff' && (
+                <Playoffs 
+                  playoffMatches={playoffMatches}
+                  isLoading={isLoading}
+                />
+              )}
+              
+              {activeTab === 'awards' && (
+                <Awards 
+                  awards={awards}
+                  isLoading={isLoading}
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

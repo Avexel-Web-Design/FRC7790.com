@@ -55,7 +55,7 @@ const EventCountdown: React.FC<EventCountdownProps> = ({ eventData, isLoading })
   return (
     <section id="teams-section" className="py-16 relative z-10">
       <div className="container mx-auto px-6 mb-12">
-        <div className="bg-gradient-to-r from-gray-900/50 to-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+        <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
           <h2 className="text-2xl font-bold text-center mb-4">Event Begins In</h2>
           <div className="flex justify-center gap-4 md:gap-8">
             <div className="flex flex-col items-center">
