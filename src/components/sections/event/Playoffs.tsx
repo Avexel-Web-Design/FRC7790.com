@@ -2,6 +2,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Match } from '../../../hooks/useEventData';
 import NebulaLoader from '../../common/NebulaLoader';
+import { getDivisionMapping, getAllianceDisplayName, type DivisionMapping } from '../../../utils/divisionUtils';
 
 interface PlayoffsProps {
   playoffMatches: Match[];
@@ -26,7 +27,11 @@ interface BracketMatch {
 const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
   // Alliance mapping (team_key -> alliance number)
   const [allianceMapping, setAllianceMapping] = useState<Record<string, number>>({});
+  // Division mapping (alliance number -> division name) for championship events
+  const [divisionMapping, setDivisionMapping] = useState<DivisionMapping>({});
+  const [isChampionshipEvent, setIsChampionshipEvent] = useState(false);
   const [isAllianceLoading, setIsAllianceLoading] = useState(false);
+  const [bracketType, setBracketType] = useState<'2-team' | '4-team' | '8-team'>('8-team');
 
   // Derive event key from first playoff match key (e.g. "2025mimid_sf1m1" => "2025mimid")
   useEffect(() => {
@@ -40,16 +45,27 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
 
       try {
         setIsAllianceLoading(true);
-        const { frcAPI } = await import('../../../utils/frcAPI');
-        const alliances = await frcAPI.fetchEventAlliances(eventKey);
-        const mapping: Record<string, number> = {};
-        alliances.forEach((alliance: any, index: number) => {
-          const allianceNumber = index + 1;
-          alliance.picks.forEach((teamKey: string) => {
-            mapping[teamKey] = allianceNumber;
-          });
-        });
-        setAllianceMapping(mapping);
+        
+        // Use the new division utility function
+        const { isChampionshipEvent: isChampEvent, divisionMapping: divMapping, allianceMapping: allianceMap } = 
+          await getDivisionMapping(eventKey);
+        
+        setIsChampionshipEvent(isChampEvent);
+        setDivisionMapping(divMapping);
+        setAllianceMapping(allianceMap);
+        
+        // Determine bracket type based on number of alliances
+        const uniqueAlliances = new Set(Object.values(allianceMap));
+        const allianceCount = uniqueAlliances.size;
+        
+        if (allianceCount <= 2) {
+          setBracketType('2-team');
+        } else if (allianceCount <= 4) {
+          setBracketType('4-team');
+        } else {
+          setBracketType('8-team');
+        }
+        
       } catch (err) {
         console.warn('Failed to load alliance mapping', err);
       } finally {
@@ -82,6 +98,211 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
 
   // Convenience helper – returns the `sfMatchesSorted` item at index or null if out of range
   const getSfMatch = (index: number): Match | null => sfMatchesSorted[index] ?? null;
+
+  // Render 2-team bracket (just finals)
+  const render2TeamBracket = () => (
+    <div className="min-w-[600px] relative">
+      <div className="flex justify-center">
+        <div className="space-y-8">
+          <h3 className="text-2xl font-bold text-center text-baywatch-orange mb-8">Championship Finals</h3>
+          {finalMatchesSorted.slice(0, 5).map((match) => (
+            <MatchBox
+              key={match.key}
+              bracketMatch={createBracketMatch(match, match.match_number === 4 ? 'Overtime 1' : match.match_number === 5 ? 'Overtime 2' : `Finals ${match.match_number}`)}
+              className="match-box group finals-match"
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render 4-team bracket
+  const render4TeamBracket = () => (
+    <div className="min-w-[900px] relative">
+      {/* Winners Bracket */}
+      <div className="bracket-container">
+        <div className="grid grid-cols-3 gap-8">
+          {/* First Round */}
+          <div className="space-y-8" style={{ marginTop: '7rem' }}>
+            {[0, 1].map((idx) => (
+              <MatchBox
+                key={`sf-first-${idx}`}
+                bracketMatch={createBracketMatch(getSfMatch(idx), `Match ${idx + 1}`)}
+                className="match-box group"
+              />
+            ))}
+          </div>
+
+          {/* Second Round Winners */}
+          <div style={{ marginTop: '14.5rem' }}>
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(2), 'Match 3')}
+              className="match-box group"
+            />
+          </div>
+
+          {/* Finals */}
+          <div style={{ marginTop: '1rem' }}>
+            {finalMatchesSorted.slice(0, 5).map((match) => (
+              <MatchBox
+                key={match.key}
+                bracketMatch={createBracketMatch(match, match.match_number === 4 ? 'Overtime 1' : match.match_number === 5 ? 'Overtime 2' : `Finals ${match.match_number}`)}
+                className="match-box group finals-match mt-4 first:mt-0"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="my-8 relative">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-gray-700 bg-gradient-to-r from-transparent via-baywatch-orange to-transparent opacity-30"></div>
+        </div>
+        <div className="relative flex justify-center">
+          <span className="px-4 py-1 text-sm text-baywatch-orange bg-black rounded-full border border-baywatch-orange/30">
+            Elimination Bracket
+          </span>
+        </div>
+      </div>
+
+      {/* Losers Bracket */}
+      <div className="bracket-container">
+        <div className="grid grid-cols-3 gap-8">
+          {/* First Round Losers */}
+          
+          <div></div>
+          
+          <div>
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(3), 'Match 4')}
+              className="match-box group"
+            />
+          </div>
+
+          {/* Second Round Losers */}
+          <div>
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(4), 'Match 5')}
+              className="match-box group"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render 8-team bracket (current implementation)
+  const render8TeamBracket = () => (
+    <div className="min-w-[1200px] relative">
+      {/* ---------------- Winners Bracket ---------------- */}
+      <div className="bracket-container">
+        <div className="grid grid-cols-4 gap-8">
+          {/* First Round */}
+          <div className="space-y-8">
+            {[0, 1, 2, 3].map((idx) => (
+              <MatchBox
+                key={`sf-first-${idx}`}
+                bracketMatch={createBracketMatch(getSfMatch(idx), `Match ${idx + 1}`)}
+                className="match-box group "
+              />
+            ))}
+          </div>
+
+          {/* Second Round Winners */}
+          <div style={{ marginTop: '7rem' }}>
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(6), 'Match 7')}
+              className="match-box group "
+            />
+            {/* Second game lower in the column */}
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(7), 'Match 8')}
+              className="match-box group  mt-[17rem]"
+            />
+          </div>
+
+          {/* Third Round Winners */}
+          <div style={{ marginTop: '22rem' }}>
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(10), 'Match 11')}
+              className="match-box group "
+            />
+          </div>
+
+          {/* Finals */}
+          <div style={{ marginTop: '22rem' }}>
+            {finalMatchesSorted.slice(0, 5).map((match) => (
+              <MatchBox
+                key={match.key}
+                bracketMatch={createBracketMatch(match, match.match_number === 4 ? 'Overtime 1' : match.match_number === 5 ? 'Overtime 2' : `Finals ${match.match_number}`)}
+                className="match-box group finals-match  mt-4 first:mt-0"
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ---------------- Divider ---------------- */}
+      <div className="my-8 relative">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-gray-700 bg-gradient-to-r from-transparent via-baywatch-orange to-transparent opacity-30"></div>
+        </div>
+        <div className="relative flex justify-center">
+          <span className="px-4 py-1 text-sm text-baywatch-orange bg-black rounded-full border border-baywatch-orange/30">
+            Elimination Bracket
+          </span>
+        </div>
+      </div>
+
+      {/* ---------------- Losers Bracket ---------------- */}
+      <div className="bracket-container mt-48">
+        <div className="grid grid-cols-4 gap-8">
+          {/* First Round Losers */}
+          <div className="space-y-8" style={{ marginTop: '-10rem' }}>
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(4), 'Match 5')}
+              className="match-box group "
+            />
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(5), 'Match 6')}
+              className="match-box group "
+            />
+          </div>
+
+          {/* Second Round Losers */}
+          <div className="space-y-8" style={{ marginTop: '-10rem' }}>
+            {/* Note: order intentionally 10 then 9 to mimic old layout */}
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(9), 'Match 10')}
+              className="match-box group "
+            />
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(8), 'Match 9')}
+              className="match-box group "
+            />
+          </div>
+
+          {/* Third Round Losers */}
+          <div className="-mt-12">
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(11), 'Match 12')}
+              className="match-box group "
+            />
+          </div>
+
+          {/* Fourth Round Losers */}
+          <div className="-mt-12">
+            <MatchBox
+              bracketMatch={createBracketMatch(getSfMatch(12), 'Match 13')}
+              className="match-box group "
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const createBracketMatch = (match: Match | null, displayName: string): BracketMatch => {
     if (!match) {
@@ -133,17 +354,17 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
         color === 'blue' ? 'bg-blue-500/40 border-blue-300 text-white' : 'bg-red-500/40 border-red-300 text-white'
       }`;
 
-        // Compute alliance numbers using mapping (fallback to TBD)
+        // Compute alliance labels using division mapping if available, otherwise alliance numbers
     const blueTeamKeyFull = bracketMatch.match?.alliances.blue.team_keys[0];
     const redTeamKeyFull = bracketMatch.match?.alliances.red.team_keys[0];
-    const blueAllianceLabel =
-      blueTeamKeyFull && allianceMapping[blueTeamKeyFull]
-        ? `Alliance ${allianceMapping[blueTeamKeyFull]}`
-        : 'TBD';
-    const redAllianceLabel =
-      redTeamKeyFull && allianceMapping[redTeamKeyFull]
-        ? `Alliance ${allianceMapping[redTeamKeyFull]}`
-        : 'TBD';
+    const blueAllianceNumber = blueTeamKeyFull && allianceMapping[blueTeamKeyFull] ? allianceMapping[blueTeamKeyFull] : null;
+    const redAllianceNumber = redTeamKeyFull && allianceMapping[redTeamKeyFull] ? allianceMapping[redTeamKeyFull] : null;
+    
+    const blueAllianceLabel = isAllianceLoading ? 'Loading...' : 
+      getAllianceDisplayName(blueAllianceNumber, isChampionshipEvent, divisionMapping, 'TBD');
+      
+    const redAllianceLabel = isAllianceLoading ? 'Loading...' : 
+      getAllianceDisplayName(redAllianceNumber, isChampionshipEvent, divisionMapping, 'TBD');
 
     return (
       <div
@@ -167,7 +388,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
         <div className="flex flex-col gap-4">
           {/* Blue Alliance */}
           <div className={allianceRowClasses('blue')}>
-            <span className={badgeClasses('blue')}>{isAllianceLoading ? 'Loading...' : blueAllianceLabel}</span>
+            <span className={badgeClasses('blue')}>{blueAllianceLabel}</span>
             <div className="flex flex-wrap gap-1">
               {teams.blue.map((team) => (
                 <span
@@ -245,114 +466,10 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
         <h2 className="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
 
         <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 overflow-x-auto">
-          {/* We need extra width so the bracket can breathe on small viewports */}
-          <div className="min-w-[1200px] relative">
-            {/* ---------------- Winners Bracket ---------------- */}
-            <div className="bracket-container">
-              <div className="grid grid-cols-4 gap-8">
-                {/* First Round */}
-                <div className="space-y-8">
-                  {[0, 1, 2, 3].map((idx) => (
-                    <MatchBox
-                      key={`sf-first-${idx}`}
-                      bracketMatch={createBracketMatch(getSfMatch(idx), `Match ${idx + 1}`)}
-                      className="match-box group "
-                    />
-                  ))}
-                </div>
-
-                {/* Second Round Winners */}
-                <div style={{ marginTop: '7rem' }}>
-                  <MatchBox
-                    bracketMatch={createBracketMatch(getSfMatch(6), 'Match 7')}
-                    className="match-box group "
-                  />
-                  {/* Second game lower in the column */}
-                  <MatchBox
-                    bracketMatch={createBracketMatch(getSfMatch(7), 'Match 8')}
-                    className="match-box group  mt-[17rem]"
-                  />
-                </div>
-
-                {/* Third Round Winners */}
-                <div style={{ marginTop: '22rem' }}>
-                  <MatchBox
-                    bracketMatch={createBracketMatch(getSfMatch(10), 'Match 11')}
-                    className="match-box group "
-                  />
-                </div>
-
-                {/* Finals */}
-                <div style={{ marginTop: '22rem' }}>
-                  {finalMatchesSorted.slice(0, 5).map((match) => (
-                    <MatchBox
-                      key={match.key}
-                      bracketMatch={createBracketMatch(match, match.match_number === 4 ? 'Overtime 1' : match.match_number === 5 ? 'Overtime 2' : `Finals ${match.match_number}`)}
-                      className="match-box group finals-match  mt-4 first:mt-0"
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* ---------------- Divider ---------------- */}
-            <div className="my-8 relative">
-              <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                <div className="w-full border-t border-gray-700 bg-gradient-to-r from-transparent via-baywatch-orange to-transparent opacity-30"></div>
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-4 py-1 text-sm text-baywatch-orange bg-black rounded-full border border-baywatch-orange/30">
-                  Elimination Bracket
-                </span>
-              </div>
-            </div>
-
-            {/* ---------------- Losers Bracket ---------------- */}
-            <div className="bracket-container mt-48">
-              <div className="grid grid-cols-4 gap-8">
-                {/* First Round Losers */}
-                <div className="space-y-8" style={{ marginTop: '-10rem' }}>
-                  <MatchBox
-                    bracketMatch={createBracketMatch(getSfMatch(4), 'Match 5')}
-                    className="match-box group "
-                  />
-                  <MatchBox
-                    bracketMatch={createBracketMatch(getSfMatch(5), 'Match 6')}
-                    className="match-box group "
-                  />
-                </div>
-
-                {/* Second Round Losers */}
-                <div className="space-y-8" style={{ marginTop: '-10rem' }}>
-                  {/* Note: order intentionally 10 then 9 to mimic old layout */}
-                  <MatchBox
-                    bracketMatch={createBracketMatch(getSfMatch(9), 'Match 10')}
-                    className="match-box group "
-                  />
-                  <MatchBox
-                    bracketMatch={createBracketMatch(getSfMatch(8), 'Match 9')}
-                    className="match-box group "
-                  />
-                </div>
-
-                {/* Third Round Losers */}
-                <div className="-mt-12">
-                  <MatchBox
-                    bracketMatch={createBracketMatch(getSfMatch(11), 'Match 12')}
-                    className="match-box group "
-                  />
-                </div>
-
-                {/* Fourth Round Losers */}
-                <div className="-mt-12">
-                  <MatchBox
-                    bracketMatch={createBracketMatch(getSfMatch(12), 'Match 13')}
-                    className="match-box group "
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Render appropriate bracket based on bracket type */}
+          {bracketType === '2-team' && render2TeamBracket()}
+          {bracketType === '4-team' && render4TeamBracket()}
+          {bracketType === '8-team' && render8TeamBracket()}
         </div>
       </div>
     </section>

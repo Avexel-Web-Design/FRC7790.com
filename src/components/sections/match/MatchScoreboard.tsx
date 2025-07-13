@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { MatchData, TeamData } from '../../../hooks/useMatchData';
+import { getDivisionMapping, getAllianceDisplayName } from '../../../utils/divisionUtils';
 
 interface MatchScoreboardProps {
   matchData: MatchData;
@@ -24,44 +25,35 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
       }
 
       try {
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/event/${matchData.event_key}/alliances`, {
-          headers: { "X-TBA-Auth-Key": "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf" }
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const alliances = await response.json();
-
-        // Create a map of team keys to alliance numbers
-        const allianceMap: { [key: string]: number } = {};
-        
-        alliances.forEach((alliance: any, index: number) => {
-          const allianceNumber = index + 1;
-          alliance.picks.forEach((teamKey: string) => {
-            allianceMap[teamKey] = allianceNumber;
-          });
-        });
+        // Use the new division utility function
+        const { isChampionshipEvent: isChampEvent, divisionMapping: divMapping, allianceMapping } = 
+          await getDivisionMapping(matchData.event_key);
 
         // Find alliance numbers for the current match
-        let blueAllianceNum = '?';
-        let redAllianceNum = '?';
+        let blueAllianceNum: number | null = null;
+        let redAllianceNum: number | null = null;
         
         // Check each team in the blue alliance to find a match
         for (const teamKey of matchData.alliances.blue.team_keys) {
-          if (allianceMap[teamKey]) {
-            blueAllianceNum = allianceMap[teamKey].toString();
+          if (allianceMapping[teamKey]) {
+            blueAllianceNum = allianceMapping[teamKey];
             break;
           }
         }
         
         // Check each team in the red alliance to find a match
         for (const teamKey of matchData.alliances.red.team_keys) {
-          if (allianceMap[teamKey]) {
-            redAllianceNum = allianceMap[teamKey].toString();
+          if (allianceMapping[teamKey]) {
+            redAllianceNum = allianceMapping[teamKey];
             break;
           }
         }
 
-        setAllianceNumbers({ blue: blueAllianceNum, red: redAllianceNum });
+        // Get display names using the utility function
+        const blueDisplayName = getAllianceDisplayName(blueAllianceNum, isChampEvent, divMapping, 'BLUE');
+        const redDisplayName = getAllianceDisplayName(redAllianceNum, isChampEvent, divMapping, 'RED');
+
+        setAllianceNumbers({ blue: blueDisplayName, red: redDisplayName });
       } catch (err) {
         console.error("Error fetching alliance data:", err);
         setAllianceNumbers({ blue: 'BLUE', red: 'RED' });
@@ -121,7 +113,7 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
             {/* Blue Alliance */}
             <div className="flex-1 flex flex-col items-center">
               <h3 className="text-blue-400 text-xl font-bold mb-4">
-                {matchData.comp_level === 'qm' ? 'BLUE ALLIANCE' : `ALLIANCE ${allianceNumbers.blue}`}
+                {matchData.comp_level === 'qm' ? 'BLUE ALLIANCE' : allianceNumbers.blue}
               </h3>
               <div className="match-alliance-teams text-center mb-4 space-y-2">
                 {renderTeamList(matchData.alliances.blue.team_keys, 'blue')}
@@ -139,7 +131,7 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
             {/* Red Alliance */}
             <div className="flex-1 flex flex-col items-center">
               <h3 className="text-red-400 text-xl font-bold mb-4">
-                {matchData.comp_level === 'qm' ? 'RED ALLIANCE' : `ALLIANCE ${allianceNumbers.red}`}
+                {matchData.comp_level === 'qm' ? 'RED ALLIANCE' : allianceNumbers.red}
               </h3>
               <div className="match-alliance-teams text-center mb-4 space-y-2">
                 {renderTeamList(matchData.alliances.red.team_keys, 'red')}

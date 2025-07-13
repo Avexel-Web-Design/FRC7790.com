@@ -3,6 +3,7 @@ import React from 'react';
 interface EventTabsProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
+  isChampionshipEvent?: boolean;
 }
 
 interface TabConfig {
@@ -12,8 +13,8 @@ interface TabConfig {
   tooltip: string;
 }
 
-const EventTabs: React.FC<EventTabsProps> = ({ activeTab, onTabChange }) => {
-  const tabs: TabConfig[] = [
+const EventTabs: React.FC<EventTabsProps> = ({ activeTab, onTabChange, isChampionshipEvent = false }) => {
+  const allTabs: TabConfig[] = [
     {
       id: 'rankings',
       label: 'Rankings',
@@ -40,13 +41,18 @@ const EventTabs: React.FC<EventTabsProps> = ({ activeTab, onTabChange }) => {
     }
   ];
 
+  // Filter tabs based on event type
+  const tabs = isChampionshipEvent 
+    ? allTabs.filter(tab => tab.id !== 'rankings' && tab.id !== 'schedule')
+    : allTabs;
+
   const handleTabClick = (tabId: string) => {
     onTabChange(tabId);
   };
 
   return (
     <div className="container mx-auto px-6 mb-2 mt-16">
-      <div className="border-b border-gray-700 grid grid-cols-4">
+      <div className={`border-b border-gray-700 grid ${tabs.length === 2 ? 'grid-cols-2' : 'grid-cols-4'}`}>
         {tabs.map((tab) => (
           <button
             key={tab.id}

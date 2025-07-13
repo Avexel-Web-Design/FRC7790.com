@@ -14,6 +14,7 @@ import { useEventData } from '../../hooks/useEventData';
 const Event: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('rankings');
+  const [isChampionshipEvent, setIsChampionshipEvent] = useState(false);
   
   // Get event code from URL parameters
   let eventCode = searchParams.get('event');
@@ -57,6 +58,34 @@ const Event: React.FC = () => {
       setActiveTab('playoff');
     }
   }, []);
+
+  // Detect championship events with divisions
+  useEffect(() => {
+    const detectChampionshipEvent = async () => {
+      if (!eventData) return;
+      
+      try {
+        const response = await fetch(`https://www.thebluealliance.com/api/v3/event/${eventCode}`, {
+          headers: { "X-TBA-Auth-Key": "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf" }
+        });
+        
+        if (response.ok) {
+          const fullEventData = await response.json();
+          const hasDivisions = fullEventData.division_keys && fullEventData.division_keys.length > 0;
+          setIsChampionshipEvent(hasDivisions);
+          
+          // If this is a championship event and current tab is rankings/schedule, switch to playoffs
+          if (hasDivisions && (activeTab === 'rankings' || activeTab === 'schedule')) {
+            setActiveTab('playoff');
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to detect championship event:', error);
+      }
+    };
+
+    detectChampionshipEvent();
+  }, [eventData, eventCode, activeTab]);
 
   // Show loading overlay while fetching initial data
   if (isLoading && !eventData) {
@@ -110,6 +139,7 @@ const Event: React.FC = () => {
           <EventTabs 
             activeTab={activeTab}
             onTabChange={handleTabChange}
+            isChampionshipEvent={isChampionshipEvent}
           />
 
           {/* Tab Content */}
