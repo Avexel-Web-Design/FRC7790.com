@@ -6,6 +6,273 @@ interface MatchBreakdownProps {
 }
 
 const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
+  // Generate grid visualization for 2023 Charged Up
+  const generateGridVisualization = (blueBreakdown: any, redBreakdown: any) => {
+    // Helper function to generate grid visualization for a single alliance
+    const generateAllianceGrid = (breakdown: any, allianceColor: 'blue' | 'red') => {
+      const autoCommunity = breakdown.autoCommunity || { T: [], M: [], B: [] };
+      const teleopCommunity = breakdown.teleopCommunity || { T: [], M: [], B: [] };
+      
+      // Function to determine node state and piece type
+      const getNodeInfo = (row: string, nodeIndex: number) => {
+        const autoState = autoCommunity[row]?.[nodeIndex];
+        const teleopState = teleopCommunity[row]?.[nodeIndex];
+        
+        if (autoState && autoState !== 'None') {
+          return { 
+            state: `${allianceColor}-auto-node`,
+            piece: autoState.toLowerCase(),
+            period: 'auto'
+          };
+        }
+        if (teleopState && teleopState !== 'None') {
+          return { 
+            state: `${allianceColor}-teleop-node`,
+            piece: teleopState.toLowerCase(),
+            period: 'teleop'
+          };
+        }
+        return { 
+          state: 'empty-node',
+          piece: 'none',
+          period: 'none'
+        };
+      };
+      
+      // Generate HTML for all nodes in a row
+      const generateRowNodes = (rowName: string, rowLabel: string) => {
+        const nodes = [];
+        for (let i = 0; i < 9; i++) {
+          const nodeInfo = getNodeInfo(rowName, i);
+          
+          nodes.push(
+            <div 
+              key={`${rowName}-${i}`} 
+              className={`grid-node ${nodeInfo.piece !== 'none' ? `${nodeInfo.piece}-${nodeInfo.period}` : 'empty-node'}`}
+              data-tooltip={`${rowLabel} Node ${i + 1}: ${nodeInfo.piece !== 'none' ? `${nodeInfo.piece} (${nodeInfo.period})` : 'Empty'}`}
+            >
+            </div>
+          );
+        }
+        return nodes;
+      };
+      
+      return (
+        <div className={`grid-container ${allianceColor}-grid`}>
+          <h4 className={`grid-title ${allianceColor === 'blue' ? 'text-blue-400' : 'text-red-400'}`}>
+            {allianceColor.toUpperCase()} ALLIANCE GRID
+          </h4>
+          <div className="grid-level top-level">
+            <div className="level-label">HIGH</div>
+            <div className="grid-row">
+              {generateRowNodes('T', 'High')}
+            </div>
+          </div>
+          <div className="grid-level mid-level">
+            <div className="level-label">MID</div>
+            <div className="grid-row">
+              {generateRowNodes('M', 'Mid')}
+            </div>
+          </div>
+          <div className="grid-level bot-level">
+            <div className="level-label">LOW</div>
+            <div className="grid-row">
+              {generateRowNodes('B', 'Low')}
+            </div>
+          </div>
+        </div>
+      );
+    };
+    
+    return (
+      <div className="grid-visualization mb-8">
+        <h3 className="text-xl font-bold text-baywatch-orange mb-4">Grid Scoring</h3>
+        <div className="grids-container">
+          {generateAllianceGrid(blueBreakdown, 'blue')}
+          <div className="grid-divider"></div>
+          {generateAllianceGrid(redBreakdown, 'red')}
+        </div>
+        <div className="grid-legend">
+          <div className="legend-section">
+            <div className="legend-title">Game Pieces</div>
+            <div className="legend-item">
+              <span className="legend-swatch cone-piece"></span> Cone
+            </div>
+            <div className="legend-item">
+              <span className="legend-swatch cube-piece"></span> Cube
+            </div>
+          </div>
+          <div className="legend-section">
+            <div className="legend-title">Placement Period</div>
+            <div className="legend-item">
+              <span className="legend-swatch cone-auto"></span>
+              <span className="legend-swatch cube-auto"></span>
+              Auto
+            </div>
+            <div className="legend-item">
+              <span className="legend-swatch cone-teleop"></span>
+              <span className="legend-swatch cube-teleop"></span>
+              Teleop
+            </div>
+          </div>
+        </div>
+        
+        <style dangerouslySetInnerHTML={{
+          __html: `
+          .grid-visualization {
+            background: rgba(0,0,0,0.3);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            width: 100%;
+          }
+          .grids-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+          }
+          .grid-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,107,0,0.3), transparent);
+            margin: 0.5rem 0;
+            width: 100%;
+          }
+          .grid-container {
+            flex: 1;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(0,0,0,0.2);
+            width: 100%;
+          }
+          .blue-grid {
+            border: 1px solid rgba(59, 130, 246, 0.3);
+          }
+          .red-grid {
+            border: 1px solid rgba(239, 68, 68, 0.3);
+          }
+          .grid-title {
+            text-align: center;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+          }
+          .grid-level {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            width: 100%;
+          }
+          .level-label {
+            width: 50px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.6);
+            font-weight: 600;
+          }
+          .grid-row {
+            display: flex;
+            flex: 1;
+            gap: 2px;
+          }
+          .grid-node {
+            flex: 1;
+            aspect-ratio: 1/1;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: help;
+            transition: all 0.2s;
+          }
+          .grid-node:hover {
+            transform: scale(1.05);
+            z-index: 10;
+          }
+          .empty-node {
+            background-color: rgba(255,255,255,0.05);
+          }
+          .cone-auto {
+            background-color: #FFD700;
+            border-color: #FFA500;
+          }
+          .cone-teleop {
+            background-color: #B8860B;
+            border-color: #9A6B0A;
+          }
+          .cube-auto {
+            background-color: #7C3AED;
+            border-color: #6D28D9;
+          }
+          .cube-teleop {
+            background-color: #4C1D95;
+            border-color: #3730A3;
+          }
+          .grid-stats {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.8rem;
+          }
+          .stat-row {
+            margin: 0.2rem 0;
+            color: rgba(255,255,255,0.7);
+          }
+          .grid-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+          }
+          .legend-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+          .legend-title {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            text-transform: uppercase;
+          }
+          .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #aaa;
+            margin: 0.1rem 0;
+          }
+          .legend-swatch {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-right: 0.3rem;
+          }
+          .cone-piece {
+            background-color: #FFD700;
+          }
+          .cube-piece {
+            background-color: #7C3AED;
+          }
+          .cone-auto {
+            background-color: #FFD700;
+          }
+          .cone-teleop {
+            background-color: #B8860B;
+          }
+          .cube-auto {
+            background-color: #7C3AED;
+          }
+          .cube-teleop {
+            background-color: #4C1D95;
+          }
+        `}} />
+      </div>
+    );
+  };
+
   // Generate reef visualization for 2025 Reefscape
   const generateReefVisualization = (blueBreakdown: any, redBreakdown: any) => {
     // Helper function to generate node visualization for a single alliance
@@ -198,6 +465,7 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
     
     let breakdownSections;
     let reefVisualization = null;
+    let gridVisualization = null;
 
     if (eventYear >= 2025) {
       // 2025 Reefscape breakdown - comprehensive like the original
@@ -435,6 +703,195 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
       if (blueBreakdown?.teleopReef && redBreakdown?.teleopReef) {
         reefVisualization = generateReefVisualization(blueBreakdown, redBreakdown);
       }
+    } else if (eventYear === 2023) {
+      // 2023 Charged Up breakdown
+      
+      // Auto categories
+      const autoCategories = [];
+      autoCategories.push({ 
+        name: 'Game Pieces', 
+        blue: blueBreakdown?.autoGamePieceCount || '0', 
+        red: redBreakdown?.autoGamePieceCount || '0' 
+      });
+      
+      autoCategories.push({ 
+        name: 'Game Piece Points', 
+        blue: blueBreakdown?.autoGamePiecePoints || '0', 
+        red: redBreakdown?.autoGamePiecePoints || '0' 
+      });
+      
+      // Charge Station in Auto
+      const blueAutoCharge = [];
+      const redAutoCharge = [];
+      
+      for (let i = 1; i <= 3; i++) {
+        const blueRobotCharge = blueBreakdown?.[`autoChargeStationRobot${i}`] || 'None';
+        const redRobotCharge = redBreakdown?.[`autoChargeStationRobot${i}`] || 'None';
+        blueAutoCharge.push(blueRobotCharge);
+        redAutoCharge.push(redRobotCharge);
+      }
+      
+      autoCategories.push({ 
+        name: 'Docked', 
+        blue: blueBreakdown?.autoDocked ? 'Yes' : 'No', 
+        red: redBreakdown?.autoDocked ? 'Yes' : 'No' 
+      });
+      
+      autoCategories.push({ 
+        name: 'Engaged', 
+        blue: (blueBreakdown?.autoBridgeState === 'Level' && blueBreakdown?.autoDocked) ? 'Yes' : 'No', 
+        red: (redBreakdown?.autoBridgeState === 'Level' && redBreakdown?.autoDocked) ? 'Yes' : 'No' 
+      });
+      
+      autoCategories.push({ 
+        name: 'Charge Station Points', 
+        blue: blueBreakdown?.autoChargeStationPoints || '0', 
+        red: redBreakdown?.autoChargeStationPoints || '0' 
+      });
+      
+      // Mobility in auto
+      const blueMobility = [];
+      const redMobility = [];
+      
+      for (let i = 1; i <= 3; i++) {
+        blueMobility.push(blueBreakdown?.[`mobilityRobot${i}`] || 'No');
+        redMobility.push(redBreakdown?.[`mobilityRobot${i}`] || 'No');
+      }
+      
+      autoCategories.push({ 
+        name: 'Mobility', 
+        blue: `${blueMobility.filter(status => status === 'Yes').length}/3`, 
+        red: `${redMobility.filter(status => status === 'Yes').length}/3` 
+      });
+      
+      autoCategories.push({ 
+        name: 'Mobility Points', 
+        blue: blueBreakdown?.autoMobilityPoints || '0', 
+        red: redBreakdown?.autoMobilityPoints || '0' 
+      });
+      
+      autoCategories.push({ 
+        name: 'Points', 
+        blue: blueBreakdown?.autoPoints || '0', 
+        red: redBreakdown?.autoPoints || '0' 
+      });
+
+      // Teleop categories
+      const teleopCategories = [];
+      teleopCategories.push({ 
+        name: 'Game Pieces', 
+        blue: blueBreakdown?.teleopGamePieceCount || '0', 
+        red: redBreakdown?.teleopGamePieceCount || '0' 
+      });
+      
+      teleopCategories.push({ 
+        name: 'Game Piece Points', 
+        blue: blueBreakdown?.teleopGamePiecePoints || '0', 
+        red: redBreakdown?.teleopGamePiecePoints || '0' 
+      });
+      
+      teleopCategories.push({ 
+        name: 'Links', 
+        blue: blueBreakdown?.links?.length || '0', 
+        red: redBreakdown?.links?.length || '0' 
+      });
+      
+      teleopCategories.push({ 
+        name: 'Link Points', 
+        blue: blueBreakdown?.linkPoints || '0', 
+        red: redBreakdown?.linkPoints || '0' 
+      });
+      
+      teleopCategories.push({ 
+        name: 'Points', 
+        blue: blueBreakdown?.teleopPoints || '0', 
+        red: redBreakdown?.teleopPoints || '0' 
+      });
+
+      // Endgame categories
+      const endgameCategories = [];
+      
+      const blueEndCharge = [];
+      const redEndCharge = [];
+      
+      for (let i = 1; i <= 3; i++) {
+        const blueRobotEndCharge = blueBreakdown?.[`endGameChargeStationRobot${i}`] || 'None';
+        const redRobotEndCharge = redBreakdown?.[`endGameChargeStationRobot${i}`] || 'None';
+        blueEndCharge.push(blueRobotEndCharge);
+        redEndCharge.push(redRobotEndCharge);
+      }
+      
+      endgameCategories.push({ 
+        name: 'Parked', 
+        blue: `${blueEndCharge.filter(status => status === 'Park').length}/3`, 
+        red: `${redEndCharge.filter(status => status === 'Park').length}/3` 
+      });
+      
+      endgameCategories.push({ 
+        name: 'Docked', 
+        blue: `${blueEndCharge.filter(status => status === 'Docked').length}/3`, 
+        red: `${redEndCharge.filter(status => status === 'Docked').length}/3` 
+      });
+      
+      endgameCategories.push({ 
+        name: 'Engaged', 
+        blue: (blueBreakdown?.endGameBridgeState === 'Level' && blueEndCharge.filter(status => status === 'Docked').length > 0) ? 'Yes' : 'No', 
+        red: (redBreakdown?.endGameBridgeState === 'Level' && redEndCharge.filter(status => status === 'Docked').length > 0) ? 'Yes' : 'No' 
+      });
+      
+      endgameCategories.push({ 
+        name: 'Park Points', 
+        blue: blueBreakdown?.endGameParkPoints || '0', 
+        red: redBreakdown?.endGameParkPoints || '0' 
+      });
+      
+      endgameCategories.push({ 
+        name: 'Charge Station Points', 
+        blue: blueBreakdown?.endGameChargeStationPoints || '0', 
+        red: redBreakdown?.endGameChargeStationPoints || '0' 
+      });
+
+      // Bonus categories
+      const bonusCategories = [];
+      bonusCategories.push({ 
+        name: 'Coopertition', 
+        blue: blueBreakdown?.coopertitionCriteriaMet ? 'Yes' : 'No', 
+        red: redBreakdown?.coopertitionCriteriaMet ? 'Yes' : 'No' 
+      });
+
+      bonusCategories.push({ 
+        name: 'Sustainability RP', 
+        blue: blueBreakdown?.sustainabilityBonusAchieved ? 'Yes' : 'No', 
+        red: redBreakdown?.sustainabilityBonusAchieved ? 'Yes' : 'No' 
+      });
+
+      bonusCategories.push({ 
+        name: 'Activation RP', 
+        blue: blueBreakdown?.activationBonusAchieved ? 'Yes' : 'No', 
+        red: redBreakdown?.activationBonusAchieved ? 'Yes' : 'No' 
+      });
+      
+      // Adjustment points (if any)
+      if ((blueBreakdown?.adjustPoints && blueBreakdown.adjustPoints > 0) || 
+          (redBreakdown?.adjustPoints && redBreakdown.adjustPoints > 0)) {
+        bonusCategories.push({ 
+          name: 'Adjustment Points', 
+          blue: blueBreakdown?.adjustPoints || '0', 
+          red: redBreakdown?.adjustPoints || '0' 
+        });
+      }
+
+      breakdownSections = [
+        { title: 'Auto', items: autoCategories },
+        { title: 'Teleop', items: teleopCategories },
+        { title: 'Endgame', items: endgameCategories },
+        { title: 'Bonus', items: bonusCategories }
+      ];
+
+      // Generate grid visualization if community data is available
+      if (blueBreakdown?.teleopCommunity && redBreakdown?.teleopCommunity) {
+        gridVisualization = generateGridVisualization(blueBreakdown, redBreakdown);
+      }
     } else {
       // 2024 Crescendo breakdown
       breakdownSections = [
@@ -484,6 +941,9 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
       <div className="overflow-x-auto">
         {/* Reef Visualization for 2025 matches */}
         {reefVisualization}
+        
+        {/* Grid Visualization for 2023 matches */}
+        {gridVisualization}
         
         <table className="w-full border-collapse">
           <thead>
