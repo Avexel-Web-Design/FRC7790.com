@@ -11,10 +11,11 @@ const Awards: React.FC<AwardsProps> = ({ awards, isLoading }) => {
     return teamKey.replace('frc', '');
   };
 
-  const getAwardIcon = (awardType: number): string => {
+  const getAwardIcon = (awardType: number ): string => {
+
     // Map award types to appropriate icons
     switch (awardType) {
-      case 0: // Chairman's Award
+      case 0: // Impact Award
         return 'fas fa-crown text-yellow-400';
       case 1: // Winner
         return 'fas fa-trophy text-yellow-400';
@@ -26,54 +27,50 @@ const Awards: React.FC<AwardsProps> = ({ awards, isLoading }) => {
         return 'fas fa-star text-blue-400';
       case 5: // Volunteer of the Year
         return 'fas fa-hands-helping text-green-400';
-      case 6: // Gracious Professionalism
-        return 'fas fa-handshake text-purple-400';
+      case 6: // Founder's Award
+        return 'fas fa-user-tie text-blue-400';
       case 7: // Coopertition
         return 'fas fa-users text-indigo-400';
-      case 8: // Judge's Choice
-        return 'fas fa-gavel text-orange-400';
-      case 9: // Highest Rookie Seed
-        return 'fas fa-seedling text-green-400';
+      case 9: // Engineering Inspiration
+        return 'fas fa-lightbulb text-yellow-500';
       case 10: // Rookie All Star
-        return 'fas fa-star-of-life text-cyan-400';
-      case 11: // Rookie Inspiration
-        return 'fas fa-lightbulb text-yellow-300';
-      case 12: // Autonomous
-        return 'fas fa-robot text-gray-400';
-      case 13: // Creativity
-        return 'fas fa-palette text-pink-400';
-      case 14: // Engineering Excellence
-        return 'fas fa-cogs text-blue-500';
+        return 'fas fa-rocket text-yellow-400';
+      case 11: // Gracious Professionalism
+        return 'fas fa-handshake text-purple-400';
+      case 13: // Judges' Choice
+        return 'fas fa-gavel text-orange-400';
       case 15: // Entrepreneurship
         return 'fas fa-chart-line text-green-500';
-      case 16: // Excellence in Design
+      case 16: // Industrial Design
         return 'fas fa-drafting-compass text-teal-400';
-      case 17: // Gracious Professionalism
-        return 'fas fa-handshake text-purple-400';
+      case 17: // Quality
+        return 'fas fa-check-circle text-green-300';
       case 18: // Highest Rookie Seed
         return 'fas fa-seedling text-green-400';
-      case 19: // Imagery
-        return 'fas fa-camera text-purple-300';
-      case 20: // Industrial Design
-        return 'fas fa-industry text-gray-500';
-      case 21: // Industrial Safety
-        return 'fas fa-hard-hat text-orange-500';
-      case 22: // Innovation in Control
-        return 'fas fa-microchip text-blue-300';
-      case 23: // Judges' Choice
-        return 'fas fa-gavel text-orange-400';
+      case 20: // Creativity
+        return 'fas fa-palette text-pink-400';
+      case 21: // Excellence in Engineering
+        return 'fas fa-cogs text-blue-500';
       case 24: // Media and Technology
         return 'fas fa-broadcast-tower text-red-300';
-      case 25: // Quality
-        return 'fas fa-check-circle text-green-300';
+      case 25: // Rookie Inspiration
+        return 'fas fa-lightbulb text-yellow-300';
       case 26: // Safety
         return 'fas fa-shield-alt text-blue-600';
-      case 27: // Sportsmanship
-        return 'fas fa-trophy text-cyan-300';
-      case 28: // Team Spirit
-        return 'fas fa-flag text-red-500';
-      case 29: // Website
-        return 'fas fa-globe text-teal-300';
+      case 27: // Imagery
+        return 'fas fa-camera text-purple-300';
+      case 29: // Innovation in Control
+        return 'fas fa-microchip text-blue-300';
+      case 30: // Team Spirit
+        return 'fas fa-flag text-blue-500';
+      case 69: // Impact Award Finalist
+        return 'fas fa-crown text-gray-300';
+      case 71: // Autonomous
+        return 'fas fa-robot text-gray-400';
+      case 82: // Sustainability
+        return 'fas fa-leaf text-green-600';
+      case 83: // Rising All-Star
+        return 'fas fa-star text-yellow-500';
       default:
         return 'fas fa-award text-gray-400';
     }
@@ -83,7 +80,7 @@ const Awards: React.FC<AwardsProps> = ({ awards, isLoading }) => {
     window.location.href = `/team?team=${teamNumber}`;
   };
 
-  // Rearrange awards so that Engineering Inspiration appears directly below Winner
+  // Rearrange awards so that Engineering Inspiration appears directly below Finalist, which is below Winner
   const sortedAwards = React.useMemo(() => {
     if (!awards) return [] as Award[];
 
@@ -91,15 +88,17 @@ const Awards: React.FC<AwardsProps> = ({ awards, isLoading }) => {
       (a) => a.award_type === 0 || /impact/i.test(a.name) || /chairman/i.test(a.name)
     );
     const winners = awards.filter((a) => a.award_type === 1 || /winner/i.test(a.name));
+    const finalists = awards.filter((a) => a.award_type === 2 || /finalist/i.test(a.name));
     const engineeringInspiration = awards.filter((a) => /engineering inspiration/i.test(a.name));
     const others = awards.filter(
       (a) =>
         !impact.includes(a) &&
         !winners.includes(a) &&
+        !finalists.includes(a) &&
         !engineeringInspiration.includes(a)
     );
 
-    return [...impact, ...winners, ...engineeringInspiration, ...others];
+    return [...impact, ...winners, ...finalists, ...engineeringInspiration, ...others];
   }, [awards]);
 
   if (isLoading) {
