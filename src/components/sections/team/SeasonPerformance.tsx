@@ -131,7 +131,59 @@ export default function SeasonPerformance({ teamNumber, eventsData, loading }: S
 
   if (loading || dataLoading) {
     return (
-      <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.5s'}}>
+      <>
+        {/* Card with gradient, only visible on sm and up */}
+        <div className={`hidden sm:block ${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.5s'}}>
+          <h3 className="text-2xl font-bold mb-6 text-center">{new Date().getFullYear()} Season Performance</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead>
+                <tr className="text-left">
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Event</th>
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Date</th>
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Ranking</th>
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Record</th>
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Awards</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-300">
+                <tr>
+                  <td colSpan={5} className="p-4 text-center">Loading season data...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {/* Card without gradient, only visible below sm */}
+        <div className={`block sm:hidden rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.5s'}}>
+          <h3 className="text-2xl font-bold mb-6 text-center">{new Date().getFullYear()} Season Performance</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-auto">
+              <thead>
+                <tr className="text-left">
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Event</th>
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Date</th>
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Ranking</th>
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Record</th>
+                  <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Awards</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-300">
+                <tr>
+                  <td colSpan={5} className="p-4 text-center">Loading season data...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {/* Card with gradient, only visible on sm and up */}
+      <div className={`hidden sm:block ${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.5s'}}>
         <h3 className="text-2xl font-bold mb-6 text-center">{new Date().getFullYear()} Season Performance</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full table-auto">
@@ -145,84 +197,129 @@ export default function SeasonPerformance({ teamNumber, eventsData, loading }: S
               </tr>
             </thead>
             <tbody className="text-gray-300">
-              <tr>
-                <td colSpan={5} className="p-4 text-center">Loading season data...</td>
-              </tr>
+              {performanceData.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-4 text-center">
+                    No events scheduled for {new Date().getFullYear()} yet.
+                  </td>
+                </tr>
+              ) : (
+                performanceData.map((event ) => (
+                  <tr 
+                    key={event.key} 
+                    className="hover:bg-black/30 transition-colors"
+                    style={event.status === 'current' ? {
+                      backgroundColor: `${getTeamColor(teamNumber) || '#f97316'}10`
+                    } : undefined}
+                  >
+                    <td className="p-4">
+                      <div className="flex items-center">
+                        <a
+                          href={`/event?event=${event.key}`}
+                          className="transition-colors font-medium"
+                          style={{ color: 'white' }}
+                          onMouseEnter={(e) => {
+                            (e.target as HTMLAnchorElement).style.color = getTeamAccentStyle(teamNumber).color || '#f97316';
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.target as HTMLAnchorElement).style.color = 'white';
+                          }}
+                        >
+                          {event.name}
+                        </a>
+                        {getStatusBadge(event.status)}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {formatEventDate(event.start_date, event.end_date)}
+                    </td>
+                    <td className="p-4">{event.ranking}</td>
+                    <td className="p-4">{event.record}</td>
+                    <td className="p-4">
+                      <div className="max-w-xs">
+                        {event.awards === 'None' ? (
+                          <span className="text-gray-500">None</span>
+                        ) : (
+                          <span className="text-yellow-400">{event.awards}</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.5s'}}>
-      <h3 className="text-2xl font-bold mb-6 text-center">{new Date().getFullYear()} Season Performance</h3>
-      <div className="overflow-x-auto">
-        <table className="min-w-full table-auto">
-          <thead>
-            <tr className="text-left">
-              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Event</th>
-              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Date</th>
-              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Ranking</th>
-              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Record</th>
-              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Awards</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-300">
-            {performanceData.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="p-4 text-center">
-                  No events scheduled for {new Date().getFullYear()} yet.
-                </td>
+      {/* Card without gradient, only visible below sm */}
+      <div className={`block sm:hidden rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.5s'}}>
+        <h3 className="text-2xl font-bold mb-6 text-center">{new Date().getFullYear()} Season Performance</h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full table-auto">
+            <thead>
+              <tr className="text-left">
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Event</th>
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Date</th>
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Ranking</th>
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Record</th>
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Awards</th>
               </tr>
-            ) : (
-              performanceData.map((event ) => (
-                <tr 
-                  key={event.key} 
-                  className="hover:bg-black/30 transition-colors"
-                  style={event.status === 'current' ? {
-                    backgroundColor: `${getTeamColor(teamNumber) || '#f97316'}10`
-                  } : undefined}
-                >
-                  <td className="p-4">
-                    <div className="flex items-center">
-                      <a
-                        href={`/event?event=${event.key}`}
-                        className="transition-colors font-medium"
-                        style={{ color: 'white' }}
-                        onMouseEnter={(e) => {
-                          (e.target as HTMLAnchorElement).style.color = getTeamAccentStyle(teamNumber).color || '#f97316';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.target as HTMLAnchorElement).style.color = 'white';
-                        }}
-                      >
-                        {event.name}
-                      </a>
-                      {getStatusBadge(event.status)}
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    {formatEventDate(event.start_date, event.end_date)}
-                  </td>
-                  <td className="p-4">{event.ranking}</td>
-                  <td className="p-4">{event.record}</td>
-                  <td className="p-4">
-                    <div className="max-w-xs">
-                      {event.awards === 'None' ? (
-                        <span className="text-gray-500">None</span>
-                      ) : (
-                        <span className="text-yellow-400">{event.awards}</span>
-                      )}
-                    </div>
+            </thead>
+            <tbody className="text-gray-300">
+              {performanceData.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-4 text-center">
+                    No events scheduled for {new Date().getFullYear()} yet.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                performanceData.map((event ) => (
+                  <tr 
+                    key={event.key} 
+                    className="hover:bg-black/30 transition-colors"
+                    style={event.status === 'current' ? {
+                      backgroundColor: `${getTeamColor(teamNumber) || '#f97316'}10`
+                    } : undefined}
+                  >
+                    <td className="p-4">
+                      <div className="flex items-center">
+                        <a
+                          href={`/event?event=${event.key}`}
+                          className="transition-colors font-medium"
+                          style={{ color: 'white' }}
+                          onMouseEnter={(e) => {
+                            (e.target as HTMLAnchorElement).style.color = getTeamAccentStyle(teamNumber).color || '#f97316';
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.target as HTMLAnchorElement).style.color = 'white';
+                          }}
+                        >
+                          {event.name}
+                        </a>
+                        {getStatusBadge(event.status)}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      {formatEventDate(event.start_date, event.end_date)}
+                    </td>
+                    <td className="p-4">{event.ranking}</td>
+                    <td className="p-4">{event.record}</td>
+                    <td className="p-4">
+                      <div className="max-w-xs">
+                        {event.awards === 'None' ? (
+                          <span className="text-gray-500">None</span>
+                        ) : (
+                          <span className="text-yellow-400">{event.awards}</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -75,34 +75,67 @@ export default function TeamLinks({ teamNumber }: TeamLinksProps) {
   const teamLinks = getTeamLinks();
 
   return (
-    <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.4s'}}>
-      <h2 className="text-2xl font-bold mb-6 text-center">Team Links</h2>
-      <div className="space-y-4">
-        {teamLinks.map((link, index) => (
-          <a
-            key={index}
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block p-3 bg-black/30 rounded-lg hover:bg-black/50 transition-all duration-300 hover:scale-105 group"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                <i className={`${link.icon} text-xl transition-colors`} style={getTeamAccentStyle(teamNumber)}></i>
-              </div>
-              <div className="flex-grow">
-                <div className="font-medium text-white transition-colors">
-                  {link.name}
-                  <i className="fas fa-external-link-alt ml-2 text-xs opacity-60"></i>
+    <>
+      {/* Card with gradient, only visible on sm and up */}
+      <div className={`hidden sm:block ${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.4s'}}>
+        <h2 className="text-2xl font-bold mb-6 text-center">Team Links</h2>
+        <div className="space-y-4">
+          {teamLinks.map((link, index) => (
+            <a
+              key={index}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block p-3 bg-black/30 rounded-lg hover:bg-black/50 transition-all duration-300 hover:scale-105 group"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                  <i className={`${link.icon} text-xl transition-colors`} style={getTeamAccentStyle(teamNumber)}></i>
                 </div>
-                <div className="text-sm text-gray-400 mt-1">
-                  {link.description}
+                <div className="flex-grow">
+                  <div className="font-medium text-white transition-colors">
+                    {link.name}
+                    <i className="fas fa-external-link-alt ml-2 text-xs opacity-60"></i>
+                  </div>
+                  <div className="text-sm text-gray-400 mt-1">
+                    {link.description}
+                  </div>
                 </div>
               </div>
-            </div>
-          </a>
-        ))}
+            </a>
+          ))}
+        </div>
       </div>
-    </div>
+      {/* Card without gradient, only visible below sm */}
+      <div className={`block sm:hidden rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.4s'}}>
+        <h2 className="text-2xl font-bold mb-6 text-center">Team Links</h2>
+        <div className="space-y-4">
+          {teamLinks.map((link, index) => (
+            <a
+              key={index}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block p-3 bg-black/30 rounded-lg hover:bg-black/50 transition-all duration-300 hover:scale-105 group"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                  <i className={`${link.icon} text-xl transition-colors`} style={getTeamAccentStyle(teamNumber)}></i>
+                </div>
+                <div className="flex-grow">
+                  <div className="font-medium text-white transition-colors">
+                    {link.name}
+                    <i className="fas fa-external-link-alt ml-2 text-xs opacity-60"></i>
+                  </div>
+                  <div className="text-sm text-gray-400 mt-1">
+                    {link.description}
+                  </div>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </>
   );
 }

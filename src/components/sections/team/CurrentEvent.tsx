@@ -132,24 +132,45 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
 
   if (loading) {
     return (
-      <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.3s'}}>
-        <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
-        <div className="text-center">
-          <div className="text-gray-400 animate-pulse">Loading event data...</div>
+      <>
+        {/* Card with gradient, only visible on sm and up */}
+        <div className={`hidden sm:block ${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.3s'}}>
+          <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
+          <div className="text-center">
+            <div className="text-gray-400 animate-pulse">Loading event data...</div>
+          </div>
         </div>
-      </div>
+        {/* Card without gradient, only visible below sm */}
+        <div className={`block sm:hidden rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.3s'}}>
+          <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
+          <div className="text-center">
+            <div className="text-gray-400 animate-pulse">Loading event data...</div>
+          </div>
+        </div>
+      </>
     );
   }
 
   if (!currentEventData) {
     return (
-      <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.3s'}}>
-        <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
-        <div className="text-center">
-          <h3 className="text-xl font-semibold mb-4">No Current Event</h3>
-          <p className="text-gray-400">There are no active or upcoming events scheduled at this time.</p>
+      <>
+        {/* Card with gradient, only visible on sm and up */}
+        <div className={`hidden sm:block ${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.3s'}}>
+          <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
+          <div className="text-center">
+            <h3 className="text-xl font-semibold mb-4">No Current Event</h3>
+            <p className="text-gray-400">There are no active or upcoming events scheduled at this time.</p>
+          </div>
         </div>
-      </div>
+        {/* Card without gradient, only visible below sm */}
+        <div className={`block sm:hidden rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.3s'}}>
+          <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
+          <div className="text-center">
+            <h3 className="text-xl font-semibold mb-4">No Current Event</h3>
+            <p className="text-gray-400">There are no active or upcoming events scheduled at this time.</p>
+          </div>
+        </div>
+      </>
     );
   }
 
@@ -247,9 +268,17 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
   };
 
   return (
-    <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.3s'}}>
-      <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
-      {currentEventData.isCurrent ? renderCurrentEvent() : renderNextEvent()}
-    </div>
+    <>
+      {/* Card with gradient, only visible on sm and up */}
+      <div className={`hidden sm:block ${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.3s'}}>
+        <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
+        {currentEventData.isCurrent ? renderCurrentEvent() : renderNextEvent()}
+      </div>
+      {/* Card without gradient, only visible below sm */}
+      <div className={`block sm:hidden rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.3s'}}>
+        <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
+        {currentEventData.isCurrent ? renderCurrentEvent() : renderNextEvent()}
+      </div>
+    </>
   );
 }

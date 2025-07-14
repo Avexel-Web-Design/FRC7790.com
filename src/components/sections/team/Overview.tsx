@@ -42,7 +42,7 @@ export default function TeamOverview({ teamNumber, teamData }: TeamOverviewProps
   }, [teamNumber]);
 
   return (
-    <section className="py-8 relative z-10">
+    <section className="card-gradient sm:bg-none sm:border-none rounded-xl py-8 relative z-10">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Team Stats */}
         <TeamStats 

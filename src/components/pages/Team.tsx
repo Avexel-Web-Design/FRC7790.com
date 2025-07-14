@@ -60,7 +60,7 @@ export default function Team() {
       />
       
       <section className="py-16 relative z-10">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto sm:px-6">
           <TeamTabs 
             activeTab={activeTab} 
             onTabChange={handleTabChange}

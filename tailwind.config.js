@@ -4,6 +4,12 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    'sm:card-gradient',
+    'sm:card-gradient-3767',
+    'sm:card-gradient-7598',
+    'sm:card-gradient-5560',
+  ],
   theme: {
     extend: {
       colors: {

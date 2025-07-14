@@ -144,16 +144,16 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
     
     if (match.comp_level === 'sf') {
       // Use "Playoff" prefix and remove the "-1" suffix for semifinals
-      return `Playoff ${match.set_number}`;
+      return `SF${match.set_number}`;
     }
     
     if (match.comp_level === 'f') {
       if (match.match_number === 4) {
-        return 'Overtime 1';
+        return 'OT1';
       } else if (match.match_number === 5) {
-        return 'Overtime 2';
+        return 'OT2';
       } else {
-        return `Finals ${match.match_number}`;
+        return `F${match.match_number}`;
       }
     }
     
@@ -241,8 +241,8 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
 
     return (
       <div className="mb-8">
-        <h3 className="text-2xl font-bold mb-4">{title}</h3>
-        <div className="bg-black/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+        <h3 className="text-2xl font-bold mb-4 px-6 sm:px-0">{title}</h3>
+        <div className="sm:bg-black/50 backdrop-blur-sm sm:rounded-xl p-6 sm:border sm:border-gray-700/50">
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto">
               <thead>
@@ -325,9 +325,9 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
   if (loading) {
     return (
       <section className="tab-content py-8 relative z-10">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto sm:px-6">
           <h2 className="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
-          <div className={`${getTeamCardGradientClass(teamNumber)} backdrop-blur-sm rounded-xl p-6 border border-gray-700/50`}>
+          <div className={`${getTeamCardGradientClass(teamNumber)} backdrop-blur-sm sm:rounded-xl sm:p-6 border-y sm:border border-gray-700/50`}>
             <div className="text-center">
               <div className="text-gray-400 animate-pulse">Loading events...</div>
             </div>
@@ -339,11 +339,11 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
 
   return (
     <section className="tab-content py-8 relative z-10">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto sm:px-6">
         <h2 className="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
-        <div className={`${getTeamCardGradientClass(teamNumber)} backdrop-blur-sm rounded-xl p-6 border border-gray-700/50`}>
+        <div className={`${getTeamCardGradientClass(teamNumber)} backdrop-blur-sm sm:rounded-xl sm:px-6 py-6 border-y sm:border border-gray-700/50`}>
         {/* Event selector */}
-        <div className="mb-6">
+        <div className="mb-6 px-6 sm:px-0">
           <label htmlFor="event-selector" className="block text-sm font-medium text-gray-300 mb-3">
             Select Event:
           </label>
