@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getTeamCardGradientClass, getTeamAccentStyle } from '../../../utils/color';
 
 interface CurrentEventProps {
   teamNumber: string;
@@ -131,7 +132,7 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
 
   if (loading) {
     return (
-      <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800" style={{animationDelay: '0.3s'}}>
+      <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.3s'}}>
         <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
         <div className="text-center">
           <div className="text-gray-400 animate-pulse">Loading event data...</div>
@@ -142,7 +143,7 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
 
   if (!currentEventData) {
     return (
-      <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800" style={{animationDelay: '0.3s'}}>
+      <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.3s'}}>
         <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
         <div className="text-center">
           <h3 className="text-xl font-semibold mb-4">No Current Event</h3>
@@ -228,7 +229,7 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
       <div className="text-center">
         <h3 className="text-xl font-semibold mb-4">{currentEventData.name}</h3>
         <div className="mt-4 mb-6">
-          <span className="text-4xl font-bold text-orange-500">{days}</span>
+          <span className="text-4xl font-bold" style={getTeamAccentStyle(teamNumber)}>{days}</span>
           <span className="text-xl ml-2">days away</span>
         </div>
         <div className="text-sm text-gray-400">
@@ -246,7 +247,7 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
   };
 
   return (
-    <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800" style={{animationDelay: '0.3s'}}>
+    <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.3s'}}>
       <h2 className="text-2xl font-bold mb-6 text-center">Current Event</h2>
       {currentEventData.isCurrent ? renderCurrentEvent() : renderNextEvent()}
     </div>

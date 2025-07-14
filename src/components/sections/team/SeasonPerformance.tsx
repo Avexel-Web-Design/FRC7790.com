@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getTeamCardGradientClass, getTeamAccentStyle, getTeamColor } from '../../../utils/color';
 
 interface SeasonPerformanceProps {
   teamNumber: string;
@@ -130,17 +131,17 @@ export default function SeasonPerformance({ teamNumber, eventsData, loading }: S
 
   if (loading || dataLoading) {
     return (
-      <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800" style={{animationDelay: '0.5s'}}>
+      <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.5s'}}>
         <h3 className="text-2xl font-bold mb-6 text-center">{new Date().getFullYear()} Season Performance</h3>
         <div className="overflow-x-auto">
           <table className="min-w-full table-auto">
             <thead>
               <tr className="text-left">
-                <th className="p-4 text-orange-500">Event</th>
-                <th className="p-4 text-orange-500">Date</th>
-                <th className="p-4 text-orange-500">Ranking</th>
-                <th className="p-4 text-orange-500">Record</th>
-                <th className="p-4 text-orange-500">Awards</th>
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Event</th>
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Date</th>
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Ranking</th>
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Record</th>
+                <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Awards</th>
               </tr>
             </thead>
             <tbody className="text-gray-300">
@@ -155,17 +156,17 @@ export default function SeasonPerformance({ teamNumber, eventsData, loading }: S
   }
 
   return (
-    <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800" style={{animationDelay: '0.5s'}}>
+    <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.5s'}}>
       <h3 className="text-2xl font-bold mb-6 text-center">{new Date().getFullYear()} Season Performance</h3>
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto">
           <thead>
             <tr className="text-left">
-              <th className="p-4 text-orange-500">Event</th>
-              <th className="p-4 text-orange-500">Date</th>
-              <th className="p-4 text-orange-500">Ranking</th>
-              <th className="p-4 text-orange-500">Record</th>
-              <th className="p-4 text-orange-500">Awards</th>
+              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Event</th>
+              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Date</th>
+              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Ranking</th>
+              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Record</th>
+              <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Awards</th>
             </tr>
           </thead>
           <tbody className="text-gray-300">
@@ -179,15 +180,23 @@ export default function SeasonPerformance({ teamNumber, eventsData, loading }: S
               performanceData.map((event ) => (
                 <tr 
                   key={event.key} 
-                  className={`hover:bg-black/30 transition-colors ${
-                    event.status === 'current' ? 'bg-orange-500/10' : ''
-                  }`}
+                  className="hover:bg-black/30 transition-colors"
+                  style={event.status === 'current' ? {
+                    backgroundColor: `${getTeamColor(teamNumber) || '#f97316'}10`
+                  } : undefined}
                 >
                   <td className="p-4">
                     <div className="flex items-center">
                       <a
                         href={`/event?event=${event.key}`}
-                        className="hover:text-orange-500 transition-colors font-medium"
+                        className="transition-colors font-medium"
+                        style={{ color: 'white' }}
+                        onMouseEnter={(e) => {
+                          (e.target as HTMLAnchorElement).style.color = getTeamAccentStyle(teamNumber).color || '#f97316';
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.target as HTMLAnchorElement).style.color = 'white';
+                        }}
                       >
                         {event.name}
                       </a>

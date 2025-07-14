@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { TeamRanking } from '../../../hooks/useEventData';
+import { getTeamColor } from '../../../utils/color';
 
 interface RankingsProps {
   rankings: TeamRanking[];
@@ -219,25 +220,31 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
                 ) : (
                   sortedRankings.map((ranking, index) => {
                     const teamNumber = formatTeamNumber(ranking.team_key);
-                    const isOurTeam = teamNumber === '7790';
+                    const teamColor = getTeamColor(teamNumber);
+                    const hasSpecialColor = teamColor !== null;
                     
                     return (
                       <tr
                         key={ranking.team_key}
                         className={`
                           hover:bg-gray-800/50 transition-all duration-300 cursor-pointer
-                          ${isOurTeam ? 'bg-baywatch-orange/10 border-l-4 border-baywatch-orange' : ''}
+                          ${teamNumber === '7790' ? 'border-l-4 border-baywatch-orange bg-baywatch-orange/10' : ''}
                         `}
+                        style={{
+                          animationDelay: `${index * 0.05}s`
+                        }}
                         onClick={() => handleTeamClick(teamNumber)}
-                        style={{ animationDelay: `${index * 0.05}s` }}
                       >
                         <td className="p-4 font-semibold">
                           {ranking.rank}
-                          {isOurTeam && <i className="fas fa-star text-baywatch-orange ml-2"></i>}
+                          {teamNumber === '7790' && <i className="fas fa-star ml-2 text-baywatch-orange"></i>}
                         </td>
                         <td className="p-4">
                           <div className="flex items-center">
-                            <span className={`text-baywatch-orange ${isOurTeam ? 'font-bold' : ''}`}>
+                            <span 
+                              className={`font-bold`}
+                              style={hasSpecialColor ? { color: teamColor } : { color: '#ff6b00' }}
+                            >
                               {teamNumber}
                             </span>
                             {ranking.team_name && (

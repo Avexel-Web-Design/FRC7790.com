@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import NebulaLoader from '../../common/NebulaLoader';
 import { Link } from 'react-router-dom';
 import type { Match } from '../../../hooks/useEventData';
+import { getTeamColor } from '../../../utils/color';
 
 interface ScheduleProps {
   matches: Match[];
@@ -137,16 +138,17 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                           <div className="flex flex-wrap gap-1">
                             {match.alliances.blue.team_keys.map(teamKey => {
                               const teamNumber = formatTeamNumber(teamKey);
-                              const isOurTeam = teamNumber === '7790';
+                              const teamColor = getTeamColor(teamNumber);
                               const isWinner = isWinningTeam(match, teamKey, 'blue');
                               return (
                                 <span
                                   key={teamKey}
                                   className={`
-                                    cursor-pointer hover:text-blue-400 transition-colors
-                                    ${isOurTeam ? 'text-baywatch-orange font-bold' : 'text-blue-400'}
-                                    ${isWinner && !isOurTeam ? 'font-bold' : ''}
+                                    cursor-pointer hover:opacity-80 transition-all
+                                    ${teamColor ? 'font-bold' : 'text-blue-400'}
+                                    ${isWinner && !teamColor ? 'font-bold' : ''}
                                   `}
+                                  style={teamColor ? { color: teamColor } : {}}
                                   onClick={() => handleTeamClick(teamNumber)}
                                 >
                                   {teamNumber}
@@ -159,16 +161,17 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                           <div className="flex flex-wrap gap-1">
                             {match.alliances.red.team_keys.map(teamKey => {
                               const teamNumber = formatTeamNumber(teamKey);
-                              const isOurTeam = teamNumber === '7790';
+                              const teamColor = getTeamColor(teamNumber);
                               const isWinner = isWinningTeam(match, teamKey, 'red');
                               return (
                                 <span
                                   key={teamKey}
                                   className={`
-                                    cursor-pointer hover:text-red-400 transition-colors
-                                    ${isOurTeam ? 'text-baywatch-orange font-bold' : 'text-red-400'}
-                                    ${isWinner && !isOurTeam ? 'font-bold' : ''}
+                                    cursor-pointer hover:opacity-80 transition-all
+                                    ${teamColor ? 'font-bold' : 'text-red-400'}
+                                    ${isWinner && !teamColor ? 'font-bold' : ''}
                                   `}
+                                  style={teamColor ? { color: teamColor } : {}}
                                   onClick={() => handleTeamClick(teamNumber)}
                                 >
                                   {teamNumber}

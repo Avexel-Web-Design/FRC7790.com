@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getTeamCardGradientClass } from '../../../utils/color';
 
 interface TeamStatsProps {
   teamNumber: string;
@@ -77,7 +78,7 @@ export default function TeamStats({ teamNumber, teamData, eventsData }: TeamStat
   }, [teamNumber, eventsData]);
 
   return (
-    <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800" style={{animationDelay: '0.2s'}}>
+    <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.2s'}}>
       <h2 className="text-2xl font-bold mb-6 text-center">Team Stats</h2>
       <div className="space-y-4">
         <div className="flex justify-between items-center border-b border-gray-700 pb-2">

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { Match } from '../../../hooks/useEventData';
 import NebulaLoader from '../../common/NebulaLoader';
 import { getDivisionMapping, getAllianceDisplayName, type DivisionMapping } from '../../../utils/divisionUtils';
+import { getTeamColor } from '../../../utils/color';
 
 interface PlayoffsProps {
   playoffMatches: Match[];
@@ -350,29 +351,52 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                 <div className="space-y-2">
                   {alliance.picks.map((teamKey: string, pickIndex: number) => {
                     const teamNumber = teamKey.replace('frc', '');
-                    const is7790 = teamNumber === '7790';
+                    const teamColor = getTeamColor(teamNumber);
+                    const isSpecialTeam = teamColor !== null;
                     const pickLabels = ['Captain', 'Pick 1', 'Pick 2', 'Pick 3'];
                     
                     return (
                       <Link
                         key={teamKey}
                         to={`/team?team=${teamNumber}`}
-                        className={`flex items-center justify-between p-2 rounded transition-all duration-200 hover:translate-x-1 hover:shadow-md cursor-pointer group outline-none focus:outline-none focus-visible:outline-none active:outline-none ${
-                          is7790 
-                            ? 'bg-baywatch-orange/20 border border-baywatch-orange/50 hover:bg-baywatch-orange/30 hover:border-baywatch-orange' 
-                            : 'bg-gray-800/50 border border-transparent hover:bg-gray-700/50 hover:border-gray-600'
+                        className={`flex items-center justify-between p-2 rounded transition-all duration-200 hover:translate-x-1 hover:shadow-md cursor-pointer group outline-none focus:outline-none focus-visible:outline-none active:outline-none border ${
+                          isSpecialTeam 
+                            ? '' 
+                            : 'bg-gray-800/50 border-transparent hover:bg-gray-700/50 hover:border-gray-600'
                         }`}
-                        style={{ outline: 'none', boxShadow: 'none' }}
+                        style={{ 
+                          outline: 'none', 
+                          boxShadow: 'none',
+                          ...(isSpecialTeam && { 
+                            backgroundColor: teamColor + '20',
+                            borderColor: teamColor + '50'
+                          })
+                        }}
+                        onMouseEnter={(e) => {
+                          if (isSpecialTeam && teamColor) {
+                            e.currentTarget.style.backgroundColor = teamColor + '30';
+                            e.currentTarget.style.borderColor = teamColor;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (isSpecialTeam && teamColor) {
+                            e.currentTarget.style.backgroundColor = teamColor + '20';
+                            e.currentTarget.style.borderColor = teamColor + '50';
+                          }
+                        }}
                       >
                         <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
                           {pickLabels[pickIndex] || `Pick ${pickIndex}`}
                         </span>
                         <div className="flex items-center">
-                          <span className={`font-semibold transition-colors ${
-                            is7790 
-                              ? 'text-baywatch-orange group-hover:text-white' 
-                              : 'text-white group-hover:text-baywatch-orange'
-                          }`}>
+                          <span 
+                            className={`font-semibold transition-colors ${
+                              isSpecialTeam 
+                                ? 'group-hover:opacity-80' 
+                                : 'text-white group-hover:text-baywatch-orange'
+                            }`}
+                            style={isSpecialTeam ? { color: teamColor } : {}}
+                          >
                             {teamNumber}
                           </span>
                           <i className="fas fa-arrow-up-right-from-square ml-2 text-xs opacity-0 group-hover:opacity-100 transition-opacity text-gray-400"></i>
@@ -475,15 +499,19 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
           <div className={allianceRowClasses('blue')}>
             <span className={badgeClasses('blue')}>{blueAllianceLabel}</span>
             <div className="flex flex-wrap gap-1">
-              {teams.blue.map((team) => (
-                <Link
-                  key={team}
-                  to={`/team?team=${team}`}
-                  className={`text-sm transition-colors cursor-pointer ${team === '7790' ? 'text-baywatch-orange font-bold hover:text-orange-600' : 'hover:text-blue-600'}`}
-                >
-                  {team}
-                </Link>
-              ))}
+              {teams.blue.map((team) => {
+                const teamColor = getTeamColor(team);
+                return (
+                  <Link
+                    key={team}
+                    to={`/team?team=${team}`}
+                    className={`text-sm transition-colors cursor-pointer font-bold hover:opacity-80`}
+                    style={teamColor ? { color: teamColor } : {}}
+                  >
+                    {team}
+                  </Link>
+                );
+              })}
             </div>
             <div className="ml-2 font-semibold text-blue-400">{scores.blue ?? '--'}</div>
           </div>
@@ -495,15 +523,19 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
           <div className={allianceRowClasses('red')}>
             <span className={badgeClasses('red')}>{redAllianceLabel}</span>
             <div className="flex flex-wrap gap-1">
-              {teams.red.map((team) => (
-                <Link
-                  key={team}
-                  to={`/team?team=${team}`}
-                  className={`text-sm transition-colors cursor-pointer ${team === '7790' ? 'text-baywatch-orange font-bold hover:text-orange-600' : 'hover:text-red-600'}`}
-                >
-                  {team}
-                </Link>
-              ))}
+              {teams.red.map((team) => {
+                const teamColor = getTeamColor(team);
+                return (
+                  <Link
+                    key={team}
+                    to={`/team?team=${team}`}
+                    className={`text-sm transition-colors cursor-pointer font-bold hover:opacity-80`}
+                    style={teamColor ? { color: teamColor } : {}}
+                  >
+                    {team}
+                  </Link>
+                );
+              })}
             </div>
             <div className="ml-2 font-semibold text-red-400">{scores.red ?? '--'}</div>
           </div>

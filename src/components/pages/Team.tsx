@@ -63,7 +63,8 @@ export default function Team() {
         <div className="container mx-auto px-6">
           <TeamTabs 
             activeTab={activeTab} 
-            onTabChange={handleTabChange} 
+            onTabChange={handleTabChange}
+            teamNumber={teamNumber}
           />
           
           {activeTab === 'overview' && (

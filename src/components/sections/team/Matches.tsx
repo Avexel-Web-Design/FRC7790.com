@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getTeamCardGradientClass, getTeamAccentStyle, getTeamColor } from '../../../utils/color';
 
 interface TeamMatchesProps {
   teamNumber: string;
@@ -170,10 +171,11 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
           {index > 0 && ' '}
           <span
             className={`
-              cursor-pointer transition-colors
-              ${isCurrentTeam ? 'text-baywatch-orange font-bold' : 
+              cursor-pointer transition-colors font-bold
+              ${isCurrentTeam ? '' : 
                 alliance === 'blue' ? 'text-blue-400 hover:text-blue-400' : 'text-red-400 hover:text-red-400'}
             `}
+            style={isCurrentTeam ? getTeamAccentStyle(teamNumber) : undefined}
             onClick={() => window.location.href = `/team?team=${teamNum}`}
           >
             {teamNum}
@@ -203,22 +205,28 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
       return (
         <div className="mb-8">
           <h3 className="text-2xl font-bold mb-4">{title}</h3>
-          <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+          <div className={`${getTeamCardGradientClass(teamNumber)} backdrop-blur-sm rounded-xl p-6 border border-gray-700/50`}>
             <div className="overflow-x-auto">
               <table className="min-w-full table-auto">
                 <thead>
                   <tr className="text-left">
-                    <th className="p-4 text-baywatch-orange">Match</th>
-                    <th className="p-4 text-baywatch-orange">Blue Alliance</th>
-                    <th className="p-4 text-baywatch-orange">Red Alliance</th>
-                    <th className="p-4 text-baywatch-orange">Score</th>
+                    <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Match</th>
+                    <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Blue Alliance</th>
+                    <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Red Alliance</th>
+                    <th className="p-4 font-bold" style={getTeamAccentStyle(teamNumber)}>Score</th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-300">
                   <tr>
                     <td colSpan={4} className="p-4 text-center">
                       <div className="flex justify-center items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin"></div>
+                        <div 
+                          className="w-4 h-4 border-2 rounded-full animate-spin"
+                          style={{
+                            borderColor: `${getTeamColor(teamNumber) || '#f97316'}30`,
+                            borderTopColor: getTeamColor(teamNumber) || '#f97316'
+                          }}
+                        ></div>
                         <span>Loading matches...</span>
                       </div>
                     </td>
@@ -239,10 +247,10 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
             <table className="min-w-full table-auto">
               <thead>
                 <tr className="text-left">
-                  <th className="p-4 text-baywatch-orange">Match</th>
-                  <th className="p-4 text-baywatch-orange">Blue Alliance</th>
-                  <th className="p-4 text-baywatch-orange">Red Alliance</th>
-                  <th className="p-4 text-baywatch-orange">Score</th>
+                  <th className="p-4" style={getTeamAccentStyle(teamNumber)}>Match</th>
+                  <th className="p-4" style={getTeamAccentStyle(teamNumber)}>Blue Alliance</th>
+                  <th className="p-4" style={getTeamAccentStyle(teamNumber)}>Red Alliance</th>
+                  <th className="p-4" style={getTeamAccentStyle(teamNumber)}>Score</th>
                 </tr>
               </thead>
               <tbody className="text-gray-300">
@@ -265,7 +273,7 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
                         `}
                         style={{ animationDelay: `${index * 0.02}s` }}
                       >
-                        <td className="p-4 font-semibold text-baywatch-orange">
+                        <td className="p-4 font-semibold" style={getTeamAccentStyle(teamNumber)}>
                           <Link
                             to={`/match?match=${match.key}`}
                             className="inline-flex items-center hover:text-white transition-colors"
@@ -319,7 +327,7 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
       <section className="tab-content py-8 relative z-10">
         <div className="container mx-auto px-6">
           <h2 className="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
-          <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+          <div className={`${getTeamCardGradientClass(teamNumber)} backdrop-blur-sm rounded-xl p-6 border border-gray-700/50`}>
             <div className="text-center">
               <div className="text-gray-400 animate-pulse">Loading events...</div>
             </div>
@@ -333,7 +341,7 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
     <section className="tab-content py-8 relative z-10">
       <div className="container mx-auto px-6">
         <h2 className="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
-        <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+        <div className={`${getTeamCardGradientClass(teamNumber)} backdrop-blur-sm rounded-xl p-6 border border-gray-700/50`}>
         {/* Event selector */}
         <div className="mb-6">
           <label htmlFor="event-selector" className="block text-sm font-medium text-gray-300 mb-3">
@@ -344,7 +352,18 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
               id="event-selector"
               value={selectedEvent}
               onChange={(e) => setSelectedEvent(e.target.value)}
-              className="w-full appearance-none bg-black/40 rounded-lg border border-gray-700 hover:border-orange-500/50 focus:border-orange-500/70 transition-all duration-300 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+              className="w-full appearance-none bg-black/40 rounded-lg border border-gray-700 transition-all duration-300 px-4 py-3 text-white focus:outline-none"
+              style={{
+                borderColor: selectedEvent ? `${getTeamColor(teamNumber)}50` : '#374151',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = `${getTeamColor(teamNumber)}70`;
+                e.target.style.boxShadow = `0 0 0 2px ${getTeamColor(teamNumber)}30`;
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = selectedEvent ? `${getTeamColor(teamNumber)}50` : '#374151';
+                e.target.style.boxShadow = '';
+              }}
             >
               {eventsData.map((event) => (
                 <option key={event.key} value={event.key}>
@@ -352,7 +371,7 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-orange-500">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4" style={getTeamAccentStyle(teamNumber)}>
               <i className="fas fa-chevron-down transition-all duration-300"></i>
             </div>
           </div>

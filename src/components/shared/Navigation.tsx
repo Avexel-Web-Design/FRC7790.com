@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTeamContext } from '../../hooks/useTeamContext';
+import { getTeamColor } from '../../utils/color';
 
 interface NavigationItem {
   name: string;
@@ -21,8 +23,12 @@ export default function Navigation() {
   const [isVisible, setIsVisible] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const { isAuthenticated, user, logout } = useAuth();
+  const { isTeamPage, teamNumber } = useTeamContext();
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Get the accent color for team pages, fallback to orange
+  const accentColor = isTeamPage && teamNumber ? getTeamColor(teamNumber) || '#f97316' : '#f97316';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -96,7 +102,18 @@ export default function Navigation() {
         </div>
 
         {/* Search Bar (Desktop) */}
-        <div className="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 hover:border-baywatch-orange/50 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md">
+        <div 
+          className="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md"
+          style={{
+            borderColor: '#374151'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = `${accentColor}50`;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#374151';
+          }}
+        >
           <form onSubmit={handleSearch} className="flex items-center w-full">
             <input
               type="text"
@@ -108,7 +125,14 @@ export default function Navigation() {
             />
             <button
               type="submit"
-              className="text-gray-400 hover:text-baywatch-orange transition-colors"
+              className="text-gray-400 transition-colors"
+              style={{ color: '#9ca3af' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = accentColor;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = '#9ca3af';
+              }}
               aria-label="Search"
             >
               <MagnifyingGlassIcon className="h-5 w-5" />
@@ -122,9 +146,20 @@ export default function Navigation() {
             <li key={item.name}>
               <Link
                 to={item.href}
-                className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
-                  location.pathname === item.href ? 'text-baywatch-orange' : ''
-                }`}
+                className="transition-all duration-300 hover:scale-110 inline-block"
+                style={{
+                  color: location.pathname === item.href ? accentColor : 'white'
+                }}
+                onMouseEnter={(e) => {
+                  if (location.pathname !== item.href) {
+                    e.currentTarget.style.color = accentColor;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (location.pathname !== item.href) {
+                    e.currentTarget.style.color = 'white';
+                  }
+                }}
               >
                 {item.name}
               </Link>
@@ -135,9 +170,20 @@ export default function Navigation() {
               <li>
                 <Link
                   to="/dashboard"
-                  className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
-                    location.pathname === '/dashboard' ? 'text-baywatch-orange' : ''
-                  }`}
+                  className="transition-all duration-300 hover:scale-110 inline-block"
+                  style={{
+                    color: location.pathname === '/dashboard' ? accentColor : 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (location.pathname !== '/dashboard') {
+                      e.currentTarget.style.color = accentColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== '/dashboard') {
+                      e.currentTarget.style.color = 'white';
+                    }
+                  }}
                 >
                   Dashboard
                 </Link>
@@ -147,9 +193,20 @@ export default function Navigation() {
             <li>
               <Link
                 to="/login"
-                className={`hover:text-baywatch-orange transition-all duration-300 hover:scale-110 inline-block ${
-                  location.pathname === '/login' ? 'text-baywatch-orange' : ''
-                }`}
+                className="transition-all duration-300 hover:scale-110 inline-block"
+                style={{
+                  color: location.pathname === '/login' ? accentColor : 'white'
+                }}
+                onMouseEnter={(e) => {
+                  if (location.pathname !== '/login') {
+                    e.currentTarget.style.color = accentColor;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (location.pathname !== '/login') {
+                    e.currentTarget.style.color = 'white';
+                  }
+                }}
               >
                 Login
               </Link>
@@ -159,7 +216,14 @@ export default function Navigation() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-white hover:text-baywatch-orange transition-colors"
+          className="md:hidden text-white transition-colors"
+          style={{ color: 'white' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = accentColor;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'white';
+          }}
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle mobile menu"
         >
@@ -184,7 +248,17 @@ export default function Navigation() {
                 placeholder="Search team # or event..."
                 className="bg-transparent border-none focus:outline-none text-white w-full"
               />
-              <button type="submit" className="text-gray-400 hover:text-baywatch-orange transition-colors">
+              <button 
+                type="submit" 
+                className="text-gray-400 transition-colors"
+                style={{ color: '#9ca3af' }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = accentColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '#9ca3af';
+                }}
+              >
                 <MagnifyingGlassIcon className="h-5 w-5" />
               </button>
             </form>
@@ -194,9 +268,20 @@ export default function Navigation() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                  location.pathname === item.href ? 'text-baywatch-orange' : ''
-                }`}
+                className="block py-2 text-lg transition-colors"
+                style={{
+                  color: location.pathname === item.href ? accentColor : 'white'
+                }}
+                onMouseEnter={(e) => {
+                  if (location.pathname !== item.href) {
+                    e.currentTarget.style.color = accentColor;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (location.pathname !== item.href) {
+                    e.currentTarget.style.color = 'white';
+                  }
+                }}
                 onClick={() => setIsOpen(false)}
               >
                 {item.name}
@@ -206,36 +291,80 @@ export default function Navigation() {
               <>
                 <Link
                   to="/dashboard"
-                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                    location.pathname === '/dashboard' ? 'text-baywatch-orange' : ''
-                  }`}
+                  className="block py-2 text-lg transition-colors"
+                  style={{
+                    color: location.pathname === '/dashboard' ? accentColor : 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (location.pathname !== '/dashboard') {
+                      e.currentTarget.style.color = accentColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== '/dashboard') {
+                      e.currentTarget.style.color = 'white';
+                    }
+                  }}
                   onClick={() => setIsOpen(false)}
                 >
                   Dashboard
                 </Link>
                 <Link
                   to="/calendar"
-                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                    location.pathname === '/calendar' ? 'text-baywatch-orange' : ''
-                  }`}
+                  className="block py-2 text-lg transition-colors"
+                  style={{
+                    color: location.pathname === '/calendar' ? accentColor : 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (location.pathname !== '/calendar') {
+                      e.currentTarget.style.color = accentColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== '/calendar') {
+                      e.currentTarget.style.color = 'white';
+                    }
+                  }}
                   onClick={() => setIsOpen(false)}
                 >
                   Calendar
                 </Link>
                 <Link
                   to="/tasks"
-                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                    location.pathname === '/tasks' ? 'text-baywatch-orange' : ''
-                  }`}
+                  className="block py-2 text-lg transition-colors"
+                  style={{
+                    color: location.pathname === '/tasks' ? accentColor : 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (location.pathname !== '/tasks') {
+                      e.currentTarget.style.color = accentColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== '/tasks') {
+                      e.currentTarget.style.color = 'white';
+                    }
+                  }}
                   onClick={() => setIsOpen(false)}
                 >
                   Tasks
                 </Link>
                 <Link
                   to="/profile"
-                  className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                    location.pathname === '/profile' ? 'text-baywatch-orange' : ''
-                  }`}
+                  className="block py-2 text-lg transition-colors"
+                  style={{
+                    color: location.pathname === '/profile' ? accentColor : 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (location.pathname !== '/profile') {
+                      e.currentTarget.style.color = accentColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== '/profile') {
+                      e.currentTarget.style.color = 'white';
+                    }
+                  }}
                   onClick={() => setIsOpen(false)}
                 >
                   Profile
@@ -243,9 +372,20 @@ export default function Navigation() {
                 {user?.isAdmin && (
                   <Link
                     to="/admin/users"
-                    className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                      location.pathname === '/admin/users' ? 'text-baywatch-orange' : ''
-                    }`}
+                    className="block py-2 text-lg transition-colors"
+                    style={{
+                      color: location.pathname === '/admin/users' ? accentColor : 'white'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (location.pathname !== '/admin/users') {
+                        e.currentTarget.style.color = accentColor;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (location.pathname !== '/admin/users') {
+                        e.currentTarget.style.color = 'white';
+                      }
+                    }}
                     onClick={() => setIsOpen(false)}
                   >
                     Admin
@@ -256,7 +396,14 @@ export default function Navigation() {
                     handleLogout();
                     setIsOpen(false);
                   }}
-                  className="block py-2 text-lg hover:text-baywatch-orange transition-colors"
+                  className="block py-2 text-lg transition-colors"
+                  style={{ color: 'white' }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = accentColor;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'white';
+                  }}
                 >
                   Logout
                 </button>
@@ -264,9 +411,20 @@ export default function Navigation() {
             ) : (
               <Link
                 to="/login"
-                className={`block py-2 text-lg hover:text-baywatch-orange transition-colors ${
-                  location.pathname === '/login' ? 'text-baywatch-orange' : ''
-                }`}
+                className="block py-2 text-lg transition-colors"
+                style={{
+                  color: location.pathname === '/login' ? accentColor : 'white'
+                }}
+                onMouseEnter={(e) => {
+                  if (location.pathname !== '/login') {
+                    e.currentTarget.style.color = accentColor;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (location.pathname !== '/login') {
+                    e.currentTarget.style.color = 'white';
+                  }
+                }}
                 onClick={() => setIsOpen(false)}
               >
                 Login

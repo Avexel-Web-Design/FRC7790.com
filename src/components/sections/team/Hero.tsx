@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { getTeamAccentStyle, getTeamGlowClass } from '../../../utils/color';
 
 interface TeamHeroProps {
   teamNumber: string;
@@ -44,7 +45,7 @@ export default function TeamHero({ teamNumber, teamData, setTeamData, setLoading
           <span className="text-white inline-block animate__animated animate__fadeInUp" style={{animationDelay: '0.2s'}}>
             Team
           </span>
-          <span className="text-orange-500 glow-orange inline-block animate__animated animate__fadeInUp ml-4" style={{animationDelay: '0.4s'}}>
+          <span className={`${getTeamGlowClass(teamNumber)} inline-block animate__animated animate__fadeInUp ml-4`} style={{...getTeamAccentStyle(teamNumber), animationDelay: '0.4s'}}>
             {teamNumber}
           </span>
         </h1>

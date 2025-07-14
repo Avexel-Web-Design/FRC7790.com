@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getTeamCardGradientClass, getTeamAccentStyle } from '../../../utils/color';
 
 interface TeamHistoryProps {
   teamNumber: string;
@@ -102,7 +103,7 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
     
     return (
       <div className="mt-2">
-        <span className="text-sm text-orange-500">Awards: </span>
+        <span className="text-sm" style={getTeamAccentStyle(teamNumber)}>Awards: </span>
         <span className="text-sm text-yellow-400">
           {awards.map(award => award.name).join(', ')}
         </span>
@@ -114,7 +115,7 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
     return (
       <section className="py-8 relative z-10">
         <h2 className="text-3xl font-bold mb-8 text-center">Team History</h2>
-        <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800">
+        <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`}>
           <div className="text-center">
             <div className="text-gray-400 animate-pulse">Loading team history...</div>
           </div>
@@ -128,7 +129,7 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
   return (
     <section className="py-8 relative z-10">
       <h2 className="text-3xl font-bold mb-8 text-center">Team History</h2>
-      <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800">
+      <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`}>
         <div className="space-y-6">
           {years.length === 0 ? (
             <div className="text-center py-4">
@@ -150,7 +151,16 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
                         <span className="font-medium text-white">
                           <a
                             href={`/event?event=${event.key}`}
-                            className="hover:text-orange-500 transition-colors"
+                            className="transition-colors"
+                            style={{
+                              color: 'white',
+                            }}
+                            onMouseEnter={(e) => {
+                              (e.target as HTMLAnchorElement).style.color = getTeamAccentStyle(teamNumber).color || '#f97316';
+                            }}
+                            onMouseLeave={(e) => {
+                              (e.target as HTMLAnchorElement).style.color = 'white';
+                            }}
                           >
                             {event.name}
                           </a>
@@ -174,24 +184,24 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
                 <h3 className="text-lg font-semibold mb-4">Team Summary</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="bg-black/30 p-3 rounded">
-                    <div className="text-orange-500 font-medium">Rookie Year</div>
+                    <div className="font-medium" style={getTeamAccentStyle(teamNumber)}>Rookie Year</div>
                     <div className="text-white">{teamData.rookie_year}</div>
                   </div>
                   <div className="bg-black/30 p-3 rounded">
-                    <div className="text-orange-500 font-medium">Years Active</div>
+                    <div className="font-medium" style={getTeamAccentStyle(teamNumber)}>Years Active</div>
                     <div className="text-white">
                       {new Date().getFullYear() - teamData.rookie_year + 1} years
                     </div>
                   </div>
                   <div className="bg-black/30 p-3 rounded">
-                    <div className="text-orange-500 font-medium">Total Seasons</div>
+                    <div className="font-medium" style={getTeamAccentStyle(teamNumber)}>Total Seasons</div>
                     <div className="text-white">{years.length + 1}</div>
                   </div>
                 </div>
                 
                 {teamData.motto && (
                   <div className="mt-4 p-3 bg-black/30 rounded">
-                    <div className="text-orange-500 font-medium mb-2">Team Motto</div>
+                    <div className="font-medium mb-2" style={getTeamAccentStyle(teamNumber)}>Team Motto</div>
                     <div className="text-gray-300 italic">"{teamData.motto}"</div>
                   </div>
                 )}

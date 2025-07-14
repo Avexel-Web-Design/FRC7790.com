@@ -1,3 +1,5 @@
+import { getTeamCardGradientClass, getTeamAccentStyle } from '../../../utils/color';
+
 interface TeamLinksProps {
   teamNumber: string;
   teamData: any;
@@ -31,7 +33,32 @@ export default function TeamLinks({ teamNumber }: TeamLinksProps) {
         icon: 'fab fa-instagram',
         description: 'Behind the scenes content'
       });
-    } else {
+    } else if (teamNumber === '3767') {
+      links.push({
+        name: 'Team Website',
+        url: 'https://tctitansrobotics.com/',
+        icon: 'fas fa-globe',
+        description: 'Official team website'
+      });
+      links.push({
+        name: 'Instagram',
+        url: 'https://instagram.com/frcteam3767',
+        icon: 'fab fa-instagram',
+        description: 'Behind the scenes content'
+      });
+    } else if (teamNumber === '7598') {
+      links.push({
+        name: 'Team Website',
+        url: 'http://www.scaconstellations.com/',
+        icon: 'fas fa-globe',
+        description: 'Official team website'
+      });
+      links.push({
+        name: 'Instagram',
+        url: 'https://instagram.com/scaconstellations',
+        icon: 'fab fa-instagram',
+        description: 'Behind the scenes content'
+      });
     }
 
     // FIRST Inspires link
@@ -48,7 +75,7 @@ export default function TeamLinks({ teamNumber }: TeamLinksProps) {
   const teamLinks = getTeamLinks();
 
   return (
-    <div className="card-gradient rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800" style={{animationDelay: '0.4s'}}>
+    <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`} style={{animationDelay: '0.4s'}}>
       <h2 className="text-2xl font-bold mb-6 text-center">Team Links</h2>
       <div className="space-y-4">
         {teamLinks.map((link, index) => (
@@ -61,10 +88,10 @@ export default function TeamLinks({ teamNumber }: TeamLinksProps) {
           >
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
-                <i className={`${link.icon} text-orange-500 text-xl group-hover:text-orange-400 transition-colors`}></i>
+                <i className={`${link.icon} text-xl transition-colors`} style={getTeamAccentStyle(teamNumber)}></i>
               </div>
               <div className="flex-grow">
-                <div className="font-medium text-white group-hover:text-orange-500 transition-colors">
+                <div className="font-medium text-white transition-colors">
                   {link.name}
                   <i className="fas fa-external-link-alt ml-2 text-xs opacity-60"></i>
                 </div>

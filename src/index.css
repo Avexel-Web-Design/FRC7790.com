@@ -1,9 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind CSS base styles */
+/* @tailwind base; */
+@import 'tailwindcss/base';
+/* Tailwind CSS component classes */
+/* @tailwind components; */
+@import 'tailwindcss/components';
+/* Tailwind CSS utility classes */
+/* @tailwind utilities; */
+@import 'tailwindcss/utilities';
 
 /* Text selection colors */
 ::selection {
@@ -12,6 +18,31 @@
 
 ::-moz-selection {
   background-color: rgba(255, 107, 0, 0.3);
+}
+
+/* Team-specific text selection colors */
+.team-3767 ::selection {
+  background-color: rgba(104, 190, 92, 0.3); /* Green */
+}
+
+.team-3767 ::-moz-selection {
+  background-color: rgba(104, 190, 92, 0.3);
+}
+
+.team-7598 ::selection {
+  background-color: rgba(71, 26, 103, 0.3); /* Purple */
+}
+
+.team-7598 ::-moz-selection {
+  background-color: rgba(71, 26, 103, 0.3);
+}
+
+.team-5560 ::selection {
+  background-color: rgba(59, 130, 246, 0.3); /* Light blue */
+}
+
+.team-5560 ::-moz-selection {
+  background-color: rgba(59, 130, 246, 0.3);
 }
 
 ::-webkit-scrollbar {
@@ -107,6 +138,19 @@ body {
   text-shadow: 0 0 10px rgba(255, 107, 0, 0.5);
 }
 
+/* Team-specific glow effects */
+.glow-3767 {
+  text-shadow: 0 0 10px rgba(104, 190, 92, 0.5);
+}
+
+.glow-7598 {
+  text-shadow: 0 0 10px rgba(71, 26, 103, 0.5);
+}
+
+.glow-5560 {
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
 .btn-orange-glow {
   box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
 }
@@ -135,6 +179,75 @@ body {
   background-size: 200% 200%;
   animation: flowingGradient 8s ease-in-out infinite;
   border-color: rgba(255, 107, 0, 0.3);
+}
+
+/* Team 3767 - Green Gradient */
+.card-gradient-3767 {
+  background: linear-gradient(
+    135deg,
+    rgba(104, 190, 92, 0.15) 0%,
+    rgba(26, 26, 26, 0.5) 25%,
+    rgba(104, 190, 92, 0.15) 50%,
+    rgba(26, 26, 26, 0.5) 75%,
+    rgba(104, 190, 92, 0.15) 100%
+  );
+  background-size: 400% 400%;
+  animation: flowingGradient 15s ease-in-out infinite;
+  border: 1px solid rgba(104, 190, 92, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.card-gradient-3767:hover {
+  background-size: 200% 200%;
+  animation: flowingGradient 8s ease-in-out infinite;
+  border-color: rgba(104, 190, 92, 0.3);
+}
+
+/* Team 7598 - Purple Gradient */
+.card-gradient-7598 {
+  background: linear-gradient(
+    135deg,
+    rgba(123, 0, 255, 0.15) 0%,
+    rgba(26, 26, 26, 0.5) 25%,
+    rgba(123, 0, 255, 0.15) 50%,
+    rgba(26, 26, 26, 0.5) 75%,
+    rgba(123, 0, 255, 0.15) 100%
+  );
+  background-size: 400% 400%;
+  animation: flowingGradient 15s ease-in-out infinite;
+  border: 1px solid rgba(123, 0, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.card-gradient-7598:hover {
+  background-size: 200% 200%;
+  animation: flowingGradient 8s ease-in-out infinite;
+  border-color: rgba(123, 0, 255, 0.3);
+}
+
+/* Team 5560 - Blue Gradient */
+.card-gradient-5560 {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 42, 255, 0.15) 0%,
+    rgba(26, 26, 26, 0.5) 25%,
+    rgba(0, 42, 255, 0.15) 50%,
+    rgba(26, 26, 26, 0.5) 75%,
+    rgba(0, 42, 255, 0.15) 100%
+  );
+  background-size: 400% 400%;
+  animation: flowingGradient 15s ease-in-out infinite;
+  border: 1px solid rgba(0, 42, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.card-gradient-5560:hover {
+  background-size: 200% 200%;
+  animation: flowingGradient 8s ease-in-out infinite;
+  border-color: rgba(0, 42, 255, 0.3);
 }
 
 @keyframes flowingGradient {
@@ -283,7 +396,9 @@ button::-webkit-focus-inner {
   
   /* Improve mobile table readability */
   .mobile-card {
-    @apply bg-black border border-gray-700 rounded-lg;
+    background-color: #000;
+    border: 1px solid #374151;
+    border-radius: 0.5rem;
   }
   
   /* Better touch targets for mobile */

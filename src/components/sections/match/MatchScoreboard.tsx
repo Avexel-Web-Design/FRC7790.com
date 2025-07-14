@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { MatchData, TeamData } from '../../../hooks/useMatchData';
 import { getDivisionMapping, getAllianceDisplayName } from '../../../utils/divisionUtils';
+import { getTeamColor } from '../../../utils/color';
 
 interface MatchScoreboardProps {
   matchData: MatchData;
@@ -68,11 +69,21 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
       const team = teamMap[teamKey];
       const teamNumber = teamKey.replace('frc', '');
       const teamName = team ? team.nickname : 'Unknown Team';
-      const is7790 = teamNumber === '7790';
+      const teamColor = getTeamColor(teamNumber);
+      const hasSpecialColor = teamColor !== null;
       
       return (
-        <div key={teamKey} className={`team-item ${alliance === 'blue' ? 'bg-blue-500/20' : 'bg-red-500/20'} ${is7790 ? 'border-l-4 border-baywatch-orange' : ''} flex items-center gap-2 p-2 rounded transition-all duration-300 hover:translate-x-1`}>
-          <span className="team-number font-semibold text-lg">{teamNumber}</span>
+        <div 
+          key={teamKey} 
+          className={`team-item ${alliance === 'blue' ? 'bg-blue-500/20' : 'bg-red-500/20'} ${hasSpecialColor ? 'border-l-4' : ''} flex items-center gap-2 p-2 rounded transition-all duration-300 hover:translate-x-1`}
+          style={hasSpecialColor ? { borderLeftColor: teamColor } : {}}
+        >
+          <span 
+            className="team-number font-semibold text-lg"
+            style={hasSpecialColor ? { color: teamColor } : {}}
+          >
+            {teamNumber}
+          </span>
           <span className="team-name text-sm opacity-80">{teamName}</span>
         </div>
       );
