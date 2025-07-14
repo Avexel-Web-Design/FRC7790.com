@@ -77,19 +77,19 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
 
   return (
     <section className="tab-content py-8 relative z-10">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto sm:px-6">
         <h2 className="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
         
-        <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+        <div className="card-gradient backdrop-blur-sm rounded-xl sm:px-6 py-6 border border-gray-700/50">
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto">
               <thead>
                 <tr className="text-left">
-                  <th className="p-4 text-baywatch-orange">Match</th>
-                  <th className="p-4 text-baywatch-orange">Time</th>
-                  <th className="p-4 text-baywatch-orange">Blue Alliance</th>
-                  <th className="p-4 text-baywatch-orange">Red Alliance</th>
-                  <th className="p-4 text-baywatch-orange">Score</th>
+                  <th className="p-2 sm:p-4 text-baywatch-orange">Match</th>
+                  <th className="p-2 sm:p-4 text-baywatch-orange">Time</th>
+                  <th className="p-2 sm:p-4 text-baywatch-orange">Blue Alliance</th>
+                  <th className="p-2 sm:p-4 text-baywatch-orange">Red Alliance</th>
+                  <th className="p-2 sm:p-4 text-baywatch-orange">Score</th>
                 </tr>
               </thead>
               <tbody className="text-gray-300">
@@ -122,7 +122,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                         `}
                         style={{ animationDelay: `${index * 0.02}s` }}
                       >
-                        <td className="p-4 font-semibold text-baywatch-orange">
+                        <td className="p-2 sm:p-4 font-semibold text-baywatch-orange">
                           <Link
                             to={`/match?match=${match.key}`}
                             className="inline-flex items-center hover:text-white transition-colors"
@@ -131,10 +131,10 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                           </Link>
                           {isOurMatch && <i className="fas fa-star text-baywatch-orange ml-2"></i>}
                         </td>
-                        <td className="p-4 text-sm text-gray-400">
+                        <td className="p-2 sm:p-4 text-sm text-gray-400">
                           {formatMatchTime(match)}
                         </td>
-                        <td className="p-4">
+                        <td className="p-2 sm:p-4">
                           <div className="flex flex-wrap gap-1">
                             {match.alliances.blue.team_keys.map(teamKey => {
                               const teamNumber = formatTeamNumber(teamKey);
@@ -157,7 +157,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                             })}
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="p-2 sm:p-4">
                           <div className="flex flex-wrap gap-1">
                             {match.alliances.red.team_keys.map(teamKey => {
                               const teamNumber = formatTeamNumber(teamKey);
@@ -180,7 +180,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                             })}
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="p-2 sm:p-4">
                           {formatScore(match)}
                         </td>
                       </tr>

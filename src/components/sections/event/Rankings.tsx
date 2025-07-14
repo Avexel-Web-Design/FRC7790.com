@@ -124,10 +124,10 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
 
   return (
     <section className="tab-content py-8 relative z-10">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto sm:px-6">
         <h2 className="text-3xl font-bold mb-8 text-center">Team Rankings</h2>
         
-        <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+        <div className="card-gradient backdrop-blur-sm rounded-xl sm:px-6 py-6 border border-gray-700/50">
           <div className="overflow-x-auto">
             {!isLoading && rankings.length === 0 && (
               <div className="text-center py-8 mb-4">

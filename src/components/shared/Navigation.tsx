@@ -237,7 +237,7 @@ export default function Navigation() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden border-t border-gray-700/30">
+        <div className="md:hidden backdrop-blur-sm h-screen border-t border-gray-700/30">
           <div className="px-4 py-6 space-y-4">
             {/* Mobile Search */}
             <form onSubmit={handleSearch} className="flex items-center bg-black/30 rounded-lg border border-gray-700 px-3 py-2">

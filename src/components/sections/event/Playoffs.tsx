@@ -680,7 +680,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
   if (isLoading) {
     return (
       <section className="tab-content py-8 relative z-10">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto sm:px-6">
           <h2 className="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
           <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
             <div className="flex justify-center items-center py-16">
@@ -698,7 +698,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
   if (playoffMatches.length === 0) {
     return (
       <section className="tab-content py-8 relative z-10">
-        <div className="container mx-auto px-6">
+        <div className="container mx-auto sm:px-6">
           <h2 className="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
           <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
             <div className="text-center py-16">
@@ -714,7 +714,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
 
   return (
     <section className="tab-content py-8 relative z-10">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto sm:px-6">
         <h2 className="text-4xl font-bold mb-8 text-center">Playoff Bracket</h2>
 
         <div className="card-gradient backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 overflow-x-auto">
