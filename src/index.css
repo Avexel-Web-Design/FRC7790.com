@@ -110,6 +110,7 @@ body {
   border: 1px solid rgba(255, 107, 0, 0.3);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   transition: all 0.5s ease;
+  will-change: transform;
 }
 
 .match-box::before {
@@ -126,6 +127,7 @@ body {
 .match-box:hover {
   transform: scale(1.05);
   box-shadow: 0 0 30px rgba(255, 107, 0, 0.3);
+  will-change: transform;
 }
 
 .finals-match {

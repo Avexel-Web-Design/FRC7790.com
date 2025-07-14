@@ -616,12 +616,12 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
         {bracketMatch.match ? (
            <Link
              to={`/match?match=${bracketMatch.match.key}`}
-             className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/50 backdrop-blur-xl text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md inline-flex items-center hover:text-white transition-colors"
+             className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/80 backdrop-blur-sm text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md inline-flex items-center hover:text-white transition-colors will-change-transform"
            >
              {displayName} <i className="fas fa-arrow-up-right-from-square ml-1"></i>
            </Link>
          ) : (
-           <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/50 backdrop-blur-xl text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md">
+           <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/80 backdrop-blur-sm text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md will-change-transform">
              {displayName}
            </span>
          )}
