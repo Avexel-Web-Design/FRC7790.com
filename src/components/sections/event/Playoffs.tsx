@@ -32,7 +32,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
   const [divisionMapping, setDivisionMapping] = useState<DivisionMapping>({});
   const [isChampionshipEvent, setIsChampionshipEvent] = useState(false);
   const [isAllianceLoading, setIsAllianceLoading] = useState(false);
-  const [bracketType, setBracketType] = useState<'2-team' | '4-team' | '8-team'>('8-team');
+  const [bracketType, setBracketType] = useState<'2-team' | '4-team' | '8-team' | 'single-elim-bo3'>('8-team');
   // Alliance data for the listing section
   const [alliances, setAlliances] = useState<any[]>([]);
   const [isAlliancesLoading, setIsAlliancesLoading] = useState(false);
@@ -64,11 +64,15 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
         const allianceData = await frcAPI.fetchEventAlliances(eventKey);
         setAlliances(allianceData);
         
-        // Determine bracket type based on number of alliances
+        // Determine bracket type based on year and number of alliances
+        const eventYear = parseInt(eventKey.substring(0, 4));
         const uniqueAlliances = new Set(Object.values(allianceMap));
         const allianceCount = uniqueAlliances.size;
         
-        if (allianceCount <= 2) {
+        // 2022 and earlier used single elimination with best-of-3 matches
+        if (eventYear <= 2022) {
+          setBracketType('single-elim-bo3');
+        } else if (allianceCount <= 2) {
           setBracketType('2-team');
         } else if (allianceCount <= 4) {
           setBracketType('4-team');
@@ -314,6 +318,135 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
       </div>
     </div>
   );
+
+  // Render single elimination best-of-3 bracket (2022 and earlier)
+  const renderSingleElimBo3Bracket = () => {
+    // Group playoff matches by comp_level and set_number
+    const efMatches = playoffMatches.filter(m => m.comp_level === 'ef').sort((a, b) => (a.set_number - b.set_number) || (a.match_number - b.match_number));
+    const qfMatches = playoffMatches.filter(m => m.comp_level === 'qf').sort((a, b) => (a.set_number - b.set_number) || (a.match_number - b.match_number));
+    const sfMatches = playoffMatches.filter(m => m.comp_level === 'sf').sort((a, b) => (a.set_number - b.set_number) || (a.match_number - b.match_number));
+    const finalMatches = playoffMatches.filter(m => m.comp_level === 'f').sort((a, b) => a.match_number - b.match_number);
+    
+    // Create series boxes for best-of-3 matches
+    const createSeriesBox = (matches: Match[], seriesName: string, className = '') => {
+      if (matches.length === 0) {
+        return (
+          <div key={seriesName} className={`bg-black/90 border border-gray-700/50 rounded-xl p-4 w-[300px] min-h-[240px] ${className}`}>
+            <h4 className="text-center text-baywatch-orange font-semibold mb-4">{seriesName}</h4>
+            <div className="text-center text-gray-500">Not yet scheduled</div>
+          </div>
+        );
+      }
+
+      return (
+        <div key={seriesName} className={`bg-black/90 border border-baywatch-orange/30 rounded-xl p-4 w-[300px] min-h-[240px] ${className}`}>
+          <h4 className="text-center text-baywatch-orange font-semibold mb-4">{seriesName}</h4>
+          <div className="space-y-3">
+            {matches.map((match, idx) => (
+              <MatchBox
+                key={match.key}
+                bracketMatch={createBracketMatch(match, `Game ${idx + 1}`)}
+                className="!w-full !min-h-[160px] match-box group"
+              />
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Group QF/EF matches by set
+    const qfSeries = new Map<number, Match[]>();
+    qfMatches.forEach(match => {
+      if (!qfSeries.has(match.set_number)) {
+        qfSeries.set(match.set_number, []);
+      }
+      qfSeries.get(match.set_number)!.push(match);
+    });
+
+    // Group EF matches by set (used as quarters in some years)
+    const efSeries = new Map<number, Match[]>();
+    efMatches.forEach(match => {
+      if (!efSeries.has(match.set_number)) {
+        efSeries.set(match.set_number, []);
+      }
+      efSeries.get(match.set_number)!.push(match);
+    });
+
+    // Group SF matches by set
+    const sfSeries = new Map<number, Match[]>();
+    sfMatches.forEach(match => {
+      if (!sfSeries.has(match.set_number)) {
+        sfSeries.set(match.set_number, []);
+      }
+      sfSeries.get(match.set_number)!.push(match);
+    });
+
+    const efSeriesCount = efSeries.size;
+    const qfSeriesCount = qfSeries.size;
+    const sfSeriesCount = sfSeries.size;
+
+    return (
+      <div className="min-w-[1200px] relative">
+        {/* Single Elimination Bracket Structure */}
+        
+        {/* Elimination Finals (if present) - Used as quarters in some years */}
+        {efSeriesCount > 0 && (
+          <>
+            <h3 className="text-2xl font-bold text-center text-baywatch-orange mb-8">Quarterfinals</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {Array.from(efSeries.entries()).map(([setNumber, matches]) => 
+                createSeriesBox(matches, `Quarterfinal ${setNumber}`, 'hover:scale-105 transition-transform duration-300')
+              )}
+            </div>
+          </>
+        )}
+        
+        {/* Quarterfinals (if present and no EF) */}
+        {qfSeriesCount > 0 && efSeriesCount === 0 && (
+          <>
+            <h3 className="text-2xl font-bold text-center text-baywatch-orange mb-8">Quarterfinals</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {Array.from(qfSeries.entries()).map(([setNumber, matches]) => 
+                createSeriesBox(matches, `Quarterfinal ${setNumber}`, 'hover:scale-105 transition-transform duration-300')
+              )}
+            </div>
+          </>
+        )}
+
+        {/* Semifinals */}
+        {sfSeriesCount > 0 && (
+            <>
+            <h3 className="text-2xl font-bold text-center text-baywatch-orange mb-8">Semifinals</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 justify-center mb-12">
+              <div></div>
+              {Array.from(sfSeries.entries()).map(([setNumber, matches]) => 
+              createSeriesBox(matches, `Semifinal ${setNumber}`, 'hover:scale-105 transition-transform duration-300')
+              )}
+            </div>
+            </>
+        )}
+
+        {/* Finals */}
+        {finalMatches.length > 0 && (
+          <>
+            <h3 className="text-2xl font-bold text-center text-baywatch-orange mb-8">Finals</h3>
+            <div className="flex justify-center">
+              {createSeriesBox(finalMatches, '', 'hover:scale-105 transition-transform duration-300')}
+            </div>
+          </>
+        )}
+
+        {/* If no matches scheduled yet */}
+        {efSeriesCount === 0 && qfSeriesCount === 0 && sfSeriesCount === 0 && finalMatches.length === 0 && (
+          <div className="text-center py-16">
+            <i className="fas fa-info-circle text-4xl text-gray-500 mb-4"></i>
+            <h3 className="text-xl font-semibold mb-2">Playoff Schedule Not Available</h3>
+            <p className="text-gray-400">Playoff matches will appear here once they are scheduled.</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Render alliance listing section
   const renderAllianceListing = () => {
@@ -589,6 +722,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
           {bracketType === '2-team' && render2TeamBracket()}
           {bracketType === '4-team' && render4TeamBracket()}
           {bracketType === '8-team' && render8TeamBracket()}
+          {bracketType === 'single-elim-bo3' && renderSingleElimBo3Bracket()}
         </div>
 
         {/* Alliance Selection Section */}
