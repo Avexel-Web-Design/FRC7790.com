@@ -20,9 +20,10 @@ const NotificationDot: React.FC<NotificationDotProps> = ({
   }
 
   const sizeClasses = {
-    small: 'w-2 h-2 text-[8px]',
-    medium: 'w-4 h-4 text-[10px]',
-    large: 'w-5 h-5 text-xs'
+  // Slightly larger to comfortably fit 1-2 characters in a circle
+  small: 'w-3 h-3 text-[9px]',
+  medium: 'w-4 h-4 text-[10px]',
+  large: 'w-5 h-5 text-[11px]'
   };
 
   const positionClasses = {
@@ -35,21 +36,25 @@ const NotificationDot: React.FC<NotificationDotProps> = ({
   };
 
   const shouldShowCount = count !== undefined && count > 0;
-  const displayCount = count && count > 99 ? '99+' : count?.toString();
+  // Clamp the displayed count to keep text readable inside a circle
+  const displayCount = shouldShowCount
+    ? (size === 'small'
+        ? (count! > 9 ? '9+' : count!.toString())
+        : (count! > 99 ? '99+' : count!.toString()))
+    : '';
 
   return (
     <div
       className={`
         ${sizeClasses[size]}
         ${positionClasses[position]}
-        ${shouldShowCount ? 'px-1 min-w-4' : ''}
-        bg-red-500 text-white rounded-full
+        bg-baywatch-orange text-white rounded-full
         flex items-center justify-center
         font-bold leading-none
         ${className}
       `}
     >
-      {shouldShowCount ? displayCount : ''}
+      {displayCount}
     </div>
   );
 };

@@ -51,6 +51,66 @@ export async function getMessages(c: Context): Promise<Response> {
 
     console.log(`getMessages: Found ${results.length} messages`);
     
+    // Fetch read status for this channel to compute readers per message
+    let channelReadStatuses: Array<{ user_id: number; last_read_timestamp: string; username: string }> = [];
+    try {
+      const readRes = await c.env.DB.prepare(
+        'SELECT urs.user_id, urs.last_read_timestamp, u.username FROM user_read_status urs JOIN users u ON u.id = urs.user_id WHERE urs.channel_id = ?'
+      ).bind(channelId).all();
+      channelReadStatuses = (readRes.results as any[])?.map(r => ({
+        user_id: Number((r as any).user_id),
+        last_read_timestamp: (r as any).last_read_timestamp,
+        username: (r as any).username,
+      })) || [];
+    } catch (e) {
+      console.warn('getMessages: Failed to fetch channel read statuses:', e);
+    }
+
+  // Compute lightweight read receipts for channel chats (based on other users' last_read_timestamp)
+  // We only annotate messages sent by the requesting user (if provided)
+  if (userId && results.length > 0) {
+      try {
+        // Get the most recent read timestamp by any other user in this channel
+        const otherReadRow = await c.env.DB.prepare(
+          'SELECT MAX(last_read_timestamp) as max_ts FROM user_read_status WHERE channel_id = ? AND user_id != ?'
+        ).bind(channelId, userId).first();
+        const otherMaxRead: string | null = (otherReadRow as any)?.max_ts || null;
+
+        if (otherMaxRead) {
+          const otherReadTime = new Date(otherMaxRead).getTime();
+          for (const r of results as any[]) {
+            if (r.sender_id === userId) {
+              const msgTime = new Date(r.timestamp).getTime();
+              // Consider read if any other user's last_read >= message timestamp
+              (r as any).read_by_any = otherReadTime >= msgTime ? 1 : 0;
+            }
+          }
+        } else {
+          for (const r of results as any[]) {
+            if (r.sender_id === userId) {
+              (r as any).read_by_any = 0;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('getMessages: Failed to compute read receipts:', e);
+      }
+    }
+    
+    // Attach readers per message (all users whose last_read_timestamp >= message.timestamp and not the sender)
+    try {
+      if (Array.isArray(results) && channelReadStatuses.length > 0) {
+        for (const r of results as any[]) {
+          const msgTime = new Date(r.timestamp).getTime();
+          const readers = channelReadStatuses.filter(s => s.user_id !== Number(r.sender_id) && new Date(s.last_read_timestamp).getTime() >= msgTime)
+            .map(s => ({ user_id: s.user_id, username: s.username, read_at: s.last_read_timestamp }));
+          (r as any).readers = readers;
+        }
+      }
+    } catch (e) {
+      console.warn('getMessages: Failed to attach readers:', e);
+    }
+    
     // If user is provided and there are messages, mark channel as read
     if (userId && results.length > 0) {
       try {
@@ -264,6 +324,61 @@ export async function getDMMessages(c: Context): Promise<Response> {
       .all();
 
     console.log(`getDMMessages: Found ${results.length} messages`);
+    
+    // Fetch read status for this DM channel to compute readers per message
+    let dmReadStatuses: Array<{ user_id: number; last_read_timestamp: string; username: string }> = [];
+    try {
+      const readRes = await c.env.DB.prepare(
+        'SELECT urs.user_id, urs.last_read_timestamp, u.username FROM user_read_status urs JOIN users u ON u.id = urs.user_id WHERE urs.channel_id = ?'
+      ).bind(dmId).all();
+      dmReadStatuses = (readRes.results as any[])?.map(r => ({
+        user_id: Number((r as any).user_id),
+        last_read_timestamp: (r as any).last_read_timestamp,
+        username: (r as any).username,
+      })) || [];
+    } catch (e) {
+      console.warn('getDMMessages: Failed to fetch DM read statuses:', e);
+    }
+
+    // Compute lightweight read receipts for DM based on the other participant's last_read_timestamp
+    try {
+      const otherId = userId === user1Id ? user2Id : user1Id;
+      const otherReadRow = await c.env.DB.prepare(
+        'SELECT last_read_timestamp FROM user_read_status WHERE user_id = ? AND channel_id = ?'
+      ).bind(otherId, dmId).first();
+      const otherLastRead: string | null = (otherReadRow as any)?.last_read_timestamp || null;
+      if (otherLastRead) {
+        const otherReadTime = new Date(otherLastRead).getTime();
+        for (const r of results as any[]) {
+          if (r.sender_id === userId) {
+            const msgTime = new Date(r.timestamp).getTime();
+            (r as any).read_by_any = otherReadTime >= msgTime ? 1 : 0;
+          }
+        }
+      } else {
+        for (const r of results as any[]) {
+          if (r.sender_id === userId) {
+            (r as any).read_by_any = 0;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('getDMMessages: Failed to compute read receipts:', e);
+    }
+    
+    // Attach readers per message (users whose last_read_timestamp >= message.timestamp and not the sender)
+    try {
+      if (Array.isArray(results) && dmReadStatuses.length > 0) {
+        for (const r of results as any[]) {
+          const msgTime = new Date(r.timestamp).getTime();
+          const readers = dmReadStatuses.filter(s => s.user_id !== Number(r.sender_id) && new Date(s.last_read_timestamp).getTime() >= msgTime)
+            .map(s => ({ user_id: s.user_id, username: s.username, read_at: s.last_read_timestamp }));
+          (r as any).readers = readers;
+        }
+      }
+    } catch (e) {
+      console.warn('getDMMessages: Failed to attach readers:', e);
+    }
     
     // Mark DM channel as read for the requesting user
     if (results.length > 0) {

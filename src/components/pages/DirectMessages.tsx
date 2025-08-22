@@ -5,6 +5,11 @@ import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
 import NebulaLoader from '../common/NebulaLoader';
 import NotificationDot from '../common/NotificationDot';
+import { SmilePlus, Trash2, Reply as ReplyIcon, Copy as CopyIcon, Info as InfoIcon } from 'lucide-react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart, faThumbsUp, faThumbsDown, faFaceLaughSquint, faCircleCheck as faCircleCheckRegular } from '@fortawesome/free-regular-svg-icons';
+import { faExclamation, faQuestion, faCircleCheck as faCircleCheckSolid } from '@fortawesome/free-solid-svg-icons';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
 interface Message {
   id: number;
@@ -13,6 +18,8 @@ interface Message {
   timestamp: string;
   avatar: string;
   sender_username: string;
+  read_by_any?: number;
+  readers?: { user_id: number; username: string; read_at: string }[];
 }
 
 interface SimpleUser {
@@ -46,12 +53,67 @@ const DirectMessages: React.FC = () => {
   // Message handling
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Ensure newest messages appear at the bottom by sorting ascending (oldest first)
+  const sortMessagesAsc = (arr: Message[]) =>
+    [...arr].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+  // Format timestamps: show time for today, date for previous days
+  const formatTimestamp = (iso: string) => {
+    const d = new Date(iso);
+    const now = new Date();
+    const isSameDay =
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate();
+    if (isSameDay) {
+      return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+    }
+    return d.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
+  };
 
   // UI / state flags
   const [isChatsLoading, setIsChatsLoading] = useState(true);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Reactions state (frontend-only for now)
+  type ReactionMap = Record<number, Record<string, number>>; // messageId -> emoji -> count
+  type UserReactionMap = Record<number, Set<string>>; // messageId -> set of emojis reacted by current user
+  const [reactions, setReactions] = useState<ReactionMap>({});
+  const [userReactions, setUserReactions] = useState<UserReactionMap>({});
+  const [pickerOpenFor, setPickerOpenFor] = useState<number | null>(null);
+  // Ref to the currently open picker/toolbar container for outside-click detection
+  const pickerContainerRef = useRef<HTMLDivElement | null>(null);
+  // Info popup state and ref
+  const [infoOpenFor, setInfoOpenFor] = useState<number | null>(null);
+  const infoContainerRef = useRef<HTMLDivElement | null>(null);
+  // Copied feedback state
+  const [copiedFor, setCopiedFor] = useState<number | null>(null);
+  // Reply state
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
+  // Thread overlay state
+  const [threadCenterId, setThreadCenterId] = useState<number | null>(null);
+  // Quick reaction icons (Font Awesome), matching Channels
+  const quickIcons: { key: string; icon: IconDefinition; title: string }[] = [
+    { key: 'heart', icon: faHeart, title: 'Heart' },
+    { key: 'thumbs_up', icon: faThumbsUp, title: 'Like' },
+    { key: 'thumbs_down', icon: faThumbsDown, title: 'Dislike' },
+    { key: 'laugh', icon: faFaceLaughSquint, title: 'Laugh' },
+    { key: 'exclamation', icon: faExclamation, title: 'Exclamation' },
+    { key: 'question', icon: faQuestion, title: 'Question' },
+  ];
+  const iconMap: Record<string, IconDefinition> = {
+    heart: faHeart,
+    thumbs_up: faThumbsUp,
+    thumbs_down: faThumbsDown,
+    laugh: faFaceLaughSquint,
+    exclamation: faExclamation,
+    question: faQuestion,
+  };
 
   // Group chat modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -166,7 +228,7 @@ const DirectMessages: React.FC = () => {
         const resp = await frcAPI.get(endpoint);
         if (resp.ok) {
           const data = await resp.json();
-          setMessages(data);
+          setMessages(sortMessagesAsc(data));
         } else if (resp.status === 404) {
           // No messages yet - that's fine, we'll create them when sending
           setMessages([]);
@@ -190,6 +252,32 @@ const DirectMessages: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Close thread on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setThreadCenterId(null);
+    };
+    if (threadCenterId != null) {
+      document.addEventListener('keydown', onKey);
+      return () => document.removeEventListener('keydown', onKey);
+    }
+  }, [threadCenterId]);
+
+  // Close reaction picker and info popup on outside click; keep them open when mouse leaves
+  useEffect(() => {
+    const handleDocMouseDown = (e: MouseEvent) => {
+      const pickerEl = pickerContainerRef.current;
+      const infoEl = infoContainerRef.current;
+      const target = e.target as Node | null;
+      const clickedInsidePicker = pickerEl && target ? pickerEl.contains(target) : false;
+      const clickedInsideInfo = infoEl && target ? infoEl.contains(target) : false;
+      if (!clickedInsidePicker) setPickerOpenFor(null);
+      if (!clickedInsideInfo) setInfoOpenFor(null);
+    };
+    document.addEventListener('mousedown', handleDocMouseDown);
+    return () => document.removeEventListener('mousedown', handleDocMouseDown);
+  }, [pickerOpenFor, infoOpenFor]);
 
   /** Clear active channel on component unmount */
   useEffect(() => {
@@ -236,26 +324,27 @@ const DirectMessages: React.FC = () => {
       let endpoint: string;
       let payload: any;
       
-      if (selectedChat.type === 'dm') {
+    if (selectedChat.type === 'dm') {
         const convId = getConversationId(user.id, selectedChat.id);
         endpoint = `/chat/messages/dm/${convId}?user_id=${user.id}`;
         payload = {
-          content: messageInput.trim(),
+      content: replyTo ? `::reply[${replyTo.id}]::${messageInput.trim()}` : messageInput.trim(),
           sender_id: user.id,
         };
       } else {
         // Group chat
         endpoint = `/chat/messages/${selectedChat.id}?user_id=${user.id}`;
         payload = {
-          content: messageInput.trim(),
+      content: replyTo ? `::reply[${replyTo.id}]::${messageInput.trim()}` : messageInput.trim(),
           sender_id: user.id,
         };
       }
       
       const resp = await frcAPI.post(endpoint, payload);
       if (resp.ok) {
-        // Clear the input immediately for better UX
+  // Clear the input immediately for better UX
         setMessageInput('');
+  setReplyTo(null);
         
         // Update chat items order (move to top)
         setChatItems(currentChats => {
@@ -285,12 +374,14 @@ const DirectMessages: React.FC = () => {
           const convId = getConversationId(user.id, selectedChat.id);
           const updated = await frcAPI.get(`/chat/messages/dm/${convId}?user_id=${user.id}`);
           if (updated.ok) {
-            setMessages(await updated.json());
+            const data = await updated.json();
+            setMessages(sortMessagesAsc(data));
           }
         } else {
           const updated = await frcAPI.get(`/chat/messages/${selectedChat.id}?user_id=${user.id}`);
           if (updated.ok) {
-            setMessages(await updated.json());
+            const data = await updated.json();
+            setMessages(sortMessagesAsc(data));
           }
         }
         // Refresh notifications since a new message was sent
@@ -300,6 +391,15 @@ const DirectMessages: React.FC = () => {
       console.error('Error sending message', err);
       setError('Error sending message.');
     }
+  };
+
+  // Parse reply marker from message content
+  const parseReplyMarker = (content: string): { replyId: number | null; text: string } => {
+    const m = content.match(/^::reply\[(\d+)\]::([\s\S]*)$/);
+    if (m) {
+      return { replyId: parseInt(m[1], 10), text: m[2] };
+    }
+    return { replyId: null, text: content };
   };
 
   const handleDeleteMessage = async (messageId: number, event?: React.MouseEvent) => {
@@ -319,6 +419,58 @@ const DirectMessages: React.FC = () => {
     } finally {
       setIsDeletingMessage(false);
     }
+  };
+
+  // Clipboard helper
+  const copyToClipboard = async (text: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  };
+
+  // Reaction helpers (UI-only toggle for now)
+  const toggleReaction = (messageId: number, emoji: string) => {
+    if (!emoji) return;
+    setReactions(prev => {
+      const msgMap = { ...(prev[messageId] || {}) };
+      const currentCount = msgMap[emoji] || 0;
+      // Toggle behavior based on whether current user has reacted
+      const hasReacted = !!userReactions[messageId]?.has(emoji);
+      const nextCount = Math.max(0, currentCount + (hasReacted ? -1 : 1));
+      if (nextCount === 0) {
+        delete msgMap[emoji];
+      } else {
+        msgMap[emoji] = nextCount;
+      }
+      return { ...prev, [messageId]: msgMap };
+    });
+    setUserReactions(prev => {
+      const setForMsg = new Set(prev[messageId] || []);
+      if (setForMsg.has(emoji)) {
+        setForMsg.delete(emoji);
+      } else {
+        setForMsg.add(emoji);
+      }
+      return { ...prev, [messageId]: setForMsg };
+    });
+    setPickerOpenFor(null);
   };
 
   const canDeleteMessage = (msg: Message): boolean => {
@@ -694,53 +846,423 @@ const DirectMessages: React.FC = () => {
             </div>
           ) : selectedChat ? (
             messages.length > 0 ? (
-              messages.map(msg => (
-                <div key={msg.id} className="flex items-start mb-4 group">
-                  <div
-                    className="w-10 h-10 rounded-full mr-3 flex items-center justify-center text-white font-bold text-lg"
-                    style={{ backgroundColor: generateColor(msg.sender_username, msg.sender_username === user?.username ? user.avatarColor : null) }}
-                  >
-                    {msg.sender_username
-                      .split(' ')
-                      .map(n => n[0])
-                      .join('')
-                      .toUpperCase()
-                      .substring(0, 2)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-baseline justify-between">
-                      <div>
-                        <p className="font-semibold mr-2 inline">{msg.sender_username}</p>
-                        <span className="text-xs text-gray-400 inline">
-                          {new Date(msg.timestamp).toLocaleTimeString()}
-                        </span>
-                      </div>
-                      {canDeleteMessage(msg) && (
-                        <button
-                          onClick={e => handleDeleteMessage(msg.id, e)}
-                          className="text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                          disabled={isDeletingMessage}
-                          title={`Delete message${"\n"}(Hold Shift to skip confirmation)`}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </button>
-                      )}
+              <div className="flex flex-col justify-end min-h-full">
+                {messages.map((msg, idx) => {
+                  const isOwn = !!user && msg.sender_id === user!.id;
+                  const prev = idx > 0 ? messages[idx - 1] : null;
+                  const next = idx < messages.length - 1 ? messages[idx + 1] : null;
+                  const isGroup = selectedChat?.type === 'group';
+                  const TWO_MIN = 2 * 60 * 1000;
+                  const thisTs = new Date(msg.timestamp).getTime();
+                  const prevTs = prev ? new Date(prev.timestamp).getTime() : 0;
+                  const nextTs = next ? new Date(next.timestamp).getTime() : 0;
+                  const sameSenderAsPrev = !!prev && prev.sender_id === msg.sender_id;
+                  const sameSenderAsNext = !!next && next.sender_id === msg.sender_id;
+                  const closeToPrev = sameSenderAsPrev && (thisTs - prevTs) <= TWO_MIN;
+                  const closeToNext = sameSenderAsNext && (nextTs - thisTs) <= TWO_MIN;
+                  const isFirstOfGroup = !closeToPrev;
+                  const isLastOfGroup = !closeToNext;
+
+      const avatar = (
+                    <div
+                      className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-bold text-sm md:text-lg"
+                      style={{ backgroundColor: generateColor(msg.sender_username, msg.sender_username === user?.username ? user.avatarColor : null) }}
+                    >
+                      {msg.sender_username
+                        .split(' ')
+                        .map(n => n[0])
+                        .join('')
+                        .toUpperCase()
+                        .substring(0, 2)}
                     </div>
-                    <p className="text-gray-300">{msg.content}</p>
-                  </div>
-                </div>
-              ))
+                  );
+
+      // Determine if this bubble displays a name header (others, first of group, group chat)
+      const showNameHeader = !isOwn && isFirstOfGroup && isGroup;
+
+    // Bubble corner shaping for stacked groups (more rounded overall, minimal rounding on stacked-side corners)
+                  const bubbleRadius = (() => {
+        // Less rounding when the sender's name is shown
+        const base = showNameHeader ? 'rounded-2xl' : 'rounded-3xl';
+                    const mods: string[] = [];
+                    if (!isFirstOfGroup) {
+            // On stacked side, use minimal rounding to visually connect bubbles
+            mods.push(isOwn ? 'rounded-tr-md' : 'rounded-tl-md');
+                    }
+                    if (!isLastOfGroup) {
+            // Minimal rounding for bottom stacked-side corner as well
+            mods.push(isOwn ? 'rounded-br-md' : 'rounded-bl-md');
+                    }
+                    return [base, ...mods].join(' ');
+                  })();
+
+          const parsed = parseReplyMarker(msg.content);
+          const repliedMsg = parsed.replyId ? messages.find(m => m.id === parsed.replyId) : null;
+          const repliedParsed = repliedMsg ? parseReplyMarker(repliedMsg.content) : null;
+          const repliedSnippet = repliedParsed ? repliedParsed.text : '';
+
+          return (
+                    <div
+                      key={msg.id}
+            id={`msg-${msg.id}`}
+                      className={`relative flex items-end gap-2 mb-1 ${isFirstOfGroup ? 'mt-3' : 'mt-0'} group ${isOwn ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {/* Left side avatar for others: only in group chats and only on last of group; spacer otherwise (group only) */}
+                      {!isOwn && isGroup && (
+                        isLastOfGroup ? (
+                          <div className="self-end">{avatar}</div>
+                        ) : (
+                          <div className="w-8 md:w-10" />
+                        )
+                      )}
+
+                      {/* Action toolbar: position outside bubble. For own -> left of bubble. Reserve width to avoid layout shift */}
+                      {isOwn && (
+                        <div
+                          className={`relative flex items-center gap-1 transition-opacity text-gray-400 ${
+                            (pickerOpenFor === msg.id || infoOpenFor === msg.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                          }`}
+                          ref={(el) => {
+                            if (pickerOpenFor === msg.id) pickerContainerRef.current = el;
+                            if (infoOpenFor === msg.id) infoContainerRef.current = el;
+                          }}
+                        >
+                          
+                          {/* Info button shows a popup with full details */}
+                          <button
+                            type="button"
+                            className="hover:text-baywatch-orange"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setInfoOpenFor(infoOpenFor === msg.id ? null : msg.id);
+                            }}
+                            title="Message info"
+                          >
+                            <InfoIcon className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            className="hover:text-baywatch-orange"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const parsed = parseReplyMarker(msg.content);
+                              const ok = await copyToClipboard(parsed.text);
+                              if (ok) {
+                                setCopiedFor(msg.id);
+                                setTimeout(() => setCopiedFor(prev => (prev === msg.id ? null : prev)), 1200);
+                              }
+                            }}
+                            title={copiedFor === msg.id ? 'Copied!' : 'Copy message'}
+                          >
+                            <CopyIcon className="w-4 h-4" />
+                          </button>
+              {canDeleteMessage(msg) && (
+                            <button
+                              onClick={e => handleDeleteMessage(msg.id, e)}
+                              className={`hover:text-red-400 text-current`}
+                              title={`Delete message${"\n"}(Hold Shift to skip confirmation)`}
+                              disabled={isDeletingMessage}
+                            >
+                <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                          {/* Reply button in between delete and react */}
+                          <button
+                            type="button"
+                            className="hover:text-baywatch-orange"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setReplyTo(msg);
+                              setTimeout(() => inputRef.current?.focus(), 0);
+                            }}
+                            title="Reply"
+                          >
+                            <ReplyIcon className="w-4 h-4" />
+                          </button>
+                          {/* React button after delete */}
+                          <button
+                            type="button"
+                            className="hover:text-baywatch-orange"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPickerOpenFor(pickerOpenFor === msg.id ? null : msg.id);
+                            }}
+                            title="Add reaction"
+                          >
+                            <SmilePlus className="w-4 h-4" />
+                          </button>
+                          {pickerOpenFor === msg.id && (
+                            <div className="absolute bottom-full right-0 mb-2 z-20">
+                              <div className="bg-gray-900 border border-gray-700 rounded-lg p-2 shadow-xl whitespace-nowrap">
+                                <div className="flex items-center gap-1">
+                  {quickIcons.map(({ key, icon, title }) => (
+                                    <button
+                                      key={key}
+                                      type="button"
+                                      className="px-1.5 py-1 rounded hover:bg-gray-800"
+                                      title={title}
+                                      onClick={() => toggleReaction(msg.id, key)}
+                                    >
+                    <FontAwesomeIcon icon={icon} className="w-4 h-4" />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {infoOpenFor === msg.id && (
+                            <div className="absolute bottom-full right-full mr-2 mb-2 z-20">
+                              <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-xl text-sm min-w-[260px] max-w-xs">
+                                <div className="text-gray-300 font-medium mb-1">Message info</div>
+                                <div className="text-gray-400">
+                                  <div><span className="text-gray-500">From:</span> {msg.sender_username}</div>
+                                  <div><span className="text-gray-500">ID:</span> {msg.id}</div>
+                                  <div className="mt-1">
+                                    <span className="text-gray-500">Sent:</span>{' '}
+                                    {new Date(msg.timestamp).toLocaleString(undefined, {
+                                      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                                      hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true,
+                                      timeZoneName: 'short'
+                                    })}
+                                  </div>
+                                  {(msg.readers && msg.readers.length > 0) ? (
+                                    <div className="mt-2">
+                                      <div className="text-gray-500 mb-1">Read by:</div>
+                                      <ul className="space-y-0.5 max-h-40 overflow-y-auto pr-1">
+                                        {msg.readers.map(r => (
+                                          <li key={`reader-${msg.id}-${r.user_id}`} className="flex items-center justify-between">
+                                            <span className="text-gray-300 truncate mr-2">{r.username}</span>
+                                            <span className="text-[11px] text-gray-500 whitespace-nowrap">
+                                              {new Date(r.read_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                            </span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ) : (
+                                    <div className="mt-2 text-gray-500">No reads yet</div>
+                                  )}
+                                  {selectedChat && (
+                                    <div><span className="text-gray-500">Chat:</span> {selectedChat.type === 'group' ? selectedChat.name : selectedChat.username}</div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Message bubble */}
+                      <div
+                        className={`max-w-[85%] px-3 py-2 ${bubbleRadius} shadow-sm ${
+                          isOwn ? 'bg-baywatch-orange text-white' : 'bg-gray-800 text-gray-100'
+                        }`}
+                      >
+                        {/* In-message reply preview */}
+                        {parsed.replyId && (
+                          <button
+                            type="button"
+                            onClick={() => setThreadCenterId(msg.id)}
+                            className={`mb-1 text-xs rounded-md px-2 py-1 border ${
+                              isOwn ? 'bg-white/10 border-white/30 text-white/90' : 'bg-black/20 border-white/10 text-gray-300'
+                            }`}
+                            title="View replied message"
+                          >
+                            <span className="opacity-80">
+                              Replying to {repliedMsg ? repliedMsg.sender_username : 'message'}: {repliedSnippet?.slice(0, 80)}
+                              {repliedSnippet && repliedSnippet.length > 80 ? '…' : ''}
+                            </span>
+                          </button>
+                        )}
+                        {/* Name on top only for others and only first of group (group chats only) */}
+                        {!isOwn && isFirstOfGroup && isGroup && (
+                          <div className="text-xs font-semibold mb-1 opacity-90">{msg.sender_username}</div>
+                        )}
+                        <div className={`whitespace-pre-wrap break-words ${isOwn ? 'text-right' : ''}`}>
+                          <span>{parsed.text}</span>
+                          {isLastOfGroup && (
+                            <span className={`ml-2 text-[10px] ${isOwn ? 'text-white/80' : 'text-gray-400'} whitespace-nowrap align-baseline`}>
+                              {formatTimestamp(msg.timestamp)}
+                              {isOwn && (
+                                <span className="ml-1 inline-flex items-center align-baseline">
+                                  <FontAwesomeIcon
+                                    icon={msg.read_by_any ? faCircleCheckSolid : faCircleCheckRegular}
+                                    className="w-3.5 h-3.5 opacity-90"
+                                    title={msg.read_by_any ? 'Read' : 'Sent'}
+                                  />
+                                </span>
+                              )}
+                            </span>
+                          )}
+                          {/* Reaction chips under bubble */}
+                          {Object.keys(reactions[msg.id] || {}).length > 0 && (
+                            <div className={`mt-1 flex flex-wrap gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                              {Object.entries(reactions[msg.id]).map(([key, count]) => {
+                                const iconDef = iconMap[key];
+                                return (
+                                  <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => toggleReaction(msg.id, key)}
+                                    className={`px-1.5 py-0.5 rounded-full text-xs border transition-colors ${
+                                      userReactions[msg.id]?.has(key)
+                                        ? (isOwn ? 'bg-white/20 border-white/40' : 'bg-white/10 border-white/20')
+                                        : (isOwn ? 'bg-black/10 border-white/20' : 'bg-black/20 border-white/10')
+                                    }`}
+                                    title="Toggle reaction"
+                                  >
+                                    {iconDef ? (
+                                      <FontAwesomeIcon icon={iconDef} className="w-3.5 h-3.5 mr-1 inline-block" />
+                                    ) : (
+                                      <span className="mr-1">{key}</span>
+                                    )}
+                                    <span className="tabular-nums">{count}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action toolbar for others: to the right of bubble (reserve width) */}
+                      {!isOwn && (
+                        <div
+                          className={`relative flex items-center gap-1 transition-opacity text-gray-400 ${
+                            (pickerOpenFor === msg.id || infoOpenFor === msg.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                          }`}
+                          ref={(el) => {
+                            if (pickerOpenFor === msg.id) pickerContainerRef.current = el;
+                            if (infoOpenFor === msg.id) infoContainerRef.current = el;
+                          }}
+                        >
+                          <button
+                            type="button"
+                            className="hover:text-baywatch-orange"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPickerOpenFor(pickerOpenFor === msg.id ? null : msg.id);
+                            }}
+                            title="Add reaction"
+                          >
+                            <SmilePlus className="w-4 h-4" />
+                          </button>
+                          {/* Reply button between react and delete */}
+                          <button
+                            type="button"
+                            className="hover:text-baywatch-orange"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setReplyTo(msg);
+                              setTimeout(() => inputRef.current?.focus(), 0);
+                            }}
+                            title="Reply"
+                          >
+                            <ReplyIcon className="w-4 h-4" />
+                          </button>
+              {canDeleteMessage(msg) && (
+                            <button
+                              onClick={e => handleDeleteMessage(msg.id, e)}
+                              className={`hover:text-red-400 text-current`}
+                              title={`Delete message${"\n"}(Hold Shift to skip confirmation)`}
+                              disabled={isDeletingMessage}
+                            >
+                <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
+                          {/* Copy and Info after Delete */}
+                          <button
+                            type="button"
+                            className="hover:text-baywatch-orange"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const parsed = parseReplyMarker(msg.content);
+                              const ok = await copyToClipboard(parsed.text);
+                              if (ok) {
+                                setCopiedFor(msg.id);
+                                setTimeout(() => setCopiedFor(prev => (prev === msg.id ? null : prev)), 1200);
+                              }
+                            }}
+                            title={copiedFor === msg.id ? 'Copied!' : 'Copy message'}
+                          >
+                            <CopyIcon className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            className="hover:text-baywatch-orange"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setInfoOpenFor(infoOpenFor === msg.id ? null : msg.id);
+                            }}
+                            title="Message info"
+                          >
+                            <InfoIcon className="w-4 h-4" />
+                          </button>
+                          {pickerOpenFor === msg.id && (
+                            <div className="absolute bottom-full left-0 mb-2 z-20">
+                              <div className="bg-gray-900 border border-gray-700 rounded-lg p-2 shadow-xl whitespace-nowrap">
+                                <div className="flex items-center gap-1">
+                  {quickIcons.map(({ key, icon, title }) => (
+                                    <button
+                                      key={key}
+                                      type="button"
+                                      className="px-1.5 py-1 rounded hover:bg-gray-800"
+                                      title={title}
+                                      onClick={() => toggleReaction(msg.id, key)}
+                                    >
+                    <FontAwesomeIcon icon={icon} className="w-4 h-4" />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {infoOpenFor === msg.id && (
+                            <div className="absolute bottom-full left-full ml-2 mb-2 z-20">
+                              <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-xl text-sm min-w-[260px] max-w-xs">
+                                <div className="text-gray-300 font-medium mb-1">Message info</div>
+                                <div className="text-gray-400">
+                                  <div><span className="text-gray-500">From:</span> {msg.sender_username}</div>
+                                  <div><span className="text-gray-500">ID:</span> {msg.id}</div>
+                                  <div className="mt-1">
+                                    <span className="text-gray-500">Sent:</span>{' '}
+                                    {new Date(msg.timestamp).toLocaleString(undefined, {
+                                      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                                      hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true,
+                                      timeZoneName: 'short'
+                                    })}
+                                  </div>
+                                  {(msg.readers && msg.readers.length > 0) ? (
+                                    <div className="mt-2">
+                                      <div className="text-gray-500 mb-1">Read by:</div>
+                                      <ul className="space-y-0.5 max-h-40 overflow-y-auto pr-1">
+                                        {msg.readers.map(r => (
+                                          <li key={`reader-${msg.id}-${r.user_id}`} className="flex items-center justify-between">
+                                            <span className="text-gray-300 truncate mr-2">{r.username}</span>
+                                            <span className="text-[11px] text-gray-500 whitespace-nowrap">
+                                              {new Date(r.read_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                                            </span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  ) : (
+                                    <div className="mt-2 text-gray-500">No reads yet</div>
+                                  )}
+                                  {selectedChat && (
+                                    <div><span className="text-gray-500">Chat:</span> {selectedChat.type === 'group' ? selectedChat.name : selectedChat.username}</div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {/* Own messages: no avatar */}
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               <div className="flex items-center justify-center h-full">
                 <p className="text-gray-400">No messages yet. Say hi!</p>
@@ -757,9 +1279,27 @@ const DirectMessages: React.FC = () => {
         {/* Message input */}
         <div className="bg-black px-2 pb-safe sticky bottom-0 md:relative md:bottom-auto">
           <div className="p-4 border-t border-gray-700">
+            {replyTo && (
+              <div className="mb-2 flex items-center gap-2 rounded-md border border-gray-700 bg-gray-900 p-2">
+                <ReplyIcon className="w-4 h-4 text-baywatch-orange" />
+                <div className="flex-1 overflow-hidden">
+                  <div className="text-xs text-gray-400">Replying to {replyTo.sender_username}</div>
+                  <div className="text-sm truncate">{parseReplyMarker(replyTo.content).text}</div>
+                </div>
+                <button
+                  type="button"
+                  className="text-gray-400 hover:text-red-400 px-2"
+                  title="Cancel reply"
+                  onClick={() => setReplyTo(null)}
+                >
+                  ×
+                </button>
+              </div>
+            )}
             <form onSubmit={handleSendMessage} className="flex space-x-2">
               <input
                 type="text"
+                ref={inputRef}
                 value={messageInput}
                 onChange={e => setMessageInput(e.target.value)}
                 placeholder={selectedChat 
@@ -784,7 +1324,7 @@ const DirectMessages: React.FC = () => {
         </div>
       </div>
 
-      {/* Group Creation/Edit Modal */}
+  {/* Group Creation/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-gray-900 rounded-lg shadow-xl p-6 w-full max-w-md">
@@ -874,8 +1414,90 @@ const DirectMessages: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Thread Overlay */}
+      {threadCenterId != null && (() => {
+        // Build thread
+        const byId = new Map(messages.map(m => [m.id, m]));
+        const parse = parseReplyMarker;
+        const parentOf = new Map<number, number>();
+        const childrenOf = new Map<number, number[]>();
+        for (const m of messages) {
+          const { replyId } = parse(m.content);
+          if (replyId) {
+            parentOf.set(m.id, replyId);
+            const arr = childrenOf.get(replyId) || [];
+            arr.push(m.id);
+            childrenOf.set(replyId, arr);
+          }
+        }
+        const ancestors: Message[] = [];
+        const seen = new Set<number>();
+        let cur: number | undefined = threadCenterId;
+        while (cur !== undefined) {
+          if (seen.has(cur)) break;
+          seen.add(cur);
+          const p = parentOf.get(cur);
+          if (p != null) {
+            const pm = byId.get(p);
+            if (pm) ancestors.unshift(pm);
+            cur = p;
+          } else break;
+        }
+        const descendants: Message[] = [];
+        const q: number[] = [threadCenterId];
+        const visited = new Set<number>([threadCenterId]);
+        while (q.length) {
+          const id = q.shift()!;
+          const kids = childrenOf.get(id) || [];
+          for (const kid of kids) {
+            if (visited.has(kid)) continue;
+            visited.add(kid);
+            const km = byId.get(kid);
+            if (km) descendants.push(km);
+            q.push(kid);
+          }
+        }
+        descendants.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+        const center = byId.get(threadCenterId);
+        const items = [...ancestors, ...(center ? [center] : []), ...descendants];
+
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            onClick={() => setThreadCenterId(null)}
+          >
+            <div
+              className="bg-gray-900 border border-gray-700 rounded-lg shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto p-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold">Thread</h3>
+                <button className="text-gray-400 hover:text-white" onClick={() => setThreadCenterId(null)} title="Close">×</button>
+              </div>
+              <div className="space-y-3">
+                {items.map(m => {
+                  const isOwnMsg = !!user && m.sender_id === user!.id;
+                  const p = parse(m.content);
+                  return (
+                    <div key={`thread-${m.id}`} className={`p-3 rounded-xl border ${isOwnMsg ? 'bg-baywatch-orange/10 border-baywatch-orange/40' : 'bg-black/30 border-white/10'}`}>
+                      <div className="text-xs text-gray-400 mb-1 flex items-center justify-between">
+                        <span className="font-medium text-gray-300">{m.sender_username}</span>
+                        <span>{formatTimestamp(m.timestamp)}</span>
+                      </div>
+                      {p.replyId && (
+                        <div className="mb-1 text-[11px] opacity-80">Replying to #{p.replyId}</div>
+                      )}
+                      <div className="whitespace-pre-wrap break-words">{p.text}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
 
-export default DirectMessages; 
+export default DirectMessages;
