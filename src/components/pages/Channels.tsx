@@ -39,11 +39,16 @@ const Channels: React.FC = () => {
   const { user } = useAuth();
   const { unreadCounts, markChannelAsRead, refreshNotifications, setActiveChannel } = useNotifications();
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>({ id: 'general', name: '# general' });
+  // Remember last selected channel for quick return when tapping outside items
+  const lastSelectedChannelRef = useRef<Channel | null>({ id: 'general', name: '# general' });
+  useEffect(() => {
+    if (selectedChannel) lastSelectedChannelRef.current = selectedChannel;
+  }, [selectedChannel]);
   const [messageInput, setMessageInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [userColors, setUserColors] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
   const [isChannelsLoading, setIsChannelsLoading] = useState(true);
@@ -266,7 +271,11 @@ const Channels: React.FC = () => {
             const updatedMessages = await updatedMessagesResponse.json();
             setMessages(sortMessagesAsc(updatedMessages));
           }
-          setMessageInput('');
+            setMessageInput('');
+            // Reset the textarea height after sending
+            if (inputRef.current) {
+              inputRef.current.style.height = 'auto';
+            }
           setReplyTo(null);
           // Refresh notifications since a new message was sent
           refreshNotifications();
@@ -807,9 +816,17 @@ const Channels: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Channel Selector */}
-      <div className="md:hidden">
-        {!selectedChannel ? (
+      {/* Mobile Channel Selector (full-width, fills height) */}
+      {!selectedChannel && (
+        <div
+          className="md:hidden flex-1 flex flex-col"
+          onClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('button')) return; // ignore actual buttons
+            const last = lastSelectedChannelRef.current;
+            if (last) setSelectedChannel(last);
+          }}
+        >
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Channels</h2>
@@ -825,35 +842,35 @@ const Channels: React.FC = () => {
                 </button>
               )}
             </div>
-            
-            {isChannelsLoading ? (
-              <div className="flex items-center justify-center p-8">
-                <NebulaLoader size={48} />
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {channels.map((channel) => (
-                  <button
-                    key={channel.id}
-                    onClick={() => handleChannelClick(channel)}
-                    className="w-full text-left py-4 px-4 rounded-xl border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 active:bg-gray-700 transition-all duration-200 flex items-center justify-between mobile-touch-target"
-                  >
-                    <span className="font-medium text-base">{channel.name}</span>
-                    {unreadCounts[channel.id] > 0 && (
-                      <NotificationDot count={unreadCounts[channel.id]} />
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
-        ) : null}
-      </div>
+
+          {isChannelsLoading ? (
+            <div className="flex-1 flex items-center justify-center p-8">
+              <NebulaLoader size={48} />
+            </div>
+          ) : (
+            <nav className="flex-1 overflow-y-auto px-4 space-y-3">
+              {channels.map((channel) => (
+                <button
+                  key={channel.id}
+                  onClick={() => handleChannelClick(channel)}
+                  className="w-full text-left py-4 px-4 rounded-xl border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 active:bg-gray-700 transition-all duration-200 flex items-center justify-between mobile-touch-target"
+                >
+                  <span className="font-medium text-base">{channel.name}</span>
+                  {unreadCounts[channel.id] > 0 && (
+                    <NotificationDot count={unreadCounts[channel.id]} />
+                  )}
+                </button>
+              ))}
+            </nav>
+          )}
+        </div>
+      )}
 
       {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col ${!selectedChannel ? 'hidden md:flex' : ''}`}>
         {/* Chat Header */}
-        <div className="bg-black px-2">
+        <div className="bg-black px-2 sticky top-0 z-30 md:static md:top-auto">
           <div className="p-4 border-b border-gray-700 flex items-center justify-between">
             <div className="flex items-center">
               {/* Mobile Back Button */}
@@ -893,7 +910,7 @@ const Channels: React.FC = () => {
         )}
 
         {/* Messages */}
-        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar pb-20 md:pb-4">
+  <div className="flex-1 p-4 overflow-y-auto custom-scrollbar pb-32 md:pb-4">
           {isMessagesLoading ? (
             <div className="flex items-center justify-center h-full">
               <NebulaLoader size={64} />
@@ -1099,7 +1116,7 @@ const Channels: React.FC = () => {
 
                       {/* Message bubble */}
                       <div
-                        className={`max-w-[85%] px-3 py-2 ${bubbleRadius} shadow-sm ${
+                        className={`max-w-[80vw] md:max-w-[50vw] px-3 py-2 ${bubbleRadius} shadow-sm ${
                           isOwn ? 'bg-baywatch-orange text-white' : 'bg-gray-800 text-gray-100'
                         }`}
                       >
@@ -1327,7 +1344,7 @@ const Channels: React.FC = () => {
         </div>
 
         {/* Message Input */}
-        <div className="bg-black px-2 pb-safe sticky bottom-0 md:relative md:bottom-auto">
+  <div className="bg-black px-2 sticky bottom-16 md:relative md:bottom-auto">
           <div className="p-4 border-t border-gray-700">
             {replyTo && (
               <div className="mb-2 flex items-center gap-2 rounded-md border border-gray-700 bg-gray-900 p-2">
@@ -1347,13 +1364,23 @@ const Channels: React.FC = () => {
               </div>
             )}
             <form onSubmit={handleSendMessage} className="flex space-x-2">
-              <input
-                type="text"
+              <textarea
                 ref={inputRef}
                 value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
+                onChange={(e) => {
+                  setMessageInput(e.target.value);
+                  const el = inputRef.current;
+                  if (el) { el.style.height = 'auto'; el.style.height = `${el.scrollHeight}px`; }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e as unknown as React.FormEvent);
+                  }
+                }}
                 placeholder={selectedChannel ? `Message ${selectedChannel.name}` : 'Select a channel to type...'}
-                className="flex-1 bg-gray-800 text-gray-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-baywatch-orange border border-gray-600"
+                rows={1}
+                className="flex-1 bg-gray-800 text-gray-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-baywatch-orange border border-gray-600 resize-none overflow-hidden"
                 disabled={!selectedChannel}
               />
               <button

@@ -376,9 +376,7 @@ button::-webkit-focus-inner {
 }
 
 /* Mobile Dashboard Enhancements */
-.safe-area-inset {
-  padding-bottom: env(safe-area-inset-bottom, 0);
-}
+/* Removed .safe-area-inset padding to ensure bottom elements sit flush on devices without a notch */
 
 /* pb-safe class for mobile keyboard handling */
 .pb-safe {
@@ -444,6 +442,38 @@ button::-webkit-focus-inner {
   .mobile-nav-compact .mobile-nav-icon {
     width: 1.25rem;
     height: 1.25rem;
+  }
+}
+
+/* Hide scrollbars on mobile while keeping scrolling enabled */
+@media (max-width: 768px) {
+  /* Global hide (Firefox + IE/Edge) */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and old Edge */
+  }
+  /* WebKit */
+  *::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+  /* Ensure our common scroll containers also hide explicitly */
+  .custom-scrollbar,
+  .mobile-scroll-area,
+  .mobile-chat-container,
+  main,
+  nav {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .custom-scrollbar::-webkit-scrollbar,
+  .mobile-scroll-area::-webkit-scrollbar,
+  .mobile-chat-container::-webkit-scrollbar,
+  main::-webkit-scrollbar,
+  nav::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
   }
 }
 

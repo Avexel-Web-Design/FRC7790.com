@@ -49,11 +49,16 @@ const DirectMessages: React.FC = () => {
   // List of users and group chats
   const [chatItems, setChatItems] = useState<ChatItem[]>([]);
   const [selectedChat, setSelectedChat] = useState<ChatItem | null>(null);
+  // Remember last selected chat so tapping outside items on selector returns to it
+  const lastSelectedChatRef = useRef<ChatItem | null>(null);
+  useEffect(() => {
+    if (selectedChat) lastSelectedChatRef.current = selectedChat;
+  }, [selectedChat]);
 
   // Message handling
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   // Ensure newest messages appear at the bottom by sorting ascending (oldest first)
   const sortMessagesAsc = (arr: Message[]) =>
     [...arr].sort(
@@ -342,9 +347,13 @@ const DirectMessages: React.FC = () => {
       
       const resp = await frcAPI.post(endpoint, payload);
       if (resp.ok) {
-  // Clear the input immediately for better UX
+        // Clear the input immediately for better UX
         setMessageInput('');
-  setReplyTo(null);
+        // Reset textarea height after sending
+        if (inputRef.current) {
+          inputRef.current.style.height = 'auto';
+        }
+        setReplyTo(null);
         
         // Update chat items order (move to top)
         setChatItems(currentChats => {
@@ -714,9 +723,17 @@ const DirectMessages: React.FC = () => {
         )}
       </div>
 
-      {/* Mobile Chat Selector */}
-      <div className="md:hidden">
-        {!selectedChat ? (
+      {/* Mobile Chat Selector (full-width, fills height, no extra bottom space) */}
+      {!selectedChat && (
+        <div
+          className="md:hidden flex-1 flex flex-col"
+          onClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('button')) return; // ignore clicks on buttons
+            const last = lastSelectedChatRef.current;
+            if (last) setSelectedChat(last);
+          }}
+        >
           <div className="p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Messages</h2>
@@ -730,71 +747,71 @@ const DirectMessages: React.FC = () => {
                 </svg>
               </button>
             </div>
-            
-            {isChatsLoading ? (
-              <div className="flex items-center justify-center p-8">
-                <NebulaLoader size={48} />
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {chatItems.map(chat => (
-                  <button
-                    key={`${chat.type}-${chat.id}`}
-                    onClick={() => handleChatClick(chat)}
-                    className="w-full text-left py-4 px-4 rounded-xl border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 active:bg-gray-700 transition-all duration-200 flex items-center justify-between mobile-touch-target"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        {chat.type === 'group' ? (
-                          <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold text-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                            </svg>
-                          </div>
-                        ) : (
-                          <div
-                            className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base"
-                            style={{ backgroundColor: generateColor(chat.username, null) }}
-                          >
-                            {chat.username
-                              .split(' ')
-                              .map(n => n[0])
-                              .join('')
-                              .toUpperCase()
-                              .substring(0, 2)}
-                          </div>
-                        )}
-                        {(() => {
-                          const chatId = chat.type === 'dm' && user 
-                            ? getConversationId(user.id, chat.id)
-                            : chat.id.toString();
-                          const unreadCount = unreadCounts[chatId] || 0;
-                          
-                          return unreadCount > 0 && (
-                            <NotificationDot 
-                              count={unreadCount} 
-                              position="top-right"
-                              size="medium"
-                            />
-                          );
-                        })()}
-                      </div>
-                      <span className="font-medium text-base">
-                        {chat.type === 'group' ? chat.name : chat.username}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
-        ) : null}
-      </div>
+
+          {isChatsLoading ? (
+            <div className="flex-1 flex items-center justify-center p-8">
+              <NebulaLoader size={48} />
+            </div>
+          ) : (
+            <nav className="flex-1 overflow-y-auto px-4 space-y-3">
+              {chatItems.map(chat => (
+                <button
+                  key={`${chat.type}-${chat.id}`}
+                  onClick={() => handleChatClick(chat)}
+                  className="w-full text-left py-4 px-4 rounded-xl border border-gray-700 hover:border-baywatch-orange hover:bg-gray-800 active:bg-gray-700 transition-all duration-200 flex items-center justify-between mobile-touch-target"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      {chat.type === 'group' ? (
+                        <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold text-sm">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                          </svg>
+                        </div>
+                      ) : (
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base"
+                          style={{ backgroundColor: generateColor(chat.username, null) }}
+                        >
+                          {chat.username
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .toUpperCase()
+                            .substring(0, 2)}
+                        </div>
+                      )}
+                      {(() => {
+                        const chatId = chat.type === 'dm' && user 
+                          ? getConversationId(user.id, chat.id)
+                          : chat.id.toString();
+                        const unreadCount = unreadCounts[chatId] || 0;
+                        
+                        return unreadCount > 0 && (
+                          <NotificationDot 
+                            count={unreadCount} 
+                            position="top-right"
+                            size="medium"
+                          />
+                        );
+                      })()}
+                    </div>
+                    <span className="font-medium text-base">
+                      {chat.type === 'group' ? chat.name : chat.username}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </nav>
+          )}
+        </div>
+      )}
 
       {/* Chat Area */}
       <div className={`flex-1 flex flex-col ${!selectedChat ? 'hidden md:flex' : ''}`}>
         {/* Header */}
-        <div className="bg-black px-2">
+        <div className="bg-black px-2 sticky top-0 z-30 md:static md:top-auto">
           <div className="p-4 border-b border-gray-700 flex items-center justify-between">
             <div className="flex items-center">
               {/* Mobile Back Button */}
@@ -839,7 +856,7 @@ const DirectMessages: React.FC = () => {
         )}
 
         {/* Messages */}
-        <div className="flex-1 p-4 overflow-y-auto custom-scrollbar pb-20 md:pb-4">
+  <div className="flex-1 p-4 overflow-y-auto custom-scrollbar pb-32 md:pb-4">
           {isMessagesLoading ? (
             <div className="flex items-center justify-center h-full">
               <NebulaLoader size={64} />
@@ -1054,7 +1071,7 @@ const DirectMessages: React.FC = () => {
 
                       {/* Message bubble */}
                       <div
-                        className={`max-w-[85%] px-3 py-2 ${bubbleRadius} shadow-sm ${
+                        className={`max-w-[80vw] md:max-w-[50vw] px-3 py-2 ${bubbleRadius} shadow-sm ${
                           isOwn ? 'bg-baywatch-orange text-white' : 'bg-gray-800 text-gray-100'
                         }`}
                       >
@@ -1277,7 +1294,7 @@ const DirectMessages: React.FC = () => {
         </div>
 
         {/* Message input */}
-        <div className="bg-black px-2 pb-safe sticky bottom-0 md:relative md:bottom-auto">
+  <div className="bg-black px-2 sticky bottom-16 md:relative md:bottom-auto">
           <div className="p-4 border-t border-gray-700">
             {replyTo && (
               <div className="mb-2 flex items-center gap-2 rounded-md border border-gray-700 bg-gray-900 p-2">
@@ -1297,16 +1314,26 @@ const DirectMessages: React.FC = () => {
               </div>
             )}
             <form onSubmit={handleSendMessage} className="flex space-x-2">
-              <input
-                type="text"
+              <textarea
                 ref={inputRef}
                 value={messageInput}
-                onChange={e => setMessageInput(e.target.value)}
+                onChange={e => {
+                  setMessageInput(e.target.value);
+                  const el = inputRef.current;
+                  if (el) { el.style.height = 'auto'; el.style.height = `${el.scrollHeight}px`; }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e as unknown as React.FormEvent);
+                  }
+                }}
                 placeholder={selectedChat 
                   ? `Message ${selectedChat.type === 'group' ? selectedChat.name : selectedChat.username}`
                   : 'Select a chat...'
                 }
-                className="flex-1 bg-gray-800 text-gray-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-baywatch-orange border border-gray-600"
+                rows={1}
+                className="flex-1 bg-gray-800 text-gray-100 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-baywatch-orange border border-gray-600 resize-none overflow-hidden"
                 disabled={!selectedChat}
               />
               <button
