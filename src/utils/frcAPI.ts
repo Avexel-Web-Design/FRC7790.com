@@ -156,7 +156,13 @@ export class FRCAPIService {
       if (typeof window !== 'undefined') {
         const proto = window.location.protocol;
         if (proto === 'capacitor:' || proto === 'file:') {
-          apiBase = 'https://www.frc7790.com';
+          // Use fallback list similar to main.tsx logic
+          const candidates = [
+            'https://www.frc7790.com',
+            'https://frc7790-com.pages.dev',
+            'https://frc7790.pages.dev'
+          ];
+          apiBase = candidates[0];
         }
       }
     } catch {}
@@ -186,21 +192,17 @@ export class FRCAPIService {
     console.log('Request headers:', headers);
     
     try {
-  const response = await fetch(`${apiBase}/api${path}`, config);
-      console.log(`Response status: ${response.status}`);
-      
-      // Handle rate limiting with exponential backoff
-      if (response.status === 429 && retryCount < 3) {
-        const retryAfter = response.headers.get('Retry-After');
-        const backoffDelay = retryAfter ? parseInt(retryAfter) * 1000 : Math.pow(2, retryCount) * 1000;
-        
-        console.log(`Rate limited, retrying after ${backoffDelay}ms (attempt ${retryCount + 1}/3)`);
-        
-        await new Promise(resolve => setTimeout(resolve, backoffDelay));
-        return this.request(method, path, data, retryCount + 1);
+      const candidates = apiBase ? [apiBase, 'https://frc7790-com.pages.dev', 'https://frc7790.pages.dev'] : [''];
+      let lastError: unknown = null;
+      for (const host of candidates) {
+        try {
+          const response = await fetch(`${host}/api${path}`, config);
+          return response;
+        } catch (e) {
+          lastError = e;
+        }
       }
-      
-      return response;
+      throw lastError ?? new Error('API request failed');
     } catch (error) {
       console.error(`API request error for ${method} ${path}:`, error);
       throw error;

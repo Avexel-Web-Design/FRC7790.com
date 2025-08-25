@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './contexts/AuthContext'
 import { Capacitor } from '@capacitor/core'
+import { API_HOSTS } from './config'
 
 // Rewrite relative '/api' requests to the production domain when running natively
 // so that API calls from the packaged app go to the live backend.
@@ -13,13 +14,35 @@ if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
     try {
       if (typeof input === 'string') {
         if (input.startsWith('/api')) {
-          return originalFetch(`https://www.frc7790.com${input}`, init)
+          // try hosts in order until one responds
+          const attempt = async () => {
+            for (const host of API_HOSTS) {
+              try {
+                const res = await originalFetch(`${host}${input}`, init)
+                // consider any HTTP response as success path
+                return res
+              } catch {}
+            }
+            // final fallback to original (will likely fail)
+            return originalFetch(`https://www.frc7790.com${input}`, init)
+          }
+          return attempt() as unknown as Promise<Response>
         }
       } else if (input instanceof Request) {
         const url = input.url
         if (url.startsWith('/api')) {
-          const req = new Request(`https://www.frc7790.com${url}`, input)
-          return originalFetch(req, init)
+          const attempt = async () => {
+            for (const host of API_HOSTS) {
+              try {
+                const req = new Request(`${host}${url}`, input)
+                const res = await originalFetch(req, init)
+                return res
+              } catch {}
+            }
+            const req = new Request(`https://www.frc7790.com${url}`, input)
+            return originalFetch(req, init)
+          }
+          return attempt() as unknown as Promise<Response>
         }
       }
     } catch {}
