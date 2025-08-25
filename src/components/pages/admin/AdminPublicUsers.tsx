@@ -296,7 +296,6 @@ const AdminPublicUsers: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end space-x-2">
                         <button onClick={() => openEditModal(userItem)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                        <button onClick={() => updateUserAdmin(userItem.id, !userItem.is_admin)} disabled={userItem.id === user?.id} className={`text-blue-600 hover:text-blue-900 ${userItem.id === user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}>{userItem.is_admin ? 'Remove Admin' : 'Make Admin'}</button>
                         <button onClick={() => deleteUser(userItem.id)} disabled={userItem.id === user?.id} className={`text-red-600 hover:text-red-900 ${userItem.id === user?.id ? 'opacity-50 cursor-not-allowed' : ''}`}>Delete</button>
                       </div>
                     </td>
