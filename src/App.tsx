@@ -23,6 +23,7 @@ import AdminUsers from './components/pages/admin/AdminUsers';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DirectMessages from './components/pages/DirectMessages';
 import { NotificationProvider } from './contexts/NotificationContext';
+import ApiDebugBadge from './components/common/ApiDebugBadge';
 
 function App() {
   return (
@@ -84,6 +85,8 @@ function App() {
             <Route path="/admin/users" element={<AdminUsers />} />
           </Route>
         </Routes>
+        {/* Global API debug badge (shows when apiDebug=1) */}
+        <ApiDebugBadge />
       </Router>
     </NotificationProvider>
   );
