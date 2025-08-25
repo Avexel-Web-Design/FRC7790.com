@@ -925,7 +925,6 @@ const Channels: React.FC = () => {
               </div>
               <div>
                 <p className="font-semibold">{user?.username}</p>
-                <p className="text-sm text-gray-400">Online</p>
               </div>
             </div>
             <button onClick={toggleMute} className="inline-flex items-center gap-2 text-gray-300 hover:text-white">
