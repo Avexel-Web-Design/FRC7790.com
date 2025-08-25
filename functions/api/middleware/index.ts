@@ -1,15 +1,47 @@
 import { createMiddleware } from 'hono/factory';
 
-// Simple CORS middleware without hono/cors dependency
+// Strict CORS middleware that reflects allowed Origin and supports Capacitor
 export const corsMiddleware = createMiddleware(async (c, next) => {
-  // Set CORS headers
-  c.header('Access-Control-Allow-Origin', '*');
+  const origin = c.req.header('Origin') || '';
+
+  // Allowed origins: production domains, pages.dev, local dev, and Capacitor
+  const allowedOrigins = new Set<string>([
+    'https://www.frc7790.com',
+    'https://frc7790.com',
+    'https://frc7790-com.pages.dev',
+    'https://frc7790.pages.dev',
+    'http://localhost:5173',
+    'http://localhost',
+    'http://127.0.0.1:5173',
+    // Capacitor WebView origins
+    'capacitor://localhost',
+    'capacitor://app'
+  ]);
+
+  const isPreflight = c.req.method === 'OPTIONS';
+  const isAllowed = origin && allowedOrigins.has(origin);
+
+  // Always vary on Origin for cache correctness
+  c.header('Vary', 'Origin');
+
+  if (isAllowed) {
+    c.header('Access-Control-Allow-Origin', origin);
+    c.header('Access-Control-Allow-Credentials', 'true');
+  } else if (!origin) {
+    // Non-CORS request (same-origin or no origin like curl) – allow generically
+    c.header('Access-Control-Allow-Origin', '*');
+    // Do NOT set Allow-Credentials with wildcard
+  } else {
+    // Unknown origin – do not reflect credentials
+    c.header('Access-Control-Allow-Origin', 'null');
+  }
+
   c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Session-ID');
-  c.header('Access-Control-Allow-Credentials', 'true');
+  c.header('Access-Control-Max-Age', '86400');
 
-  // Handle preflight requests
-  if (c.req.method === 'OPTIONS') {
+  if (isPreflight) {
+    // Short-circuit preflight (200 OK is acceptable for preflight)
     return c.text('', 200);
   }
 

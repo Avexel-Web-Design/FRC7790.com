@@ -9,6 +9,7 @@
 export const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
 const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 const FRC_TEAM_KEY = "frc7790";
+import { API_HOSTS } from '../config';
 
 // Time offsets for different event types (in milliseconds)
 const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset for district events
@@ -158,13 +159,8 @@ export class FRCAPIService {
       if (typeof window !== 'undefined') {
         const proto = window.location.protocol;
         if (proto === 'capacitor:' || proto === 'file:') {
-          // Use fallback list similar to main.tsx logic
-          const candidates = [
-            'https://www.frc7790.com',
-            'https://frc7790-com.pages.dev',
-            'https://frc7790.pages.dev'
-          ];
-          apiBase = candidates[0];
+          // Prefer the first configured host
+          apiBase = API_HOSTS?.[0] || 'https://www.frc7790.com';
         }
       }
     } catch {}
@@ -198,7 +194,9 @@ export class FRCAPIService {
     }
     
     try {
-      const candidates = apiBase ? [apiBase, 'https://frc7790-com.pages.dev', 'https://frc7790.pages.dev'] : [''];
+      const candidates = apiBase
+        ? [apiBase, ...API_HOSTS.filter(h => h !== apiBase)]
+        : [''];
       let lastError: unknown = null;
       let lastRes: Response | undefined;
       for (const host of candidates) {
