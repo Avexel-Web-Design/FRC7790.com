@@ -33,7 +33,8 @@ register.post('/', async (c) => {
     
     // Check if this is an admin creating a user with admin privileges
     const authHeader = c.req.header('Authorization');
-    let isAdmin = false;
+  let isAdmin = false;
+  let creatorIsAdmin = false; // whether requester is admin (for user_type decision)
     
     if (is_admin === true) {
       // Admin privileges requested, verify if requester is an admin
@@ -48,6 +49,7 @@ register.post('/', async (c) => {
           return c.json({ error: 'Only administrators can create admin users' }, 403);
         }
         isAdmin = true;
+        creatorIsAdmin = true;
       } catch (e) {
         return c.json({ error: 'Invalid authorization for admin user creation' }, 401);
       }
@@ -64,16 +66,30 @@ register.post('/', async (c) => {
       return c.json({ error: 'Password must be at least 6 characters long' }, 400);
     }
 
+    // Determine account type: self-registered (public) vs admin-created (member)
+    // If a requester is admin (via Authorization), create a member by default; otherwise, create a public account.
+    const userType = creatorIsAdmin ? 'member' : 'public';
+
+    // For created (public) accounts, enforce username pattern [A-Za-z0-9._]+
+    const allowedUsername = /^[A-Za-z0-9._]+$/;
+    if (userType === 'public') {
+      if (!allowedUsername.test(username)) {
+        return c.json({ error: 'Username may only contain letters, numbers, underscores, and periods' }, 400);
+      }
+    }
+
     const hashedPassword = await hashPassword(password);
 
+    const avatarValue = userType === 'member' ? `https://api.dicebear.com/7.x/initials/svg?seed=${username}` : null;
     const { success, meta } = await c.env.DB.prepare(
-      'INSERT INTO users (username, password, avatar, is_admin) VALUES (?, ?, ?, ?)'
+      'INSERT INTO users (username, password, avatar, is_admin, user_type) VALUES (?, ?, ?, ?, ?)'
     )
       .bind(
-        username, 
-        hashedPassword, 
-        `https://api.dicebear.com/7.x/initials/svg?seed=${username}`,
-        isAdminValue
+        username,
+        hashedPassword,
+        avatarValue,
+        isAdminValue,
+        userType
       )
       .run();
 
@@ -84,7 +100,8 @@ register.post('/', async (c) => {
           id: userId, 
           username: username,
           isAdmin: isAdminValue,
-          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`,
+          userType,
+          avatar: avatarValue || undefined,
           iat: Math.floor(Date.now() / 1000),
           exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
         }, 
@@ -97,7 +114,8 @@ register.post('/', async (c) => {
           id: userId,
           username: username,
           isAdmin: isAdminValue === 1,
-          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${username}`
+          userType,
+          avatar: avatarValue || undefined
         },
         message: 'Registration successful'
       });

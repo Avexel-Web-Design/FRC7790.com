@@ -10,7 +10,7 @@ interface Env {
 export async function getUsers(c: Context): Promise<Response> {
   try {
     const { results } = await c.env.DB.prepare(
-      'SELECT id, username, is_admin FROM users ORDER BY username COLLATE NOCASE ASC'
+      "SELECT id, username, is_admin FROM users WHERE user_type = 'member' ORDER BY username COLLATE NOCASE ASC"
     ).all();
 
     return new Response(JSON.stringify(results), {
@@ -36,7 +36,7 @@ export async function getUsersByRecentActivity(c: Context): Promise<Response> {
     
     // First, get all users except the current user
     const { results: allUsers } = await c.env.DB.prepare(
-      'SELECT id, username, is_admin FROM users WHERE id != ? ORDER BY username COLLATE NOCASE ASC'
+      "SELECT id, username, is_admin FROM users WHERE id != ? AND user_type = 'member' ORDER BY username COLLATE NOCASE ASC"
     ).bind(userId).all();
     
     console.log(`Found ${allUsers.length} users (excluding current user)`);

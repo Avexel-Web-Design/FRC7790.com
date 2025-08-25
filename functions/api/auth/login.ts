@@ -28,7 +28,7 @@ login.post('/', async (c) => {
 
     const user = await c.env.DB.prepare('SELECT * FROM users WHERE username = ?')
       .bind(username)
-      .first() as { id: number; username: string; password: string; is_admin: number; avatar: string } | null;
+      .first() as { id: number; username: string; password: string; is_admin: number; avatar: string | null; user_type: string } | null;
 
     if (!user) {
       return c.json({ error: 'Invalid credentials' }, 401);
@@ -45,6 +45,7 @@ login.post('/', async (c) => {
         id: user.id, 
         username: user.username,
         isAdmin: user.is_admin,
+        userType: user.user_type,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
       }, 
@@ -56,7 +57,8 @@ login.post('/', async (c) => {
       user: {
         id: user.id,
         username: user.username,
-        isAdmin: !!user.is_admin
+        isAdmin: !!user.is_admin,
+        userType: user.user_type
       },
       message: 'Login successful'
     });

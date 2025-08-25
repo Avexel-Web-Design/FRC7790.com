@@ -10,6 +10,7 @@ interface AuthUser {
   id: number;
   username: string;
   isAdmin: boolean;
+  userType?: 'member' | 'public';
 }
 
 export const authMiddleware = createMiddleware<{ 
@@ -29,7 +30,8 @@ export const authMiddleware = createMiddleware<{
     const user: AuthUser = {
       id: decoded.id as number,
       username: decoded.username as string,
-      isAdmin: decoded.isAdmin as boolean
+      isAdmin: decoded.isAdmin as boolean,
+      userType: (decoded as any).userType as any
     };
     c.set('user', user);
     await next();

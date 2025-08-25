@@ -43,6 +43,16 @@ type ChatItem = (SimpleUser & { type: 'dm' }) | (GroupChat & { type: 'group' });
 
 const DirectMessages: React.FC = () => {
   const { user } = useAuth();
+  if (user?.userType === 'public') {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-300">
+        <div className="text-center p-6">
+          <h2 className="text-xl font-semibold mb-2">Members only</h2>
+          <p className="text-gray-400">Direct messages are available to team members. Public accounts cannot access the dashboard.</p>
+        </div>
+      </div>
+    );
+  }
   const { unreadCounts, markChannelAsRead, refreshNotifications, setActiveChannel } = useNotifications();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

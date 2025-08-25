@@ -37,6 +37,16 @@ interface SimpleUser {
 
 const Channels: React.FC = () => {
   const { user } = useAuth();
+  if (user?.userType === 'public') {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-300">
+        <div className="text-center p-6">
+          <h2 className="text-xl font-semibold mb-2">Members only</h2>
+          <p className="text-gray-400">Chat is available to team members. Public accounts cannot access the dashboard.</p>
+        </div>
+      </div>
+    );
+  }
   const { unreadCounts, markChannelAsRead, refreshNotifications, setActiveChannel } = useNotifications();
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>({ id: 'general', name: '# general' });
   // Remember last selected channel for quick return when tapping outside items

@@ -22,7 +22,7 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { isTeamPage, teamNumber } = useTeamContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -164,23 +164,25 @@ export default function Navigation() {
             <>
               <li>
                 <Link
-                  to="/dashboard"
+                  to={user?.userType === 'public' ? '/settings' : '/dashboard'}
                   className="transition-all duration-300 hover:scale-110 inline-block"
                   style={{
-                    color: location.pathname === '/dashboard' ? accentColor : 'white'
+                    color: (user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard') ? accentColor : 'white'
                   }}
                   onMouseEnter={(e) => {
-                    if (location.pathname !== '/dashboard') {
+                    const isActive = user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard';
+                    if (!isActive) {
                       e.currentTarget.style.color = accentColor;
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (location.pathname !== '/dashboard') {
+                    const isActive = user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard';
+                    if (!isActive) {
                       e.currentTarget.style.color = 'white';
                     }
                   }}
                 >
-                  Dashboard
+                  {user?.userType === 'public' ? 'Settings' : 'Dashboard'}
                 </Link>
               </li>
             </>
@@ -285,24 +287,26 @@ export default function Navigation() {
             {isAuthenticated ? (
               <>
                 <Link
-                  to="/dashboard"
+                  to={user?.userType === 'public' ? '/settings' : '/dashboard'}
                   className="block py-2 text-lg transition-colors"
                   style={{
-                    color: location.pathname === '/dashboard' ? accentColor : 'white'
+                    color: (user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard') ? accentColor : 'white'
                   }}
                   onMouseEnter={(e) => {
-                    if (location.pathname !== '/dashboard') {
+                    const isActive = user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard';
+                    if (!isActive) {
                       e.currentTarget.style.color = accentColor;
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (location.pathname !== '/dashboard') {
+                    const isActive = user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard';
+                    if (!isActive) {
                       e.currentTarget.style.color = 'white';
                     }
                   }}
                   onClick={() => setIsOpen(false)}
                 >
-                  Dashboard
+                  {user?.userType === 'public' ? 'Settings' : 'Dashboard'}
                 </Link>
               </>
             ) : (

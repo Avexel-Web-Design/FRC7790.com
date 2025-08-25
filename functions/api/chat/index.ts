@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { authMiddleware } from '../auth/middleware';
 import { getMessages, sendMessage, deleteMessage, getDMMessages, sendDMMessage } from './messages';
 import { 
   getChannels, 
@@ -16,6 +17,15 @@ import { getUsers, getUsersByRecentActivity } from './users';
 import { markChannelAsRead, getUnreadCounts, getTotalUnreadCount, getAllNotificationData, toggleMute, registerDevice, getMutedSettings, getPushConfig, sendTestPush } from './notifications';
 
 const chat = new Hono();
+
+// Require auth for all chat routes and forbid public accounts
+chat.use('*', authMiddleware, async (c, next) => {
+  const user = c.get('user') as any;
+  if (user && user.userType === 'public') {
+    return c.json({ error: 'Chat features are restricted to members.' }, 403);
+  }
+  await next();
+});
 
 // Debug endpoint
 chat.get('/debug', async (c) => {

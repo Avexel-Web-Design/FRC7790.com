@@ -44,9 +44,9 @@ profile.get('/', async (c) => {
   try {
     const user = c.get('user');
     
-    const dbUser = await c.env.DB.prepare('SELECT id, username, is_admin, created_at, avatar_color FROM users WHERE id = ?')
+    const dbUser = await c.env.DB.prepare('SELECT id, username, is_admin, created_at, avatar_color, user_type FROM users WHERE id = ?')
       .bind(user.id)
-      .first() as { id: number; username: string; is_admin: number; created_at: string; avatar_color: string | null } | null;
+      .first() as { id: number; username: string; is_admin: number; created_at: string; avatar_color: string | null; user_type: string } | null;
 
     if (!dbUser) {
       return c.json({ error: 'User not found' }, 404);
@@ -56,6 +56,7 @@ profile.get('/', async (c) => {
       id: dbUser.id,
       username: dbUser.username,
       is_admin: !!dbUser.is_admin,
+      user_type: dbUser.user_type,
       created_at: dbUser.created_at,
       avatar_color: dbUser.avatar_color
     });

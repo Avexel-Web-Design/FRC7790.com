@@ -15,6 +15,7 @@ import District from './components/pages/District';
 import Regional from './components/pages/Regional';
 import SearchResults from './components/pages/SearchResults';
 import Login from './components/pages/auth/Login';
+import Settings from './components/pages/Settings';
 import Calendar from './components/pages/calendar/Calendar';
 import Tasks from './components/pages/tasks/Tasks';
 import Channels from './components/pages/Channels';
@@ -51,6 +52,7 @@ function App() {
             <Route path="/regional" element={<Regional />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
 
           {/* Protected Routes */}

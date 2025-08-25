@@ -8,6 +8,7 @@ interface User {
   isAdmin: boolean;
   avatar?: string;
   avatarColor?: string;
+  userType?: 'member' | 'public';
 }
 
 interface AuthContextType {
@@ -46,6 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               id: userData.id,
               username: userData.username,
               isAdmin: userData.is_admin,
+              userType: userData.user_type,
               avatar: userData.avatar,
               avatarColor: userData.avatar_color,
             });
@@ -90,6 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               id: userData.id,
               username: userData.username,
               isAdmin: userData.is_admin,
+              userType: userData.user_type,
               avatar: userData.avatar,
               avatarColor: userData.avatar_color,
             });
