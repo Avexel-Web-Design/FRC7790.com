@@ -57,20 +57,6 @@ function App() {
             <Route path="/settings" element={<Settings />} />
           </Route>
 
-          {/* Protected Routes */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <DashboardLayout>
-                  <Outlet />
-                </DashboardLayout>
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/dashboard" element={<Channels />} />
-            <Route path="/messages" element={<DirectMessages />} />
-          </Route>
-
           {/* Member-only routes (block public) */}
           <Route
             element={
@@ -81,6 +67,8 @@ function App() {
               </ProtectedRoute>
             }
           >
+            <Route path="/dashboard" element={<Channels />} />
+            <Route path="/messages" element={<DirectMessages />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/profile" element={<Profile />} />
