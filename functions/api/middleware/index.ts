@@ -19,7 +19,12 @@ export const corsMiddleware = createMiddleware(async (c, next) => {
   ]);
 
   const isPreflight = c.req.method === 'OPTIONS';
-  const isAllowed = origin && allowedOrigins.has(origin);
+  const reqHeaders = c.req.header('Access-Control-Request-Headers');
+  // Allow explicit list plus common localhost and capacitor schemes
+  const isLocalhost = origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1');
+  const isCapacitor = origin.startsWith('capacitor://');
+  const isNullOrigin = origin === 'null';
+  const isAllowed = origin && (allowedOrigins.has(origin) || isLocalhost || isCapacitor || isNullOrigin);
 
   // Always vary on Origin for cache correctness
   c.header('Vary', 'Origin');
@@ -37,7 +42,7 @@ export const corsMiddleware = createMiddleware(async (c, next) => {
   }
 
   c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Session-ID');
+  c.header('Access-Control-Allow-Headers', reqHeaders || 'Content-Type, Authorization, X-Session-ID');
   c.header('Access-Control-Max-Age', '86400');
 
   if (isPreflight) {
