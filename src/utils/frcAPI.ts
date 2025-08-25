@@ -158,8 +158,15 @@ export class FRCAPIService {
     const isNative = Capacitor.isNativePlatform();
 
     const token = localStorage.getItem('token');
+    // Use a stable random session id per install/tab to help rate limiting bucket by session when unauthenticated
+    let sessionId = localStorage.getItem('session_id');
+    if (!sessionId) {
+      sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      try { localStorage.setItem('session_id', sessionId); } catch {}
+    }
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'X-Session-ID': sessionId,
     };
 
 
@@ -210,6 +217,30 @@ export class FRCAPIService {
             res = await fetch(url, config);
           }
           if (res.ok) return res;
+          // If rate limited, respect Retry-After header once with jittered backoff
+          if (res.status === 429) {
+            const retryAfter = Number(res.headers.get('Retry-After') || '0');
+            const waitMs = (isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1000) + Math.floor(Math.random()*250);
+            await new Promise(r => setTimeout(r, Math.min(waitMs, 3000)));
+            // single retry
+            if (isNative) {
+              const reqOpts: any = {
+                method: (method || 'GET').toUpperCase(),
+                url,
+                headers: headers as Record<string, string>,
+                responseType: 'json',
+                connectTimeout: 10000,
+                readTimeout: 15000,
+              };
+              if (data !== undefined && data !== null) reqOpts.data = data;
+              const httpResp = await CapacitorHttp.request(reqOpts);
+              const body = httpResp.data != null ? JSON.stringify(httpResp.data) : undefined;
+              res = new Response(body, { status: httpResp.status || 0, headers: new Headers(httpResp.headers as Record<string, string>) });
+            } else {
+              res = await fetch(url, config);
+            }
+            if (res.ok) return res;
+          }
           lastRes = res;
         } catch (e) {
           lastError = e;
