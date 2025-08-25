@@ -34,6 +34,16 @@ const TEAM_COLORS: Record<string, string> = {
 };
 
 export const getTeamColor = (teamNumber: string): string | null => {
+  // User favorites override
+  try {
+    const raw = localStorage.getItem('user_favorites_v1');
+    if (raw) {
+      const prefs = JSON.parse(raw) as { teams?: string[]; color?: string };
+      if (prefs?.teams?.includes(String(teamNumber)) && typeof prefs.color === 'string') {
+        return prefs.color;
+      }
+    }
+  } catch {}
   return TEAM_COLORS[teamNumber] || null;
 };
 

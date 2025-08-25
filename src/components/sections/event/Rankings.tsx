@@ -231,7 +231,8 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
                           ${teamNumber === '7790' ? 'border-l-4 border-baywatch-orange bg-baywatch-orange/10' : ''}
                         `}
                         style={{
-                          animationDelay: `${index * 0.05}s`
+                          animationDelay: `${index * 0.05}s`,
+                          ...(hasSpecialColor ? { borderLeft: `4px solid ${teamColor}80`, backgroundColor: `${teamColor}14` } : {})
                         }}
                         onClick={() => handleTeamClick(teamNumber)}
                       >

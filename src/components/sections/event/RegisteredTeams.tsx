@@ -1,6 +1,7 @@
 import React from 'react';
 import NebulaLoader from '../../common/NebulaLoader';
 import type { Team } from '../../../hooks/useEventData';
+import { getTeamColor } from '../../../utils/color';
 
 interface RegisteredTeamsProps {
   teams: Team[];
@@ -41,16 +42,21 @@ const RegisteredTeams: React.FC<RegisteredTeamsProps> = ({ teams, isLoading }) =
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {sortedTeams.map((team) => (
+            {sortedTeams.map((team) => {
+              const tn = formatTeamNumber(team.key);
+              const favColor = getTeamColor(tn);
+              const isFav = !!favColor;
+              return (
               <div
                 key={team.key}
-                className="card-gradient backdrop-blur-sm rounded-lg p-4 border border-gray-700/50 hover:border-baywatch-orange/50 transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-lg hover:shadow-baywatch-orange/20"
-                onClick={() => handleTeamClick(formatTeamNumber(team.key))}
+                className={`card-gradient backdrop-blur-sm rounded-lg p-4 border transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-lg ${isFav ? '' : 'border-gray-700/50 hover:border-baywatch-orange/50 hover:shadow-baywatch-orange/20'}`}
+                style={isFav ? { borderColor: favColor + '80', boxShadow: `0 10px 20px -8px ${favColor}33` } : undefined}
+                onClick={() => handleTeamClick(tn)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="text-baywatch-orange font-bold text-lg">
-                      {formatTeamNumber(team.key)}
+                      <span style={isFav ? { color: favColor } : {}}>{tn}</span>
                     </div>
                     <div className="h-6 w-px bg-gray-600"></div>
                     <div className="flex-1">
@@ -69,15 +75,15 @@ const RegisteredTeams: React.FC<RegisteredTeamsProps> = ({ teams, isLoading }) =
                   </div>
                 </div>
                 
-                {/* Highlight Team 7790 */}
-                {team.team_number === 7790 && (
-                  <div className="mt-2 text-xs text-baywatch-orange font-semibold">
+                {/* Highlight note */}
+                {isFav && (
+                  <div className="mt-2 text-xs font-semibold" style={{ color: favColor }}>
                     <i className="fas fa-star mr-1"></i>
-                    Our Team
+                    Favorite
                   </div>
                 )}
               </div>
-            ))}
+            );})}
           </div>
         )}
         

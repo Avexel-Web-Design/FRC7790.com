@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getTeamColor } from '../../../utils/color';
 import type { MatchData, TeamData } from '../../../hooks/useMatchData';
 
 interface MatchTeamDetailsProps {
@@ -65,6 +66,10 @@ const MatchTeamDetails: React.FC<MatchTeamDetailsProps> = ({ matchData, teamData
     const team = teamMap[teamKey];
     const teamNumber = teamKey.replace('frc', '');
     const is7790 = teamNumber === '7790';
+    // Apply favorite color ring as well
+    let favStyle: React.CSSProperties | undefined = undefined;
+    const c = getTeamColor(teamNumber);
+    if (c) favStyle = { boxShadow: `0 0 0 2px ${c}80` };
     const epa = epaData[teamKey];
 
     if (!team) {
@@ -82,7 +87,7 @@ const MatchTeamDetails: React.FC<MatchTeamDetailsProps> = ({ matchData, teamData
     const teamNumberColor = alliance === 'blue' ? 'text-blue-400' : 'text-red-400';
 
     return (
-      <div key={teamKey} className={`p-4 rounded-lg border transition-all duration-300 hover:scale-105 ${allianceColor} ${is7790 ? 'ring-2 ring-baywatch-orange/50' : ''}`}>
+  <div key={teamKey} className={`p-4 rounded-lg border transition-all duration-300 hover:scale-105 ${allianceColor} ${is7790 ? 'ring-2 ring-baywatch-orange/50' : ''}`} style={favStyle}>
         <div className="text-center">
           <div className={`text-2xl font-bold ${teamNumberColor} mb-1`}>
             <a 

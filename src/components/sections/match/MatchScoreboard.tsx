@@ -69,8 +69,8 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
       const team = teamMap[teamKey];
       const teamNumber = teamKey.replace('frc', '');
       const teamName = team ? team.nickname : 'Unknown Team';
-      const teamColor = getTeamColor(teamNumber);
-      const hasSpecialColor = teamColor !== null;
+  const teamColor = getTeamColor(teamNumber);
+  const hasSpecialColor = teamColor !== null;
       
       return (
         <div 
