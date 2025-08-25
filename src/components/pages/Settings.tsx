@@ -116,7 +116,7 @@ const Settings: React.FC = () => {
       <div className="container mx-auto px-4 py-24">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
-      <div className="grid gap-6 max-w-3xl">
+  <div className="grid gap-6 max-w-3xl mx-auto">
         {/* Per-team preferences */}
         <div className="card-gradient border border-gray-700/50 rounded-xl p-6">
           <h2 className="text-xl font-semibold mb-4">Favorite Teams & Notifications</h2>

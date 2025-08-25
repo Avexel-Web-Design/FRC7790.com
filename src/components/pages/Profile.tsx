@@ -5,6 +5,8 @@ import { generateColor } from '../../utils/color';
 import { PencilIcon } from '@heroicons/react/24/outline';
 import '@melloware/coloris/dist/coloris.css';
 import NebulaLoader from '../common/NebulaLoader';
+import { fetchTeamPreferences, upsertTeamPreference, deleteTeamPreference, type TeamPreference } from '../../utils/preferences';
+import { parseTeamsInput } from '../../utils/favorites';
 
 interface Profile {
   id: number;
@@ -30,6 +32,11 @@ const Profile: React.FC = () => {
   const [usernameMessage, setUsernameMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [tempAvatarColor, setTempAvatarColor] = useState<string>('');
   const updateTimeoutRef = useRef<number | null>(null);
+  // Team preferences (same as Settings, but here inside member Profile and without logout)
+  const [teamPrefs, setTeamPrefs] = useState<TeamPreference[]>([]);
+  const [tpLoading, setTpLoading] = useState(true);
+  const [tpError, setTpError] = useState<string | null>(null);
+  const [newTeamsInput, setNewTeamsInput] = useState('');
 
   // Calculate avatar color directly
   const avatarColor = tempAvatarColor || profile?.avatar_color || generateColor(profile?.username || '');
@@ -45,6 +52,41 @@ const Profile: React.FC = () => {
         clearTimeout(updateTimeoutRef.current);
       }
     };
+  }, []);
+
+  // Load team preferences; default to 7790 if none present
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        setTpLoading(true);
+        const prefs = await fetchTeamPreferences();
+        if (!active) return;
+        if (!prefs || prefs.length === 0) {
+          // Seed with 7790 as default favorite with all notifications enabled
+          await upsertTeamPreference({
+            team_number: '7790',
+            highlight_color: '#ff6b00',
+            notif_upcoming: true,
+            notif_alliance: true,
+            notif_results: true,
+            notif_awards: true,
+          });
+          const seeded = await fetchTeamPreferences();
+          if (!active) return;
+          setTeamPrefs(seeded);
+          try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(seeded)); } catch {}
+        } else {
+          setTeamPrefs(prefs);
+          try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(prefs)); } catch {}
+        }
+      } catch (e: any) {
+        setTpError(e?.message || 'Failed to load preferences');
+      } finally {
+        if (active) setTpLoading(false);
+      }
+    })();
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
@@ -408,7 +450,145 @@ const Profile: React.FC = () => {
           </div>
         </div>
 
-        {/* Additional Actions */}
+          {/* Favorite Teams & Notifications (same as Settings, without logout) */}
+          <div className="mt-6 bg-black border border-gray-700 rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-700">
+              <h3 className="text-lg font-medium text-white">Favorite Teams & Notifications</h3>
+              <p className="text-sm text-gray-400 mt-1">Pick a highlight color and choose notifications for the teams you follow.</p>
+            </div>
+            <div className="px-6 py-6">
+              {tpError && <div className="mb-3 text-red-400 text-sm">{tpError}</div>}
+
+              {/* Add teams */}
+              <div className="mb-6">
+                <label className="block text-sm text-gray-300 mb-2">Add team numbers</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newTeamsInput}
+                    onChange={(e) => setNewTeamsInput(e.target.value)}
+                    className="flex-1 bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-baywatch-orange"
+                    placeholder="e.g. 33, 67 2056"
+                  />
+                  <button
+                    onClick={async () => {
+                      const teams = parseTeamsInput(newTeamsInput);
+                      if (teams.length === 0) return;
+                      try {
+                        setTpLoading(true);
+                        await Promise.all(teams.map((t) => upsertTeamPreference({
+                          team_number: t,
+                          highlight_color: '#ffd166',
+                          notif_upcoming: true,
+                          notif_alliance: true,
+                          notif_results: true,
+                          notif_awards: true,
+                        })));
+                        const updated = await fetchTeamPreferences();
+                        setTeamPrefs(updated);
+                        try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(updated)); } catch {}
+                        setNewTeamsInput('');
+                      } catch (e: any) {
+                        setTpError(e?.message || 'Failed to add team(s)');
+                      } finally {
+                        setTpLoading(false);
+                      }
+                    }}
+                    disabled={tpLoading}
+                    className="px-4 py-2 rounded bg-baywatch-orange text-black font-semibold hover:bg-baywatch-orange/80 disabled:opacity-60"
+                  >
+                    Add
+                  </button>
+                </div>
+                <p className="text-gray-500 text-xs mt-1">Separate with commas or spaces</p>
+              </div>
+
+              {/* List */}
+              <div className="space-y-3">
+                {teamPrefs.length === 0 && !tpLoading && (
+                  <div className="text-gray-400 text-sm">No favorite teams yet.</div>
+                )}
+                {teamPrefs.map((tp, idx) => (
+                  <div key={tp.team_number} className="rounded-lg border border-gray-700/60 p-4">
+                    <div className="flex items-center gap-4 flex-wrap">
+                      <div className="text-lg font-semibold" style={{ color: tp.highlight_color }}>Team {tp.team_number}</div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          className="w-8 h-8 p-0 border border-gray-700 rounded bg-transparent"
+                          value={tp.highlight_color}
+                          onChange={(e) => {
+                            const next = [...teamPrefs];
+                            next[idx] = { ...tp, highlight_color: e.target.value };
+                            setTeamPrefs(next);
+                            try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(next)); } catch {}
+                            upsertTeamPreference({
+                              team_number: tp.team_number,
+                              highlight_color: e.target.value,
+                              notif_upcoming: !!tp.notif_upcoming,
+                              notif_alliance: !!tp.notif_alliance,
+                              notif_results: !!tp.notif_results,
+                              notif_awards: !!tp.notif_awards,
+                            }).catch(() => {});
+                          }}
+                          aria-label={`Highlight color for team ${tp.team_number}`}
+                        />
+                        <span className="text-gray-400 text-xs">{tp.highlight_color}</span>
+                      </div>
+                      <div className="flex-1" />
+                      <button
+                        onClick={async () => {
+                          try {
+                            setTpLoading(true);
+                            await deleteTeamPreference(tp.team_number);
+                            setTeamPrefs((prev) => prev.filter(p => p.team_number !== tp.team_number));
+                            try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(teamPrefs.filter(p => p.team_number !== tp.team_number))); } catch {}
+                          } catch (e: any) {
+                            setTpError(e?.message || 'Failed to remove team');
+                          } finally {
+                            setTpLoading(false);
+                          }
+                        }}
+                        className="text-red-400 hover:text-red-300 text-sm"
+                      >Remove</button>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                      {[
+                        { key: 'notif_upcoming', label: 'Upcoming match' },
+                        { key: 'notif_alliance', label: 'Alliance selection' },
+                        { key: 'notif_results', label: 'Match results' },
+                        { key: 'notif_awards', label: 'Awards' },
+                      ].map((opt) => (
+                        <label key={opt.key} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={Boolean((tp as any)[opt.key])}
+                            onChange={(e) => {
+                              const next = [...teamPrefs];
+                              next[idx] = { ...tp, [opt.key]: e.target.checked ? 1 : 0 } as any;
+                              setTeamPrefs(next);
+                              try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(next)); } catch {}
+                              upsertTeamPreference({
+                                team_number: tp.team_number,
+                                highlight_color: tp.highlight_color,
+                                notif_upcoming: !!(next[idx] as any).notif_upcoming,
+                                notif_alliance: !!(next[idx] as any).notif_alliance,
+                                notif_results: !!(next[idx] as any).notif_results,
+                                notif_awards: !!(next[idx] as any).notif_awards,
+                              }).catch(() => {});
+                            }}
+                          />
+                          <span className="text-gray-300">{opt.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Actions */}
         <div className="mt-6 bg-black border border-gray-700 rounded-lg">
           <div className="px-6 py-4 border-b border-gray-700">
             <h3 className="text-lg font-medium text-white">Account Actions</h3>
