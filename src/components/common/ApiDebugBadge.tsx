@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 
 export default function ApiDebugBadge() {
-  const [info, setInfo] = useState<{ host: string | null; status: number | 'error' | null }>({ host: null, status: null });
+  const [info, setInfo] = useState<{ host: string | null; status: number | 'error' | null; error?: string | null }>({ host: null, status: null, error: null });
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -18,9 +18,9 @@ export default function ApiDebugBadge() {
       check();
       try {
         // @ts-ignore
-        const dbg = (window as any).__API_DEBUG__ as { lastHost?: string; lastStatus?: number | 'error' } | undefined;
+        const dbg = (window as any).__API_DEBUG__ as { lastHost?: string; lastStatus?: number | 'error'; lastError?: string | null } | undefined;
         if (dbg) {
-          setInfo({ host: dbg.lastHost ?? null, status: dbg.lastStatus ?? null });
+          setInfo({ host: dbg.lastHost ?? null, status: dbg.lastStatus ?? null, error: dbg.lastError ?? null });
         }
       } catch {}
     }, 1000);
@@ -34,7 +34,7 @@ export default function ApiDebugBadge() {
   return (
     <div style={{ position: 'fixed', bottom: 8, right: 8, zIndex: 2147483647 }}>
       <div className={`px-2 py-1 rounded text-xs font-mono border ${statusOk ? 'bg-green-900/40 border-green-600 text-green-200' : 'bg-red-900/40 border-red-600 text-red-200'}`}>
-        {textHost} · {textStatus}
+        {textHost} · {textStatus}{info.status === 'error' && info.error ? ` · ${info.error}` : ''}
       </div>
     </div>
   );

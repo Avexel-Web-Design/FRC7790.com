@@ -198,13 +198,18 @@ export class FRCAPIService {
           let res: Response;
           if (isNative) {
             // Use Capacitor HTTP to bypass WebView CORS
-            const httpResp = await Http.request({
-              method: method as any,
+            const reqOpts: any = {
+              method: (method || 'GET').toUpperCase(),
               url,
               headers: headers as Record<string, string>,
-              data: data ?? undefined,
               responseType: 'json',
-            });
+              connectTimeout: 10000,
+              readTimeout: 15000,
+            };
+            if (data !== undefined && data !== null) {
+              reqOpts.data = data;
+            }
+            const httpResp = await Http.request(reqOpts);
             // Synthesize a Response object so callers can .ok/.json()
             const body = httpResp.data != null ? JSON.stringify(httpResp.data) : undefined;
             res = new Response(body, {

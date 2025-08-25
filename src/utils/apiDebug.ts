@@ -14,6 +14,7 @@ export type ApiRequestLog = {
 const logs: ApiRequestLog[] = [];
 let lastHost: string | null = null;
 let lastStatus: number | 'error' | null = null;
+let lastError: string | null = null;
 
 export function isApiDebugEnabled(): boolean {
   try {
@@ -27,6 +28,7 @@ export function recordApiLog(entry: ApiRequestLog) {
   logs.push(entry);
   lastHost = entry.host;
   lastStatus = entry.status;
+  lastError = entry.error ?? null;
   // Keep only last 100
   if (logs.length > 100) logs.shift();
   if (isApiDebugEnabled()) {
@@ -36,7 +38,7 @@ export function recordApiLog(entry: ApiRequestLog) {
   // Expose on window for quick inspection
   try {
     // @ts-ignore
-    if (typeof window !== 'undefined') window.__API_DEBUG__ = { logs, lastHost, lastStatus };
+    if (typeof window !== 'undefined') window.__API_DEBUG__ = { logs, lastHost, lastStatus, lastError };
   } catch {}
 }
 
@@ -50,4 +52,8 @@ export function getLastApiHost(): string | null {
 
 export function getLastApiStatus(): number | 'error' | null {
   return lastStatus;
+}
+
+export function getLastApiError(): string | null {
+  return lastError;
 }
