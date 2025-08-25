@@ -39,11 +39,11 @@ users.get('/', async (c) => {
     const type = c.req.query('user_type');
     if (type === 'member' || type === 'public') {
       const { results } = await c.env.DB.prepare(
-        'SELECT id, username, is_admin, created_at, avatar_color, user_type FROM users WHERE user_type = ? ORDER BY id DESC'
+        'SELECT id, username, is_admin, created_at, avatar_color, user_type FROM users WHERE user_type = ? ORDER BY id ASC'
       ).bind(type).all();
       return c.json(results);
     }
-    const { results } = await c.env.DB.prepare('SELECT id, username, is_admin, created_at, avatar_color, user_type FROM users ORDER BY id DESC').all();
+    const { results } = await c.env.DB.prepare('SELECT id, username, is_admin, created_at, avatar_color, user_type FROM users ORDER BY id ASC').all();
     return c.json(results);
   } catch (error) {
     console.error('Error fetching users:', error);
