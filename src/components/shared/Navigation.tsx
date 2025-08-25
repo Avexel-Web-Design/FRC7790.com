@@ -22,7 +22,7 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { isTeamPage, teamNumber } = useTeamContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -73,11 +73,6 @@ export default function Navigation() {
 
     // Otherwise navigate to search results
     navigate(`/search?q=${encodeURIComponent(query)}`);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/');
   };
 
   return (
@@ -309,104 +304,6 @@ export default function Navigation() {
                 >
                   Dashboard
                 </Link>
-                <Link
-                  to="/calendar"
-                  className="block py-2 text-lg transition-colors"
-                  style={{
-                    color: location.pathname === '/calendar' ? accentColor : 'white'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (location.pathname !== '/calendar') {
-                      e.currentTarget.style.color = accentColor;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (location.pathname !== '/calendar') {
-                      e.currentTarget.style.color = 'white';
-                    }
-                  }}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Calendar
-                </Link>
-                <Link
-                  to="/tasks"
-                  className="block py-2 text-lg transition-colors"
-                  style={{
-                    color: location.pathname === '/tasks' ? accentColor : 'white'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (location.pathname !== '/tasks') {
-                      e.currentTarget.style.color = accentColor;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (location.pathname !== '/tasks') {
-                      e.currentTarget.style.color = 'white';
-                    }
-                  }}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Tasks
-                </Link>
-                <Link
-                  to="/profile"
-                  className="block py-2 text-lg transition-colors"
-                  style={{
-                    color: location.pathname === '/profile' ? accentColor : 'white'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (location.pathname !== '/profile') {
-                      e.currentTarget.style.color = accentColor;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (location.pathname !== '/profile') {
-                      e.currentTarget.style.color = 'white';
-                    }
-                  }}
-                  onClick={() => setIsOpen(false)}
-                >
-                  Profile
-                </Link>
-                {user?.isAdmin && (
-                  <Link
-                    to="/admin/users"
-                    className="block py-2 text-lg transition-colors"
-                    style={{
-                      color: location.pathname === '/admin/users' ? accentColor : 'white'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (location.pathname !== '/admin/users') {
-                        e.currentTarget.style.color = accentColor;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (location.pathname !== '/admin/users') {
-                        e.currentTarget.style.color = 'white';
-                      }
-                    }}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Admin
-                  </Link>
-                )}
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsOpen(false);
-                  }}
-                  className="block py-2 text-lg transition-colors"
-                  style={{ color: 'white' }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = accentColor;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'white';
-                  }}
-                >
-                  Logout
-                </button>
               </>
             ) : (
               <Link
