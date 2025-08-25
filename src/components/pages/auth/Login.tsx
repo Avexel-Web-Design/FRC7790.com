@@ -9,6 +9,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   
   const { login } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,7 +20,9 @@ const Login: React.FC = () => {
     try {
       const success = await login(username, password);
       if (success) {
-        navigate('/dashboard');
+        // After login, route based on user type
+        const isPublic = (user?.userType === 'public');
+        navigate(isPublic ? '/settings' : '/dashboard');
       } else {
         setError('Invalid username or password');
       }

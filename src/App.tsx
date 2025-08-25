@@ -68,10 +68,22 @@ function App() {
             }
           >
             <Route path="/dashboard" element={<Channels />} />
+            <Route path="/messages" element={<DirectMessages />} />
+          </Route>
+
+          {/* Member-only routes (block public) */}
+          <Route
+            element={
+              <ProtectedRoute disallowPublic>
+                <DashboardLayout>
+                  <Outlet />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          >
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/messages" element={<DirectMessages />} />
           </Route>
 
           {/* Admin Routes */}

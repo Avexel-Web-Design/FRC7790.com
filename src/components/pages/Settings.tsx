@@ -30,7 +30,8 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-24 text-white">
+    <div className="min-h-screen bg-black text-white">
+      <div className="container mx-auto px-4 py-24">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
       <div className="grid gap-6 max-w-2xl">
@@ -84,6 +85,7 @@ const Settings: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

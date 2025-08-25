@@ -5,9 +5,10 @@ import { useAuth } from '../../contexts/AuthContext';
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
+  disallowPublic?: boolean; // if true, public users are redirected to Settings
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin = false, disallowPublic = false }) => {
   const { isAuthenticated, user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -31,6 +32,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
         </div>
       </div>
     );
+  }
+
+  if (disallowPublic && user?.userType === 'public') {
+    return <Navigate to="/settings" replace />;
   }
 
   return <>{children}</>;
