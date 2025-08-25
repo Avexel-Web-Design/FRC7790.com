@@ -2,13 +2,21 @@ import { createMiddleware } from 'hono/factory';
 
 // Simple CORS middleware without hono/cors dependency
 export const corsMiddleware = createMiddleware(async (c, next) => {
-  // Set CORS headers
-  c.header('Access-Control-Allow-Origin', '*');
+  // Echo the Origin for better compatibility with credentialed requests and WebViews
+  const origin = c.req.header('Origin') || '*';
+  c.header('Access-Control-Allow-Origin', origin);
+  if (origin !== '*') {
+    c.header('Vary', 'Origin');
+  }
   c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Session-ID');
+  // If the browser sent Access-Control-Request-Headers, reflect them; otherwise provide a safe default
+  const reqHdrs = c.req.header('Access-Control-Request-Headers');
+  c.header('Access-Control-Allow-Headers', reqHdrs || 'Content-Type, Authorization, X-Session-ID');
+  // Only meaningful when the origin isn’t '*'; harmless otherwise
   c.header('Access-Control-Allow-Credentials', 'true');
+  c.header('Access-Control-Max-Age', '600');
 
-  // Handle preflight requests
+  // Handle preflight requests early
   if (c.req.method === 'OPTIONS') {
     return c.text('', 200);
   }
