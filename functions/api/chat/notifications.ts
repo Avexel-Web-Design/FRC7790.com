@@ -1,4 +1,5 @@
 import { Context } from 'hono';
+import { sendPushToUsers } from '../utils/push';
 
 // Mark a channel as read for a user
 export async function markChannelAsRead(c: Context): Promise<Response> {
@@ -401,5 +402,42 @@ export async function getMutedSettings(c: Context): Promise<Response> {
   } catch (error) {
     console.error('Error getting muted settings:', error);
     return new Response('Error getting muted settings', { status: 500 });
+  }
+}
+
+// Diagnostics: get push configuration and token counts (optionally for a user)
+export async function getPushConfig(c: Context): Promise<Response> {
+  try {
+    const hasSA = !!c.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+    const hasLegacy = !!(c.env.FCM_SERVER_KEY || c.env.FCM_LEGACY_SERVER_KEY);
+    const mode = hasSA ? 'v1' : hasLegacy ? 'legacy' : 'none';
+    const userIdStr = c.req.query('user_id');
+    let tokenCount = undefined as number | undefined;
+    if (userIdStr) {
+      const { results } = await c.env.DB.prepare('SELECT COUNT(*) as count FROM user_devices WHERE user_id = ?')
+        .bind(Number(userIdStr)).all();
+      tokenCount = Number(((results as any[])?.[0]?.count) || 0);
+    }
+    return new Response(JSON.stringify({ mode, hasServiceAccount: hasSA, hasLegacyKey: hasLegacy, tokenCount }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (e) {
+    console.error('Error getting push config:', e);
+    return new Response('Error getting push config', { status: 500 });
+  }
+}
+
+// Send a test push notification to a specific user
+export async function sendTestPush(c: Context): Promise<Response> {
+  try {
+    const { user_id } = await c.req.json();
+    if (!user_id) {
+      return new Response('user_id required', { status: 400 });
+    }
+    await sendPushToUsers(c, [Number(user_id)], 'Test notification', 'This is a test push', { type: 'test' });
+    return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
+  } catch (e) {
+    console.error('Error sending test push:', e);
+    return new Response('Error sending test push', { status: 500 });
   }
 }

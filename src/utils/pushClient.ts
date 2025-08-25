@@ -14,9 +14,8 @@ export async function registerPushToken(userId: number) {
   if (!Capacitor.isNativePlatform()) return;
   const granted = await ensurePushPermission();
   if (!granted) return;
-  await PushNotifications.register();
-  return new Promise<void>((resolve) => {
-    const onReg = async (token: { value: string }) => {
+  return new Promise<void>(async (resolve) => {
+    const reg = await PushNotifications.addListener('registration', async (token) => {
       try {
         await frcAPI.post('/chat/notifications/register-device', {
           user_id: userId,
@@ -24,14 +23,14 @@ export async function registerPushToken(userId: number) {
           token: token.value,
         });
       } finally {
-        PushNotifications.removeAllListeners();
+        reg.remove();
         resolve();
       }
-    };
-    PushNotifications.addListener('registration', onReg);
-    PushNotifications.addListener('registrationError', () => {
-      PushNotifications.removeAllListeners();
+    });
+    const err = await PushNotifications.addListener('registrationError', () => {
+      err.remove();
       resolve();
     });
+    await PushNotifications.register();
   });
 }
