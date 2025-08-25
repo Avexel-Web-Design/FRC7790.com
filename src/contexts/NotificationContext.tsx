@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import type { ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { frcAPI } from '../utils/frcAPI';
+import { notifyNewMessage } from '../utils/localNotifications';
 
 interface NotificationContextType {
   unreadCounts: Record<string, number>;
@@ -36,6 +37,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [messagesHaveUnread, setMessagesHaveUnread] = useState(false);
   const [activeChannel, setActiveChannel] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<number>(0);
+  const [lastTotalUnread, setLastTotalUnread] = useState<number>(0);
 
   // Cache duration - only allow refresh if last one was more than 30 seconds ago
   const CACHE_DURATION = 30000; // 30 seconds
@@ -88,6 +90,11 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
           ? Math.max(0, messagesUnread - activeChannelUnreadCount)
           : messagesUnread;
         
+        // Fire a lightweight local notification if unread increased and we're not focused on that channel
+        if (adjustedTotal > lastTotalUnread) {
+          notifyNewMessage('New messages', 'You have unread messages');
+        }
+        setLastTotalUnread(adjustedTotal);
         setTotalUnread(adjustedTotal);
         setChannelsHaveUnread(adjustedChannelsUnread > 0);
         setMessagesHaveUnread(adjustedMessagesUnread > 0);
@@ -129,6 +136,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
                 ? Math.max(0, messagesUnread - activeChannelUnreadCount)
                 : messagesUnread;
               
+              if (adjustedTotal > lastTotalUnread) {
+                notifyNewMessage('New messages', 'You have unread messages');
+              }
+              setLastTotalUnread(adjustedTotal);
               setTotalUnread(adjustedTotal);
               setChannelsHaveUnread(adjustedChannelsUnread > 0);
               setMessagesHaveUnread(adjustedMessagesUnread > 0);

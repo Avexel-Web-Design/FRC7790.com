@@ -5,7 +5,7 @@ import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
 import NebulaLoader from '../common/NebulaLoader';
 import NotificationDot from '../common/NotificationDot';
-import { SmilePlus, Trash2, Reply as ReplyIcon, Copy as CopyIcon, Info as InfoIcon } from 'lucide-react';
+import { SmilePlus, Trash2, Reply as ReplyIcon, Copy as CopyIcon, Info as InfoIcon, Bell, BellOff } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faThumbsUp, faThumbsDown, faFaceLaughSquint, faCircleCheck as faCircleCheckRegular } from '@fortawesome/free-regular-svg-icons';
 import { faExclamation, faQuestion, faCircleCheck as faCircleCheckSolid } from '@fortawesome/free-solid-svg-icons';
@@ -54,6 +54,7 @@ const Channels: React.FC = () => {
   const [isChannelsLoading, setIsChannelsLoading] = useState(true);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+  const [muted, setMuted] = useState(false);
   
   // Reactions state (frontend-only for now)
   type ReactionMap = Record<number, Record<string, number>>; // messageId -> emoji -> count
@@ -215,6 +216,16 @@ const Channels: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Mute toggle
+  const toggleMute = async () => {
+    if (!user || !selectedChannel) return;
+    try {
+      const next = !muted;
+      const res = await frcAPI.post(`/chat/notifications/mute/${selectedChannel.id}`, { user_id: user.id, muted: next });
+      if (res.ok) setMuted(next);
+    } catch {}
+  };
+
   // Close reaction picker on outside click, but keep it open when moving the mouse away
   useEffect(() => {
     const handleDocMouseDown = (e: MouseEvent) => {
@@ -250,6 +261,25 @@ const Channels: React.FC = () => {
       setActiveChannel(selectedChannel.id);
     }
   }, [selectedChannel, setActiveChannel]);
+
+  // Load muted state for selected channel
+  useEffect(() => {
+    const loadMuted = async () => {
+      if (!user || !selectedChannel) {
+        setMuted(false);
+        return;
+      }
+      try {
+        const res = await frcAPI.get(`/chat/notifications/muted?user_id=${user.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const list: string[] = data?.muted || [];
+          setMuted(list.includes(selectedChannel.id));
+        }
+      } catch {}
+    };
+    loadMuted();
+  }, [user, selectedChannel]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -898,6 +928,10 @@ const Channels: React.FC = () => {
                 <p className="text-sm text-gray-400">Online</p>
               </div>
             </div>
+            <button onClick={toggleMute} className="inline-flex items-center gap-2 text-gray-300 hover:text-white">
+              {muted ? <BellOff size={18} /> : <Bell size={18} />}
+              <span className="hidden md:inline text-xs">{muted ? 'Notifications off' : 'Notifications on'}</span>
+            </button>
           </div>
         </div>
 

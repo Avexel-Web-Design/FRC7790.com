@@ -5,7 +5,7 @@ import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
 import NebulaLoader from '../common/NebulaLoader';
 import NotificationDot from '../common/NotificationDot';
-import { SmilePlus, Trash2, Reply as ReplyIcon, Copy as CopyIcon, Info as InfoIcon } from 'lucide-react';
+import { SmilePlus, Trash2, Reply as ReplyIcon, Copy as CopyIcon, Info as InfoIcon, Bell, BellOff } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faThumbsUp, faThumbsDown, faFaceLaughSquint, faCircleCheck as faCircleCheckRegular } from '@fortawesome/free-regular-svg-icons';
 import { faExclamation, faQuestion, faCircleCheck as faCircleCheckSolid } from '@fortawesome/free-solid-svg-icons';
@@ -84,6 +84,7 @@ const DirectMessages: React.FC = () => {
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [muted, setMuted] = useState(false);
 
   // Reactions state (frontend-only for now)
   type ReactionMap = Record<number, Record<string, number>>; // messageId -> emoji -> count
@@ -257,6 +258,41 @@ const DirectMessages: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Load muted state for selected conversation
+  useEffect(() => {
+    const loadMuted = async () => {
+      if (!user || !selectedChat) {
+        setMuted(false);
+        return;
+      }
+      try {
+        const res = await frcAPI.get(`/chat/notifications/muted?user_id=${user.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const list: string[] = data?.muted || [];
+          const channelId = selectedChat.type === 'dm'
+            ? getConversationId(user.id, selectedChat.id)
+            : selectedChat.id.toString();
+          setMuted(list.includes(channelId));
+        }
+      } catch {}
+    };
+    loadMuted();
+  }, [user, selectedChat]);
+
+  // Mute toggle for current conversation (DM or group)
+  const toggleMute = async () => {
+    if (!user || !selectedChat) return;
+    try {
+      const next = !muted;
+      const channelId = selectedChat.type === 'dm'
+        ? getConversationId(user.id, selectedChat.id)
+        : selectedChat.id.toString();
+      const res = await frcAPI.post(`/chat/notifications/mute/${channelId}`, { user_id: user.id, muted: next });
+      if (res.ok) setMuted(next);
+    } catch {}
+  };
 
   // Close thread on Escape
   useEffect(() => {
@@ -842,6 +878,10 @@ const DirectMessages: React.FC = () => {
                 <p className="text-sm text-gray-400">Online</p>
               </div>
             </div>
+            <button onClick={toggleMute} className="inline-flex items-center gap-2 text-gray-300 hover:text-white">
+              {muted ? <BellOff size={18} /> : <Bell size={18} />}
+              <span className="hidden md:inline text-xs">{muted ? 'Notifications off' : 'Notifications on'}</span>
+            </button>
           </div>
         </div>
 

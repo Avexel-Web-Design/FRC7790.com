@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { sendPushToUsers } from '../utils/push';
 import { authMiddleware } from '../auth/middleware';
 
 interface CloudflareEnv {
@@ -62,6 +63,12 @@ tasks.post('/', async (c) => {
       .run();
 
     if (success) {
+      // Push to assignee if present
+      if (assigned_to) {
+        try {
+          await sendPushToUsers(c as any, [Number(assigned_to)], 'New Task Assigned', title, { type: 'task', action: 'created' });
+        } catch (e) { console.warn('tasks.create push failed', e); }
+      }
       return c.json({ message: 'Task created successfully' });
     }
 
@@ -90,6 +97,11 @@ tasks.put('/:id', async (c) => {
       return c.json({ error: 'Invalid due date format. Use YYYY-MM-DD' }, 400);
     }
 
+    // Fetch previous assignee to detect changes
+    const prev = await c.env.DB.prepare('SELECT assigned_to, title FROM tasks WHERE id = ?').bind(id).first();
+    const prevAssigned = prev ? (prev as any).assigned_to : null;
+    const prevTitle = prev ? (prev as any).title : title;
+
     const { success } = await c.env.DB.prepare(
       'UPDATE tasks SET title = ?, description = ?, completed = ?, assigned_to = ?, due_date = ?, priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
     )
@@ -105,6 +117,12 @@ tasks.put('/:id', async (c) => {
       .run();
 
     if (success) {
+      // If assignment changed, notify the new assignee
+      if (assigned_to && Number(assigned_to) !== Number(prevAssigned)) {
+        try {
+          await sendPushToUsers(c as any, [Number(assigned_to)], 'Task Assigned', title || prevTitle, { type: 'task', action: 'updated' });
+        } catch (e) { console.warn('tasks.update push failed', e); }
+      }
       return c.json({ message: 'Task updated successfully' });
     }
 

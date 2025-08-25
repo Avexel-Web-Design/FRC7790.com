@@ -29,6 +29,8 @@
   "dependencies": {
     "@capacitor/android": "^7.4.3",
     "@capacitor/core": "^7.4.3",
+    "@capacitor/local-notifications": "^7.0.2",
+    "@capacitor/push-notifications": "^7.0.2",
     "@cloudflare/workers-types": "^4.20250627.0",
     "@fortawesome/fontawesome-svg-core": "^7.0.0",
     "@fortawesome/free-regular-svg-icons": "^7.0.0",

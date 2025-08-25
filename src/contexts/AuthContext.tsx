@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { registerPushToken } from '../utils/pushClient';
 import type { ReactNode } from 'react';
 
 interface User {
@@ -48,6 +49,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               avatar: userData.avatar,
               avatarColor: userData.avatar_color,
             });
+            // Best-effort push registration
+            registerPushToken(userData.id).catch(() => {});
           } else {
             localStorage.removeItem('token');
           }
@@ -89,6 +92,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               avatar: userData.avatar,
               avatarColor: userData.avatar_color,
             });
+            // Best-effort push registration
+            registerPushToken(userData.id).catch(() => {});
           } else {
             // Fallback minimal state
             setUser({ id: 0, username, isAdmin: false });

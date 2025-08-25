@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "844807353568",
+    "project_id": "frc7790",
+    "storage_bucket": "frc7790.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844807353568:android:932075f7d9a0d7d1920c85",
+        "android_client_info": {
+          "package_name": "com.frc7790.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxhr7VWhzKAPTU4J_bNsLcuEBEPycM62g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

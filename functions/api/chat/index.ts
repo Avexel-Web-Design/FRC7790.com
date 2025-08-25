@@ -13,7 +13,7 @@ import {
   deleteGroupChat
 } from './channels';
 import { getUsers, getUsersByRecentActivity } from './users';
-import { markChannelAsRead, getUnreadCounts, getTotalUnreadCount, getAllNotificationData } from './notifications';
+import { markChannelAsRead, getUnreadCounts, getTotalUnreadCount, getAllNotificationData, toggleMute, registerDevice, getMutedSettings } from './notifications';
 
 const chat = new Hono();
 
@@ -89,5 +89,8 @@ chat.post('/notifications/read/:channelId', markChannelAsRead);
 chat.get('/notifications/all', getAllNotificationData); // New combined endpoint
 chat.get('/notifications/unread', getUnreadCounts);
 chat.get('/notifications/total', getTotalUnreadCount);
+chat.post('/notifications/mute/:channelId', toggleMute);
+chat.post('/notifications/register-device', registerDevice);
+chat.get('/notifications/muted', getMutedSettings);
 
 export default chat;

@@ -1,4 +1,5 @@
 import { Context } from 'hono';
+import { sendChannelMessagePush } from '../utils/push';
 import { D1Database } from '@cloudflare/workers-types';
 
 interface Env {
@@ -204,6 +205,15 @@ export async function sendMessage(c: Context): Promise<Response> {
       } catch (error) {
         console.error("sendMessage: Error marking channel as read:", error);
         // Don't fail the message send if read status update fails
+      }
+
+      // Fire push notifications (best-effort)
+      try {
+        const senderRow = await c.env.DB.prepare('SELECT username FROM users WHERE id = ?').bind(sender_id).first();
+        const senderName = (senderRow as any)?.username || 'New message';
+        await sendChannelMessagePush(c, channelId, Number(sender_id), senderName, content);
+      } catch (e) {
+        console.warn('sendMessage: push failed', e);
       }
 
       return new Response(JSON.stringify({ message: 'Message sent' }), {
@@ -469,6 +479,15 @@ export async function sendDMMessage(c: Context): Promise<Response> {
       } catch (error) {
         console.error("sendDMMessage: Error marking DM as read:", error);
         // Don't fail the message send if read status update fails
+      }
+
+      // Fire push (best-effort)
+      try {
+        const senderRow = await c.env.DB.prepare('SELECT username FROM users WHERE id = ?').bind(sender_id).first();
+        const senderName = (senderRow as any)?.username || 'New message';
+        await sendChannelMessagePush(c, dmId, Number(sender_id), senderName, content);
+      } catch (e) {
+        console.warn('sendDMMessage: push failed', e);
       }
 
       return new Response(JSON.stringify({ message: 'DM message sent' }), {

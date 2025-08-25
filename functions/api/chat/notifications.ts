@@ -69,12 +69,17 @@ export async function getAllNotificationData(c: Context): Promise<Response> {
         AND channel_members.user_id = ?
     `).bind(userId).all();
     
-    // Combine all channel/DM/group IDs
+    // Fetch muted channels for this user
+    const mutedRows = await c.env.DB.prepare(
+      'SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1'
+    ).bind(userId).all();
+    const mutedSet = new Set((mutedRows.results as any[])?.map(r => (r as any).channel_id) || []);
+    // Combine all channel/DM/group IDs and filter muted
     const allChannelIds = [
       ...channels.map((c: any) => c.id),
       ...dmConversations.map((dm: any) => dm.channel_id),
       ...groupChats.map((g: any) => g.id)
-    ];
+    ].filter((id) => !mutedSet.has(id));
     
     const unreadCounts: Record<string, number> = {};
     let channelsUnread = 0;
@@ -171,12 +176,17 @@ export async function getUnreadCounts(c: Context): Promise<Response> {
         AND channel_members.user_id = ?
     `).bind(userId).all();
     
-    // Combine all channel/DM/group IDs
+    // Fetch muted channels for this user
+    const mutedRows = await c.env.DB.prepare(
+      'SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1'
+    ).bind(userId).all();
+    const mutedSet = new Set((mutedRows.results as any[])?.map(r => (r as any).channel_id) || []);
+    // Combine all channel/DM/group IDs and filter muted
     const allChannelIds = [
       ...channels.map((c: any) => c.id),
       ...dmConversations.map((dm: any) => dm.channel_id),
       ...groupChats.map((g: any) => g.id)
-    ];
+    ].filter((id) => !mutedSet.has(id));
     
     const unreadCounts: Record<string, number> = {};
     
@@ -234,34 +244,40 @@ export async function getTotalUnreadCount(c: Context): Promise<Response> {
     
     const userId = Number(userIdStr);
     
-    // Get regular channels the user has access to
+    // Get regular channels the user has access to (excluding muted)
     const { results: regularChannels } = await c.env.DB.prepare(`
       SELECT DISTINCT channels.id as channel_id
       FROM channels
       LEFT JOIN channel_members ON channels.id = channel_members.channel_id AND channel_members.user_id = ?
       WHERE channels.id NOT LIKE "dm_%" AND channels.id NOT LIKE "group_%" 
         AND (channels.is_private = 0 OR channel_members.user_id = ?)
-    `).bind(userId, userId).all();
-    
-    // Get DM conversations for this user
-    const { results: dmConversations } = await c.env.DB.prepare(`
-      SELECT DISTINCT channel_id
-      FROM messages
-      WHERE channel_id LIKE 'dm_%'
-        AND (
-          channel_id LIKE 'dm_' || ? || '_%' 
-          OR channel_id LIKE 'dm_%_' || ?
+        AND channels.id NOT IN (
+          SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1
         )
-    `).bind(userIdStr, userIdStr).all();
+    `).bind(userId, userId, userId).all();
     
-    // Get group chats the user is a member of  
+    // Get DM conversations for this user (excluding muted)
+    const { results: dmConversations } = await c.env.DB.prepare(`
+      SELECT DISTINCT m.channel_id as channel_id
+      FROM messages m
+      WHERE m.channel_id LIKE 'dm_%'
+        AND (m.channel_id LIKE 'dm_' || ? || '_%' OR m.channel_id LIKE 'dm_%_' || ?)
+        AND m.channel_id NOT IN (
+          SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1
+        )
+    `).bind(userIdStr, userIdStr, userId).all();
+    
+    // Get group chats the user is a member of (excluding muted)
     const { results: groupChats } = await c.env.DB.prepare(`
       SELECT DISTINCT channels.id as channel_id
       FROM channels
       LEFT JOIN channel_members ON channels.id = channel_members.channel_id
       WHERE channels.id LIKE "group_%" 
         AND channel_members.user_id = ?
-    `).bind(userId).all();
+        AND channels.id NOT IN (
+          SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1
+        )
+    `).bind(userId, userId).all();
     
     let channelsUnread = 0;
     let messagesUnread = 0;
@@ -327,5 +343,63 @@ export async function getTotalUnreadCount(c: Context): Promise<Response> {
   } catch (error) {
     console.error('Error getting total unread count:', error);
     return new Response('Error getting total unread count', { status: 500 });
+  }
+}
+
+// Toggle mute for a channel/DM for the current user
+export async function toggleMute(c: Context): Promise<Response> {
+  try {
+    const { channelId } = c.req.param();
+    const { user_id, muted } = await c.req.json();
+    if (!user_id || !channelId || typeof muted !== 'boolean') {
+      return new Response('user_id, channelId and muted are required', { status: 400 });
+    }
+    await c.env.DB.prepare(`
+      INSERT INTO user_notification_settings (user_id, channel_id, muted)
+      VALUES (?, ?, ?)
+      ON CONFLICT(user_id, channel_id) DO UPDATE SET muted = excluded.muted
+    `).bind(user_id, channelId, muted ? 1 : 0).run();
+    return new Response(JSON.stringify({ success: true, muted }), { headers: { 'Content-Type': 'application/json' } });
+  } catch (error) {
+    console.error('Error toggling mute:', error);
+    return new Response('Error toggling mute', { status: 500 });
+  }
+}
+
+// Register a device token for push notifications
+export async function registerDevice(c: Context): Promise<Response> {
+  try {
+    const { user_id, platform, token } = await c.req.json();
+    if (!user_id || !platform || !token) {
+      return new Response('user_id, platform, token required', { status: 400 });
+    }
+    await c.env.DB.prepare(`
+      INSERT INTO user_devices (user_id, platform, token)
+      VALUES (?, ?, ?)
+      ON CONFLICT(user_id, token) DO NOTHING
+    `).bind(user_id, platform, token).run();
+    return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
+  } catch (error) {
+    console.error('Error registering device:', error);
+    return new Response('Error registering device', { status: 500 });
+  }
+}
+
+// Get muted channels/DMs for a user
+export async function getMutedSettings(c: Context): Promise<Response> {
+  try {
+    const userIdStr = c.req.query('user_id');
+    if (!userIdStr) {
+      return new Response('User ID is required', { status: 400 });
+    }
+    const userId = Number(userIdStr);
+    const rows = await c.env.DB.prepare(
+      'SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1'
+    ).bind(userId).all();
+    const muted = ((rows.results as any[]) || []).map(r => (r as any).channel_id);
+    return new Response(JSON.stringify({ muted }), { headers: { 'Content-Type': 'application/json' } });
+  } catch (error) {
+    console.error('Error getting muted settings:', error);
+    return new Response('Error getting muted settings', { status: 500 });
   }
 }
