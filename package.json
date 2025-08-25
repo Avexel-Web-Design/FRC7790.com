@@ -27,7 +27,6 @@
     "deploy:prod": "wrangler pages deploy dist --env production"
   },
   "dependencies": {
-    "@capacitor-community/http": "^1.4.1",
     "@capacitor/android": "^7.4.3",
     "@capacitor/core": "^7.4.3",
     "@cloudflare/workers-types": "^4.20250627.0",
