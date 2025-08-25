@@ -29,7 +29,7 @@ const register = new Hono<{
 
 register.post('/', async (c) => {
   try {
-    const { username, password, is_admin } = await c.req.json();
+    const { username, password, is_admin, user_type } = await c.req.json();
     
     // Check if this is an admin creating a user with admin privileges
     const authHeader = c.req.header('Authorization');
@@ -66,9 +66,18 @@ register.post('/', async (c) => {
       return c.json({ error: 'Password must be at least 6 characters long' }, 400);
     }
 
-    // Determine account type: self-registered (public) vs admin-created (member)
-    // If a requester is admin (via Authorization), create a member by default; otherwise, create a public account.
-    const userType = creatorIsAdmin ? 'member' : 'public';
+    // Determine account type: self-registered (public) vs admin-created (member by default)
+    // Admin may explicitly set user_type to 'public' or 'member'. Non-admins are forced to 'public'.
+    let userType: 'member' | 'public' = 'public';
+    if (creatorIsAdmin) {
+      if (user_type === 'public' || user_type === 'member') {
+        userType = user_type;
+      } else {
+        userType = 'member';
+      }
+    } else {
+      userType = 'public';
+    }
 
     // For created (public) accounts, enforce username pattern [A-Za-z0-9._]+
     const allowedUsername = /^[A-Za-z0-9._]+$/;
@@ -80,7 +89,7 @@ register.post('/', async (c) => {
 
     const hashedPassword = await hashPassword(password);
 
-    const avatarValue = userType === 'member' ? `https://api.dicebear.com/7.x/initials/svg?seed=${username}` : null;
+  const avatarValue = userType === 'member' ? `https://api.dicebear.com/7.x/initials/svg?seed=${username}` : null;
     const { success, meta } = await c.env.DB.prepare(
       'INSERT INTO users (username, password, avatar, is_admin, user_type) VALUES (?, ?, ?, ?, ?)'
     )

@@ -39,7 +39,7 @@ const AdminUsers: React.FC = () => {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/admin/users', {
+      const response = await fetch('/api/admin/users?user_type=member', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -63,7 +63,7 @@ const AdminUsers: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(newUser)
+        body: JSON.stringify({ ...newUser, user_type: 'member' })
       });
 
       if (response.ok) {

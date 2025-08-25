@@ -22,6 +22,7 @@ import Tasks from './components/pages/tasks/Tasks';
 import Channels from './components/pages/Channels';
 import Profile from './components/pages/Profile';
 import AdminUsers from './components/pages/admin/AdminUsers';
+import AdminPublicUsers from './components/pages/admin/AdminPublicUsers';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DirectMessages from './components/pages/DirectMessages';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -86,6 +87,7 @@ function App() {
           >
             <Route path="/admin" element={<Channels />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/public-users" element={<AdminPublicUsers />} />
           </Route>
         </Routes>
   {/* API debug badge removed for production */}

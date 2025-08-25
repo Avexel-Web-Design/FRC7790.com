@@ -34,7 +34,12 @@ export default function MobileDashboardNav() {
         <Item to="/calendar" label="Calendar" icon={CalendarIcon} />
         <Item to="/tasks" label="Tasks" icon={ClipboardList} />
         <Item to="/profile" label="Profile" icon={UserIcon} />
-        {user?.isAdmin && <Item to="/admin/users" label="Users" icon={Shield} />}
+        {user?.isAdmin && (
+          <>
+            <Item to="/admin/users" label="Users" icon={Shield} />
+            <Item to="/admin/public-users" label="Public" icon={Shield} />
+          </>
+        )}
       </div>
     </nav>
   );

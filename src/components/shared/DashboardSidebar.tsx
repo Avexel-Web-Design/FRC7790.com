@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
-import { HashtagIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon, ChatBubbleLeftRightIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
+import { HashtagIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon, ChatBubbleLeftRightIcon, ArrowRightStartOnRectangleIcon, UsersIcon } from '@heroicons/react/24/outline';
 import NotificationDot from '../common/NotificationDot';
 
 interface DashboardSidebarProps {
@@ -35,6 +35,7 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
 
   const adminNavigation = [
     { name: 'Users', href: '/admin/users', icon: ShieldCheckIcon },
+    { name: 'Public Users', href: '/admin/public-users', icon: UsersIcon },
   ];
 
   if (isMobile) {
