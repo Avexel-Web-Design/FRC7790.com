@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { UserIcon, UsersIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { UsersIcon } from '@heroicons/react/24/outline';
 import { generateColor } from '../../../utils/color';
 import NebulaLoader from '../../common/NebulaLoader';
 
@@ -202,7 +202,7 @@ const AdminPublicUsers: React.FC = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
+        <div className="grid grid-cols-1 gap-4 md:gap-6 mb-6">
           <div className="bg-black border border-gray-700 rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
@@ -215,42 +215,6 @@ const AdminPublicUsers: React.FC = () => {
                   <dl>
                     <dt className="text-sm font-medium text-gray-400 truncate">Total Public Users</dt>
                     <dd className="text-lg font-medium text-white">{users.length}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-black border border-gray-700 rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-baywatch-orange rounded-md flex items-center justify-center">
-                    <ShieldCheckIcon className="w-5 h-5 text-white" />
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-400 truncate">Admins</dt>
-                    <dd className="text-lg font-medium text-white">{users.filter(u => u.is_admin).length}</dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-black border border-gray-700 rounded-lg">
-            <div className="p-5">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 bg-baywatch-orange rounded-md flex items-center justify-center">
-                    <UserIcon className="w-5 h-5 text-white" />
-                  </div>
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-400 truncate">Non-admins</dt>
-                    <dd className="text-lg font-medium text-white">{users.filter(u => !u.is_admin).length}</dd>
                   </dl>
                 </div>
               </div>
