@@ -109,3 +109,30 @@ Dev tips:
 
 - For live reload from your dev machine inside the app, set `server.url` to your LAN dev server (e.g., `http://192.168.1.10:5173`) and set `cleartext: true`. Switch back to HTTPS for production.
 - If you need notifications, background tasks, or native features later, add Capacitor plugins as needed.
+
+## 🔔 Notifications diagnostics
+
+Push setup has a server-side component and a device token registration step. Use these to diagnose:
+
+- Check server push configuration JSON in your browser:
+  - https://frc7790.com/api/chat/notifications/push-config?user_id=<YOUR_ID>
+  - Expect: `{ mode: "v1" | "legacy" | "none", hasServiceAccount: bool, tokenCount: number }`
+- Send a test push (requires at least one token registered for that user):
+  - POST https://frc7790.com/api/chat/notifications/test with JSON `{ "user_id": <YOUR_ID> }`
+
+On the device:
+- First run the app and log in to register the device token.
+- In logcat, confirm you see:
+  - `Registering plugin instance: PushNotifications`
+  - A `registration` event with token and a 200 posting to `/chat/notifications/register-device`.
+
+## 🗄️ Apply DB migrations to production
+
+If you see 500 from `/api/chat/notifications/all`, ensure the new tables exist in production.
+
+Apply migrations with Wrangler using `--remote`:
+
+```bash
+wrangler d1 execute frc7790-com --remote --file=migrations/009_add_notifications.sql
+wrangler d1 execute frc7790-com --remote --file=migrations/010_notifications_push.sql
+```
