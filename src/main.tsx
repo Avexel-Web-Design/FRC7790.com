@@ -10,11 +10,8 @@ import { API_HOSTS } from './config'
 // so that API calls from the packaged app go to the live backend.
 if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
   try {
-    // Auto-enable API debug overlay on native if not explicitly set
-    const current = localStorage.getItem('apiDebug');
-    if (current === null) {
-      localStorage.setItem('apiDebug', '1');
-    }
+    // Ensure debug overlay remains disabled in production
+    localStorage.removeItem('apiDebug');
   } catch {}
   const originalFetch = window.fetch.bind(window)
   window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {

@@ -150,9 +150,7 @@ export class FRCAPIService {
   }
 
   // Generic request method for our own backend API with retry logic
-  async request(method: string, path: string, data?: any, retryCount = 0): Promise<Response> {
-    // Lazy import to avoid cycles
-    const { recordApiLog, isApiDebugEnabled } = await import('./apiDebug');
+  async request(method: string, path: string, data?: any): Promise<Response> {
     // Determine environment: when running under Capacitor (capacitor:// or file:),
     // use the production host fallback list. Otherwise, use relative '/api'.
     // On Android with androidScheme: 'https', protocol is https://localhost,
@@ -164,10 +162,6 @@ export class FRCAPIService {
       'Content-Type': 'application/json',
     };
 
-    if (isApiDebugEnabled()) {
-      console.log(`API Request: ${method} ${path} (attempt ${retryCount + 1})`);
-      console.log('Token:', token ? `${token.substring(0, 15)}...` : 'No token');
-    }
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -183,9 +177,6 @@ export class FRCAPIService {
       console.log('Request data:', data);
     }
 
-    if (isApiDebugEnabled()) {
-      console.log('Request headers:', headers);
-    }
     
     try {
       const candidates = isNative ? API_HOSTS : [''];
@@ -218,26 +209,9 @@ export class FRCAPIService {
           } else {
             res = await fetch(url, config);
           }
-          recordApiLog({
-            time: new Date().toISOString(),
-            method,
-            path,
-            host,
-            status: res.status,
-            ok: res.ok,
-          });
           if (res.ok) return res;
           lastRes = res;
         } catch (e) {
-          recordApiLog({
-            time: new Date().toISOString(),
-            method,
-            path,
-            host,
-            status: 'error',
-            ok: false,
-            error: e instanceof Error ? e.message : String(e),
-          });
           lastError = e;
         }
       }
