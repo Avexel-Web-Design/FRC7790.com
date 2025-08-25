@@ -10,6 +10,8 @@ export const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a
 const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 const FRC_TEAM_KEY = "frc7790";
 import { API_HOSTS } from '../config';
+import { Capacitor } from '@capacitor/core';
+import { Http } from '@capacitor-community/http';
 
 // Time offsets for different event types (in milliseconds)
 const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset for district events
@@ -197,7 +199,24 @@ export class FRCAPIService {
       for (const host of candidates) {
         try {
           const url = host ? `${host}/api${path}` : `/api${path}`;
-          const res = await fetch(url, config);
+          let res: Response;
+          if (isNative && Capacitor.isNativePlatform()) {
+            // Use Capacitor HTTP to bypass WebView CORS
+            const httpResp = await Http.request({
+              method: method as any,
+              url,
+              headers: headers as Record<string, string>,
+              data: data ?? undefined,
+            });
+            // Synthesize a Response object so callers can .ok/.json()
+            const body = httpResp.data != null ? JSON.stringify(httpResp.data) : undefined;
+            res = new Response(body, {
+              status: httpResp.status || 0,
+              headers: new Headers(httpResp.headers as Record<string, string>),
+            });
+          } else {
+            res = await fetch(url, config);
+          }
           recordApiLog({
             time: new Date().toISOString(),
             method,
