@@ -16,6 +16,7 @@ const config = {
     allowNavigation: [
       'https://www.frc7790.com/*',
       'https://frc7790.com/*',
+      'https://frc7790.com/*',
       'https://frc7790-com.pages.dev/*',
       'https://frc7790.pages.dev/*',
       'https://youtube.com/*',

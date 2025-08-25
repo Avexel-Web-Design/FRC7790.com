@@ -149,6 +149,8 @@ export class FRCAPIService {
 
   // Generic request method for our own backend API with retry logic
   async request(method: string, path: string, data?: any, retryCount = 0): Promise<Response> {
+    // Lazy import to avoid cycles
+    const { recordApiLog, isApiDebugEnabled } = await import('./apiDebug');
     // Determine base URL: when running under Capacitor (capacitor:// scheme),
     // use the production domain so relative /api calls succeed.
     let apiBase = '';
@@ -172,8 +174,10 @@ export class FRCAPIService {
       'Content-Type': 'application/json',
     };
 
-    console.log(`API Request: ${method} ${path} (attempt ${retryCount + 1})`);
-    console.log('Token:', token ? `${token.substring(0, 15)}...` : 'No token');
+    if (isApiDebugEnabled()) {
+      console.log(`API Request: ${method} ${path} (attempt ${retryCount + 1})`);
+      console.log('Token:', token ? `${token.substring(0, 15)}...` : 'No token');
+    }
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -189,19 +193,42 @@ export class FRCAPIService {
       console.log('Request data:', data);
     }
 
-    console.log('Request headers:', headers);
+    if (isApiDebugEnabled()) {
+      console.log('Request headers:', headers);
+    }
     
     try {
       const candidates = apiBase ? [apiBase, 'https://frc7790-com.pages.dev', 'https://frc7790.pages.dev'] : [''];
       let lastError: unknown = null;
+      let lastRes: Response | undefined;
       for (const host of candidates) {
         try {
-          const response = await fetch(`${host}/api${path}`, config);
-          return response;
+          const url = `${host}/api${path}`;
+          const res = await fetch(url, config);
+          recordApiLog({
+            time: new Date().toISOString(),
+            method,
+            path,
+            host,
+            status: res.status,
+            ok: res.ok,
+          });
+          if (res.ok) return res;
+          lastRes = res;
         } catch (e) {
+          recordApiLog({
+            time: new Date().toISOString(),
+            method,
+            path,
+            host,
+            status: 'error',
+            ok: false,
+            error: e instanceof Error ? e.message : String(e),
+          });
           lastError = e;
         }
       }
+      if (lastRes) return lastRes;
       throw lastError ?? new Error('API request failed');
     } catch (error) {
       console.error(`API request error for ${method} ${path}:`, error);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ApiDebugBadge from '../common/ApiDebugBadge';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { frcAPI } from '../../utils/frcAPI';
@@ -1559,8 +1560,11 @@ const Channels: React.FC = () => {
           </div>
         );
       })()}
+      <ApiDebugBadge />
     </div>
   );
 };
 
 export default Channels;
+// Render badge at root of page
+// Note: The badge component is included at the top-level return

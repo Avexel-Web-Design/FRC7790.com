@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ApiDebugBadge from '../common/ApiDebugBadge';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { frcAPI } from '../../utils/frcAPI';
@@ -1523,6 +1524,7 @@ const DirectMessages: React.FC = () => {
           </div>
         );
       })()}
+      <ApiDebugBadge />
     </div>
   );
 };
