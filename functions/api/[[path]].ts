@@ -9,6 +9,7 @@ import adminUsers from './admin/users';
 import calendar from './calendar';
 import tasks from './tasks';
 import profile from './profile';
+import preferences from './preferences';
 
 import chat from './chat';
 
@@ -26,6 +27,7 @@ app.route('/admin/users', adminUsers);
 app.route('/calendar', calendar);
 app.route('/tasks', tasks);
 app.route('/profile', profile);
+app.route('/preferences', preferences);
 app.route('/chat', chat);
 
 
@@ -47,6 +49,7 @@ app.get('/', (c) => c.json({
     '/api/profile',
     '/api/calendar',
     '/api/tasks',
+    '/api/preferences/teams',
     '/api/admin/users'
   ]
 }));

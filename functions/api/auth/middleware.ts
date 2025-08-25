@@ -6,7 +6,7 @@ interface CloudflareEnv {
   JWT_SECRET: string;
 }
 
-interface AuthUser {
+export interface AuthUser {
   id: number;
   username: string;
   isAdmin: boolean;

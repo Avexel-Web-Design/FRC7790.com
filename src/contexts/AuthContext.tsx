@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { registerPushToken, initPushListeners } from '../utils/pushClient';
+import { fetchTeamPreferences } from '../utils/preferences';
 import type { ReactNode } from 'react';
 
 interface User {
@@ -54,6 +55,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // Best-effort push registration
             initPushListeners().catch(() => {});
             registerPushToken(userData.id).catch(() => {});
+            // Preload team preferences cache for highlighting
+            fetchTeamPreferences()
+              .then((prefs) => { try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(prefs)); } catch {} })
+              .catch(() => {});
           } else {
             localStorage.removeItem('token');
           }
@@ -96,9 +101,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               avatar: userData.avatar,
               avatarColor: userData.avatar_color,
             });
+            // Clear stale team prefs cache on login; Settings will refresh
+            try { localStorage.removeItem('team_prefs_cache_v1'); } catch {}
             // Best-effort push registration
             initPushListeners().catch(() => {});
             registerPushToken(userData.id).catch(() => {});
+            // Preload team preferences cache for highlighting
+            fetchTeamPreferences()
+              .then((prefs) => { try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(prefs)); } catch {} })
+              .catch(() => {});
           } else {
             // Fallback minimal state
             setUser({ id: 0, username, isAdmin: false });
@@ -147,9 +158,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             avatar: userData.avatar,
             avatarColor: userData.avatar_color,
           });
+          try { localStorage.removeItem('team_prefs_cache_v1'); } catch {}
           // Best-effort push registration
           initPushListeners().catch(() => {});
           registerPushToken(userData.id).catch(() => {});
+          fetchTeamPreferences()
+            .then((prefs) => { try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(prefs)); } catch {} })
+            .catch(() => {});
         } else {
           setUser({ id: 0, username, isAdmin: false });
         }

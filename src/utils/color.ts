@@ -34,17 +34,27 @@ const TEAM_COLORS: Record<string, string> = {
 };
 
 export const getTeamColor = (teamNumber: string): string | null => {
-  // User favorites override
+  const tn = String(teamNumber);
+  // New server-synced per-team preferences (cached locally)
+  try {
+    const raw = localStorage.getItem('team_prefs_cache_v1');
+    if (raw) {
+      const prefs = JSON.parse(raw) as Array<{ team_number: string; highlight_color: string }>;
+      const match = prefs.find(p => String(p.team_number) === tn);
+      if (match && typeof match.highlight_color === 'string') return match.highlight_color;
+    }
+  } catch {}
+  // Legacy single-color local favorites fallback
   try {
     const raw = localStorage.getItem('user_favorites_v1');
     if (raw) {
       const prefs = JSON.parse(raw) as { teams?: string[]; color?: string };
-      if (prefs?.teams?.includes(String(teamNumber)) && typeof prefs.color === 'string') {
+      if (prefs?.teams?.includes(tn) && typeof prefs.color === 'string') {
         return prefs.color;
       }
     }
   } catch {}
-  return TEAM_COLORS[teamNumber] || null;
+  return TEAM_COLORS[tn] || null;
 };
 
 export const getTeamTextClasses = (teamNumber: string): string => {
