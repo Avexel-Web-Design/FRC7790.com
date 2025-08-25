@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { registerPushToken } from '../utils/pushClient';
+import { registerPushToken, initPushListeners } from '../utils/pushClient';
 import type { ReactNode } from 'react';
 
 interface User {
@@ -50,6 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               avatarColor: userData.avatar_color,
             });
             // Best-effort push registration
+            initPushListeners().catch(() => {});
             registerPushToken(userData.id).catch(() => {});
           } else {
             localStorage.removeItem('token');
@@ -93,6 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               avatarColor: userData.avatar_color,
             });
             // Best-effort push registration
+            initPushListeners().catch(() => {});
             registerPushToken(userData.id).catch(() => {});
           } else {
             // Fallback minimal state
