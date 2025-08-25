@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
-import { Hash, MessagesSquare, ClipboardList, Calendar as CalendarIcon, User as UserIcon, Shield } from 'lucide-react';
+import { Hash, MessagesSquare, ClipboardList, Calendar as CalendarIcon, User as UserIcon, Shield, Users } from 'lucide-react';
 
 export default function MobileDashboardNav() {
   const { channelsHaveUnread, messagesHaveUnread } = useNotifications();
@@ -36,7 +36,7 @@ export default function MobileDashboardNav() {
         <Item to="/profile" label="Profile" icon={UserIcon} />
         {user?.isAdmin && (
           <>
-            <Item to="/admin/users" label="Users" icon={Shield} />
+            <Item to="/admin/users" label="Users" icon={Users} />
             <Item to="/admin/public-users" label="Public" icon={Shield} />
           </>
         )}
