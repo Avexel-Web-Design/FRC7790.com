@@ -126,7 +126,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         body: JSON.stringify({ username, password }),
       });
 
-      return response.ok;
+      if (!response.ok) return false;
+
+      const { token } = await response.json();
+      if (!token) return false;
+      localStorage.setItem('token', token);
+
+      // Fetch profile to populate user state
+      try {
+        const profileRes = await fetch('/api/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (profileRes.ok) {
+          const userData = await profileRes.json();
+          setUser({
+            id: userData.id,
+            username: userData.username,
+            isAdmin: userData.is_admin,
+            userType: userData.user_type,
+            avatar: userData.avatar,
+            avatarColor: userData.avatar_color,
+          });
+          // Best-effort push registration
+          initPushListeners().catch(() => {});
+          registerPushToken(userData.id).catch(() => {});
+        } else {
+          setUser({ id: 0, username, isAdmin: false });
+        }
+      } catch {
+        setUser({ id: 0, username, isAdmin: false });
+      }
+
+      return true;
     } catch (error) {
       console.error('Register error:', error);
       return false;
