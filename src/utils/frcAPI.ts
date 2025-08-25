@@ -156,13 +156,9 @@ export class FRCAPIService {
     const { recordApiLog, isApiDebugEnabled } = await import('./apiDebug');
     // Determine environment: when running under Capacitor (capacitor:// or file:),
     // use the production host fallback list. Otherwise, use relative '/api'.
-    let isNative = false;
-    try {
-      if (typeof window !== 'undefined') {
-        const proto = window.location.protocol;
-        isNative = proto === 'capacitor:' || proto === 'file:';
-      }
-    } catch {}
+    // On Android with androidScheme: 'https', protocol is https://localhost,
+    // so rely on Capacitor.isNativePlatform() instead of window.location.protocol
+    const isNative = Capacitor.isNativePlatform();
 
     const token = localStorage.getItem('token');
     const headers: HeadersInit = {
@@ -200,13 +196,14 @@ export class FRCAPIService {
         try {
           const url = host ? `${host}/api${path}` : `/api${path}`;
           let res: Response;
-          if (isNative && Capacitor.isNativePlatform()) {
+          if (isNative) {
             // Use Capacitor HTTP to bypass WebView CORS
             const httpResp = await Http.request({
               method: method as any,
               url,
               headers: headers as Record<string, string>,
               data: data ?? undefined,
+              responseType: 'json',
             });
             // Synthesize a Response object so callers can .ok/.json()
             const body = httpResp.data != null ? JSON.stringify(httpResp.data) : undefined;
