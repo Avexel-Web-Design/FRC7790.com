@@ -149,6 +149,18 @@ export class FRCAPIService {
 
   // Generic request method for our own backend API with retry logic
   async request(method: string, path: string, data?: any, retryCount = 0): Promise<Response> {
+    // Determine base URL: when running under Capacitor (capacitor:// scheme),
+    // use the production domain so relative /api calls succeed.
+    let apiBase = '';
+    try {
+      if (typeof window !== 'undefined') {
+        const proto = window.location.protocol;
+        if (proto === 'capacitor:' || proto === 'file:') {
+          apiBase = 'https://www.frc7790.com';
+        }
+      }
+    } catch {}
+
     const token = localStorage.getItem('token');
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -174,7 +186,7 @@ export class FRCAPIService {
     console.log('Request headers:', headers);
     
     try {
-      const response = await fetch(`/api${path}`, config);
+  const response = await fetch(`${apiBase}/api${path}`, config);
       console.log(`Response status: ${response.status}`);
       
       // Handle rate limiting with exponential backoff

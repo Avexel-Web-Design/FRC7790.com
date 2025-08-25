@@ -14,6 +14,12 @@
     "dev:full": "npm run build && npm run functions:dev",
     "dev:api": "wrangler pages dev --compatibility-date=2024-06-24 --port=8788 --local",
     "start": "concurrently \"npm run dev\" \"npm run dev:api\"",
+    "cap:init": "npx cap init FRC-7790 com.frc7790.app --web-dir=dist --npm-client=npm",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap add android",
+    "cap:open:android": "npx cap open android",
+    "cap:copy": "npx cap copy",
+    "android:build": "npm run build && npx cap copy android && npx cap sync android",
     "db:migrate": "wrangler d1 execute frc7790-com --file=migrations/001_initial_schema.sql",
     "db:migrate:dev": "wrangler d1 execute frc7790-com-dev --file=migrations/001_initial_schema.sql",
     "db:migrate:prod": "wrangler d1 execute frc7790-com --remote --file=migrations/001_initial_schema.sql",
@@ -21,6 +27,8 @@
     "deploy:prod": "wrangler pages deploy dist --env production"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
     "@cloudflare/workers-types": "^4.20250627.0",
     "@fortawesome/fontawesome-svg-core": "^7.0.0",
     "@fortawesome/free-regular-svg-icons": "^7.0.0",
@@ -37,6 +45,7 @@
     "wrangler": "^4.22.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^7.4.3",
     "@eslint/js": "^9.25.0",
     "@tsconfig/strictest": "^2.0.5",
     "@types/react": "^19.1.2",

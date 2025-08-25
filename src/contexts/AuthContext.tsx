@@ -74,16 +74,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.ok) {
         const { token } = await response.json();
         localStorage.setItem('token', token);
-        
-        const decodedToken = JSON.parse(atob(token.split('.')[1]));
-        setUser({
-          id: decodedToken.id,
-          username: decodedToken.username || username,
-          isAdmin: decodedToken.isAdmin || false,
-          avatar: decodedToken.avatar || '',
-          avatarColor: decodedToken.avatarColor || null,
-        });
-        
+
+        // Immediately fetch the profile to avoid JWT decoding pitfalls
+        try {
+          const profileRes = await fetch('/api/profile', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (profileRes.ok) {
+            const userData = await profileRes.json();
+            setUser({
+              id: userData.id,
+              username: userData.username,
+              isAdmin: userData.is_admin,
+              avatar: userData.avatar,
+              avatarColor: userData.avatar_color,
+            });
+          } else {
+            // Fallback minimal state
+            setUser({ id: 0, username, isAdmin: false });
+          }
+        } catch {
+          setUser({ id: 0, username, isAdmin: false });
+        }
+
         return true;
       }
       return false;

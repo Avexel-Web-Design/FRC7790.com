@@ -89,3 +89,23 @@ export default tseslint.config({
   },
 })
 ```
+
+## 📱 Android app (Capacitor)
+
+This site can be shipped as a Play Store app using Capacitor. The app loads the live site (https://www.frc7790.com) inside a secure WebView.
+
+Setup overview:
+
+- Install deps:
+  - npm i -D @capacitor/cli
+  - npm i @capacitor/core @capacitor/android
+- Ensure `capacitor.config.ts` exists. It is configured to use `server.url = https://www.frc7790.com`.
+- Add Android platform: `npm run cap:android`
+- Build and copy assets: `npm run android:build`
+- Open Android Studio: `npm run cap:open:android`
+- Generate a signed App Bundle (AAB) and upload to Google Play Console.
+
+Dev tips:
+
+- For live reload from your dev machine inside the app, set `server.url` to your LAN dev server (e.g., `http://192.168.1.10:5173`) and set `cleartext: true`. Switch back to HTTPS for production.
+- If you need notifications, background tasks, or native features later, add Capacitor plugins as needed.

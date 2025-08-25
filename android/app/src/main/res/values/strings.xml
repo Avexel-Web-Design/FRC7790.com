@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FRC 7790</string>
+    <string name="title_activity_main">FRC 7790</string>
+    <string name="package_name">com.frc7790.app</string>
+    <string name="custom_url_scheme">com.frc7790.app</string>
+</resources>
