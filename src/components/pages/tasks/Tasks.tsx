@@ -193,10 +193,12 @@ const Tasks: React.FC = () => {
     const total = tasks.length;
     const completed = tasks.filter(t => t.completed).length;
     const pending = total - completed;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const overdue = tasks.filter(t => 
       !t.completed && 
       t.due_date && 
-      new Date(t.due_date) < new Date()
+      new Date(t.due_date + 'T00:00:00') < today
     ).length;
 
     return { total, completed, pending, overdue };
@@ -350,8 +352,8 @@ const Tasks: React.FC = () => {
                             <span>Assigned to: {task.assignee_username}</span>
                           )}
                           {task.due_date && (
-                            <span className={new Date(task.due_date) < new Date() && !task.completed ? 'text-red-600' : ''}>
-                              Due: {new Date(task.due_date).toLocaleDateString()}
+                            <span className={new Date(task.due_date + 'T00:00:00') < new Date(new Date().setHours(0, 0, 0, 0)) && !task.completed ? 'text-red-600' : ''}>
+                              Due: {task.due_date}
                             </span>
                           )}
                         </div>
