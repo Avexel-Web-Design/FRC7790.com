@@ -27,9 +27,10 @@ const config = {
           'https://www.youtube-nocookie.com/*'
         ],
       }
-    : {
-        // Live mode: always load the production site so the app auto-updates with website deploys
-        url: 'https://www.frc7790.com',
+  : {
+    // Live mode: load the apex domain (currently resolving); www is failing DNS so we avoid it here.
+    // Once www DNS is fixed you can switch back or leave apex.
+    url: 'https://frc7790.com',
         cleartext: false,
         allowNavigation: [
           'https://www.frc7790.com/*',
