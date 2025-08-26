@@ -17,6 +17,7 @@ import SearchResults from './components/pages/SearchResults';
 import Login from './components/pages/auth/Login';
 import CreateAccount from './components/pages/auth/CreateAccount';
 import Settings from './components/pages/Settings';
+import LiveTest from './components/pages/LiveTest';
 import Calendar from './components/pages/calendar/Calendar';
 import Tasks from './components/pages/tasks/Tasks';
 import Channels from './components/pages/Channels';
@@ -56,6 +57,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/create-account" element={<CreateAccount />} />
             <Route path="/settings" element={<Settings />} />
+            {/* TEMPORARY: Live test route for Capacitor remote update verification */}
+            <Route path="/live-test" element={<LiveTest />} />
           </Route>
 
           {/* Member-only routes (block public) */}
