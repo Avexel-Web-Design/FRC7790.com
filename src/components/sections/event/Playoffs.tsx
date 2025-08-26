@@ -608,25 +608,80 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
     const redAllianceLabel = isAllianceLoading ? 'Loading...' : 
       getAllianceDisplayName(redAllianceNumber, isChampionshipEvent, divisionMapping, 'TBD');
 
+    // Render non-clickable match box for matches without data
+    if (!bracketMatch.match) {
+      return (
+        <div
+          className={`relative flex flex-col justify-center p-6 pt-8 rounded-xl bg-black/90 border border-baywatch-orange/30 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition-transform duration-500 hover:scale-105 w-[280px] min-h-[200px] before:content-[''] before:absolute before:inset-0 before:opacity-5 before:rounded-xl before:pointer-events-none before:bg-[radial-gradient(circle_at_1px_1px,_rgba(255,107,0,0.2)_1px,_transparent_0)] before:bg-[length:20px_20px] ${className}`}
+        >
+          {/* Match title bubble */}
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/80 backdrop-blur-sm text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md will-change-transform">
+            {displayName}
+          </span>
+
+          {/* Alliance rows */}
+          <div className="flex flex-col gap-4">
+            {/* Blue Alliance */}
+            <div className={allianceRowClasses('blue')}>
+              <span className={badgeClasses('blue')}>{blueAllianceLabel}</span>
+              <div className="flex flex-wrap gap-1">
+                {teams.blue.map((team) => {
+                  const teamColor = getTeamColor(team);
+                  return (
+                    <Link
+                      key={team}
+                      to={`/team?team=${team}`}
+                      className={`text-sm transition-colors cursor-pointer font-bold hover:opacity-80`}
+                      style={teamColor ? { color: teamColor } : {}}
+                    >
+                      {team}
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="ml-2 font-semibold text-blue-400">{scores.blue ?? '--'}</div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-gray-600/50" />
+
+            {/* Red Alliance */}
+            <div className={allianceRowClasses('red')}>
+              <span className={badgeClasses('red')}>{redAllianceLabel}</span>
+              <div className="flex flex-wrap gap-1">
+                {teams.red.map((team) => {
+                  const teamColor = getTeamColor(team);
+                  return (
+                    <Link
+                      key={team}
+                      to={`/team?team=${team}`}
+                      className={`text-sm transition-colors cursor-pointer font-bold hover:opacity-80`}
+                      style={teamColor ? { color: teamColor } : {}}
+                    >
+                      {team}
+                    </Link>
+                  );
+                })}
+              </div>
+              <div className="ml-2 font-semibold text-red-400">{scores.red ?? '--'}</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Render clickable match box for matches with data
     return (
-      <div
-        className={`relative flex flex-col justify-center p-6 pt-8 rounded-xl bg-black/90 border border-baywatch-orange/30 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition-transform duration-500 hover:scale-105 w-[280px] min-h-[200px] before:content-[''] before:absolute before:inset-0 before:opacity-5 before:rounded-xl before:pointer-events-none before:bg-[radial-gradient(circle_at_1px_1px,_rgba(255,107,0,0.2)_1px,_transparent_0)] before:bg-[length:20px_20px] ${className}`}
+      <Link
+        to={`/match?match=${bracketMatch.match.key}`}
+        className={`relative flex flex-col justify-center p-6 pt-8 rounded-xl bg-black/90 border border-baywatch-orange/30 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition-transform duration-500 hover:scale-105 w-[280px] min-h-[200px] before:content-[''] before:absolute before:inset-0 before:opacity-5 before:rounded-xl before:pointer-events-none before:bg-[radial-gradient(circle_at_1px_1px,_rgba(255,107,0,0.2)_1px,_transparent_0)] before:bg-[length:20px_20px] cursor-pointer block ${className}`}
       >
         {/* Match title bubble */}
-        {bracketMatch.match ? (
-           <Link
-             to={`/match?match=${bracketMatch.match.key}`}
-             className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/80 backdrop-blur-sm text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md inline-flex items-center hover:text-white transition-colors will-change-transform"
-           >
-             {displayName} <i className="fas fa-arrow-up-right-from-square ml-1"></i>
-           </Link>
-         ) : (
-           <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/80 backdrop-blur-sm text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md will-change-transform">
-             {displayName}
-           </span>
-         )}
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-baywatch-orange/80 backdrop-blur-sm text-black text-xs font-semibold rounded-full border border-baywatch-orange/60 shadow-md inline-flex items-center will-change-transform">
+          {displayName} <i className="fas fa-arrow-up-right-from-square ml-1"></i>
+        </span>
 
-         {/* Alliance rows */}
+        {/* Alliance rows */}
         <div className="flex flex-col gap-4">
           {/* Blue Alliance */}
           <div className={allianceRowClasses('blue')}>
@@ -638,8 +693,9 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                   <Link
                     key={team}
                     to={`/team?team=${team}`}
-                    className={`text-sm transition-colors cursor-pointer font-bold hover:opacity-80`}
+                    className={`text-sm transition-colors cursor-pointer font-bold hover:opacity-80 relative z-10`}
                     style={teamColor ? { color: teamColor } : {}}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {team}
                   </Link>
@@ -662,8 +718,9 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                   <Link
                     key={team}
                     to={`/team?team=${team}`}
-                    className={`text-sm transition-colors cursor-pointer font-bold hover:opacity-80`}
+                    className={`text-sm transition-colors cursor-pointer font-bold hover:opacity-80 relative z-10`}
                     style={teamColor ? { color: teamColor } : {}}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {team}
                   </Link>
@@ -673,7 +730,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
             <div className="ml-2 font-semibold text-red-400">{scores.red ?? '--'}</div>
           </div>
         </div>
-      </div>
+      </Link>
     );
   };
 
