@@ -16,8 +16,6 @@ const navigationItems: NavigationItem[] = [
   { name: 'Schedule', href: '/schedule' },
   { name: 'Scouting', href: '/scouting' },
   { name: 'FTC', href: '/ftc' },
-  // TEMPORARY: Live update verification link. Remove after confirming Capacitor remote updates work.
-  { name: 'Live Test', href: '/live-test' },
 ];
 
 export default function Navigation() {
