@@ -189,15 +189,27 @@ const Tasks: React.FC = () => {
     }
   };
 
+  const formatDueDate = (dueDateString: string) => {
+    // Parse the date string as a local date to avoid timezone issues
+    const [year, month, day] = dueDateString.split('-').map(Number);
+    return new Date(year, month - 1, day).toLocaleDateString();
+  };
+
   const getTaskStats = () => {
     const total = tasks.length;
     const completed = tasks.filter(t => t.completed).length;
     const pending = total - completed;
-    const overdue = tasks.filter(t => 
-      !t.completed && 
-      t.due_date && 
-      new Date(t.due_date) < new Date()
-    ).length;
+    const overdue = tasks.filter(t => {
+      if (!t.completed && t.due_date) {
+        // Parse due date as local date for comparison
+        const [year, month, day] = t.due_date.split('-').map(Number);
+        const dueDate = new Date(year, month - 1, day);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time for date-only comparison
+        return dueDate < today;
+      }
+      return false;
+    }).length;
 
     return { total, completed, pending, overdue };
   };
@@ -350,8 +362,15 @@ const Tasks: React.FC = () => {
                             <span>Assigned to: {task.assignee_username}</span>
                           )}
                           {task.due_date && (
-                            <span className={new Date(task.due_date) < new Date() && !task.completed ? 'text-red-600' : ''}>
-                              Due: {new Date(task.due_date).toLocaleDateString()}
+                            <span className={(() => {
+                              // Parse due date as local date for comparison
+                              const [year, month, day] = task.due_date.split('-').map(Number);
+                              const dueDate = new Date(year, month - 1, day);
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              return dueDate < today && !task.completed ? 'text-red-600' : '';
+                            })()}>
+                              Due: {formatDueDate(task.due_date)}
                             </span>
                           )}
                         </div>
