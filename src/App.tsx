@@ -26,6 +26,7 @@ import AdminPublicUsers from './components/pages/admin/AdminPublicUsers';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DirectMessages from './components/pages/DirectMessages';
 import { NotificationProvider } from './contexts/NotificationContext';
+import PrivacyPolicy from './components/pages/PrivacyPolicy';
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/create-account" element={<CreateAccount />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           </Route>
 
           {/* Member-only routes (block public) */}

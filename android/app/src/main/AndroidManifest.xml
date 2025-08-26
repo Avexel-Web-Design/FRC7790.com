@@ -31,6 +31,14 @@
                 <data android:scheme="https" android:host="www.frc7790.com" />
             </intent-filter>
 
+            <!-- App Links (apex domain): Open https://frc7790.com/* directly in the app -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="frc7790.com" />
+            </intent-filter>
+
         </activity>
 
         <provider

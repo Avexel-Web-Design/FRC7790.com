@@ -23,10 +23,13 @@
     "db:migrate": "wrangler d1 execute frc7790-com --file=migrations/001_initial_schema.sql",
     "db:migrate:dev": "wrangler d1 execute frc7790-com-dev --file=migrations/001_initial_schema.sql",
     "db:migrate:prod": "wrangler d1 execute frc7790-com --remote --file=migrations/001_initial_schema.sql",
-  "db:migrate:dev:all": "node scripts/migrateAll.mjs dev",
-  "db:migrate:prod:all": "node scripts/migrateAll.mjs prod --remote",
+    "db:migrate:dev:all": "node scripts/migrateAll.mjs dev",
+    "db:migrate:prod:all": "node scripts/migrateAll.mjs prod --remote",
     "db:backup": "wrangler d1 export frc7790-com --output=backup.sql",
-    "deploy:prod": "wrangler pages deploy dist --env production"
+    "deploy:prod": "wrangler pages deploy dist --env production",
+    "generate:icons": "node scripts/generateIcons.mjs"
+    ,"prune:dist": "node scripts/pruneDist.mjs"
+    ,"android:release": "node scripts/androidRelease.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
@@ -65,6 +68,7 @@
     "tailwindcss": "^3.4.17",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "sharp": "^0.33.4"
   }
 }
