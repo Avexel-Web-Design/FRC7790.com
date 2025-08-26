@@ -23,6 +23,8 @@
     "db:migrate": "wrangler d1 execute frc7790-com --file=migrations/001_initial_schema.sql",
     "db:migrate:dev": "wrangler d1 execute frc7790-com-dev --file=migrations/001_initial_schema.sql",
     "db:migrate:prod": "wrangler d1 execute frc7790-com --remote --file=migrations/001_initial_schema.sql",
+  "db:migrate:dev:all": "node scripts/migrateAll.mjs dev",
+  "db:migrate:prod:all": "node scripts/migrateAll.mjs prod --remote",
     "db:backup": "wrangler d1 export frc7790-com --output=backup.sql",
     "deploy:prod": "wrangler pages deploy dist --env production"
   },

@@ -377,7 +377,7 @@ const Calendar: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-black border border-gray-700 rounded-lg">
+  <div className="bg-black border border-gray-700 rounded-lg overflow-hidden">
           {/* Calendar Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
             <button

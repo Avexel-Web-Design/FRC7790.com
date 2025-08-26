@@ -69,6 +69,7 @@ function App() {
             }
           >
             <Route path="/dashboard" element={<Channels />} />
+            <Route path="/channels" element={<Channels />} />
             <Route path="/messages" element={<DirectMessages />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/tasks" element={<Tasks />} />

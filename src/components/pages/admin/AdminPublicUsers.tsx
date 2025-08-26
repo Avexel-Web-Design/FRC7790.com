@@ -223,11 +223,11 @@ const AdminPublicUsers: React.FC = () => {
         </div>
 
         {/* Users Table (Desktop) */}
-        <div className="hidden md:block bg-black border border-gray-700 rounded-lg">
+  <div className="hidden md:block bg-black border border-gray-700 rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-700">
             <h3 className="text-lg font-medium text-white">Public Users</h3>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto no-scrollbar">
             <table className="min-w-full divide-y divide-gray-700">
               <thead className="bg-black">
                 <tr>

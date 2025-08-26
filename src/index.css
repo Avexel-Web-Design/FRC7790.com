@@ -477,6 +477,15 @@ button::-webkit-focus-inner {
   }
 }
 
+/* Utility: hide scrollbars while allowing scroll (desktop & cross-browser) */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
 /* --------------------------------------------------
    Nebula Particle Loader (ported from legacy site)
    -------------------------------------------------- */

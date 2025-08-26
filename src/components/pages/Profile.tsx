@@ -462,12 +462,12 @@ const Profile: React.FC = () => {
               {/* Add teams */}
               <div className="mb-6">
                 <label className="block text-sm text-gray-300 mb-2">Add team numbers</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap sm:flex-nowrap gap-2">
                   <input
                     type="text"
                     value={newTeamsInput}
                     onChange={(e) => setNewTeamsInput(e.target.value)}
-                    className="flex-1 bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-baywatch-orange"
+                    className="flex-1 min-w-0 w-full sm:w-auto bg-transparent border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-baywatch-orange"
                     placeholder="e.g. 33, 67 2056"
                   />
                   <button
@@ -495,7 +495,7 @@ const Profile: React.FC = () => {
                       }
                     }}
                     disabled={tpLoading}
-                    className="px-4 py-2 rounded bg-baywatch-orange text-black font-semibold hover:bg-baywatch-orange/80 disabled:opacity-60"
+                    className="shrink-0 px-4 py-2 rounded bg-baywatch-orange text-black font-semibold hover:bg-baywatch-orange/80 disabled:opacity-60 w-full sm:w-auto text-center"
                   >
                     Add
                   </button>
