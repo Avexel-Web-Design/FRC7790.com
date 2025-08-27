@@ -161,7 +161,10 @@ export class FRCAPIService {
     // Use a stable random session id per install/tab to help rate limiting bucket by session when unauthenticated
     let sessionId = localStorage.getItem('session_id');
     if (!sessionId) {
-      sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      // Generate a cryptographically secure random string
+      const randomUint8 = window.crypto.getRandomValues(new Uint8Array(16));
+      const randomStr = Array.from(randomUint8).map(b => b.toString(36)).join('');
+      sessionId = randomStr + Date.now().toString(36);
       try { localStorage.setItem('session_id', sessionId); } catch {}
     }
     const headers: HeadersInit = {
