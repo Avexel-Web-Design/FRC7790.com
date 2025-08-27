@@ -12,9 +12,9 @@ import type { StatEvent, StatTeam } from '../../utils/statbotics';
 
 export type SortKey = 'team' | 'epa' | 'epa_auto' | 'epa_teleop' | 'epa_endgame' | 'opr' | 'dpr' | 'ccwm';
 
-// Sanitize event code: allow only alphanumeric and hyphens (typical event code chars)
+// Only allow event codes that are alphanumeric, dashes, or underscores
 function sanitizeEventCode(code: string): string {
-  return code.replace(/[^a-zA-Z0-9-]/g, '');
+  return (code || '').replace(/[^a-zA-Z0-9_-]/g, '');
 }
 
 export default function Scouting() {
