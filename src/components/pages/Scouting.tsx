@@ -12,6 +12,11 @@ import type { StatEvent, StatTeam } from '../../utils/statbotics';
 
 export type SortKey = 'team' | 'epa' | 'epa_auto' | 'epa_teleop' | 'epa_endgame' | 'opr' | 'dpr' | 'ccwm';
 
+// Sanitize event code: allow only alphanumeric and hyphens (typical event code chars)
+function sanitizeEventCode(code: string): string {
+  return code.replace(/[^a-zA-Z0-9-]/g, '');
+}
+
 export default function Scouting() {
   useScrollReveal();
 
@@ -109,8 +114,8 @@ export default function Scouting() {
         start_date: eventInfo.start_date,
         location: [eventInfo.city, eventInfo.state, eventInfo.country].filter(Boolean).join(', '),
         num_teams: eventInfo.team_count ?? teams.length,
-        tba_link: `https://www.thebluealliance.com/event/${eventCode}`,
-        stat_link: `https://statbotics.io/event/${eventCode}`,
+        tba_link: `https://www.thebluealliance.com/event/${sanitizeEventCode(eventCode)}`,
+        stat_link: `https://statbotics.io/event/${sanitizeEventCode(eventCode)}`,
       }} />}
 
       {teams.length > 0 && (
