@@ -6,6 +6,7 @@ import { resolve } from 'node:path'
 // https://vite.dev/config/
 export default defineConfig({
   server: {
+    port: 7790,
     proxy: {
       '/api': {
         target: 'http://localhost:8788',
