@@ -30,10 +30,14 @@ function run(cmd, args, opts = {}) {
   const useShell = isWin && (/\.(cmd|bat)$/i.test(cmd));
   let res = spawnSync(cmd, args, { stdio: 'inherit', cwd: root, shell: useShell, ...opts });
   if (res.error) {
-    // Fallback: try via cmd.exe /c for Windows script wrappers
-    if (isWin) {
+    // Fallback: only try via cmd.exe /c for .cmd/.bat (NOT arbitrary paths like process.execPath)
+    if (isWin && /\.(cmd|bat)$/i.test(cmd)) {
       console.log(`↺ Retry via cmd.exe /c ${cmd}`);
       res = spawnSync('cmd.exe', ['/c', cmd, ...args], { stdio: 'inherit', cwd: root, shell: false, ...opts });
+    } else if (isWin) {
+      // Directly execute, avoid shell parsing of absolute paths
+      console.log(`↺ Direct retry (no shell) for ${cmd}`);
+      res = spawnSync(cmd, args, { stdio: 'inherit', cwd: root, shell: false, ...opts });
     }
   }
   if (res.error) {
