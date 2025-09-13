@@ -31,7 +31,7 @@ function run(cmd, args, opts = {}) {
   let res = spawnSync(cmd, args, { stdio: 'inherit', cwd: root, shell: useShell, ...opts });
   if (res.error) {
     // Fallback: only try via cmd.exe /c for .cmd/.bat (NOT arbitrary paths like process.execPath)
-    if (isWin && /\.(cmd|bat)$/i.test(cmd)) {
+    if (isWin && /\.(cmd|bat)$/i.test(cmd) && !path.isAbsolute(cmd)) {
       console.log(`↺ Retry via cmd.exe /c ${cmd}`);
       res = spawnSync('cmd.exe', ['/c', cmd, ...args], { stdio: 'inherit', cwd: root, shell: false, ...opts });
     } else if (isWin) {
