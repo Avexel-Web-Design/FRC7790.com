@@ -9,6 +9,7 @@ import Rankings from '../sections/event/Rankings';
 import Schedule from '../sections/event/Schedule';
 import Playoffs from '../sections/event/Playoffs';
 import Awards from '../sections/event/Awards';
+import EventAISummary from '../sections/event/EventAISummary';
 import { useEventData } from '../../hooks/useEventData';
 
 const Event: React.FC = () => {
@@ -118,6 +119,20 @@ const Event: React.FC = () => {
         eventCode={eventCode}
         isLoading={isLoading}
       />
+
+      {/* AI Summary Section */}
+      {eventData && (
+        <div className="py-6 bg-black">
+          <div className="container mx-auto px-6">
+            <EventAISummary 
+              eventData={eventData}
+              rankings={rankings}
+              matches={matches}
+              awards={awards}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Content Area - grows to fill available space */}
       <div className="flex-1 bg-black">

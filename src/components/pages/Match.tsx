@@ -6,7 +6,8 @@ import {
   MatchBreakdown,
   MatchTeamDetails,
   MatchVideo,
-  LoadingOverlay
+  LoadingOverlay,
+  MatchAISummary
 } from '../sections/match';
 import { useMatchData } from '../../hooks/useMatchData';
 
@@ -63,6 +64,15 @@ const Match: React.FC = () => {
 
       {/* Match Hero Section */}
       <MatchHero matchData={matchData} eventData={eventData} />
+
+      {/* AI Summary Section */}
+      <section className="py-6 relative z-10">
+        <div className="container mx-auto px-6">
+          {matchData && eventData && teamData && (
+            <MatchAISummary matchData={matchData} eventData={eventData} teamData={teamData} />
+          )}
+        </div>
+      </section>
 
       {/* Match Scoreboard */}
       <MatchScoreboard matchData={matchData} teamData={teamData} />
