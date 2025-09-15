@@ -68,8 +68,8 @@ const Match: React.FC = () => {
       {/* AI Summary Section */}
       <section className="py-6 relative z-10">
         <div className="container mx-auto px-6">
-          {matchData && eventData && teamData && (
-            <MatchAISummary matchData={matchData} eventData={eventData} teamData={teamData} />
+          {matchData && eventData && (
+            <MatchAISummary matchData={matchData} eventData={eventData} />
           )}
         </div>
       </section>

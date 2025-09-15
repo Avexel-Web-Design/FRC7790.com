@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { generateMatchSummary } from '../../../utils/aiSummary';
-import type { MatchData, EventData, TeamData } from '../../../hooks/useMatchData';
+import type { MatchData, EventData } from '../../../hooks/useMatchData';
 
 interface MatchAISummaryProps {
   matchData: MatchData;
   eventData: EventData;
-  teamData: TeamData[];
 }
 
-const MatchAISummary: React.FC<MatchAISummaryProps> = ({ matchData, eventData, teamData }) => {
+const MatchAISummary: React.FC<MatchAISummaryProps> = ({ matchData, eventData }) => {
   const [summary, setSummary] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +18,7 @@ const MatchAISummary: React.FC<MatchAISummaryProps> = ({ matchData, eventData, t
     setError(null);
     
     try {
-      const result = await generateMatchSummary(matchData, eventData, teamData);
+      const result = await generateMatchSummary(matchData, eventData);
       setSummary(result);
     } catch (err) {
       setError('Failed to generate AI summary');
@@ -27,13 +26,13 @@ const MatchAISummary: React.FC<MatchAISummaryProps> = ({ matchData, eventData, t
     } finally {
       setLoading(false);
     }
-  }, [matchData, eventData, teamData]);
+  }, [matchData, eventData]);
 
   useEffect(() => {
-    if (matchData && eventData && teamData.length > 0) {
+    if (matchData && eventData && expanded) {
       loadSummary();
     }
-  }, [matchData, eventData, teamData, loadSummary]);
+  }, [matchData, eventData, expanded, loadSummary]);
 
   const retryLoad = () => {
     setError(null);
