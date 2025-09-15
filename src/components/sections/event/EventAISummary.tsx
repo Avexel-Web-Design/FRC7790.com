@@ -1,0 +1,127 @@
+import React, { useState, useEffect } from 'react';
+import { generateEventSummary } from '../../../utils/aiSummary';
+import type { EventData, TeamRanking, Match, Award } from '../../../hooks/useEventData';
+
+interface EventAISummaryProps {
+  eventData: EventData;
+  rankings: TeamRanking[];
+  matches: Match[];
+  awards: Award[];
+}
+
+const EventAISummary: React.FC<EventAISummaryProps> = ({ eventData, rankings, matches, awards }) => {
+  const [summary, setSummary] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (eventData && expanded) {
+      loadSummary();
+    }
+  }, [eventData, expanded]);
+
+  const loadSummary = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await generateEventSummary(eventData, rankings, matches, awards);
+      setSummary(result);
+    } catch (err) {
+      setError('Failed to generate AI summary');
+      console.error('Error loading event summary:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const retryLoad = () => {
+    setError(null);
+    loadSummary();
+  };
+
+  if (!expanded && !loading && !error) {
+    return (
+      <div className="bg-gradient-to-br from-baywatch-orange/10 to-baywatch-orange/5 border border-baywatch-orange/20 rounded-lg p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-baywatch-orange/20 rounded-lg flex items-center justify-center">
+              <i className="fas fa-robot text-baywatch-orange text-sm"></i>
+            </div>
+            <div>
+              <h3 className="text-white font-semibold">AI Event Summary</h3>
+              <p className="text-gray-400 text-sm">Get an AI-powered overview of this event</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setExpanded(true)}
+            className="px-4 py-2 bg-baywatch-orange/20 hover:bg-baywatch-orange/30 border border-baywatch-orange/40 text-baywatch-orange rounded-lg transition-all duration-200 text-sm font-medium"
+          >
+            Generate Summary
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-gradient-to-br from-baywatch-orange/10 to-baywatch-orange/5 border border-baywatch-orange/20 rounded-lg p-6 mb-6 animate__animated animate__fadeIn">
+      <div className="flex items-center space-x-3 mb-4">
+        <div className="w-8 h-8 bg-baywatch-orange/20 rounded-lg flex items-center justify-center">
+          <i className="fas fa-robot text-baywatch-orange"></i>
+        </div>
+        <h3 className="text-xl font-bold text-white">AI Event Summary</h3>
+        {!loading && !error && (
+          <button
+            onClick={() => setExpanded(false)}
+            className="ml-auto text-gray-400 hover:text-white transition-colors"
+            title="Collapse"
+          >
+            <i className="fas fa-times"></i>
+          </button>
+        )}
+      </div>
+
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <div className="flex items-center space-x-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-baywatch-orange"></div>
+            <span className="text-gray-300">Generating AI summary...</span>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center py-6">
+          <div className="text-red-400 mb-3">
+            <i className="fas fa-exclamation-triangle text-2xl mb-2"></i>
+            <p>{error}</p>
+          </div>
+          <button
+            onClick={retryLoad}
+            className="px-4 py-2 bg-baywatch-orange hover:bg-baywatch-orange/80 text-white rounded-lg transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {summary && !loading && !error && (
+        <div className="prose prose-invert max-w-none">
+          <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+            {summary}
+          </div>
+          <div className="mt-4 pt-4 border-t border-baywatch-orange/20">
+            <p className="text-xs text-gray-500 flex items-center">
+              <i className="fas fa-magic mr-1"></i>
+              Powered by AI • Generated using Mistral AI
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default EventAISummary;
