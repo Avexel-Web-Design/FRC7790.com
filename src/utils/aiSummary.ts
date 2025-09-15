@@ -19,10 +19,13 @@ interface OpenRouterResponse {
 export async function generateMatchSummary(
   matchData: MatchData,
   eventData: EventData,
-  teamData: any[]
+  teamData: unknown[]
 ): Promise<string> {
   try {
-    const teamInfo = teamData.map(team => `${team.team_number} (${team.nickname})`).join(', ');
+    const teamInfo = teamData.map(team => {
+      const teamObj = team as { team_number: number; nickname: string };
+      return `${teamObj.team_number} (${teamObj.nickname})`;
+    }).join(', ');
     
     const matchType = getMatchType(matchData.comp_level, matchData.set_number, matchData.match_number);
     

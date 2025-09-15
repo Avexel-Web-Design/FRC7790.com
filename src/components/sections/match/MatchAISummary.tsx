@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { generateMatchSummary } from '../../../utils/aiSummary';
 import type { MatchData, EventData, TeamData } from '../../../hooks/useMatchData';
 
@@ -14,13 +14,7 @@ const MatchAISummary: React.FC<MatchAISummaryProps> = ({ matchData, eventData, t
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    if (matchData && eventData && teamData.length > 0) {
-      loadSummary();
-    }
-  }, [matchData, eventData, teamData]);
-
-  const loadSummary = async () => {
+  const loadSummary = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -33,7 +27,13 @@ const MatchAISummary: React.FC<MatchAISummaryProps> = ({ matchData, eventData, t
     } finally {
       setLoading(false);
     }
-  };
+  }, [matchData, eventData, teamData]);
+
+  useEffect(() => {
+    if (matchData && eventData && teamData.length > 0) {
+      loadSummary();
+    }
+  }, [matchData, eventData, teamData, loadSummary]);
 
   const retryLoad = () => {
     setError(null);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { generateEventSummary } from '../../../utils/aiSummary';
 import type { EventData, TeamRanking, Match, Award } from '../../../hooks/useEventData';
 
@@ -15,13 +15,7 @@ const EventAISummary: React.FC<EventAISummaryProps> = ({ eventData, rankings, ma
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    if (eventData && expanded) {
-      loadSummary();
-    }
-  }, [eventData, expanded]);
-
-  const loadSummary = async () => {
+  const loadSummary = useCallback(async () => {
     setLoading(true);
     setError(null);
     
@@ -34,7 +28,13 @@ const EventAISummary: React.FC<EventAISummaryProps> = ({ eventData, rankings, ma
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventData, rankings, matches, awards]);
+
+  useEffect(() => {
+    if (eventData && expanded) {
+      loadSummary();
+    }
+  }, [eventData, expanded, loadSummary]);
 
   const retryLoad = () => {
     setError(null);
