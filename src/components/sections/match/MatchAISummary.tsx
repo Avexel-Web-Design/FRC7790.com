@@ -108,9 +108,10 @@ const MatchAISummary: React.FC<MatchAISummaryProps> = ({ matchData, eventData, t
 
       {summary && !loading && !error && (
         <div className="prose prose-invert max-w-none">
-          <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-            {summary}
-          </div>
+          <div 
+            className="text-gray-300 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: summary }}
+          />
           <div className="mt-4 pt-4 border-t border-baywatch-orange/20">
             <p className="text-xs text-gray-500 flex items-center">
               <i className="fas fa-magic mr-1"></i>
