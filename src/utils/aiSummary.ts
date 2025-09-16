@@ -1,5 +1,5 @@
 import type { MatchData, EventData } from '../hooks/useMatchData';
-import type { Match, TeamRanking, Award } from '../hooks/useEventData';
+import type { EventData as EventDataExtended, Match, TeamRanking, Award } from '../hooks/useEventData';
 import { marked } from 'marked';
 
 const OPENROUTER_API_KEY = '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';
@@ -19,75 +19,49 @@ interface OpenRouterResponse {
  */
 export async function generateMatchSummary(
   matchData: MatchData,
-  eventData: EventData
+  eventData: EventData,
+  teamData: unknown[]
 ): Promise<string> {
   try {
     const matchType = getMatchType(matchData.comp_level, matchData.set_number, matchData.match_number);
+    
+    const blueScore = matchData.alliances.blue.score ?? -1;
+    const redScore = matchData.alliances.red.score ?? -1;
 
-    // Data dump for match analysis
-    const matchDataDump = `
-**Event Information:**
-- Name: ${eventData.name}
-- Key: ${eventData.key}
-- Start Date: ${eventData.start_date}
-- End Date: ${eventData.end_date}
+    const prompt = `Analyze this FRC match using all available statistics and data. Provide a comprehensive breakdown and strategic analysis.
 
-**Match Information:**
-- Type: ${matchType}
-- Comp Level: ${matchData.comp_level}
-- Set Number: ${matchData.set_number}
-- Match Number: ${matchData.match_number}
-- Predicted Time: ${matchData.predicted_time ? new Date(matchData.predicted_time).toISOString() : 'N/A'}
+**Match Statistics:**
+- **Event:** ${eventData.name}
+- **Match Type:** ${matchType}
+- **Blue Alliance Teams:** ${matchData.alliances.blue.team_keys.map(k => k.replace('frc', '')).join(', ')}
+- **Red Alliance Teams:** ${matchData.alliances.red.team_keys.map(k => k.replace('frc', '')).join(', ')}
+- **Blue Final Score:** ${blueScore !== -1 ? blueScore : 'Not available'}
+- **Red Final Score:** ${redScore !== -1 ? redScore : 'Not available'}
+- **Winning Alliance:** ${matchData.winning_alliance ? matchData.winning_alliance.toUpperCase() : 'Not determined'}
+- **Match Status:** ${blueScore !== -1 && redScore !== -1 ? 'Completed' : 'Pending/Incomplete'}
 
-**Blue Alliance Complete Data:**
-- Teams: ${JSON.stringify(matchData.alliances.blue.team_keys, null, 2)}
-- Score: ${matchData.alliances.blue.score !== undefined ? matchData.alliances.blue.score : 'TBD'}
+**Strategic Analysis:**
+Based on the available data, analyze each team's strategy and performance:
 
-**Red Alliance Complete Data:**
-- Teams: ${JSON.stringify(matchData.alliances.red.team_keys, null, 2)}
-- Score: ${matchData.alliances.red.score !== undefined ? matchData.alliances.red.score : 'TBD'}
+**Blue Alliance Strategy (${matchData.alliances.blue.team_keys.map(k => k.replace('frc', '')).join(', ')}):**
+- What scoring strategy appears to have been implemented?
+- How effective was their overall performance?
+- What went well for this alliance?
+- Any tactical decisions that can be inferred from the score?
 
-**Videos:**
-- Available: ${matchData.videos ? matchData.videos.length : 0} video(s)
-`;
+**Red Alliance Strategy (${matchData.alliances.red.team_keys.map(k => k.replace('frc', '')).join(', ')}):**
+- What scoring strategy appears to have been implemented?
+- How effective was their overall performance?
+- What went well for this alliance?
+- Any tactical decisions that can be inferred from the score?
 
-    const prompt = `Here is complete data for an FRC match. Analyze all statistics and provide a strategic summary.
+**Match Summary:**
+- Overall match dynamics and momentum
+- Key factors in the outcome
+- Comparative analysis of alliance performances
+- Strategic insights and lessons learned
 
-${matchDataDump}
-
-**Analysis Instructions:**
-Based on the complete match data above, provide a comprehensive strategic analysis:
-
-1. **Match Outcome Analysis:** Explain the final score and key factors that contributed to the result.
-
-2. **Blue Alliance Strategy:** 
-   - Analyze their performance based on team composition and score
-   - Identify their likely primary scoring strategy
-   - Evaluate effectiveness of their approach
-   - Highlight strengths and weaknesses
-
-3. **Red Alliance Strategy:**
-   - Analyze their performance based on team composition and score
-   - Identify their likely primary scoring strategy 
-   - Evaluate effectiveness of their approach
-   - Highlight strengths and weaknesses
-
-4. **Key Match Dynamics:**
-   - Critical factors in the outcome
-   - Team strengths that influenced the result
-   - Strategic insights from the matchup
-
-5. **Team Performance Insights:**
-   - Which teams likely carried their alliance?
-   - Notable performances based on team reputation and score
-   - Alliance composition analysis
-
-6. **Strategic Recommendations:**
-   - What each alliance could improve
-   - Tactical adjustments for future matches
-   - How the winning strategy could be countered
-
-Format as clean Markdown with clear sections and bullet points. Focus on strategic insights derived from the actual performance data.`;
+Provide detailed analysis based on scoring patterns, alliance composition, and match results. Focus on strategic observations and performance insights. Format in clean Markdown with clear sections.`;
 
     const response = await fetch(OPENROUTER_URL, {
       method: 'POST',
@@ -105,7 +79,7 @@ Format as clean Markdown with clear sections and bullet points. Focus on strateg
             content: prompt
           }
         ],
-        max_tokens: 400,
+        max_tokens: 150,
         temperature: 0.7
       })
     });
@@ -127,101 +101,77 @@ Format as clean Markdown with clear sections and bullet points. Focus on strateg
  * Generate AI summary for an event
  */
 export async function generateEventSummary(
+  eventData: EventDataExtended,
   rankings: TeamRanking[],
   matches: Match[],
   awards: Award[]
 ): Promise<string> {
   try {
-    // Complete event data dump
-    const eventDataDump = `
-**Event Rankings (All Teams):**
-${rankings.map((rank, index) => `
-**Rank ${index + 1}: ${rank.team_key.replace('frc', '')}**
-- Record: ${rank.wins}W-${rank.losses}L-${rank.ties}T
-- Match Points: ${rank.sort_orders?.[0] || 'N/A'}
-- Ranking Points: ${rank.sort_orders?.[1] || 'N/A'}
-- Tiebreaker 1: ${rank.sort_orders?.[2] || 'N/A'}
-- Tiebreaker 2: ${rank.sort_orders?.[3] || 'N/A'}
-- Tiebreaker 3: ${rank.sort_orders?.[4] || 'N/A'}
-`).join('\n')}
+    const prompt = `Using the FRC event data provided, generate a concise summary focusing on key results and playoff progression.
 
-**All Matches Data:**
-${matches.map(match => {
-  const matchType = getMatchType(match.comp_level, match.set_number, match.match_number);
-  const blueTeams = match.alliances.blue.team_keys.map(k => k.replace('frc', '')).join(', ');
-  const redTeams = match.alliances.red.team_keys.map(k => k.replace('frc', '')).join(', ');
-  const blueScore = match.alliances.blue.score !== undefined ? match.alliances.blue.score : 'TBD';
-  const redScore = match.alliances.red.score !== undefined ? match.alliances.red.score : 'TBD';
-  const winner = match.winning_alliance ? match.winning_alliance.toUpperCase() : 'TBD';
-  
-  return `**${matchType}:**
-- Blue: ${blueTeams} (${blueScore})
-- Red: ${redTeams} (${redScore})
-- Winner: ${winner}`;
-}).join('\n\n')}
+**Playoff Bracket:**
+${matches.filter(m => ['qf', 'sf', 'f'].includes(m.comp_level)).length > 0 ? 
+  matches.filter(m => ['qf', 'sf', 'f'].includes(m.comp_level))
+    .sort((a, b) => {
+      const order: Record<string, number> = { 'qf': 1, 'sf': 2, 'f': 3 };
+      return order[a.comp_level] - order[b.comp_level] || a.set_number - b.set_number || a.match_number - b.match_number;
+    })
+    .map(m => {
+      const type = m.comp_level === 'qf' ? 'Quarterfinal' : m.comp_level === 'sf' ? 'Semifinal' : 'Final';
+      const blueTeams = m.alliances.blue.team_keys.map(k => k.replace('frc', '')).join(', ');
+      const redTeams = m.alliances.red.team_keys.map(k => k.replace('frc', '')).join(', ');
+      const blueScore = m.alliances.blue.score !== -1 ? m.alliances.blue.score : 'TBD';
+      const redScore = m.alliances.red.score !== -1 ? m.alliances.red.score : 'TBD';
+      const winner = m.winning_alliance ? `**${m.winning_alliance.toUpperCase()}**` : 'TBD';
+      return `**${type} ${m.set_number || ''} Match ${m.match_number}:**\n- Blue: ${blueTeams} (${blueScore})\n- Red: ${redTeams} (${redScore})\n- Winner: ${winner}`;
+    }).join('\n\n') : 'No playoff matches available'}
 
-**Awards Data:**
-${awards.map(award => `
-**${award.name}:**
-- Recipient: ${award.recipient_list?.map(r => {
-  if (r.team_key) {
-    return r.team_key.replace('frc', '');
-  }
-  if (r.awardee) {
-    return r.awardee;
-  }
-  return 'Unknown';
-}).join(', ') || 'Unknown'}
-- Year: ${award.year}
-`).join('\n')}
+**Key Results:**
+- **Winner:** ${rankings.length > 0 ? `**${rankings[0].team_key.replace('frc', '')}** (${rankings[0].wins}W-${rankings[0].losses}L-${rankings[0].ties}T)` : 'TBD'}
+- **Final Match:** ${matches.filter(m => m.comp_level === 'f').length > 0 ? 
+  (() => {
+    const final = matches.filter(m => m.comp_level === 'f')[0];
+    const blueTeams = final.alliances.blue.team_keys.map(k => k.replace('frc', '')).join(', ');
+    const redTeams = final.alliances.red.team_keys.map(k => k.replace('frc', '')).join(', ');
+    return `Blue: ${blueTeams} vs Red: ${redTeams}`;
+  })() : 'No final match data'}
+- **Dominant Teams:** ${rankings.length > 0 ? rankings.slice(0, 3).map(r => `${r.team_key.replace('frc', '')} (${r.wins}W)`).join(', ') : 'No ranking data'}
 
-**Playoff Structure Analysis:**
-- Total Qualification Matches: ${matches.filter(m => m.comp_level === 'qm').length}
-- Total Playoff Matches: ${matches.filter(m => ['qf', 'sf', 'f'].includes(m.comp_level)).length}`;
+**Awards:** ${awards.length > 0 ? awards.slice(0, 5).map(a => `- ${a.name}: ${a.recipient_list?.map(r => r.team_key?.replace('frc', '') || r.awardee).join(', ') || 'TBD'}`).join('\n') : 'No awards data available'}
 
-    const prompt = `Here is complete data for an FRC event. Analyze all statistics and provide a comprehensive event summary.
+**Story Summary:**
+${matches.filter(m => ['qf', 'sf', 'f'].includes(m.comp_level)).length > 0 ? 
+  (() => {
+    const playoffMatches = matches.filter(m => ['qf', 'sf', 'f'].includes(m.comp_level))
+      .sort((a, b) => {
+        const order: Record<string, number> = { 'qf': 1, 'sf': 2, 'f': 3 };
+        return order[a.comp_level] - order[b.comp_level] || a.set_number - b.set_number || a.match_number - b.match_number;
+      });
+    
+    const winner = playoffMatches.find(m => m.comp_level === 'f' && m.winning_alliance)?.winning_alliance;
+    if (!winner) return 'Event results pending.';
+    
+    const finalMatch = playoffMatches.find(m => m.comp_level === 'f');
+    const winningTeams = finalMatch && finalMatch.winning_alliance ? finalMatch.alliances[finalMatch.winning_alliance].team_keys.map((k: string) => k.replace('frc', '')).join(', ') : 'Unknown';
+    
+    // Count wins for the winning alliance
+    const winningAllianceWins = playoffMatches.filter(m => m.winning_alliance === winner).length;
+    const totalPlayoffMatches = playoffMatches.length;
+    
+    let story = `The championship alliance (${winningTeams})`;
+    
+    if (winningAllianceWins === totalPlayoffMatches) {
+      story += ' dominated the entire playoff bracket, sweeping every match to claim victory.';
+    } else if (winningAllianceWins >= totalPlayoffMatches * 0.7) {
+      story += ' powered through the playoffs, winning most matches on their path to the championship.';
+    } else {
+      story += ' overcame playoff challenges to secure the event win.';
+    }
+    
+    return story;
+  })() : 'No playoff data available for story summary.'}
 
-${eventDataDump}
-
-**Event Analysis Instructions:**
-Based on the complete event data above, create a detailed summary focusing on key events, team performances, and strategic insights:
-
-1. **Overall Event Narrative:**
-   - Championship story and progression
-   - Key turning points and momentum shifts
-   - Dominant themes or strategies that defined the event
-
-2. **Top Performers Analysis:**
-   - Break down the top 3-5 teams' performance
-   - What made them successful (consistency, clutch plays)
-   - How their strategies evolved through the event
-
-3. **Alliance Dynamics:**
-   - How qualification rankings influenced playoff seeding
-   - Successful alliance combinations and why they worked
-   - Surprising upsets or underdog stories
-
-4. **Scoring Trends:**
-   - Event-wide scoring patterns
-   - Most effective strategies across different match types
-   - Impact of team matchups on outcomes
-
-5. **Playoff Breakdown:**
-   - Key series and their outcomes
-   - Critical matches that decided the bracket
-   - How teams adapted between qualification and playoffs
-
-6. **Awards and Recognition:**
-   - Significance of major awards
-   - Teams that exceeded or fell short of expectations
-   - Event MVP performances
-
-7. **Strategic Insights:**
-   - What strategies proved most successful
-   - Lessons learned for future competitions
-   - Team development observations
-
-Format as clean Markdown with clear sections, bullet points, and bold key information. Prioritize data-driven insights over speculation. Keep the summary comprehensive but focused on the most impactful elements of the event.`;
+Format in clean Markdown with bold key information. Keep under 150 words and focus on the most important results.`;
 
     const response = await fetch(OPENROUTER_URL, {
       method: 'POST',
@@ -239,7 +189,7 @@ Format as clean Markdown with clear sections, bullet points, and bold key inform
             content: prompt
           }
         ],
-        max_tokens: 600,
+        max_tokens: 150,
         temperature: 0.7
       })
     });

@@ -20,7 +20,7 @@ const EventAISummary: React.FC<EventAISummaryProps> = ({ eventData, rankings, ma
     setError(null);
     
     try {
-      const result = await generateEventSummary(rankings, matches, awards);
+      const result = await generateEventSummary(eventData, rankings, matches, awards);
       setSummary(result);
     } catch (err) {
       setError('Failed to generate AI summary');
@@ -28,7 +28,7 @@ const EventAISummary: React.FC<EventAISummaryProps> = ({ eventData, rankings, ma
     } finally {
       setLoading(false);
     }
-  }, [rankings, matches, awards]);
+  }, [eventData, rankings, matches, awards]);
 
   useEffect(() => {
     if (eventData && expanded) {
