@@ -2,7 +2,7 @@ import type { MatchData, EventData } from '../hooks/useMatchData';
 import type { EventData as EventDataExtended, Match, TeamRanking, Award } from '../hooks/useEventData';
 import { marked } from 'marked';
 
-const OPENROUTER_API_KEY = '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';
+const OPENROUTER_API_KEY = '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';
 const MODEL = 'mistralai/mistral-small-3.2-24b-instruct:free';
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
