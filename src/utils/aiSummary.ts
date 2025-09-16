@@ -23,45 +23,27 @@ export async function generateMatchSummary(
   teamData: unknown[]
 ): Promise<string> {
   try {
+    const teamInfo = teamData.map(team => {
+      const teamObj = team as { team_number: number; nickname: string };
+      return `${teamObj.team_number} (${teamObj.nickname})`;
+    }).join(', ');
+    
     const matchType = getMatchType(matchData.comp_level, matchData.set_number, matchData.match_number);
     
-    const blueScore = matchData.alliances.blue.score ?? -1;
-    const redScore = matchData.alliances.red.score ?? -1;
+    const scoreInfo = matchData.alliances.blue.score !== null && matchData.alliances.red.score !== null
+      ? `Blue Alliance scored ${matchData.alliances.blue.score} points, Red Alliance scored ${matchData.alliances.red.score} points. Winning alliance: ${matchData.winning_alliance || 'TBD'}`
+      : 'Match scores not yet available';
 
-    const prompt = `Analyze this FRC match using all available statistics and data. Provide a comprehensive breakdown and strategic analysis.
+    const prompt = `Generate a concise, engaging summary for this FRC (FIRST Robotics Competition) match. Keep it under 150 words and focus on the key highlights.
 
-**Match Statistics:**
-- **Event:** ${eventData.name}
-- **Match Type:** ${matchType}
-- **Blue Alliance Teams:** ${matchData.alliances.blue.team_keys.map(k => k.replace('frc', '')).join(', ')}
-- **Red Alliance Teams:** ${matchData.alliances.red.team_keys.map(k => k.replace('frc', '')).join(', ')}
-- **Blue Final Score:** ${blueScore !== -1 ? blueScore : 'Not available'}
-- **Red Final Score:** ${redScore !== -1 ? redScore : 'Not available'}
-- **Winning Alliance:** ${matchData.winning_alliance ? matchData.winning_alliance.toUpperCase() : 'Not determined'}
-- **Match Status:** ${blueScore !== -1 && redScore !== -1 ? 'Completed' : 'Pending/Incomplete'}
+Match Details:
+- Event: ${eventData.name}
+- Match: ${matchType}
+- Teams: Blue Alliance (${matchData.alliances.blue.team_keys.map(k => k.replace('frc', '')).join(', ')}) vs Red Alliance (${matchData.alliances.red.team_keys.map(k => k.replace('frc', '')).join(', ')})
+- Team Names: ${teamInfo}
+- ${scoreInfo}
 
-**Strategic Analysis:**
-Based on the available data, analyze each team's strategy and performance:
-
-**Blue Alliance Strategy (${matchData.alliances.blue.team_keys.map(k => k.replace('frc', '')).join(', ')}):**
-- What scoring strategy appears to have been implemented?
-- How effective was their overall performance?
-- What went well for this alliance?
-- Any tactical decisions that can be inferred from the score?
-
-**Red Alliance Strategy (${matchData.alliances.red.team_keys.map(k => k.replace('frc', '')).join(', ')}):**
-- What scoring strategy appears to have been implemented?
-- How effective was their overall performance?
-- What went well for this alliance?
-- Any tactical decisions that can be inferred from the score?
-
-**Match Summary:**
-- Overall match dynamics and momentum
-- Key factors in the outcome
-- Comparative analysis of alliance performances
-- Strategic insights and lessons learned
-
-Provide detailed analysis based on scoring patterns, alliance composition, and match results. Focus on strategic observations and performance insights. Format in clean Markdown with clear sections.`;
+Please provide an exciting, informative summary that would engage FRC fans, highlighting the competition aspect and team performance. Use robotics terminology appropriately.`;
 
     const response = await fetch(OPENROUTER_URL, {
       method: 'POST',
@@ -79,7 +61,7 @@ Provide detailed analysis based on scoring patterns, alliance composition, and m
             content: prompt
           }
         ],
-        max_tokens: 150,
+        max_tokens: 200,
         temperature: 0.7
       })
     });
