@@ -10,7 +10,7 @@ export default function Countdown() {
 
   useEffect(() => {
     // Set target date
-    const targetDate = new Date('2025-09-20T08:00:00-04:00'); // The last number is the timezone offset (EDT). Change to -05:00 for EST.
+   const targetDate = new Date('2026-01-10T12:00:00'); // The last number is the timezone offset (EDT). Change to -05:00 for EST.
 
     const updateTimer = () => {
       const now = new Date().getTime();
@@ -39,7 +39,7 @@ export default function Countdown() {
   return (
     <section id="countdown-section" className="py-12 sm:py-20 bg-black scroll-mt-24">
       <div className="container mx-auto px-3 sm:px-6">
-        <div className="p-6 card-gradient rounded-xl transition-all duration-300 glow-orange hover:scale-105">
+        <div className="max-w-4xl mx-auto p-4 sm:p-8 card-gradient rounded-xl transition-all duration-300 glow-orange hover:scale-105">
           <h2 className="text-4xl font-bold mb-4 text-center">Competition Countdown</h2>
           <p className="text-gray-400 text-center mb-4">
             Kettering Kickoff - Offseason Competition

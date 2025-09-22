@@ -25,9 +25,7 @@ const EventCountdown: React.FC<EventCountdownProps> = ({ eventData, isLoading })
     if (!eventData) return;
 
     const updateCountdown = () => {
-      // For When Its for events not dates
-      // const eventStart = new Date(eventData.start_date);
-      const eventStart = new Date('2026-01-10T12:00:00');
+      const eventStart = new Date(eventData.start_date);
       const now = new Date();
       const difference = eventStart.getTime() - now.getTime();
 
