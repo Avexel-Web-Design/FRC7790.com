@@ -5,7 +5,7 @@ import { useMatchSummary } from '../../../hooks/useMatchSummary';
 interface MatchSummaryProps { matchData: MatchData; }
 
 export const MatchSummary: React.FC<MatchSummaryProps> = ({ matchData }) => {
-  const { summary, loading, error, regenerate } = useMatchSummary(matchData);
+  const { summary, loading, error, regenerate, model, fallbackUsed } = useMatchSummary(matchData);
 
   return (
     <div className="card-gradient backdrop-blur-sm border border-white/10 rounded-xl p-5 mb-8 animate__animated animate__fadeInUp" style={{ animationDelay: '0.35s' }}>
@@ -45,8 +45,14 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ matchData }) => {
           </button>
         </div>
       </div>
-      <div className="mt-4 text-[10px] uppercase tracking-wider text-gray-500 flex items-center gap-2">
-        <i className="fas fa-microchip"></i> AI Generated
+      <div className="mt-4 text-[10px] uppercase tracking-wider text-gray-500 flex items-center gap-3">
+        <span className="inline-flex items-center gap-1">
+          <i className="fas fa-microchip"></i>
+          {fallbackUsed ? 'Baseline Summary' : 'AI Summary'}
+        </span>
+        {model && !fallbackUsed && (
+          <span className="px-2 py-0.5 rounded bg-white/5 text-gray-400">{model}</span>
+        )}
       </div>
     </div>
   );

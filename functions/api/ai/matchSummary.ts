@@ -111,7 +111,8 @@ ai.post('/generate', async c => {
     // Simple provider selection (OpenAI compatible). Adjust base URL if Azure.
   // Provider precedence: openrouter -> azure -> openai (direct) -> groq
   const provider = openRouterKey ? 'openrouter' : (env.AZURE_OPENAI_DEPLOYMENT ? 'azure' : (env.OPENAI_API_KEY ? 'openai' : (env.GROQ_API_KEY ? 'groq' : 'fallback')));
-    let summaryText = fallback;
+  let summaryText = fallback;
+  let usedAI = false;
 
     try {
       if (provider === 'openrouter') {
@@ -136,7 +137,11 @@ ai.post('/generate', async c => {
         });
         if (resp.ok) {
           const data: any = await resp.json();
-          summaryText = data.choices?.[0]?.message?.content?.trim() || fallback;
+          const candidate = data.choices?.[0]?.message?.content?.trim();
+          if (candidate && candidate.length > 0) {
+            summaryText = candidate;
+            usedAI = true;
+          }
         }
       } else if (provider === 'azure') {
   const azureEndpoint = env.AZURE_OPENAI_ENDPOINT; // e.g., https://your-resource-name.openai.azure.com
@@ -158,7 +163,10 @@ ai.post('/generate', async c => {
         });
         if (resp.ok) {
           const data: any = await resp.json();
-          summaryText = data.choices?.[0]?.message?.content?.trim() || fallback;
+          const candidate = data.choices?.[0]?.message?.content?.trim();
+          if (candidate && candidate.length > 0) {
+            summaryText = candidate; usedAI = true;
+          }
         }
       } else if (provider === 'openai') {
         // OpenAI or other compat endpoint
@@ -181,7 +189,8 @@ ai.post('/generate', async c => {
         });
         if (resp.ok) {
           const data: any = await resp.json();
-          summaryText = data.choices?.[0]?.message?.content?.trim() || fallback;
+          const candidate = data.choices?.[0]?.message?.content?.trim();
+          if (candidate && candidate.length > 0) { summaryText = candidate; usedAI = true; }
         }
       } else if (provider === 'groq') {
         const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -202,7 +211,8 @@ ai.post('/generate', async c => {
         });
         if (resp.ok) {
           const data: any = await resp.json();
-          summaryText = data.choices?.[0]?.message?.content?.trim() || fallback;
+          const candidate = data.choices?.[0]?.message?.content?.trim();
+          if (candidate && candidate.length > 0) { summaryText = candidate; usedAI = true; }
         }
       }
     } catch (err) {
@@ -210,7 +220,8 @@ ai.post('/generate', async c => {
       // fall back silently
     }
 
-    return c.json({ summary: summaryText, model: provider, promptUsed: prompt });
+  const fallbackUsed = !usedAI || summaryText === fallback;
+  return c.json({ summary: summaryText, model: provider, promptUsed: prompt, fallbackUsed });
   } catch (err) {
     return c.json({ error: 'Bad request', details: (err as Error).message }, 400);
   }
