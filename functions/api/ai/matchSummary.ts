@@ -24,6 +24,17 @@ interface MatchSummaryRequest {
 }
 
 // Utility: build a concise stats line from match JSON
+function humanCompLevel(match: any): string {
+  switch (match?.comp_level) {
+    case 'qm': return 'qualification match';
+    case 'ef': return 'eighth-final playoff match';
+    case 'qf': return 'quarterfinal match';
+    case 'sf': return 'semifinal match';
+    case 'f': return 'finals match';
+    default: return 'match';
+  }
+}
+
 function buildStats(match: any): { prompt: string; fallback: string } {
   if (!match) {
     return { prompt: 'No match data provided.', fallback: 'Summary unavailable.' };
@@ -35,16 +46,28 @@ function buildStats(match: any): { prompt: string; fallback: string } {
   const winner = match?.winning_alliance;
   const comp = match?.comp_level;
   const key = match?.key;
-  const base = `Match ${key} (${comp}) Blue [${blueTeams}] ${blueScore} - Red [${redTeams}] ${redScore}. Winner: ${winner || 'TBD'}.`;
+  const round = humanCompLevel(match);
+  const base = `${round} ${key}: Blue [${blueTeams}] ${blueScore} - Red [${redTeams}] ${redScore}. Winner: ${winner || 'TBD'}.`;
   const breakdown = match?.score_breakdown;
   let extras = '';
   if (breakdown && breakdown.blue && breakdown.red) {
-    // Pull a few interesting 2025 fields if they exist; fall back gracefully
-    const pick = (side: any, fields: string[]) => fields.filter(f => side[f] !== undefined && side[f] !== null)
-      .map(f => `${f}:${side[f]}`)
-      .slice(0,6)
-      .join(' ');
-    extras = ` BlueStats(${pick(breakdown.blue, Object.keys(breakdown.blue))}) RedStats(${pick(breakdown.red, Object.keys(breakdown.red))})`;
+    const interestingFields = [
+      // common FRC style field names (update as season changes)
+      'autoPoints','teleopPoints','endGamePoints','foulPoints','techFoulPoints','rp','coopertitionBonus','autoCommunity','teleopCommunity','autoLeavePoints','auto','links','chargeStationPoints','autoChargeStationPoints','endGameChargeStationPoints'
+    ];
+    const summarizeSide = (side: any) => {
+      const parts: string[] = [];
+      for (const f of interestingFields) {
+        if (side[f] !== undefined && side[f] !== null) {
+          parts.push(`${f}=${side[f]}`);
+        }
+        if (parts.length >= 8) break; // cap
+      }
+      return parts.join(', ');
+    };
+    const blueStats = summarizeSide(breakdown.blue);
+    const redStats = summarizeSide(breakdown.red);
+    extras = ` KeyStats Blue:(${blueStats}) Red:(${redStats})`;
   }
   return { 
     prompt: base + extras,
@@ -104,11 +127,11 @@ ai.post('/generate', async c => {
           body: JSON.stringify({
             model,
             messages: [
-              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence neutral match recap. Avoid speculation; use only provided data.' },
+              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT just repeat the raw score at the start; avoid speculation.' },
               { role: 'user', content: prompt }
             ],
-            max_tokens: 120,
-            temperature: 0.4
+            max_tokens: 160,
+            temperature: 0.5
           })
         });
         if (resp.ok) {
@@ -126,11 +149,11 @@ ai.post('/generate', async c => {
           },
           body: JSON.stringify({
             messages: [
-              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence neutral match recap. Avoid speculation; use only provided data.' },
+              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT just repeat the raw score at the start; avoid speculation.' },
               { role: 'user', content: prompt }
             ],
-            max_tokens: 120,
-            temperature: 0.4
+            max_tokens: 160,
+            temperature: 0.5
           })
         });
         if (resp.ok) {
@@ -149,11 +172,11 @@ ai.post('/generate', async c => {
           body: JSON.stringify({
             model: env.OPENAI_MODEL || 'gpt-4o-mini',
             messages: [
-              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence neutral match recap. Avoid speculation; use only provided data.' },
+              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT just repeat the raw score at the start; avoid speculation.' },
               { role: 'user', content: prompt }
             ],
-            max_tokens: 120,
-            temperature: 0.4
+            max_tokens: 160,
+            temperature: 0.5
           })
         });
         if (resp.ok) {
@@ -170,11 +193,11 @@ ai.post('/generate', async c => {
           body: JSON.stringify({
             model: env.GROQ_MODEL || 'llama-3.1-70b-versatile',
             messages: [
-              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence neutral match recap. Avoid speculation; use only provided data.' },
+              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT just repeat the raw score at the start; avoid speculation.' },
               { role: 'user', content: prompt }
             ],
-            max_tokens: 120,
-            temperature: 0.4
+            max_tokens: 160,
+            temperature: 0.5
           })
         });
         if (resp.ok) {
