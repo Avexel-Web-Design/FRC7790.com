@@ -35,44 +35,92 @@ function humanCompLevel(match: any): string {
   }
 }
 
-function buildStats(match: any): { prompt: string; fallback: string } {
+interface Factor {
+  name: string;
+  blue: number;
+  red: number;
+  diff: number; // blue - red (positive means blue advantage)
+  impactRank?: number;
+}
+
+function classifyMargin(margin: number): string {
+  if (margin <= 5) return 'narrow';
+  if (margin <= 25) return 'moderate';
+  if (margin <= 50) return 'decisive';
+  return 'dominant';
+}
+
+function pickVerb(marginClass: string): string {
+  switch (marginClass) {
+    case 'narrow': return 'edges out';
+    case 'moderate': return 'prevails over';
+    case 'decisive': return 'defeats';
+    default: return 'dominates';
+  }
+}
+
+function buildStats(match: any): { prompt: string; fallback: string; factors: Factor[] } {
   if (!match) {
-    return { prompt: 'No match data provided.', fallback: 'Summary unavailable.' };
+    return { prompt: 'No match data provided.', fallback: 'Summary unavailable.', factors: [] };
   }
   const blueTeams = match?.alliances?.blue?.team_keys?.map((t: string) => t.replace('frc','')).join(', ');
   const redTeams = match?.alliances?.red?.team_keys?.map((t: string) => t.replace('frc','')).join(', ');
   const blueScore = match?.alliances?.blue?.score;
   const redScore = match?.alliances?.red?.score;
   const winner = match?.winning_alliance;
-  const comp = match?.comp_level;
   const key = match?.key;
   const round = humanCompLevel(match);
   const base = `${round} ${key}: Blue [${blueTeams}] ${blueScore} - Red [${redTeams}] ${redScore}. Winner: ${winner || 'TBD'}.`;
   const breakdown = match?.score_breakdown;
-  let extras = '';
+  const factors: Factor[] = [];
   if (breakdown && breakdown.blue && breakdown.red) {
-    const interestingFields = [
-      // common FRC style field names (update as season changes)
-      'autoPoints','teleopPoints','endGamePoints','foulPoints','techFoulPoints','rp','coopertitionBonus','autoCommunity','teleopCommunity','autoLeavePoints','auto','links','chargeStationPoints','autoChargeStationPoints','endGameChargeStationPoints'
-    ];
-    const summarizeSide = (side: any) => {
-      const parts: string[] = [];
-      for (const f of interestingFields) {
-        if (side[f] !== undefined && side[f] !== null) {
-          parts.push(`${f}=${side[f]}`);
-        }
-        if (parts.length >= 8) break; // cap
+    const blue = breakdown.blue;
+    const red = breakdown.red;
+    // Candidate numeric fields
+    const candidateFields = Object.keys(blue).filter(k => typeof blue[k] === 'number' && typeof red[k] === 'number');
+    for (const f of candidateFields) {
+      const bVal = Number(blue[f]);
+      const rVal = Number(red[f]);
+      if (Number.isFinite(bVal) && Number.isFinite(rVal)) {
+        // exclude obvious total duplication fields to reduce noise
+        if (/^total/i.test(f)) continue;
+        factors.push({ name: f, blue: bVal, red: rVal, diff: bVal - rVal });
       }
-      return parts.join(', ');
-    };
-    const blueStats = summarizeSide(breakdown.blue);
-    const redStats = summarizeSide(breakdown.red);
-    extras = ` KeyStats Blue:(${blueStats}) Red:(${redStats})`;
+    }
+    // Rank by absolute diff (importance) ignoring fields with zero diff
+    factors.sort((a,b) => Math.abs(b.diff) - Math.abs(a.diff));
+    // Keep top 8 raw, then assign impactRank to top 3 for summarization
+    factors.slice(0,3).forEach((f,i)=> f.impactRank = i+1);
   }
-  return { 
-    prompt: base + extras,
-    fallback: `${blueScore != null && redScore != null ? (winner ? (winner==='blue'?'Blue':'Red') + ' Alliance victory' : 'Match tied') : 'Upcoming match'}: Blue ${blueScore ?? '--'} - Red ${redScore ?? '--'}`
+
+  const margin = (blueScore != null && redScore != null) ? Math.abs((blueScore as number) - (redScore as number)) : null;
+  const marginClass = margin != null ? classifyMargin(margin) : 'pending';
+  const verb = winner ? pickVerb(marginClass) : 'ties';
+  const winnerPhrase = winner ? (winner === 'blue' ? `Blue alliance ${verb} Red` : `Red alliance ${verb} Blue`) : 'Match tied';
+
+  // Determine potential decisive factor keywords
+  const factorHints: string[] = [];
+  const findField = (names: string[]) => factors.find(f => names.includes(f.name));
+  const autoF = findField(['autoPoints','autoScore','auto']);
+  const endF = findField(['endGamePoints','endgamePoints','endGameScore']);
+  const foulF = findField(['foulPoints','foulScore']);
+  if (foulF && Math.abs(foulF.diff) > 0 && margin && Math.abs(foulF.diff) >= margin * 0.5) factorHints.push('penalties');
+  if (autoF && margin && Math.abs(autoF.diff) >= margin * 0.35) factorHints.push('auto performance');
+  if (endF && margin && Math.abs(endF.diff) >= margin * 0.35) factorHints.push('endgame execution');
+
+  const fallback = (blueScore != null && redScore != null)
+    ? `${winnerPhrase}: ${blueScore} - ${redScore}${factorHints.length?` (factor: ${factorHints[0]})`:''}`
+    : 'Upcoming match';
+
+  const structured = {
+    meta: { key, round, winner, margin, marginClass },
+    alliances: { blue: { teams: blueTeams, score: blueScore }, red: { teams: redTeams, score: redScore } },
+    topFactors: factors.slice(0,8),
+    decisiveHints: factorHints
   };
+
+  const prompt = `${base}\nSTRUCTURED_JSON=${JSON.stringify(structured)}`;
+  return { prompt, fallback, factors };
 }
 
 const ai = new Hono();
@@ -99,13 +147,13 @@ ai.post('/generate', async c => {
       matchData = await resp.json();
     }
 
-    const { prompt, fallback } = buildStats(matchData);
+  const { prompt, fallback, factors } = buildStats(matchData);
 
     // If no AI key configured, return deterministic fallback so UI still shows something
   const openRouterKey = env.OPENROUTER_API_KEY; // Preferred if user wants OpenRouter (Grok)
   const apiKey = openRouterKey || env.OPENAI_API_KEY || env.AZURE_OPENAI_KEY || env.GROQ_API_KEY;
     if (!apiKey) {
-      return c.json({ summary: fallback, model: 'fallback', cached: false });
+  return c.json({ summary: fallback, model: 'fallback', cached: false, fallbackUsed: true, factors: [] });
     }
 
     // Simple provider selection (OpenAI compatible). Adjust base URL if Azure.
@@ -221,7 +269,7 @@ ai.post('/generate', async c => {
     }
 
   const fallbackUsed = !usedAI || summaryText === fallback;
-  return c.json({ summary: summaryText, model: provider, promptUsed: prompt, fallbackUsed });
+  return c.json({ summary: summaryText, model: provider, promptUsed: prompt, fallbackUsed, factors });
   } catch (err) {
     return c.json({ error: 'Bad request', details: (err as Error).message }, 400);
   }
