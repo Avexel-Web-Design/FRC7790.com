@@ -161,7 +161,10 @@ export class FRCAPIService {
     // Use a stable random session id per install/tab to help rate limiting bucket by session when unauthenticated
     let sessionId = localStorage.getItem('session_id');
     if (!sessionId) {
-      sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      // Generate a cryptographically secure random string
+      const randomUint8 = window.crypto.getRandomValues(new Uint8Array(16));
+      const randomStr = Array.from(randomUint8).map(b => b.toString(36)).join('');
+      sessionId = randomStr + Date.now().toString(36);
       try { localStorage.setItem('session_id', sessionId); } catch {}
     }
     const headers: HeadersInit = {
@@ -466,8 +469,20 @@ export class FRCAPIService {
       // The API returns { rankings: [...], sort_order_info: [...] }
       // We need to process the rankings array and map the data correctly
       if (data.rankings && Array.isArray(data.rankings)) {
+        // Fetch team data to get team names
+        let teamsData: any[] = [];
+        try {
+          teamsData = await this.fetchEventTeams(eventCode);
+        } catch (error) {
+          console.warn('Could not fetch team data for rankings:', error);
+        }
+        
         const processedRankings = data.rankings.map((ranking: any) => {
           console.log('Processing ranking:', ranking);
+          
+          // Find team data for this ranking
+          const teamData = teamsData.find(team => team.key === ranking.team_key);
+          
           return {
             rank: ranking.rank,
             team_key: ranking.team_key,
@@ -480,7 +495,8 @@ export class FRCAPIService {
             sort_orders: ranking.sort_orders || [],
             matches_played: ranking.matches_played || 0,
             dq: ranking.dq || 0,
-            extra_stats: ranking.extra_stats || []
+            extra_stats: ranking.extra_stats || [],
+            team_name: teamData?.nickname || null
           };
         });
         

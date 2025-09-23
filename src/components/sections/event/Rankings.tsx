@@ -10,10 +10,12 @@ interface RankingsProps {
 
 type SortField = 'rank' | 'team_key' | 'ranking_points' | 'record' | 'qual_average' | 'epa';
 type SortDirection = 'asc' | 'desc';
+type DisplayMode = 'number' | 'name';
 
 const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => {
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('number');
   
   // Always show EPA column, but with placeholders until data loads
   const showEPA = true;
@@ -82,8 +84,13 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
           bValue = b.rank;
           break;
         case 'team_key':
-          aValue = parseInt(formatTeamNumber(a.team_key));
-          bValue = parseInt(formatTeamNumber(b.team_key));
+          if (displayMode === 'number') {
+            aValue = parseInt(formatTeamNumber(a.team_key));
+            bValue = parseInt(formatTeamNumber(b.team_key));
+          } else {
+            aValue = a.team_name || `Team ${formatTeamNumber(a.team_key)}`;
+            bValue = b.team_name || `Team ${formatTeamNumber(b.team_key)}`;
+          }
           break;
         case 'ranking_points':
           aValue = getRankingPoints(a);
@@ -127,6 +134,32 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
       <div className="container mx-auto sm:px-6">
         <h2 className="text-3xl font-bold mb-8 text-center">Team Rankings</h2>
         
+        {/* Display Mode Toggle */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-gray-800/50 rounded-lg p-1 border border-gray-700/50">
+            <button
+              onClick={() => setDisplayMode('number')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                displayMode === 'number'
+                  ? 'bg-baywatch-orange text-white'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              Team Numbers
+            </button>
+            <button
+              onClick={() => setDisplayMode('name')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                displayMode === 'name'
+                  ? 'bg-baywatch-orange text-white'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+              }`}
+            >
+              Team Names
+            </button>
+          </div>
+        </div>
+        
         <div className="card-gradient backdrop-blur-sm rounded-xl sm:px-6 py-6 border border-gray-700/50">
           <div className="overflow-x-auto">
             {!isLoading && rankings.length === 0 && (
@@ -156,7 +189,7 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
                     onClick={() => handleSort('team_key')}
                   >
                     <div className="flex items-center">
-                      Team
+                      {displayMode === 'number' ? 'Team' : 'Team Name'}
                       <i className={`ml-2 ${getSortIcon('team_key')}`}></i>
                     </div>
                   </th>
@@ -242,15 +275,29 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
                         </td>
                         <td className="p-4">
                           <div className="flex items-center">
-                            <span 
-                              className={`font-bold`}
-                              style={hasSpecialColor ? { color: teamColor } : { color: '#ff6b00' }}
-                            >
-                              {teamNumber}
-                            </span>
-                            {ranking.team_name && (
+                            {displayMode === 'number' ? (
+                              <span 
+                                className={`font-bold`}
+                                style={hasSpecialColor ? { color: teamColor } : { color: '#ff6b00' }}
+                              >
+                                {teamNumber}
+                              </span>
+                            ) : (
+                              <span 
+                                className={`font-bold`}
+                                style={hasSpecialColor ? { color: teamColor } : { color: '#ff6b00' }}
+                              >
+                                {ranking.team_name || `Team ${teamNumber}`}
+                              </span>
+                            )}
+                            {displayMode === 'number' && ranking.team_name && (
                               <span className="ml-2 text-gray-400 text-sm truncate max-w-32">
                                 {ranking.team_name}
+                              </span>
+                            )}
+                            {displayMode === 'name' && (
+                              <span className="ml-2 text-gray-400 text-sm">
+                                ({teamNumber})
                               </span>
                             )}
                           </div>
