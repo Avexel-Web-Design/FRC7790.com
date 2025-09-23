@@ -176,3 +176,47 @@ Apply migrations with Wrangler using `--remote`:
 wrangler d1 execute frc7790-com --remote --file=migrations/009_add_notifications.sql
 wrangler d1 execute frc7790-com --remote --file=migrations/010_notifications_push.sql
 ```
+
+## 🤖 AI Match Summaries
+
+The Match page now shows a 1–2 sentence automatically generated recap above the Team Information card.
+
+How it works:
+
+- Frontend calls `POST /api/ai/match-summary/generate` with the full match object (and key) once per match view.
+- The serverless function (Hono) fetches match data if not supplied, builds a concise stats prompt, and (if an AI key is configured) requests a summary.
+- Response is cached client-side in `localStorage` (`match_summary_v1:<match_key>`) to avoid repeated API usage.
+- If no AI key is present, a deterministic fallback summary (scores + winner) is returned.
+
+Environment variables (set in Cloudflare Pages / Wrangler env):
+
+```
+# Preferred (OpenRouter: Grok 4 Fast)
+OPENROUTER_API_KEY=or_...
+OPENROUTER_MODEL=xai/grok-2-1212        # or another listing from https://openrouter.ai/models
+OPENROUTER_SITE_URL=https://www.frc7790.com   # (recommended) used for attribution / ranking
+OPENROUTER_APP_NAME=FRC 7790
+
+# OpenAI (fallback chain if OpenRouter not set)
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_BASE_URL=https://api.openai.com/v1
+
+# Azure OpenAI (if both OpenRouter & OpenAI unset and Azure vars present)
+AZURE_OPENAI_KEY=...
+AZURE_OPENAI_ENDPOINT=https://<resource>.openai.azure.com
+AZURE_OPENAI_DEPLOYMENT=<deploymentName>
+
+# Groq (last before fallback)
+GROQ_API_KEY=gk_...
+GROQ_MODEL=llama-3.1-70b-versatile
+```
+
+Provider precedence: OpenRouter → Azure OpenAI → OpenAI → Groq → fallback (deterministic manual summary).
+
+Nothing configured? You still get a fallback summary; the UI labels it "AI Generated" regardless (you can change the badge if desired).
+
+Regenerate button: Re-requests the endpoint (ignores existing cached value) and overwrites cache.
+
+To disable temporarily, remove the `<MatchSummary />` import / component in `src/components/pages/Match.tsx`.
+

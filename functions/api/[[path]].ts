@@ -12,6 +12,7 @@ import profile from './profile';
 import preferences from './preferences';
 
 import chat from './chat';
+import aiMatchSummary from './ai/matchSummary';
 
 const app = new Hono().basePath('/api');
 
@@ -29,6 +30,7 @@ app.route('/tasks', tasks);
 app.route('/profile', profile);
 app.route('/preferences', preferences);
 app.route('/chat', chat);
+app.route('/ai/match-summary', aiMatchSummary);
 
 
 // Health check endpoint

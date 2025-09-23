@@ -8,6 +8,7 @@ import {
   MatchVideo,
   LoadingOverlay
 } from '../sections/match';
+import MatchSummary from '../sections/match/MatchSummary';
 import { useMatchData } from '../../hooks/useMatchData';
 
 const Match: React.FC = () => {
@@ -78,6 +79,10 @@ const Match: React.FC = () => {
             
             {/* Right Column: Teams and Video */}
             <div className="space-y-8">
+              {/* AI Match Summary */}
+              <div className="animate__animated animate__fadeInUp" style={{ animationDelay: '0.34s' }}>
+                {matchData && <MatchSummary matchData={matchData} />}
+              </div>
               {/* Teams Section */}
               <div className="animate__animated animate__fadeInUp" style={{ animationDelay: '0.4s' }}>
                 <MatchTeamDetails matchData={matchData} teamData={teamData} />
