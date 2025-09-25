@@ -1,21 +1,13 @@
 import React from 'react';
 import type { EventData } from '../../../hooks/useEventData';
-import { formatMatchName } from '../../../utils/eventUtils';
 
 interface EventHeroProps {
   eventData: EventData | null;
   eventCode: string;
   isLoading: boolean;
-  eventHighScore?: {
-    highScore: number;
-    match: any;
-    alliance: 'red' | 'blue' | null;
-    hasMatches: boolean;
-    hasCompletedMatches: boolean;
-  };
 }
 
-const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading, eventHighScore }) => {
+const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }) => {
   const getEventCity = () => {
     if (!eventData) return 'Loading';
     return eventData.name || eventData.city || 'Event';
@@ -110,33 +102,6 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading, 
         >
           {getEventDetails()}
         </p>
-        
-        {/* Event High Score Display */}
-        {eventHighScore && eventHighScore.hasCompletedMatches && eventHighScore.highScore > 0 && (
-          <div 
-            className={`text-center mt-4 animate__animated animate__fadeInUp ${isLoading ? 'animate-pulse' : ''}`}
-            style={{ animationDelay: '0.8s' }}
-          >
-            <div className="inline-flex items-center bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 rounded-lg px-4 py-2">
-              <i className="fas fa-star text-yellow-400 mr-2"></i>
-              <span className="text-yellow-400 font-semibold mr-2">Event High Score:</span>
-              <span className="text-white font-bold text-lg">{eventHighScore.highScore}</span>
-              {eventHighScore.match && (
-                <>
-                  <span className="text-gray-400 mx-2">•</span>
-                  <span className="text-gray-300 text-sm">
-                    {formatMatchName(eventHighScore.match)}
-                    {eventHighScore.alliance && (
-                      <span className={`ml-1 ${eventHighScore.alliance === 'red' ? 'text-red-400' : 'text-blue-400'}`}>
-                        ({eventHighScore.alliance})
-                      </span>
-                    )}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-        )}
         
         <div className="flex justify-center mt-6 gap-4 flex-wrap">
           <a 

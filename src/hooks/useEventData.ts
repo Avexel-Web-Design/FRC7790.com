@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { frcAPI } from '../utils/frcAPI';
-import { calculateEventHighScore } from '../utils/eventUtils';
 
 export interface EventData {
   key: string;
@@ -179,11 +178,6 @@ export function useEventData(eventCode: string) {
     }
   }, [teams]);
 
-  // Calculate event high score from matches
-  const eventHighScore = useMemo(() => {
-    return calculateEventHighScore(matches, playoffMatches);
-  }, [matches, playoffMatches]);
-
   const loadEpaData = async () => {
     if (!eventData) return;
     
@@ -211,7 +205,6 @@ export function useEventData(eventCode: string) {
     awards,
     teams,
     epaData,
-    eventHighScore,
     isLoading,
     error,
     isUpcoming,
