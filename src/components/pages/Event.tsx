@@ -39,6 +39,7 @@ const Event: React.FC = () => {
     awards,
     teams,
     epaData,
+    eventHighScore,
     refetch
   } = useEventData(eventCode);
 
@@ -117,6 +118,7 @@ const Event: React.FC = () => {
         eventData={eventData}
         eventCode={eventCode}
         isLoading={isLoading}
+        eventHighScore={eventHighScore}
       />
 
       {/* Content Area - grows to fill available space */}
