@@ -46,6 +46,10 @@ const config = {
     allowMixedContent: false,
     // Use default activity name; additional settings done in Android Studio as needed
   },
+  ios: {
+    contentInset: 'automatic',
+    // Additional iOS settings can be configured in Xcode as needed
+  },
 } as const;
 
 export default config;
