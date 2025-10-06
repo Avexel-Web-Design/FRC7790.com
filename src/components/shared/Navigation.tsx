@@ -216,7 +216,7 @@ export default function Navigation() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-white transition-colors mr-3"
+          className="md:hidden text-white transition-colors"
           style={{ color: 'white' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = accentColor;

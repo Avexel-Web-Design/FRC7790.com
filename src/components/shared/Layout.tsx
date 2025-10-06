@@ -30,9 +30,9 @@ export default function Layout({ children }: LayoutProps) {
   }, [isTeamPage, teamNumber, isSpecialTeam]);
 
   return (
-    <div className="min-h-screen bg-baywatch-dark text-white overflow-x-hidden font-poppins px-4 md:px-6">
+    <div className="min-h-screen bg-baywatch-dark text-white overflow-x-hidden font-poppins">
       <Navigation />
-      <main className="pt-20">
+      <main>
         {children}
       </main>
       <Footer />
