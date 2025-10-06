@@ -65,8 +65,11 @@ export default function Navigation() {
 
     // If the query does not contain any spaces, treat it as an event code without a year and prepend the current year
     if (!/\s/.test(query)) {
-      const currentYear = new Date().getFullYear();
-      const eventCodeWithYear = currentYear + query;
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      // Use next year if we're in October (month 9) or later
+      const effectiveYear = now.getMonth() >= 9 ? currentYear + 1 : currentYear;
+      const eventCodeWithYear = effectiveYear + query;
       navigate(`/event?event=${eventCodeWithYear}`);
       return;
     }
