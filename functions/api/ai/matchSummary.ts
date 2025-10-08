@@ -150,7 +150,7 @@ ai.post('/generate', async c => {
   const { prompt, fallback, factors } = buildStats(matchData);
 
     // If no AI key configured, return deterministic fallback so UI still shows something
-  const openRouterKey = env.OPENROUTER_API_KEY; // Preferred if user wants OpenRouter (Grok)
+  const openRouterKey = env.OPENROUTER_API_KEY; // Preferred if user wants OpenRouter
   const apiKey = openRouterKey || env.OPENAI_API_KEY || env.AZURE_OPENAI_KEY || env.GROQ_API_KEY;
     if (!apiKey) {
   return c.json({ summary: fallback, model: 'fallback', cached: false, fallbackUsed: true, factors: [] });
@@ -164,7 +164,7 @@ ai.post('/generate', async c => {
 
     try {
       if (provider === 'openrouter') {
-  const model = env.OPENROUTER_MODEL || 'xai/grok-2-1212'; // alias for Grok 4 fast if available
+  const model = env.OPENROUTER_MODEL || 'z-ai/glm-4.5-air:free';
         const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {

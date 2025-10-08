@@ -191,9 +191,9 @@ How it works:
 Environment variables (set in Cloudflare Pages / Wrangler env):
 
 ```
-# Preferred (OpenRouter: Grok 4 Fast)
+# Preferred (OpenRouter: GLM 4.5 Air)
 OPENROUTER_API_KEY=or_...
-OPENROUTER_MODEL=xai/grok-2-1212        # or another listing from https://openrouter.ai/models
+OPENROUTER_MODEL=z-ai/glm-4.5-air:free        # or another listing from https://openrouter.ai/models
 OPENROUTER_SITE_URL=https://www.frc7790.com   # (recommended) used for attribution / ranking
 OPENROUTER_APP_NAME=FRC 7790
 
