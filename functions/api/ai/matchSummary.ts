@@ -126,9 +126,17 @@ function buildStats(match: any): { prompt: string; fallback: string; factors: Fa
 const ai = new Hono();
 
 ai.post('/generate', async c => {
-  const env = (c.env || {}) as EnvBindings; // typed view
   try {
-    const body: MatchSummaryRequest = await c.req.json();
+    const env = (c.env || {}) as EnvBindings; // typed view
+    
+    let body: MatchSummaryRequest;
+    try {
+      body = await c.req.json();
+    } catch (parseErr) {
+      console.error('JSON parse error:', parseErr);
+      return c.json({ error: 'Invalid JSON in request body', details: (parseErr as Error).message }, 400);
+    }
+    
     const { match_key, match } = body;
 
     if (!match_key && !match) {
@@ -271,7 +279,12 @@ ai.post('/generate', async c => {
   const fallbackUsed = !usedAI || summaryText === fallback;
   return c.json({ summary: summaryText, model: provider, promptUsed: prompt, fallbackUsed, factors });
   } catch (err) {
-    return c.json({ error: 'Bad request', details: (err as Error).message }, 400);
+    console.error('Match summary generation error:', err);
+    return c.json({ 
+      error: 'Failed to generate match summary', 
+      details: (err as Error).message,
+      stack: (err as Error).stack 
+    }, 500);
   }
 });
 
