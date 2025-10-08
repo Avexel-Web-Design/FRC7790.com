@@ -99,14 +99,22 @@ function buildStats(match: any): { prompt: string; fallback: string; factors: Fa
   const winnerPhrase = winner ? (winner === 'blue' ? `Blue alliance ${verb} Red` : `Red alliance ${verb} Blue`) : 'Match tied';
 
   // Determine potential decisive factor keywords
+  // Only count factors that actually favor the winning team
   const factorHints: string[] = [];
   const findField = (names: string[]) => factors.find(f => names.includes(f.name));
   const autoF = findField(['autoPoints','autoScore','auto']);
   const endF = findField(['endGamePoints','endgamePoints','endGameScore']);
   const foulF = findField(['foulPoints','foulScore']);
-  if (foulF && Math.abs(foulF.diff) > 0 && margin && Math.abs(foulF.diff) >= margin * 0.5) factorHints.push('penalties');
-  if (autoF && margin && Math.abs(autoF.diff) >= margin * 0.35) factorHints.push('auto performance');
-  if (endF && margin && Math.abs(endF.diff) >= margin * 0.35) factorHints.push('endgame execution');
+  
+  // Check if factor favors winner: blue winner needs positive diff, red winner needs negative diff
+  const favorsWinner = (f: Factor) => {
+    if (!winner) return false;
+    return winner === 'blue' ? f.diff > 0 : f.diff < 0;
+  };
+  
+  if (foulF && Math.abs(foulF.diff) > 0 && margin && Math.abs(foulF.diff) >= margin * 0.5 && favorsWinner(foulF)) factorHints.push('penalties');
+  if (autoF && margin && Math.abs(autoF.diff) >= margin * 0.35 && favorsWinner(autoF)) factorHints.push('auto performance');
+  if (endF && margin && Math.abs(endF.diff) >= margin * 0.35 && favorsWinner(endF)) factorHints.push('endgame execution');
 
   const fallback = (blueScore != null && redScore != null)
     ? `${winnerPhrase}: ${blueScore} - ${redScore}${factorHints.length?` (factor: ${factorHints[0]})`:''}`
@@ -124,6 +132,9 @@ function buildStats(match: any): { prompt: string; fallback: string; factors: Fa
 }
 
 const ai = new Hono();
+
+// System prompt for AI match summaries (used across all providers)
+const SYSTEM_PROMPT = 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT repeat the raw score at the start. Do NOT mention event codes or match keys (e.g., say "qualification match 2" not "2025mitvc_qm2"). Avoid speculation.';
 
 ai.post('/generate', async c => {
   try {
@@ -184,7 +195,7 @@ ai.post('/generate', async c => {
           body: JSON.stringify({
             model,
             messages: [
-              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT just repeat the raw score at the start; avoid speculation.' },
+              { role: 'system', content: SYSTEM_PROMPT },
               { role: 'user', content: prompt }
             ],
             max_tokens: 160,
@@ -210,7 +221,7 @@ ai.post('/generate', async c => {
           },
           body: JSON.stringify({
             messages: [
-              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT just repeat the raw score at the start; avoid speculation.' },
+              { role: 'system', content: SYSTEM_PROMPT },
               { role: 'user', content: prompt }
             ],
             max_tokens: 160,
@@ -236,7 +247,7 @@ ai.post('/generate', async c => {
           body: JSON.stringify({
             model: env.OPENAI_MODEL || 'gpt-4o-mini',
             messages: [
-              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT just repeat the raw score at the start; avoid speculation.' },
+              { role: 'system', content: SYSTEM_PROMPT },
               { role: 'user', content: prompt }
             ],
             max_tokens: 160,
@@ -258,7 +269,7 @@ ai.post('/generate', async c => {
           body: JSON.stringify({
             model: env.GROQ_MODEL || 'llama-3.1-70b-versatile',
             messages: [
-              { role: 'system', content: 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT just repeat the raw score at the start; avoid speculation.' },
+              { role: 'system', content: SYSTEM_PROMPT },
               { role: 'user', content: prompt }
             ],
             max_tokens: 160,
