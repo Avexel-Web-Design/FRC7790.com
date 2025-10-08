@@ -49,8 +49,22 @@ const RegisteredTeams: React.FC<RegisteredTeamsProps> = ({ teams, isLoading }) =
               return (
               <div
                 key={team.key}
-                className={`card-gradient backdrop-blur-sm rounded-lg p-4 border transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-lg ${isFav ? '' : 'border-gray-700/50 hover:border-baywatch-orange/50 hover:shadow-baywatch-orange/20'}`}
-                style={isFav ? { borderColor: favColor + '80', boxShadow: `0 10px 20px -8px ${favColor}33` } : undefined}
+                className={`card-gradient backdrop-blur-sm rounded-lg p-4 border transition-all duration-300 cursor-pointer hover:scale-105 ${isFav ? '' : 'border-gray-700/50 hover:border-baywatch-orange/50 hover:shadow-lg hover:shadow-baywatch-orange/20'}`}
+                style={isFav ? { 
+                  borderColor: favColor + '80', 
+                  boxShadow: `0 10px 20px -8px ${favColor}33`,
+                  ['--hover-shadow' as any]: `0 10px 20px -8px ${favColor}66`
+                } : undefined}
+                onMouseEnter={(e) => {
+                  if (isFav && favColor) {
+                    e.currentTarget.style.boxShadow = `0 10px 20px -8px ${favColor}66`;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (isFav && favColor) {
+                    e.currentTarget.style.boxShadow = `0 10px 20px -8px ${favColor}33`;
+                  }
+                }}
                 onClick={() => handleTeamClick(tn)}
               >
                 <div className="flex items-center justify-between">
@@ -74,14 +88,6 @@ const RegisteredTeams: React.FC<RegisteredTeamsProps> = ({ teams, isLoading }) =
                     <i className="fas fa-chevron-right text-gray-500 text-sm"></i>
                   </div>
                 </div>
-                
-                {/* Highlight note */}
-                {isFav && (
-                  <div className="mt-2 text-xs font-semibold" style={{ color: favColor }}>
-                    <i className="fas fa-star mr-1"></i>
-                    Favorite
-                  </div>
-                )}
               </div>
             );})}
           </div>
