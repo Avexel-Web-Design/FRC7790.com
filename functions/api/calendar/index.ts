@@ -632,7 +632,7 @@ calendar.delete('/:id', async (c) => {
     // Handle recurring event instance deletion
     if (exception_date && !delete_series) {
       // This is deleting a single instance from a recurring series
-      let parentEventId = existingEvent.parent_event_id || id;
+      const parentEventId = existingEvent.parent_event_id || id;
       
       // Get the parent event
       const { results: parentEvents } = await c.env.DB.prepare(

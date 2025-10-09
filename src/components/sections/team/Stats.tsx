@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getTeamCardGradientClass } from '../../../utils/color';
+import useTeamRanking from '../../../hooks/useTeamRanking';
 
 interface TeamStatsProps {
   teamNumber: string;
@@ -13,6 +14,9 @@ export default function TeamStats({ teamNumber, teamData, eventsData }: TeamStat
     winRate: 'Loading...',
     eventsCount: 'Loading...'
   });
+
+  const { rank: teamRank, totalTeams, year: rankingYear, loading: rankingLoading, rankingType } = useTeamRanking(teamNumber);
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     const calculateStats = async () => {
@@ -80,6 +84,7 @@ export default function TeamStats({ teamNumber, teamData, eventsData }: TeamStat
   return (
     <>
       {/* Card with gradient, only visible on sm and up */}
+            {/* Card with gradient, only visible above sm */}
       <div className={`hidden sm:block ${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn sm:border sm:border-gray-800`} style={{animationDelay: '0.2s'}}>
         <h2 className="text-2xl font-bold mb-6 text-center">Team Stats</h2>
         <div className="space-y-4">
@@ -99,9 +104,26 @@ export default function TeamStats({ teamNumber, teamData, eventsData }: TeamStat
             <span className="text-gray-400">Win Rate</span>
             <span className="font-bold">{stats.winRate}</span>
           </div>
+          <div className="flex justify-between items-center border-b border-gray-700 pb-2">
+            <span className="text-gray-400">{rankingType === 'district' ? 'District' : rankingType === 'regional' ? 'Regional' : ''} Ranking</span>
+            <span className="font-bold">
+              {rankingLoading ? (
+                'Loading...'
+              ) : teamRank ? (
+                <>
+                  {teamRank} / {totalTeams}
+                  {rankingYear && rankingYear < currentYear && (
+                    <span className="text-sm text-gray-400 ml-1">({rankingYear})</span>
+                  )}
+                </>
+              ) : (
+                'N/A'
+              )}
+            </span>
+          </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-400">Location</span>
-            <span className="font-bold">
+            <span className="font-bold text-right">
               {teamData ? `${teamData.city}, ${teamData.state_prov}` : 'Loading...'}
             </span>
           </div>
@@ -127,9 +149,26 @@ export default function TeamStats({ teamNumber, teamData, eventsData }: TeamStat
             <span className="text-gray-400">Win Rate</span>
             <span className="font-bold">{stats.winRate}</span>
           </div>
+          <div className="flex justify-between items-center border-b border-gray-700 pb-2">
+            <span className="text-gray-400">{rankingType === 'district' ? 'District' : rankingType === 'regional' ? 'Regional' : ''} Ranking</span>
+            <span className="font-bold">
+              {rankingLoading ? (
+                'Loading...'
+              ) : teamRank ? (
+                <>
+                  {teamRank} / {totalTeams}
+                  {rankingYear && rankingYear < currentYear && (
+                    <span className="text-sm text-gray-400 ml-1">({rankingYear})</span>
+                  )}
+                </>
+              ) : (
+                'N/A'
+              )}
+            </span>
+          </div>
           <div className="flex justify-between items-center">
             <span className="text-gray-400">Location</span>
-            <span className="font-bold">
+            <span className="font-bold text-right">
               {teamData ? `${teamData.city}, ${teamData.state_prov}` : 'Loading...'}
             </span>
           </div>

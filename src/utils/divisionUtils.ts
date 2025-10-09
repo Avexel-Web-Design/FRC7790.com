@@ -5,7 +5,7 @@ function processDivisionName(shortName: string, eventKey: string): string {
   // Handle Michigan championship divisions
   if (eventKey.includes('micmp')) {
     // Remove "MSC - " prefix and take only the first word
-    let processed = shortName.replace(/^MSC\s*-\s*/, '');
+    const processed = shortName.replace(/^MSC\s*-\s*/, '');
     // Take only the first word
     const firstWord = processed.split(/\s+/)[0];
     return firstWord;
@@ -14,7 +14,7 @@ function processDivisionName(shortName: string, eventKey: string): string {
   // Handle Ontario Provincial Championship divisions
   if (eventKey.includes('oncmp')) {
     // Remove "OPC - " prefix and take only the first word
-    let processed = shortName.replace(/^OPC\s*-\s*/, '');
+    const processed = shortName.replace(/^OPC\s*-\s*/, '');
     // Take only the first word
     const firstWord = processed.split(/\s+/)[0];
     return firstWord;
@@ -23,7 +23,7 @@ function processDivisionName(shortName: string, eventKey: string): string {
   // Handle Texas District Championship divisions
   if (eventKey.includes('txcmp')) {
     // Remove "TDC - " prefix and take only the first word
-    let processed = shortName.replace(/^TDC\s*-\s*/, '');
+    const processed = shortName.replace(/^TDC\s*-\s*/, '');
     // Take only the first word
     const firstWord = processed.split(/\s+/)[0];
     return firstWord;

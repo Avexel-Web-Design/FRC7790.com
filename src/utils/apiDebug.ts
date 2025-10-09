@@ -32,7 +32,7 @@ export function recordApiLog(entry: ApiRequestLog) {
   // Keep only last 100
   if (logs.length > 100) logs.shift();
   if (isApiDebugEnabled()) {
-    // eslint-disable-next-line no-console
+     
     console.debug('[API]', entry.method, entry.path, '->', entry.host, entry.status, entry.ok ? 'OK' : 'FAIL');
   }
   // Expose on window for quick inspection

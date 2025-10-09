@@ -27,7 +27,7 @@ export default function Scouting() {
     if (code) {
       loadEvent(code);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
   const [eventCode, setEventCode] = useState<string>('');
   const [eventInfo, setEventInfo] = useState<StatEvent | null>(null);

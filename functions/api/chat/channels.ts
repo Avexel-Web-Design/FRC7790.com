@@ -101,7 +101,7 @@ export async function createChannel(c: Context): Promise<Response> {
     console.log("createChannel: Inserting channel", { id, name, created_by, now, position });
     
     // Ensure the creator is in the members list for a private channel
-    let memberIds: number[] = Array.isArray(members) ? [...members] : [];
+    const memberIds: number[] = Array.isArray(members) ? [...members] : [];
     if (is_private && created_by && !memberIds.includes(Number(created_by))) {
       memberIds.push(Number(created_by));
     }
@@ -391,7 +391,7 @@ export async function createGroupChat(c: Context): Promise<Response> {
     const now = new Date().toISOString();
     
     // Ensure the creator is in the members list
-    let memberIds: number[] = [...members];
+    const memberIds: number[] = [...members];
     if (!memberIds.includes(Number(created_by))) {
       memberIds.push(Number(created_by));
     }
