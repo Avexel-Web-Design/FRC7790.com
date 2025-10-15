@@ -54,7 +54,7 @@ export default function Contact() {
             </div>
             
             <p className="text-gray-400 text-center mt-6 sm:mt-8 text-xs sm:text-sm md:text-base">
-              Have questions or want to reach out about a sponsorship. You can reach us at frc@harborps.org or through{' '}
+              Have questions or want to reach out about a sponsorship? You can reach us at frc@harborps.org or through{' '}
               <Link to="/become-a-sponsor" className="text-baywatch-orange hover:underline">
                 this contact form.
               </Link>
