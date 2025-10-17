@@ -4,6 +4,7 @@ import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/o
 import { useAuth } from '../../contexts/AuthContext';
 import { useTeamContext } from '../../hooks/useTeamContext';
 import { getTeamColor } from '../../utils/color';
+import { TBA_AUTH_KEY } from '../../utils/frcAPI';
 
 interface NavigationItem {
   name: string;
@@ -46,32 +47,66 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     const query = searchQuery.trim();
     if (!query) return;
 
-    // If the query is only digits, treat as team number
+    // Helper function to check if a team exists
+    const teamExists = async (teamNumber: string): Promise<boolean> => {
+      try {
+        const response = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}`, {
+          headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY }
+        });
+        return response.ok;
+      } catch {
+        return false;
+      }
+    };
+
+    // Helper function to check if an event exists
+    const eventExists = async (eventCode: string): Promise<boolean> => {
+      try {
+        const response = await fetch(`https://www.thebluealliance.com/api/v3/event/${eventCode}`, {
+          headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY }
+        });
+        return response.ok;
+      } catch {
+        return false;
+      }
+    };
+
+    // If the query is only digits, check if team exists
     if (/^\d+$/.test(query)) {
-      navigate(`/team?team=${query}`);
-      return;
+      const exists = await teamExists(query);
+      if (exists) {
+        navigate(`/team?team=${query}`);
+        return;
+      }
     }
 
-    // If the query matches typical event code pattern like 2024miket
+    // If the query matches typical event code pattern like 2024miket, check if event exists
     if (/^\d{4}[a-z0-9]+$/i.test(query)) {
-      navigate(`/event?event=${query}`);
-      return;
+      const exists = await eventExists(query);
+      if (exists) {
+        navigate(`/event?event=${query}`);
+        return;
+      }
     }
 
-    // If the query does not contain any spaces, treat it as an event code without a year and prepend the current year
-    if (!/\s/.test(query)) {
+    // If the query looks like an event code without year (lowercase letters/numbers, 2-20 chars, no spaces)
+    // try prepending the current/next year and check if that event exists
+    if (/^[a-z0-9]{2,20}$/i.test(query)) {
       const now = new Date();
       const currentYear = now.getFullYear();
       // Use next year if we're in October (month 9) or later
       const effectiveYear = now.getMonth() >= 9 ? currentYear + 1 : currentYear;
       const eventCodeWithYear = effectiveYear + query;
-      navigate(`/event?event=${eventCodeWithYear}`);
-      return;
+      const exists = await eventExists(eventCodeWithYear);
+      if (exists) {
+        navigate(`/event?event=${eventCodeWithYear}`);
+        return;
+      }
     }
 
     // Otherwise navigate to search results
