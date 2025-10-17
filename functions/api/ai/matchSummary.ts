@@ -134,7 +134,7 @@ function buildStats(match: any): { prompt: string; fallback: string; factors: Fa
 const ai = new Hono();
 
 // System prompt for AI match summaries (used across all providers)
-const SYSTEM_PROMPT = 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT repeat the raw score at the start. Do NOT mention event codes or match keys (e.g., say "qualification match 2" not "2025mitvc_qm2"). Avoid speculation.';
+const SYSTEM_PROMPT = 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT repeat the raw score at the start. Do NOT mention event codes or match keys (e.g., say "qualification match 2" not "2025mitvc_qm2"). IMPORTANT: Convert technical field names into natural language (e.g., "teleopCoral" → "teleop coral", "autoPoints" → "auto points", "endGamePoints" → "endgame points", "foulPoints" → "foul points"). Break up camelCase and technical names into conversational phrases. Avoid speculation.';
 
 ai.post('/generate', async c => {
   try {
