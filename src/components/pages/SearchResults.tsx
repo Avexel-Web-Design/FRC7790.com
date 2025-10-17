@@ -1,6 +1,6 @@
 import { useLocation, Link } from 'react-router-dom';
-import { TBA_AUTH_KEY } from '../../utils/frcAPI';
 import { useEffect, useState } from 'react';
+import { useSearchData } from '../../contexts/SearchDataContext';
 
 /* global process */
 // Declare process.env for CRA without @types/node
@@ -20,9 +20,11 @@ export default function SearchResults() {
 
   const [teams, setTeams] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
-  // districts removed per user request
   
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  
+  // Get pre-loaded data from context
+  const { allTeams, allEvents, isLoading: dataLoading } = useSearchData();
 
 
 
@@ -44,49 +46,31 @@ export default function SearchResults() {
     return matrix[a.length][b.length];
   };
 
-  const fetchAllTeams = async (): Promise<any[]> => {
-    const results: any[] = [];
-    let page = 0;
-    while (true) {
-      const res = await fetch(`https://www.thebluealliance.com/api/v3/teams/${page}`, {
-        headers: {
-          'X-TBA-Auth-Key': TBA_AUTH_KEY
-        }
-      });
-      const data = await res.json();
-      if (!Array.isArray(data) || data.length === 0) break;
-      results.push(...data);
-      page += 1;
-    }
-    return results;
-  };
-
-  const fetchEvents = async (): Promise<any[]> => {
-    const currentYear = new Date().getFullYear();
-    const nextYear = currentYear + 1;
-    
-    // Fetch events from multiple years
-    const years = [nextYear, currentYear, currentYear - 1, currentYear - 2];
-    const eventPromises = years.map(year =>
-      fetch(`https://www.thebluealliance.com/api/v3/events/${year}`, {
-        headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY }
-      }).then(res => res.json())
-    );
-    
-    const eventsByYear = await Promise.all(eventPromises);
-    // Flatten all events into one array
-    return eventsByYear.flat();
-  };
-
+  // Filter and search whenever query changes
   useEffect(() => {
-    const runSearch = async () => {
-      setLoading(true);
-      try {
-        const [allTeams, allEvents] = await Promise.all([
-          fetchAllTeams(),
-          fetchEvents()
-        ]);
+    const runSearch = () => {
+      // Wait for data to be loaded
+      if (dataLoading) {
+        setLoading(true);
+        return;
+      }
 
+      // If data is loaded but empty, don't search
+      if (allTeams.length === 0 || allEvents.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      if (!query) {
+        setLoading(false);
+        setTeams([]);
+        setEvents([]);
+        return;
+      }
+
+      setLoading(true);
+      
+      try {
         const normalizedQuery = query.toLowerCase();
         const currentYear = new Date().getFullYear();
         
@@ -95,32 +79,57 @@ export default function SearchResults() {
 
         const computeScore = (q: string, target: string): number => {
           const lowerTarget = target.toLowerCase();
-          if (lowerTarget.includes(q)) return 0; // exact / substring match ranks highest
+          
+          // Fast path: exact substring match
+          if (lowerTarget.includes(q)) return 0;
+          
+          // Fast reject: if lengths are too different, skip expensive computation
+          const lengthDiff = Math.abs(q.length - lowerTarget.length);
+          if (lengthDiff > Math.max(q.length, lowerTarget.length) * 0.8) {
+            return 1; // Score of 1 = will be filtered out
+          }
+          
           const dist = levenshtein(q, lowerTarget);
           return dist / Math.max(q.length, lowerTarget.length);
         };
 
-        const scoredTeams = allTeams.map((t: any) => {
-          const numberScore = computeScore(normalizedQuery, `${t.team_number}`);
-          const nicknameScore = computeScore(normalizedQuery, t.nickname || '');
-          return {
-            team_number: t.team_number,
-            nickname: t.nickname || '',
-            score: Math.min(numberScore, nicknameScore)
-          };
-        });
+        const scoredTeams = allTeams
+          .map((t: any) => {
+            const teamNumberStr = `${t.team_number}`;
+            const nickname = t.nickname || '';
+            
+            // Quick substring check before expensive computation
+            if (teamNumberStr.includes(normalizedQuery) || nickname.toLowerCase().includes(normalizedQuery)) {
+              return {
+                team_number: t.team_number,
+                nickname: nickname,
+                score: 0 // Perfect match
+              };
+            }
+            
+            const numberScore = computeScore(normalizedQuery, teamNumberStr);
+            const nicknameScore = computeScore(normalizedQuery, nickname);
+            return {
+              team_number: t.team_number,
+              nickname: nickname,
+              score: Math.min(numberScore, nicknameScore)
+            };
+          })
+          .filter((t) => t.score < 0.8); // Filter early to reduce sort size
 
-        const scoredEvents = allEvents.map((e: any) => {
-          // Extract year from event key (format: 2025miket)
-          const eventYear = parseInt(e.key.substring(0, 4));
-          
-          return {
-            key: e.key,
-            name: e.name,
-            year: eventYear,
-            score: computeScore(normalizedQuery, e.name)
-          };
-        });
+        const scoredEvents = allEvents
+          .map((e: any) => {
+            // Extract year from event key (format: 2025miket)
+            const eventYear = parseInt(e.key.substring(0, 4));
+            
+            return {
+              key: e.key,
+              name: e.name,
+              year: eventYear,
+              score: computeScore(normalizedQuery, e.name)
+            };
+          })
+          .filter((e) => e.score < 0.8); // Filter early
 
         
 
@@ -135,12 +144,11 @@ export default function SearchResults() {
         });
         
 
-        const filteredTeams = scoredTeams.filter((t) => t.score < 0.8);
+        // Teams already filtered above, no need to filter again
+        const filteredTeams = scoredTeams;
         
-        // Filter events: exclude events 3+ years old UNLESS year is in query
+        // Filter events by year: exclude events 3+ years old UNLESS year is in query
         const filteredEvents = scoredEvents.filter((e) => {
-          if (e.score >= 0.8) return false; // Poor match
-          
           const yearDiff = currentYear - e.year;
           
           // If year is in query, show all events regardless of age
@@ -163,17 +171,13 @@ export default function SearchResults() {
         }
       } catch (err) {
         console.error(err);
-        alert('Error fetching data from The Blue Alliance API. Please ensure your API key is set in the .env file.');
-        console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (query) {
-      runSearch();
-    }
-  }, [query]);
+    runSearch();
+  }, [query, allTeams, allEvents, dataLoading, activeTab]);
 
   return (
     <div className="-mb-32 bg-black min-h-screen w-full text-white">
@@ -193,7 +197,9 @@ export default function SearchResults() {
         ))}
       </div>
 
-      {loading ? (
+      {dataLoading ? (
+        <p className="text-gray-400">Loading teams and events data...</p>
+      ) : loading ? (
         <p className="text-gray-400">Searching...</p>
       ) : (
         <>

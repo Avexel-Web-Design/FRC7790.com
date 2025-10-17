@@ -26,6 +26,7 @@ import AdminPublicUsers from './components/pages/admin/AdminPublicUsers';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DirectMessages from './components/pages/DirectMessages';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { SearchDataProvider } from './contexts/SearchDataContext';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
 
 function App() {
@@ -33,12 +34,14 @@ function App() {
     <NotificationProvider>
       <Router>
         <Routes>
-          {/* Public Routes */}
+          {/* Public Routes with SearchDataProvider */}
           <Route
             element={
-              <Layout>
-                <Outlet />
-              </Layout>
+              <SearchDataProvider>
+                <Layout>
+                  <Outlet />
+                </Layout>
+              </SearchDataProvider>
             }
           >
             <Route path="/" element={<Home />} />
