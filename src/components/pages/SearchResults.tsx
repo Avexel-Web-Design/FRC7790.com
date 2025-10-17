@@ -62,10 +62,20 @@ export default function SearchResults() {
   };
 
   const fetchEvents = async (): Promise<any[]> => {
-    const res = await fetch(`https://www.thebluealliance.com/api/v3/events/${new Date().getFullYear()}`, {
-      headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY }
-    });
-    return res.json();
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
+    
+    // Fetch events from multiple years
+    const years = [nextYear, currentYear, currentYear - 1, currentYear - 2];
+    const eventPromises = years.map(year =>
+      fetch(`https://www.thebluealliance.com/api/v3/events/${year}`, {
+        headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY }
+      }).then(res => res.json())
+    );
+    
+    const eventsByYear = await Promise.all(eventPromises);
+    // Flatten all events into one array
+    return eventsByYear.flat();
   };
 
   useEffect(() => {
@@ -78,6 +88,10 @@ export default function SearchResults() {
         ]);
 
         const normalizedQuery = query.toLowerCase();
+        const currentYear = new Date().getFullYear();
+        
+        // Check if query contains a year (4 consecutive digits)
+        const yearInQuery = /\d{4}/.test(query);
 
         const computeScore = (q: string, target: string): number => {
           const lowerTarget = target.toLowerCase();
@@ -96,20 +110,45 @@ export default function SearchResults() {
           };
         });
 
-        const scoredEvents = allEvents.map((e: any) => ({
-          key: e.key,
-          name: e.name,
-          score: computeScore(normalizedQuery, e.name)
-        }));
+        const scoredEvents = allEvents.map((e: any) => {
+          // Extract year from event key (format: 2025miket)
+          const eventYear = parseInt(e.key.substring(0, 4));
+          
+          return {
+            key: e.key,
+            name: e.name,
+            year: eventYear,
+            score: computeScore(normalizedQuery, e.name)
+          };
+        });
 
         
 
         scoredTeams.sort((a, b) => a.score - b.score);
-        scoredEvents.sort((a, b) => a.score - b.score);
+        
+        // Sort events by score first, then by year (newest first) as tiebreaker
+        scoredEvents.sort((a, b) => {
+          if (a.score !== b.score) {
+            return a.score - b.score; // Better score (lower) first
+          }
+          return b.year - a.year; // Then newer year first
+        });
         
 
         const filteredTeams = scoredTeams.filter((t) => t.score < 0.8);
-        const filteredEvents = scoredEvents.filter((e) => e.score < 0.8);
+        
+        // Filter events: exclude events 3+ years old UNLESS year is in query
+        const filteredEvents = scoredEvents.filter((e) => {
+          if (e.score >= 0.8) return false; // Poor match
+          
+          const yearDiff = currentYear - e.year;
+          
+          // If year is in query, show all events regardless of age
+          if (yearInQuery) return true;
+          
+          // Otherwise, only show events from the last 2 years (and next year)
+          return yearDiff >= -1 && yearDiff <= 2;
+        });
         
 
         setTeams(filteredTeams.slice(0, 15));
