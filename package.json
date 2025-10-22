@@ -48,7 +48,7 @@
     "@heroicons/react": "^2.2.0",
     "@melloware/coloris": "^0.25.0",
     "@types/react-router-dom": "^5.3.3",
-    "hono": "^4.9.7",
+    "hono": "^4.10.2",
     "lucide-react": "^0.522.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
