@@ -1,0 +1,16 @@
+# robots.txt for frc7790.com
+User-agent: *
+Allow: /
+
+# Disallow authentication and admin pages
+Disallow: /login
+Disallow: /create-account
+Disallow: /settings
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://www.frc7790.com/sitemap.xml
+
+# Crawl delay (optional, helps with server load)
+Crawl-delay: 1
