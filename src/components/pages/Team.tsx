@@ -13,7 +13,10 @@ export default function Team() {
     const hash = window.location.hash.replace('#', '');
     return hash || 'overview';
   });
-  const [teamNumber, setTeamNumber] = useState('7790');
+  const [teamNumber, setTeamNumber] = useState(() => {
+    // Initialize from URL parameters, default to 7790
+    return searchParams.get('team') || '7790';
+  });
   const [teamData, setTeamData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,11 +30,17 @@ export default function Team() {
   useEffect(() => {
     // Get team number from URL parameters, default to 7790
     const teamParam = searchParams.get('team') || '7790';
-    setTeamNumber(teamParam);
+    
+    // Only update if team number changed
+    if (teamParam !== teamNumber) {
+      setTeamNumber(teamParam);
+      setTeamData(null); // Reset team data when switching teams
+      setLoading(true); // Show loading state for new team
+    }
     
     // Update page title
     document.title = `Team ${teamParam} Overview - Baywatch Robotics | FRC Team 7790`;
-  }, [searchParams]);
+  }, [searchParams, teamNumber]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
