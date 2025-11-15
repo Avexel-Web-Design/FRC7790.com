@@ -24,7 +24,7 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
   const handleNavigation = () => {
     if (onNavigate) onNavigate();
   };
-
+  // Navigation
   const navigation = [
     { name: 'Channels', href: '/dashboard', icon: HashtagIcon },
     { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
