@@ -21,12 +21,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Mobile Layout */}
       <div className="md:hidden h-full flex flex-col">
-        {/* Mobile Content (fills screen, with safe area padding) */}
+        {/* Mobile Content (fills screen, with spacing for top and bottom) */}
         <main 
           className="flex-1 overflow-x-hidden overflow-y-auto bg-black"
           style={{
-            paddingTop: 'env(safe-area-inset-top, 0px)',
-            paddingBottom: 'calc(56px + env(safe-area-inset-bottom, 0px))' // 56px is nav height
+            paddingTop: '10vh',
+            paddingBottom: 'calc(56px + 10vh)' // 56px is nav height + 10vh offset
           }}
         >
           {children}

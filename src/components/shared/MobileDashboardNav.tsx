@@ -28,9 +28,9 @@ export default function MobileDashboardNav() {
 
   return (
     <nav 
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-black"
+      className="md:hidden fixed left-0 right-0 z-40 border-t border-white/10 bg-black"
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        bottom: '10vh'
       }}
     >
       <div className="max-w-screen-sm mx-auto flex items-stretch">

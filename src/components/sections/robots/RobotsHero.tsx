@@ -1,6 +1,6 @@
 export default function RobotsHero() {
   return (
-    <section className="min-h-screen relative overflow-hidden pt-20 sm:pt-12 pb-12 sm:pb-0 flex items-center justify-center">
+    <section className="min-h-screen relative overflow-hidden flex items-center justify-center" style={{ paddingTop: 'calc(10vh + 5rem)' }}>
       <div className="absolute inset-0 bg-gradient-to-b from-baywatch-dark to-black"></div>
 
       <div className="container mx-auto px-4 sm:px-6 flex flex-col items-center justify-center relative z-10 -mt-12">
