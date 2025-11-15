@@ -118,6 +118,9 @@ export default function Navigation() {
       className={`fixed top-0 w-full z-50 transition-all duration-300 transform ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
+      style={{
+        paddingTop: 'env(safe-area-inset-top, 0px)'
+      }}
     >
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between">
         {/* Logo */}
