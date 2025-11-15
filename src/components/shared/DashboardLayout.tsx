@@ -26,7 +26,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           className="flex-1 overflow-x-hidden overflow-y-auto bg-black"
           style={{
             paddingTop: '10vh',
-            paddingBottom: 'calc(56px + 10vh)' // 56px is nav height + 10vh offset
+            paddingBottom: 'calc(56px + 4vh)' // 56px is nav height + 4vh offset
           }}
         >
           {children}

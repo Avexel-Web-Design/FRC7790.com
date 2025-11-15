@@ -30,7 +30,7 @@ export default function MobileDashboardNav() {
     <nav 
       className="md:hidden fixed left-0 right-0 z-40 border-t border-white/10 bg-black"
       style={{
-        bottom: '10vh'
+        bottom: '4vh'
       }}
     >
       <div className="max-w-screen-sm mx-auto flex items-stretch">
