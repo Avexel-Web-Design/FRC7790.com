@@ -15,7 +15,7 @@ export default function Hero({ defaultEvent = '', onLoadEvent }: HeroProps) {
   };
 
   return (
-    <section className="pt-32 pb-16 relative z-10">
+    <section className="pt-40 sm:pt-32 pb-20 sm:pb-16 relative z-10">
       <div className="container mx-auto px-6">
       <h1 className="text-5xl md:text-7xl font-bold text-center">
           <span 

@@ -119,7 +119,7 @@ export default function Navigation() {
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-2">
           <Link
@@ -273,7 +273,7 @@ export default function Navigation() {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden backdrop-blur-sm h-screen border-t border-gray-700/30">
-          <div className="px-4 py-6 space-y-4">
+          <div className="px-4 py-8 space-y-6">
             {/* Mobile Search */}
             <form onSubmit={handleSearch} className="flex items-center bg-black/30 rounded-lg border border-gray-700 px-3 py-2">
               <input

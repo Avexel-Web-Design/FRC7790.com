@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 
 export default function Robot() {
   return (
-    <section id="robots" className="py-12 sm:py-20 bg-black scroll-mt-24">
-      <div className="container mx-auto px-3 sm:px-6">
+    <section id="robots" className="py-20 sm:py-20 bg-black scroll-mt-24">
+      <div className="container mx-auto px-4 sm:px-6">
         <h2 className="text-4xl font-bold mb-4 text-center">Our Robot</h2>
         <p className="text-gray-400 text-center mb-12">
           This is our robot for the 2025 FRC season, REEFSCAPE.

@@ -46,8 +46,8 @@ export default function LiveUpdates() {
   const hasNextMatch = competitionData.nextMatch !== null;
 
   return (
-    <section id="live-updates" className="py-12 sm:py-20 gradient-section scroll-mt-24">
-      <div className="container mx-auto px-3 sm:px-6">
+    <section id="live-updates" className="py-20 sm:py-20 gradient-section scroll-mt-24">
+      <div className="container mx-auto px-4 sm:px-6">
         <h2 className="text-4xl font-bold mb-4 text-center">Competition Updates</h2>
         <p className="text-gray-400 text-center mb-2">
           Live updates from The Blue Alliance API

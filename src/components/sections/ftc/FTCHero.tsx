@@ -1,6 +1,6 @@
 export default function FTCHero() {
   return (
-    <section className="min-h-screen relative overflow-hidden pt-12 flex items-center justify-center">
+    <section className="min-h-screen relative overflow-hidden pt-20 sm:pt-12 pb-12 sm:pb-0 flex items-center justify-center">
       <div className="absolute inset-0"></div>
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
