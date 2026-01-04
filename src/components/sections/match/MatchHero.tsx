@@ -48,7 +48,7 @@ const MatchHero: React.FC<MatchHeroProps> = ({ matchData, eventData }) => {
   };
 
   return (
-    <section className="pb-8 relative z-10">
+    <section className="pb-12 sm:pb-8 pt-6 sm:pt-0 relative z-10">
       <div className="container mx-auto px-6">
         <div className="animate__animated animate__fadeIn">
           <h1 className="text-4xl md:text-5xl font-bold text-center mb-2">

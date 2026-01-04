@@ -1,7 +1,7 @@
 export default function GameInfo() {
   return (
-    <section className="py-12 sm:py-20 bg-black">
-      <div className="container mx-auto px-3 sm:px-6">
+    <section className="py-20 sm:py-20 bg-black">
+      <div className="container mx-auto px-4 sm:px-6">
         <h2 className="text-4xl font-bold mb-8 text-center">REBUILT</h2>
         <div className="flex flex-col items-center max-w-4xl mx-auto gap-12">
           <p className="text-gray-400 text-lg text-center">

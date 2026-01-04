@@ -15,8 +15,8 @@ export default function Contact() {
   };
 
   return (
-    <section className="py-10 sm:py-16 bg-black relative z-10">
-      <div className="container mx-auto px-3 sm:px-6">
+    <section className="py-16 sm:py-16 bg-black relative z-10">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="p-4 sm:p-8 card-gradient rounded-xl border border-baywatch-orange/30 shadow-lg hover:shadow-baywatch-orange/20 transition-all duration-300">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6 text-center">

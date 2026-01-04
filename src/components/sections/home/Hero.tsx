@@ -1,9 +1,9 @@
 export default function Hero() {
   return (
-    <section className="min-h-screen relative overflow-hidden pt-12 flex items-center justify-center">
+    <section className="min-h-screen relative overflow-hidden flex items-center justify-center" style={{ paddingTop: 'calc(10vh + 5rem)' }}>
       <div className="absolute inset-0 bg-gradient-to-b from-baywatch-dark to-black"></div>
 
-      <div className="container mx-auto px-3 sm:px-6 flex flex-col items-center justify-center relative z-10 -mt-12">
+      <div className="container mx-auto px-4 sm:px-6 flex flex-col items-center justify-center relative z-10 -mt-12">
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="mb-6 sm:mb-8">
             <div className="flex items-center justify-center gap-2 sm:gap-4 text-4xl sm:text-6xl md:text-8xl font-bold animate__animated animate__fadeInUp"

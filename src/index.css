@@ -378,10 +378,86 @@ button::-webkit-focus-inner {
   .mobile-space-y-6 > * + * {
     margin-top: 1.5rem;
   }
+  
+  /* Enhanced mobile top and bottom spacing utilities */
+  /* Increase top padding on mobile */
+  .mobile-pt-enhanced {
+    padding-top: 4rem !important; /* 64px */
+  }
+  
+  .mobile-pt-large {
+    padding-top: 5rem !important; /* 80px */
+  }
+  
+  /* Increase bottom padding on mobile */
+  .mobile-pb-enhanced {
+    padding-bottom: 4rem !important; /* 64px */
+  }
+  
+  .mobile-pb-large {
+    padding-bottom: 5rem !important; /* 80px */
+  }
+  
+  /* Increase vertical (top + bottom) padding on mobile */
+  .mobile-py-enhanced {
+    padding-top: 4rem !important; /* 64px */
+    padding-bottom: 4rem !important; /* 64px */
+  }
+  
+  .mobile-py-large {
+    padding-top: 5rem !important; /* 80px */
+    padding-bottom: 5rem !important; /* 80px */
+  }
+  
+  /* Increase top margin on mobile */
+  .mobile-mt-enhanced {
+    margin-top: 3rem !important; /* 48px */
+  }
+  
+  .mobile-mt-large {
+    margin-top: 4rem !important; /* 64px */
+  }
+  
+  /* Increase bottom margin on mobile */
+  .mobile-mb-enhanced {
+    margin-bottom: 3rem !important; /* 48px */
+  }
+  
+  .mobile-mb-large {
+    margin-bottom: 4rem !important; /* 64px */
+  }
+  
+  /* Increase vertical (top + bottom) margin on mobile */
+  .mobile-my-enhanced {
+    margin-top: 3rem !important; /* 48px */
+    margin-bottom: 3rem !important; /* 48px */
+  }
+  
+  .mobile-my-large {
+    margin-top: 4rem !important; /* 64px */
+    margin-bottom: 4rem !important; /* 64px */
+  }
 }
 
 /* Mobile Dashboard Enhancements */
-/* Removed .safe-area-inset padding to ensure bottom elements sit flush on devices without a notch */
+/* Safe area insets for mobile devices with notches */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
 
 /* pb-safe class for mobile keyboard handling */
 .pb-safe {

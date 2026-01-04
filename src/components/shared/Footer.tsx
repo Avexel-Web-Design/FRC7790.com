@@ -9,7 +9,7 @@ export default function Footer() {
   const accentColor = isTeamPage && teamNumber ? getTeamColor(teamNumber) || '#f97316' : '#f97316';
 
   return (
-    <footer className="bg-black py-12">
+    <footer className="bg-black py-16 sm:py-12">
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex space-x-4 mb-4 md:mb-0">

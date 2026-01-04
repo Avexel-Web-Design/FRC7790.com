@@ -39,7 +39,7 @@ export default function TeamHero({ teamNumber, teamData, setTeamData, setLoading
   }, [teamNumber, setTeamData, setLoading]);
 
   return (
-    <section className="pt-36 pb-16 relative z-10">
+    <section className="pt-44 sm:pt-36 pb-20 sm:pb-16 relative z-10">
       <div className="container mx-auto px-6">
         <h1 className="text-5xl md:text-7xl font-bold text-center mb-4">
           <span className="text-white inline-block animate__animated animate__fadeInUp" style={{animationDelay: '0.2s'}}>

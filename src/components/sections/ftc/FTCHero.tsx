@@ -1,6 +1,6 @@
 export default function FTCHero() {
   return (
-    <section className="min-h-screen relative overflow-hidden pt-12 flex items-center justify-center">
+    <section className="min-h-screen relative overflow-hidden flex items-center justify-center" style={{ paddingTop: 'calc(10vh + 5rem)' }}>
       <div className="absolute inset-0"></div>
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">

@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 
 export default function About() {
   return (
-    <section id="about-team" className="py-12 sm:py-20 bg-black scroll-mt-24">
-      <div className="container mx-auto px-3 sm:px-6">
+    <section id="about-team" className="py-20 sm:py-20 bg-black scroll-mt-24">
+      <div className="container mx-auto px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="relative p-8 rounded-2xl bg-black/90 border border-baywatch-orange/30 shadow-2xl hover:shadow-baywatch-orange/30 transition-all duration-500 animate-fade-in group">
             

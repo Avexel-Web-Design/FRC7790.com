@@ -21,8 +21,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Mobile Layout */}
       <div className="md:hidden h-full flex flex-col">
-        {/* Mobile Content (fills screen, fixed bottom nav) */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-black">
+        {/* Mobile Content (fills screen, with spacing for top and bottom) */}
+        <main 
+          className="flex-1 overflow-x-hidden overflow-y-auto bg-black"
+          style={{
+            paddingTop: '10vh',
+            paddingBottom: 'calc(56px + 4vh)' // 56px is nav height + 4vh offset
+          }}
+        >
           {children}
         </main>
 

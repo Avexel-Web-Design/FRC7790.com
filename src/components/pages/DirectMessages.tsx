@@ -857,7 +857,7 @@ const DirectMessages: React.FC = () => {
       {/* Chat Area */}
       <div className={`flex-1 flex flex-col ${!selectedChat ? 'hidden md:flex' : ''}`}>
         {/* Header */}
-        <div className="bg-black px-2 sticky top-0 z-30 md:static md:top-auto">
+        <div className="bg-black px-2 md:static" style={{ position: 'sticky', top: '10vh', zIndex: 30 }}>
           <div className="p-4 border-b border-gray-700 flex items-center justify-between">
             <div className="flex items-center">
               {/* Mobile Back Button */}
