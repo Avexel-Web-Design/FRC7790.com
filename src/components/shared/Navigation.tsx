@@ -122,7 +122,11 @@ export default function Navigation() {
         top: '10vh'
       }}
     >
+<<<<<<< HEAD
       <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between">
+=======
+      <div className="container mx-auto px-3 sm:px-6 py-1 flex items-center justify-between">
+>>>>>>> 5afe7ba (This is stupid)
         {/* Logo */}
         <div className="flex items-center space-x-2">
           <Link
