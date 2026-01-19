@@ -115,18 +115,11 @@ export default function Navigation() {
 
   return (
     <nav
-      className={`fixed w-full z-50 transition-all duration-300 transform ${
+      className={`fixed top-0 w-full z-50 transition-all duration-300 transform ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
-      style={{
-        top: '10vh'
-      }}
     >
-<<<<<<< HEAD
-      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-4 flex items-center justify-between">
-=======
-      <div className="container mx-auto px-3 sm:px-6 py-1 flex items-center justify-between">
->>>>>>> 5afe7ba (This is stupid)
+      <div className="container mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center space-x-2">
           <Link
