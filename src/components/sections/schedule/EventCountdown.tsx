@@ -13,10 +13,11 @@ export default function EventCountdown({ targetDate }: EventCountdownProps) {
   });
 
   useEffect(() => {
+    const targetTime = new Date(targetDate).getTime();
+
     const updateTimer = () => {
-      const target = new Date(targetDate);
       const now = new Date().getTime();
-      const distance = target.getTime() - now;
+      const distance = targetTime - now;
 
       if (distance > 0) {
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
