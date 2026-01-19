@@ -9,7 +9,7 @@
 export const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
 const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
 const FRC_TEAM_KEY = "frc7790";
-import { API_HOSTS } from '../config';
+import { API_HOSTS } from '../apiConfig';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 
 // Time offsets for different event types (in milliseconds)

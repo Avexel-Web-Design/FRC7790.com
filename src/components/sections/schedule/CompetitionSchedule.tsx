@@ -1,3 +1,6 @@
+import EventCountdown from './EventCountdown';
+import { SEASON_EVENTS } from '../../config/events';
+
 export default function CompetitionSchedule() {
   return (
     <section
@@ -16,26 +19,28 @@ export default function CompetitionSchedule() {
               <div className="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"></div>
             </div>
 
-            {/* Event 1: Lake City Regional */}
+            {/* Event 1: Lake City District Event */}
             <div className="relative mb-20 reveal">
-              <a href="/event?event=2025milac" className="block relative z-20">
-                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
+              <a href={`/event?event=${SEASON_EVENTS.LAKE_CITY.code}`} className="block relative z-20">
+                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black backdrop-blur-md">
                   <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
-                    Lake City Regional
+                    {SEASON_EVENTS.LAKE_CITY.name}
                   </h3>
                   <div className="flex flex-wrap gap-4 mb-4 justify-center">
                     <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="far fa-calendar-alt mr-2"></i>February 28 - March 2, 2025
+                      <i className="far fa-calendar-alt mr-2"></i>March 13-15, 2026
                     </span>
                     <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-map-marker-alt mr-2"></i>251 Russell Rd, Lake City, MI
+                      <i className="fas fa-map-marker-alt mr-2"></i>{SEASON_EVENTS.LAKE_CITY.location}
                     </span>
                   </div>
                   
-                  {/* Results Section for Lake City Regional */}
-                  <div className="mt-6">
+                  {/* Countdown for Lake City District Event */}
+                  <EventCountdown targetDate={SEASON_EVENTS.LAKE_CITY.startDate} />
+                  
+                  {/* Results Section for Lake City Regional - Commented out for 2026 */}
+                  {/* <div className="mt-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      {/* Final Ranking */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Final Ranking</h4>
                         <div className="flex items-center justify-center gap-1">
@@ -45,8 +50,6 @@ export default function CompetitionSchedule() {
                         <span className="text-gray-400 block mt-1">of 37 teams</span>
                         <div className="text-sm text-gray-400 mt-1">6-6-0</div>
                       </div>
-
-                      {/* Alliance Selection */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Alliance</h4>
                         <div className="text-center">
@@ -56,8 +59,6 @@ export default function CompetitionSchedule() {
                           </span>
                         </div>
                       </div>
-
-                      {/* Playoffs */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Playoffs</h4>
                         <div className="text-center">
@@ -66,7 +67,7 @@ export default function CompetitionSchedule() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   
                   <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
                     <i className="fas fa-external-link-alt"></i>
@@ -79,26 +80,28 @@ export default function CompetitionSchedule() {
               </div>
             </div>
 
-            {/* Event 2: Traverse City Regional */}
+            {/* Event 2: Traverse City District Event */}
             <div className="relative mb-20 reveal">
-              <a href="/event?event=2025mitvc" className="block relative z-20">
-                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
+              <a href={`/event?event=${SEASON_EVENTS.TRAVERSE_CITY.code}`} className="block relative z-20">
+                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black backdrop-blur-md">
                   <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
-                    Traverse City Regional
+                    {SEASON_EVENTS.TRAVERSE_CITY.name}
                   </h3>
                   <div className="flex flex-wrap gap-4 mb-4 justify-center">
                     <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="far fa-calendar-alt mr-2"></i>March 13-15, 2025
+                      <i className="far fa-calendar-alt mr-2"></i>March 19-21, 2026
                     </span>
                     <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-map-marker-alt mr-2"></i>1150 Milliken Drive, Traverse City, MI
+                      <i className="fas fa-map-marker-alt mr-2"></i>{SEASON_EVENTS.TRAVERSE_CITY.location}
                     </span>
                   </div>
                   
-                  {/* Results Section for Traverse City Regional */}
-                  <div className="mt-6">
+                  {/* Countdown for Traverse City District Event */}
+                  <EventCountdown targetDate={SEASON_EVENTS.TRAVERSE_CITY.startDate} />
+                  
+                  {/* Results Section for Traverse City Regional - Commented out for 2026 */}
+                  {/* <div className="mt-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      {/* Final Ranking */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Final Ranking</h4>
                         <div className="flex items-center justify-center gap-1">
@@ -108,8 +111,6 @@ export default function CompetitionSchedule() {
                         <span className="text-gray-400 block mt-1">of 40 teams</span>
                         <div className="text-sm text-gray-400 mt-1">9-3-0</div>
                       </div>
-
-                      {/* Alliance Selection */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Alliance</h4>
                         <div className="text-center">
@@ -119,8 +120,6 @@ export default function CompetitionSchedule() {
                           </span>
                         </div>
                       </div>
-
-                      {/* Playoffs */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Playoffs</h4>
                         <div className="text-center">
@@ -131,7 +130,7 @@ export default function CompetitionSchedule() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   
                   <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
                     <i className="fas fa-external-link-alt"></i>
@@ -146,30 +145,29 @@ export default function CompetitionSchedule() {
 
             {/* Event 3: FIM District Championship */}
             <div className="relative mb-20 reveal">
-              <a href="/event?event=2025micmp4" className="block relative z-20">
-                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
-                  <div className="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange rounded-full text-sm">
-                    Qualified!
+              <a href={`/event?event=${SEASON_EVENTS.FIM_DISTRICT_CHAMPIONSHIP.code}`} className="block relative z-20">
+                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black backdrop-blur-md">
+                  <div className="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange/70 rounded-full text-sm">
+                    Qualification Pending
                   </div>
                   <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
-                    FIM District Championship
+                    {SEASON_EVENTS.FIM_DISTRICT_CHAMPIONSHIP.name}
                   </h3>
                   <div className="flex flex-wrap gap-4 mb-4 justify-center">
                     <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="far fa-calendar-alt mr-2"></i>April 3-5, 2025
+                      <i className="far fa-calendar-alt mr-2"></i>April 15-17, 2026
                     </span>
                     <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-map-marker-alt mr-2"></i>7400 Bay Road, Saginaw, MI
-                    </span>
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-location-crosshairs mr-2"></i>Aptiv Division
+                      <i className="fas fa-map-marker-alt mr-2"></i>{SEASON_EVENTS.FIM_DISTRICT_CHAMPIONSHIP.location}
                     </span>
                   </div>
                   
-                  {/* Results Section */}
-                  <div className="mt-6">
+                  {/* Countdown for FIM District Championship */}
+                  <EventCountdown targetDate={SEASON_EVENTS.FIM_DISTRICT_CHAMPIONSHIP.startDate} />
+                  
+                  {/* Results Section - Commented out for 2026 */}
+                  {/* <div className="mt-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      {/* Final Ranking */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Final Ranking</h4>
                         <div className="flex items-center justify-center gap-1">
@@ -179,8 +177,6 @@ export default function CompetitionSchedule() {
                         <span className="text-gray-400 block mt-1">of 40 teams</span>
                         <div className="text-sm text-gray-400 mt-1">7-5-0</div>
                       </div>
-
-                      {/* Alliance Selection */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Alliance</h4>
                         <div className="text-center">
@@ -190,8 +186,6 @@ export default function CompetitionSchedule() {
                           </span>
                         </div>
                       </div>
-
-                      {/* Playoffs */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Playoffs</h4>
                         <div className="text-center">
@@ -200,7 +194,7 @@ export default function CompetitionSchedule() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   
                   <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
                     <i className="fas fa-external-link-alt"></i>
@@ -215,30 +209,29 @@ export default function CompetitionSchedule() {
 
             {/* Event 4: FIRST Championship */}
             <div className="relative reveal">
-              <a href="/event?event=2025mil" className="block relative z-20">
-                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
-                  <div className="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange rounded-full text-sm">
-                    Qualified!
+              <a href={`/event?event=${SEASON_EVENTS.FIRST_CHAMPIONSHIP.code}`} className="block relative z-20">
+                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black backdrop-blur-md">
+                  <div className="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange/70 rounded-full text-sm">
+                    Qualification Pending
                   </div>
                   <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
-                    FIRST Championship
+                    {SEASON_EVENTS.FIRST_CHAMPIONSHIP.name}
                   </h3>
                   <div className="flex flex-wrap gap-4 mb-4 justify-center">
                     <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="far fa-calendar-alt mr-2"></i>April 16-19, 2025
+                      <i className="far fa-calendar-alt mr-2"></i>Apr 28 - May 1, 2026
                     </span>
                     <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-map-marker-alt mr-2"></i>1001 Avenida De Las Americas, Houston, TX
-                    </span>
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-location-crosshairs mr-2"></i>Milstein Division
+                      <i className="fas fa-map-marker-alt mr-2"></i>{SEASON_EVENTS.FIRST_CHAMPIONSHIP.location}
                     </span>
                   </div>
                   
-                  {/* Results for FIRST Championship */}
-                  <div className="mt-6" id="championship-results">
+                  {/* Countdown for FIRST Championship */}
+                  <EventCountdown targetDate={SEASON_EVENTS.FIRST_CHAMPIONSHIP.startDate} />
+                  
+                  {/* Results for FIRST Championship - Commented out for 2026 */}
+                  {/* <div className="mt-6" id="championship-results">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      {/* Final Ranking */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Final Ranking</h4>
                         <div className="flex items-center justify-center gap-1">
@@ -248,7 +241,6 @@ export default function CompetitionSchedule() {
                         <span className="text-gray-400 block mt-1">of 75 teams</span>
                         <div className="text-sm text-gray-400 mt-1">6-4-0</div>
                       </div>
-                      {/* Alliance Selection */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Alliance</h4>
                         <div className="text-center">
@@ -260,7 +252,6 @@ export default function CompetitionSchedule() {
                           </span>
                         </div>
                       </div>
-                      {/* Playoffs */}
                       <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
                         <h4 className="text-lg font-semibold mb-2">Playoffs</h4>
                         <div className="text-center">
@@ -271,7 +262,7 @@ export default function CompetitionSchedule() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   
                   <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
                     <i className="fas fa-external-link-alt"></i>
