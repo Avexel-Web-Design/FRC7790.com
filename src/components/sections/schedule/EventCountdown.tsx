@@ -13,9 +13,8 @@ export default function EventCountdown({ targetDate }: EventCountdownProps) {
   });
 
   useEffect(() => {
-    const target = new Date(targetDate);
-
     const updateTimer = () => {
+      const target = new Date(targetDate);
       const now = new Date().getTime();
       const distance = target.getTime() - now;
 
@@ -26,13 +25,27 @@ export default function EventCountdown({ targetDate }: EventCountdownProps) {
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
         setTimeLeft({ days, hours, minutes, seconds });
+        return true; // Continue updating
       } else {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return false; // Stop updating
       }
     };
 
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
+    // Initial update
+    const shouldContinue = updateTimer();
+    
+    if (!shouldContinue) {
+      return; // Don't set interval if countdown is already finished
+    }
+
+    // Update every second
+    const interval = setInterval(() => {
+      const shouldContinue = updateTimer();
+      if (!shouldContinue) {
+        clearInterval(interval);
+      }
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [targetDate]);
