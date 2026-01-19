@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './contexts/AuthContext'
 import { Capacitor } from '@capacitor/core'
-import { API_HOSTS } from './config'
+import { API_HOSTS } from './apiConfig'
 
 // Rewrite relative '/api' requests to the production domain when running natively
 // so that API calls from the packaged app go to the live backend.
