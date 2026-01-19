@@ -12,7 +12,7 @@ export const SEASON_EVENTS = {
     name: 'Traverse City District Event',
     startDate: '2026-03-19T09:00:00',
     endDate: '2026-03-21T17:00:00',
-    location: '1150 Milliken Drive, Traverse City, MI',
+    location: '5376 N Long Lake Rd, Traverse City, MI',
   },
   FIM_DISTRICT_CHAMPIONSHIP: {
     code: '2026micmp',

@@ -22,7 +22,7 @@ export default function CompetitionSchedule() {
             {/* Event 1: Lake City District Event */}
             <div className="relative mb-20 reveal">
               <a href={`/event?event=${SEASON_EVENTS.LAKE_CITY.code}`} className="block relative z-20">
-                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
+                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black backdrop-blur-md">
                   <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
                     {SEASON_EVENTS.LAKE_CITY.name}
                   </h3>
@@ -83,7 +83,7 @@ export default function CompetitionSchedule() {
             {/* Event 2: Traverse City District Event */}
             <div className="relative mb-20 reveal">
               <a href={`/event?event=${SEASON_EVENTS.TRAVERSE_CITY.code}`} className="block relative z-20">
-                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
+                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black backdrop-blur-md">
                   <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
                     {SEASON_EVENTS.TRAVERSE_CITY.name}
                   </h3>
@@ -146,7 +146,7 @@ export default function CompetitionSchedule() {
             {/* Event 3: FIM District Championship */}
             <div className="relative mb-20 reveal">
               <a href={`/event?event=${SEASON_EVENTS.FIM_DISTRICT_CHAMPIONSHIP.code}`} className="block relative z-20">
-                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
+                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black backdrop-blur-md">
                   <div className="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange/70 rounded-full text-sm">
                     Qualification Pending
                   </div>
@@ -210,7 +210,7 @@ export default function CompetitionSchedule() {
             {/* Event 4: FIRST Championship */}
             <div className="relative reveal">
               <a href={`/event?event=${SEASON_EVENTS.FIRST_CHAMPIONSHIP.code}`} className="block relative z-20">
-                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black">
+                <div className="card-gradient rounded-xl p-6 transform transition-all duration-300 hover:scale-105 group bg-black backdrop-blur-md">
                   <div className="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange/70 rounded-full text-sm">
                     Qualification Pending
                   </div>
