@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 
 interface EventCountdownProps {
   targetDate: string;
@@ -12,9 +12,13 @@ export default function EventCountdown({ targetDate }: EventCountdownProps) {
     seconds: 0
   });
 
-  useEffect(() => {
-    const targetTime = new Date(targetDate).getTime();
+  // Cache the parsed timestamp to avoid redundant Date parsing
+  const targetTime = useMemo(() => new Date(targetDate).getTime(), [targetDate]);
+  
+  // Use ref to track interval for robust cleanup
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  useEffect(() => {
     const updateTimer = () => {
       const now = new Date().getTime();
       const distance = targetTime - now;
@@ -41,15 +45,22 @@ export default function EventCountdown({ targetDate }: EventCountdownProps) {
     }
 
     // Update every second
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       const shouldContinue = updateTimer();
-      if (!shouldContinue) {
-        clearInterval(interval);
+      if (!shouldContinue && intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [targetDate]);
+    // Cleanup function
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [targetTime]);
 
   const formatTime = (num: number) => num.toString().padStart(2, '0');
 
