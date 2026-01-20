@@ -5,7 +5,6 @@ import Countdown from '../sections/home/Countdown';
 import Robot from '../sections/home/Robot';
 import GameInfo from '../sections/home/GameInfo';
 import Contact from '../sections/home/Contact';
-import About from '../sections/home/About';
 import { updateSEO, SEO_CONFIGS } from '../../utils/seo';
 
 export default function Home() {
@@ -19,7 +18,6 @@ export default function Home() {
       <LiveUpdates />
       <Countdown />
       <Contact />
-      <About />
       <Robot />
       <GameInfo />
     </>
