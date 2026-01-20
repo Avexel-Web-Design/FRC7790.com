@@ -12,8 +12,8 @@ export default function GameInfo() {
           <div className="w-full aspect-video rounded-xl overflow-hidden">
             <video 
               className="w-full h-full"
-              src="/assets/videos/AGE.mp4#t=1"
-              title="FIRST AGE Season Reveal"
+              src="/assets/videos/REBUILT.mp4#t=0.5"
+              title="REBUILT Game Reveal"
               controls
               preload="metadata"
               poster="/assets/images/video-thumbnail.jpg"

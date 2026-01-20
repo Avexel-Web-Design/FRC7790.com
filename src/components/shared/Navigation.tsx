@@ -16,7 +16,6 @@ const navigationItems: NavigationItem[] = [
   { name: 'Sponsors', href: '/sponsors' },
   { name: 'Schedule', href: '/schedule' },
   { name: 'Scouting', href: '/scouting' },
-  { name: 'FTC', href: '/ftc' },
 ];
 
 export default function Navigation() {
@@ -35,8 +34,8 @@ export default function Navigation() {
     const handleScroll = () => {
       const currentScroll = window.scrollY;
       
-      // Only show navbar when at the top of the page
-      if (currentScroll === 0) {
+      // Show navbar when near the top of the page (within 50px)
+      if (currentScroll <= 50) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
