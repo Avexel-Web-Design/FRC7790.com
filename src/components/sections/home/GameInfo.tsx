@@ -10,16 +10,13 @@ export default function GameInfo() {
 
           {/* Video Container */}
           <div className="w-full aspect-video rounded-xl overflow-hidden">
-            <video 
+            <iframe
               className="w-full h-full"
-              src="/assets/videos/REBUILT.mp4#t=0.5"
+              src="https://www.youtube.com/embed/_fybREErgyM"
               title="REBUILT Game Reveal"
-              controls
-              preload="metadata"
-              poster="/assets/images/video-thumbnail.jpg"
-            >
-              Your browser does not support the video tag.
-            </video>
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
           </div>
 
           {/* Game Elements Grid - Commented out in original but ready to enable */}
