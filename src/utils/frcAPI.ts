@@ -25,17 +25,23 @@ export interface TeamRanking {
   wins: number;
   losses: number;
   ties: number;
+  record?: {
+    wins: number;
+    losses: number;
+    ties: number;
+  };
 }
 
 export interface Match {
   key: string;
   comp_level: string;
   match_number: number;
+  set_number?: number;
   predicted_time: number;
   actual_time?: number;
   alliances: {
-    blue: { team_keys: string[] };
-    red: { team_keys: string[] };
+    blue: { team_keys: string[]; score?: number };
+    red: { team_keys: string[]; score?: number };
   };
 }
 
@@ -300,7 +306,11 @@ export class FRCAPIService {
   async getEventRankings(eventKey: string): Promise<TeamRanking[]> {
     try {
       const response = await this.fetchAPI(`/event/${eventKey}/rankings`);
-      return response.rankings || [];
+      // TBA returns null for events that don't exist or haven't started
+      if (!response || !response.rankings) {
+        return [];
+      }
+      return response.rankings;
     } catch (error) {
       console.error("Error fetching rankings:", error);
       return [];
@@ -314,12 +324,15 @@ export class FRCAPIService {
       
       if (!teamRanking) return null;
       
+      // TBA stores record in a nested object, fallback to direct properties
+      const record = teamRanking.record || teamRanking;
+      
       return {
         rank: teamRanking.rank,
         totalTeams: rankings.length,
-        wins: teamRanking.wins,
-        losses: teamRanking.losses,
-        ties: teamRanking.ties
+        wins: record.wins || 0,
+        losses: record.losses || 0,
+        ties: record.ties || 0
       };
     } catch (error) {
       console.error("Error getting team ranking:", error);
@@ -329,7 +342,8 @@ export class FRCAPIService {
 
   async getTeamMatches(eventKey: string): Promise<Match[]> {
     try {
-      return await this.fetchAPI(`/team/${FRC_TEAM_KEY}/event/${eventKey}/matches/simple`);
+      // Use full endpoint (not /simple) to get actual_time and predicted_time for sorting
+      return await this.fetchAPI(`/team/${FRC_TEAM_KEY}/event/${eventKey}/matches`);
     } catch (error) {
       console.error("Error fetching team matches:", error);
       return [];
@@ -409,7 +423,20 @@ export class FRCAPIService {
     };
     
     const type = typeMap[match.comp_level] || match.comp_level.toUpperCase();
-    return `${type}${match.match_number}`;
+    
+    // For 2025+ double-elimination format:
+    // - Quals: Q1, Q2, etc. (match_number)
+    // - SF: SF1, SF5, SF12, etc. (set_number represents bracket position)
+    // - Finals: F1, F2, F3, F4 (match_number, since all are in set 1)
+    if (match.comp_level === 'qm' || match.comp_level === 'f') {
+      return `${type}${match.match_number}`;
+    } else if (match.set_number) {
+      // Double-elimination format: SF1, SF5, SF12, QF1, etc.
+      return `${type}${match.set_number}`;
+    } else {
+      // Fallback for old format or missing set_number
+      return `${type}${match.match_number}`;
+    }
   }
 
   getAllianceTeams(match: Match, alliance: 'blue' | 'red'): string {
