@@ -108,27 +108,16 @@ body {
   padding: 1.5rem;
   border-radius: 1rem;
   background-color: rgba(0, 0, 0, 0.9);
-  border: 1px solid rgba(255, 107, 0, 0.3);
+  border: 2px solid rgba(255, 107, 0, 0.3);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  transition: all 0.5s ease;
-  will-change: transform;
-}
-
-.match-box::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0.05;
-  border-radius: 1rem;
-  pointer-events: none;
-  background: radial-gradient(circle at 1px 1px, rgba(255, 107, 0, 0.2) 1px, transparent 0);
-  background-size: 20px 20px;
 }
 
 .match-box:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 30px rgba(255, 107, 0, 0.3);
-  will-change: transform;
+  border-color: #ff6b00;
+  box-shadow: 
+    0 0 20px rgba(255, 107, 0, 0.5),
+    0 0 40px rgba(255, 107, 0, 0.3),
+    0 25px 50px -12px rgba(0, 0, 0, 0.25);
 }
 
 .finals-match {
