@@ -6,7 +6,7 @@ import Robots from './components/pages/Robots';
 import Sponsors from './components/pages/Sponsors';
 import Schedule from './components/pages/Schedule';
 import Scouting from './components/pages/Scouting';
-import FTC from './components/pages/FTC';
+// import FTC from './components/pages/FTC'; // FTC page disabled
 import BecomeASponsor from './components/pages/BecomeASponsor';
 import Event from './components/pages/Event';
 import Team from './components/pages/Team';
@@ -49,7 +49,7 @@ function App() {
             <Route path="/sponsors" element={<Sponsors />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/scouting" element={<Scouting />} />
-            <Route path="/ftc" element={<FTC />} />
+            {/* <Route path="/ftc" element={<FTC />} /> */}{/* FTC page disabled */}
             <Route path="/become-a-sponsor" element={<BecomeASponsor />} />
             <Route path="/event" element={<Event />} />
             <Route path="/team" element={<Team />} />

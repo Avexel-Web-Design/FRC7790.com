@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b tsconfig.app.json && vite build && node scripts/pruneDist.mjs",
+    "build": "tsc -b tsconfig.app.json && vite build && node scripts/pruneVideos.mjs",
     "build:functions": "tsc -b tsconfig.functions.json --noEmit",
     "lint": "eslint .",
     "preview": "vite preview",
