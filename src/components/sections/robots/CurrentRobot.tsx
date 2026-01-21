@@ -34,7 +34,7 @@ export default function CurrentRobot() {
               <i className="fas fa-layer-group text-3xl text-baywatch-orange mb-4"></i>
               <h3 className="text-xl font-bold mb-2">Multi-Level Scoring</h3>
               <p className="text-gray-400">
-                Placement system with "scope" camera capable of quickly scoring on all reef levels
+                Placement system with auto align capable of quickly scoring on all reef levels
               </p>
             </div>
             <div className="card-gradient rounded-xl p-6 hover:scale-105 transition-all duration-300">
