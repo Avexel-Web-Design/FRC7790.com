@@ -22,7 +22,7 @@ export default function Contact() {
           <div className="grid md:grid-cols-2 gap-8 items-stretch">
             
             {/* Left: Our Team */}
-            <div className="relative p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-baywatch-orange/10 to-transparent border border-baywatch-orange/20 group hover:border-baywatch-orange/40 transition-all duration-500">
+            <div className="relative p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-baywatch-orange/10 to-transparent border border-baywatch-orange/20 hover:border-baywatch-orange/40 transition-all duration-500">
               <div className="absolute top-0 right-0 w-32 h-32 bg-baywatch-orange/5 rounded-full blur-3xl pointer-events-none"></div>
               
               <h2 className="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-baywatch-orange to-orange-400 bg-clip-text text-transparent">
@@ -36,7 +36,7 @@ export default function Contact() {
               <Link
                 to="/become-a-sponsor"
                 onClick={() => window.scrollTo(0, 0)}
-                className="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-baywatch-orange to-orange-600 rounded-lg text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-baywatch-orange/30"
+                className="group inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-baywatch-orange to-orange-600 rounded-lg text-white font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-baywatch-orange/30"
               >
                 Become a Sponsor
                 <svg 
