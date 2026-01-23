@@ -254,6 +254,124 @@ export function useEventRankings(eventKey: string | null) {
   }>(eventKey ? `/event/${eventKey}/rankings` : null);
 }
 
+// ============================================================================
+// BULK ENDPOINTS - These are the key to 100x performance improvement
+// ============================================================================
+
+/**
+ * Team History Data types (from /team/{team_key}/history endpoint)
+ */
+export interface TeamHistoryEvent {
+  key: string;
+  name: string;
+  event_code: string;
+  event_type: number;
+  start_date: string;
+  end_date: string;
+  year: number;
+  city?: string;
+  state_prov?: string;
+  country?: string;
+}
+
+export interface TeamHistoryAward {
+  name: string;
+  award_type: number;
+  event_key: string;
+  recipient_list: Array<{ team_key: string; awardee?: string }>;
+  year: number;
+}
+
+export interface TeamHistoryData {
+  events: TeamHistoryEvent[];
+  awards: TeamHistoryAward[];
+}
+
+/**
+ * Hook for fetching complete team history in ONE request
+ * Returns all events AND all awards the team has ever had
+ * 
+ * This replaces the old pattern of:
+ * 1. Fetch all events
+ * 2. For each event, fetch awards (N requests)
+ * 
+ * Now: 1 request instead of N+1 requests
+ */
+export function useTeamHistoryData(teamNumber: string | null) {
+  return useTBA<TeamHistoryData>(
+    teamNumber ? `/team/frc${teamNumber}/history` : null,
+    {
+      // History data changes slowly, cache for a long time
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      dedupingInterval: CACHE_CONFIG.TEAM_INFO_TTL,
+    }
+  );
+}
+
+/**
+ * Event Status type (from bulk statuses endpoint)
+ */
+export interface EventStatus {
+  qual?: {
+    ranking?: {
+      rank: number;
+      record: { wins: number; losses: number; ties: number };
+      matches_played: number;
+    };
+    num_teams?: number;
+  };
+  alliance?: {
+    number: number;
+    pick: number;
+  };
+  playoff?: {
+    level: string;
+    status: string;
+    record: { wins: number; losses: number; ties: number };
+  };
+}
+
+/**
+ * Hook for fetching ALL event statuses for a team in a given year in ONE request
+ * Returns a map of eventKey -> status
+ * 
+ * This replaces the old pattern of:
+ * For each event, fetch status (N requests)
+ * 
+ * Now: 1 request instead of N requests
+ */
+export function useTeamYearStatuses(teamNumber: string | null, year?: number) {
+  const targetYear = year ?? new Date().getFullYear();
+  return useTBA<Record<string, EventStatus>>(
+    teamNumber ? `/team/frc${teamNumber}/events/${targetYear}/statuses` : null,
+    {
+      // Current year statuses change during events
+      revalidateOnFocus: true,
+      revalidateIfStale: true,
+      dedupingInterval: CACHE_CONFIG.LIVE_DATA_TTL,
+    }
+  );
+}
+
+/**
+ * Hook for fetching ALL awards a team has ever won in ONE request
+ */
+export function useTeamAllAwards(teamNumber: string | null) {
+  return useTBA<TeamHistoryAward[]>(
+    teamNumber ? `/team/frc${teamNumber}/awards` : null,
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      dedupingInterval: CACHE_CONFIG.TEAM_INFO_TTL,
+    }
+  );
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
 /**
  * Direct fetch function for use outside of React components
  * or for batch operations

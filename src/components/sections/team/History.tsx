@@ -10,7 +10,7 @@ interface TeamHistoryProps {
 }
 
 export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) {
-  const { years, isLoading, isLoadingAwards, progress } = useTeamHistory(teamNumber);
+  const { years, isLoading } = useTeamHistory(teamNumber);
 
   const formatEventDate = (startDate: string) => {
     try {
@@ -74,24 +74,7 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
     <section className="py-8 relative z-10">
       <h2 className="text-3xl font-bold mb-8 text-center">Team History</h2>
       <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`}>
-        {/* Progress indicator when loading awards */}
-        {isLoadingAwards && progress.totalEvents > 0 && (
-          <div className="mb-4 p-3 bg-black/30 rounded">
-            <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
-              <span>Loading event details...</span>
-              <span>{progress.loadedEvents} / {progress.totalEvents}</span>
-            </div>
-            <div className="w-full bg-gray-700 rounded-full h-1.5">
-              <div 
-                className="h-1.5 rounded-full transition-all duration-300"
-                style={{ 
-                  width: `${(progress.loadedEvents / progress.totalEvents) * 100}%`,
-                  backgroundColor: getTeamAccentStyle(teamNumber).color || '#f97316'
-                }}
-              />
-            </div>
-          </div>
-        )}
+
 
         <div className="space-y-6">
           {years.length === 0 ? (
@@ -101,19 +84,14 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
           ) : (
             years.map((yearData) => (
               <div key={yearData.year} className="mb-6">
-                <h3 className="text-lg font-semibold mb-3 border-b border-gray-700 pb-2 flex items-center justify-between">
+                <h3 className="text-lg font-semibold mb-3 border-b border-gray-700 pb-2">
                   <span>{yearData.year} Season</span>
-                  {yearData.loading && (
-                    <span className="text-xs text-gray-500 animate-pulse">Loading awards...</span>
-                  )}
                 </h3>
                 <div className="space-y-3">
                   {yearData.events.map((event) => (
                     <div 
                       key={event.key} 
-                      className={`bg-black/30 p-3 rounded hover:bg-black/50 transition-colors ${
-                        !event.awardsLoaded ? 'animate-pulse' : ''
-                      }`}
+                      className="bg-black/30 p-3 rounded hover:bg-black/50 transition-colors"
                     >
                       <div className="flex justify-between items-center">
                         <span className="font-medium text-white">
@@ -137,12 +115,7 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
                           {formatEventDate(event.start_date)}
                         </span>
                       </div>
-                      {event.awardsLoaded && renderAwards(event.awards)}
-                      {!event.awardsLoaded && (
-                        <div className="mt-2">
-                          <span className="bg-gray-700 rounded w-32 h-3 inline-block" />
-                        </div>
-                      )}
+                      {renderAwards(event.awards)}
                     </div>
                   ))}
                 </div>

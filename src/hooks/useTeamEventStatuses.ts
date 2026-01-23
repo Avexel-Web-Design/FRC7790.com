@@ -1,35 +1,17 @@
 /**
- * useTeamEventStatuses - Parallel fetching of team event statuses
+ * useTeamEventStatuses - Bulk fetching of team event statuses
  * 
- * Features:
- * - Fetches all event statuses in parallel (not sequential!)
- * - Smart caching based on event timing
- * - Progressive updates as statuses load
+ * Now uses the bulk endpoint /team/frc{teamNumber}/events/{year}/statuses
+ * which returns ALL event statuses for a year in ONE request.
+ * 
+ * Performance improvement:
+ * - Before: N HTTP requests (one per event)
+ * - After: 1 HTTP request per year
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { fetchTBA } from './useTBA';
-import { cacheUtils } from '../utils/swrCache';
-
-interface EventStatus {
-  qual?: {
-    ranking?: {
-      rank: number;
-      record: { wins: number; losses: number; ties: number };
-      matches_played: number;
-    };
-    num_teams?: number;
-  };
-  alliance?: {
-    number: number;
-    pick: number;
-  };
-  playoff?: {
-    level: string;
-    status: string;
-    record: { wins: number; losses: number; ties: number };
-  };
-}
+import { useMemo } from 'react';
+import { useTeamYearStatuses } from './useTBA';
+import type { EventStatus } from './useTBA';
 
 interface UseTeamEventStatusesResult {
   statuses: Map<string, EventStatus | null>;
@@ -46,71 +28,42 @@ interface UseTeamEventStatusesResult {
 }
 
 /**
- * Hook for fetching team statuses at multiple events in parallel
+ * Hook for fetching team statuses at multiple events
+ * Uses the bulk endpoint for a single year
  */
 export function useTeamEventStatuses(
   teamNumber: string | null,
-  eventKeys: string[]
+  eventKeys: string[],
+  year?: number
 ): UseTeamEventStatusesResult {
-  const [statuses, setStatuses] = useState<Map<string, EventStatus | null>>(new Map());
-  const [isLoading, setIsLoading] = useState(true);
+  const targetYear = year ?? new Date().getFullYear();
   
-  // Track the current team/events to avoid stale updates
-  const loadingRef = useRef<string>('');
+  // Single API call to get ALL statuses for the year
+  const { data: statusesData, isLoading } = useTeamYearStatuses(teamNumber, targetYear);
   
-  useEffect(() => {
-    if (!teamNumber || eventKeys.length === 0) {
-      setStatuses(new Map());
-      setIsLoading(false);
-      return;
+  // Filter to only the events we care about
+  const statuses = useMemo(() => {
+    const result = new Map<string, EventStatus | null>();
+    
+    if (!statusesData) {
+      // Return empty map with null values for requested events
+      for (const eventKey of eventKeys) {
+        result.set(eventKey, null);
+      }
+      return result;
     }
     
-    const loadKey = `${teamNumber}-${eventKeys.join(',')}`;
-    if (loadingRef.current === loadKey) return;
-    loadingRef.current = loadKey;
+    // Map the requested events to their statuses
+    for (const eventKey of eventKeys) {
+      const status = statusesData[eventKey] ?? null;
+      result.set(eventKey, status);
+    }
     
-    setIsLoading(true);
-    
-    // Fetch all statuses in parallel
-    const fetchAllStatuses = async () => {
-      const newStatuses = new Map<string, EventStatus | null>();
-      
-      const promises = eventKeys.map(async (eventKey) => {
-        const cacheKey = `/team/frc${teamNumber}/event/${eventKey}/status`;
-        
-        // Check cache first
-        let status = cacheUtils.get<EventStatus>(cacheKey);
-        
-        if (!status) {
-          try {
-            status = await fetchTBA<EventStatus>(cacheKey);
-          } catch (error) {
-            console.warn(`Failed to fetch status for ${eventKey}:`, error);
-            status = null;
-          }
-        }
-        
-        return { eventKey, status };
-      });
-      
-      const results = await Promise.all(promises);
-      
-      // Only update if this is still the current request
-      if (loadingRef.current !== loadKey) return;
-      
-      for (const { eventKey, status } of results) {
-        newStatuses.set(eventKey, status);
-      }
-      
-      setStatuses(newStatuses);
-      setIsLoading(false);
-    };
-    
-    fetchAllStatuses();
-  }, [teamNumber, eventKeys.join(',')]);
+    return result;
+  }, [statusesData, eventKeys]);
   
   // Calculate aggregate stats
-  const stats = calculateStats(statuses);
+  const stats = useMemo(() => calculateStats(statuses), [statuses]);
   
   return {
     statuses,
@@ -153,13 +106,4 @@ function calculateStats(statuses: Map<string, EventStatus | null>) {
     totalMatches,
     eventsWithData: eventsWithRanking,
   };
-}
-
-/**
- * Prefetch team event statuses (call before navigating)
- */
-export function prefetchTeamEventStatuses(teamNumber: string, eventKeys: string[]): void {
-  for (const eventKey of eventKeys) {
-    fetchTBA(`/team/frc${teamNumber}/event/${eventKey}/status`).catch(() => {});
-  }
 }

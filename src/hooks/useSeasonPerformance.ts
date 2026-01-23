@@ -1,14 +1,18 @@
 /**
  * useSeasonPerformance - Hook for fetching current season performance data
  * 
- * Features:
- * - Parallel fetching of statuses and awards
- * - Centralized caching
- * - Proper loading states
+ * Now uses bulk endpoints for massive performance improvement:
+ * - /team/frc{teamNumber}/events/{year}/statuses - ALL statuses in 1 request
+ * - /team/frc{teamNumber}/awards - ALL awards in 1 request
+ * 
+ * Performance improvement:
+ * - Before: 2N HTTP requests (N statuses + N awards)
+ * - After: 2 HTTP requests total
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { fetchTBA } from './useTBA';
+import { useMemo } from 'react';
+import { useTeamYearStatuses, useTeamAllAwards } from './useTBA';
+import type { EventStatus, TeamHistoryAward } from './useTBA';
 
 interface EventPerformance {
   key: string;
@@ -27,7 +31,7 @@ interface UseSeasonPerformanceResult {
 }
 
 /**
- * Hook for fetching current season performance data with parallel loading
+ * Hook for fetching current season performance data using bulk endpoints
  */
 export function useSeasonPerformance(
   teamNumber: string | null,
@@ -36,111 +40,87 @@ export function useSeasonPerformance(
     name: string;
     start_date: string;
     end_date: string;
-  }>
+  }>,
+  year?: number
 ): UseSeasonPerformanceResult {
-  const [performanceData, setPerformanceData] = useState<EventPerformance[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const targetYear = year ?? new Date().getFullYear();
   
-  const loadingRef = useRef<string>('');
+  // Single API call for ALL statuses for the year
+  const { data: statusesData, isLoading: statusesLoading } = useTeamYearStatuses(teamNumber, targetYear);
   
-  // Sort events by start date
-  const sortedEvents = useMemo(() => 
-    [...eventsData].sort((a, b) => 
-      new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-    ),
-    [eventsData]
-  );
+  // Single API call for ALL awards (we'll filter to the events we care about)
+  const { data: allAwards, isLoading: awardsLoading } = useTeamAllAwards(teamNumber);
   
-  useEffect(() => {
-    if (!teamNumber || sortedEvents.length === 0) {
-      setPerformanceData([]);
-      setIsLoading(false);
-      return;
+  // Process all data client-side (instant, no network)
+  const performanceData = useMemo(() => {
+    if (!eventsData || eventsData.length === 0) return [];
+    
+    const now = new Date();
+    
+    // Create a map of eventKey -> awards for fast lookup
+    const awardsByEvent = new Map<string, TeamHistoryAward[]>();
+    if (allAwards) {
+      for (const award of allAwards) {
+        // Only include awards for events in our list
+        const existing = awardsByEvent.get(award.event_key) || [];
+        existing.push(award);
+        awardsByEvent.set(award.event_key, existing);
+      }
     }
     
-    const loadKey = `${teamNumber}-${sortedEvents.map(e => e.key).join(',')}`;
-    if (loadingRef.current === loadKey) return;
-    loadingRef.current = loadKey;
+    // Sort events by start date
+    const sortedEvents = [...eventsData].sort((a, b) => 
+      new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+    );
     
-    setIsLoading(true);
-    
-    const fetchAllPerformance = async () => {
-      const now = new Date();
+    return sortedEvents.map((event): EventPerformance => {
+      const eventData: EventPerformance = {
+        key: event.key,
+        name: event.name,
+        start_date: event.start_date,
+        end_date: event.end_date,
+        ranking: 'Not Available',
+        record: 'N/A',
+        awards: 'None',
+        status: 'completed',
+      };
       
-      const promises = sortedEvents.map(async (event) => {
-        const eventData: EventPerformance = {
-          key: event.key,
-          name: event.name,
-          start_date: event.start_date,
-          end_date: event.end_date,
-          ranking: 'Not Available',
-          record: 'N/A',
-          awards: 'None',
-          status: 'completed',
-        };
+      // Get status from bulk response
+      const status: EventStatus | undefined = statusesData?.[event.key];
+      if (status?.qual?.ranking) {
+        eventData.ranking = `${status.qual.ranking.rank} of ${status.qual.num_teams}`;
         
-        // Fetch status and awards in parallel
-        const statusKey = `/team/frc${teamNumber}/event/${event.key}/status`;
-        const awardsKey = `/team/frc${teamNumber}/event/${event.key}/awards`;
-        
-        const [statusResult, awardsResult] = await Promise.all([
-          fetchTBA<{
-            qual?: {
-              ranking?: {
-                rank: number;
-                record: { wins: number; losses: number; ties: number };
-              };
-              num_teams?: number;
-            };
-          }>(statusKey).catch(() => null),
-          fetchTBA<Array<{ name: string }>>(awardsKey).catch(() => []),
-        ]);
-        
-        // Process status
-        if (statusResult?.qual?.ranking) {
-          eventData.ranking = `${statusResult.qual.ranking.rank} of ${statusResult.qual.num_teams}`;
-          
-          if (statusResult.qual.ranking.record) {
-            const record = statusResult.qual.ranking.record;
-            eventData.record = `${record.wins}-${record.losses}-${record.ties}`;
-          }
+        if (status.qual.ranking.record) {
+          const record = status.qual.ranking.record;
+          eventData.record = `${record.wins}-${record.losses}-${record.ties}`;
         }
-        
-        // Process awards
-        if (awardsResult && awardsResult.length > 0) {
-          eventData.awards = awardsResult.map(award => award.name).join(', ');
-        }
-        
-        // Determine event status
-        const eventStart = new Date(event.start_date);
-        const eventEnd = new Date(event.end_date);
-        eventEnd.setHours(23, 59, 59);
-        
-        if (now < eventStart) {
-          eventData.status = 'upcoming';
-        } else if (now >= eventStart && now <= eventEnd) {
-          eventData.status = 'current';
-        } else {
-          eventData.status = 'completed';
-        }
-        
-        return eventData;
-      });
+      }
       
-      const results = await Promise.all(promises);
+      // Get awards from bulk response
+      const eventAwards = awardsByEvent.get(event.key);
+      if (eventAwards && eventAwards.length > 0) {
+        eventData.awards = eventAwards.map(award => award.name).join(', ');
+      }
       
-      // Only update if this is still the current request
-      if (loadingRef.current !== loadKey) return;
+      // Determine event status
+      const eventStart = new Date(event.start_date);
+      const eventEnd = new Date(event.end_date);
+      eventEnd.setHours(23, 59, 59);
       
-      setPerformanceData(results);
-      setIsLoading(false);
-    };
-    
-    fetchAllPerformance();
-  }, [teamNumber, sortedEvents]);
+      if (now < eventStart) {
+        eventData.status = 'upcoming';
+      } else if (now >= eventStart && now <= eventEnd) {
+        eventData.status = 'current';
+      } else {
+        eventData.status = 'completed';
+      }
+      
+      return eventData;
+    });
+  }, [eventsData, statusesData, allAwards]);
   
   return {
     performanceData,
-    isLoading,
+    isLoading: statusesLoading || awardsLoading,
   };
 }
