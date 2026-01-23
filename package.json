@@ -54,7 +54,7 @@
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
     "swr": "^2.3.8",
-    "wrangler": "^4.22.0"
+    "wrangler": "^4.59.1"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.4.3",
