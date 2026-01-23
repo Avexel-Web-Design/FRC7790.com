@@ -1,42 +1,41 @@
 import { useEffect } from 'react';
 import { getTeamAccentStyle, getTeamGlowClass } from '../../../utils/color';
+import { useTeamInfo } from '../../../hooks/useTBA';
 
 interface TeamHeroProps {
   teamNumber: string;
-  teamData: any;
-  setTeamData: (data: any) => void;
+  teamData: {
+    nickname?: string;
+    school_name?: string;
+  } | null;
+  setTeamData: React.Dispatch<React.SetStateAction<{
+    nickname?: string;
+    school_name?: string;
+    rookie_year?: number;
+    city?: string;
+    state_prov?: string;
+    website?: string;
+    motto?: string;
+  } | null>>;
   setLoading: (loading: boolean) => void;
 }
 
 export default function TeamHero({ teamNumber, teamData, setTeamData, setLoading }: TeamHeroProps) {
+  // Use SWR hook for team info with caching
+  const { data, isLoading } = useTeamInfo(teamNumber);
+  
+  // Sync with parent state
   useEffect(() => {
-    const fetchTeamData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch basic team data
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}`, {
-          headers: {
-            'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setTeamData(data);
-          
-          // Update page title with team nickname
-          document.title = `Team ${teamNumber} - ${data.nickname || 'FRC Team'} - Overview`;
-        }
-      } catch (error) {
-        console.error('Error fetching team data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeamData();
-  }, [teamNumber, setTeamData, setLoading]);
+    setLoading(isLoading);
+  }, [isLoading, setLoading]);
+  
+  useEffect(() => {
+    if (data) {
+      setTeamData(data);
+      // Update page title with team nickname
+      document.title = `Team ${teamNumber} - ${data.nickname || 'FRC Team'} - Overview`;
+    }
+  }, [data, teamNumber, setTeamData]);
 
   return (
     <section className="pt-44 sm:pt-36 pb-20 sm:pb-16 relative z-10">

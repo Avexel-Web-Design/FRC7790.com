@@ -5,12 +5,14 @@
  * including team rankings, match results, and event information.
  */
 
-// API Configuration
-export const TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf";
-const TBA_BASE_URL = "https://www.thebluealliance.com/api/v3";
-const FRC_TEAM_KEY = "frc7790";
-import { API_HOSTS } from '../config';
+// API Configuration - centralized in config.ts
+import { API_HOSTS, TBA_CONFIG } from '../config';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
+
+// Re-export for backward compatibility
+export const TBA_AUTH_KEY = TBA_CONFIG.AUTH_KEY;
+const TBA_BASE_URL = TBA_CONFIG.BASE_URL;
+const FRC_TEAM_KEY = "frc7790";
 
 // Time offsets for different event types (in milliseconds)
 const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset for district events

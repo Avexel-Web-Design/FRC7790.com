@@ -1,45 +1,25 @@
-import { useState, useEffect } from 'react';
 import TeamStats from './Stats';
 import CurrentEvent from './CurrentEvent';
 import TeamLinks from './Links';
 import SeasonPerformance from './SeasonPerformance';
+import { useTeamYearEvents } from '../../../hooks/useTBA';
 
 interface TeamOverviewProps {
   teamNumber: string;
-  teamData: any;
+  teamData: {
+    rookie_year?: number;
+    city?: string;
+    state_prov?: string;
+    website?: string;
+  } | null;
 }
 
 export default function TeamOverview({ teamNumber, teamData }: TeamOverviewProps) {
-  const [eventsData, setEventsData] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchEventsData = async () => {
-      try {
-        setLoading(true);
-        const currentYear = new Date().getFullYear();
-        
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/events/${currentYear}`, {
-          headers: {
-            'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setEventsData(data);
-        }
-      } catch (error) {
-        console.error('Error fetching events data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (teamNumber) {
-      fetchEventsData();
-    }
-  }, [teamNumber]);
+  // Use SWR hook for current year events with caching
+  const { data: eventsData, isLoading: loading } = useTeamYearEvents(teamNumber);
+  
+  // Default to empty array if no data yet
+  const events = eventsData ?? [];
 
   return (
     <section className="card-gradient sm:bg-none sm:border-none rounded-xl py-8 relative z-10">
@@ -48,13 +28,13 @@ export default function TeamOverview({ teamNumber, teamData }: TeamOverviewProps
         <TeamStats 
           teamNumber={teamNumber}
           teamData={teamData}
-          eventsData={eventsData}
+          eventsData={events}
         />
         
         {/* Current Event Overview */}
         <CurrentEvent 
           teamNumber={teamNumber}
-          eventsData={eventsData}
+          eventsData={events}
         />
         
         {/* Social Media & Links */}
@@ -68,7 +48,7 @@ export default function TeamOverview({ teamNumber, teamData }: TeamOverviewProps
       <div className="mt-8">
         <SeasonPerformance 
           teamNumber={teamNumber}
-          eventsData={eventsData}
+          eventsData={events}
           loading={loading}
         />
       </div>

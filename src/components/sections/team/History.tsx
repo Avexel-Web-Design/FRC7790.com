@@ -1,90 +1,16 @@
-import { useState, useEffect } from 'react';
 import { getTeamCardGradientClass, getTeamAccentStyle } from '../../../utils/color';
+import { useTeamHistory } from '../../../hooks/useTeamHistory';
 
 interface TeamHistoryProps {
   teamNumber: string;
-  teamData: any;
+  teamData: {
+    rookie_year?: number;
+    motto?: string;
+  } | null;
 }
 
 export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) {
-  const [historyData, setHistoryData] = useState<{ [year: string]: any[] }>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchTeamHistory = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch all historical events for the team
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/events`, {
-          headers: {
-            'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
-          }
-        });
-        
-        if (response.ok) {
-          const allEvents = await response.json();
-          
-          // Group events by year
-          const eventsByYear: { [year: string]: any[] } = {};
-          allEvents.forEach((event: any) => {
-            if (!eventsByYear[event.year]) {
-              eventsByYear[event.year] = [];
-            }
-            eventsByYear[event.year].push(event);
-          });
-          
-          // Sort events within each year by start date
-          Object.keys(eventsByYear).forEach(year => {
-            eventsByYear[year].sort((a, b) => 
-              new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
-            );
-          });
-          
-          // Fetch awards for each event
-          const enrichedHistory: { [year: string]: any[] } = {};
-          
-          for (const year of Object.keys(eventsByYear)) {
-            // Skip current year as it's shown in the overview
-            if (year === new Date().getFullYear().toString()) continue;
-            
-            enrichedHistory[year] = [];
-            
-            for (const event of eventsByYear[year]) {
-              const eventWithAwards = { ...event, awards: [] };
-              
-              try {
-                const awardsResponse = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/event/${event.key}/awards`, {
-                  headers: {
-                    'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
-                  }
-                });
-                
-                if (awardsResponse.ok) {
-                  const awards = await awardsResponse.json();
-                  eventWithAwards.awards = awards;
-                }
-              } catch (error) {
-                console.log(`Error fetching awards for ${event.key}:`, error);
-              }
-              
-              enrichedHistory[year].push(eventWithAwards);
-            }
-          }
-          
-          setHistoryData(enrichedHistory);
-        }
-      } catch (error) {
-        console.error('Error fetching team history:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (teamNumber) {
-      fetchTeamHistory();
-    }
-  }, [teamNumber]);
+  const { years, isLoading, isLoadingAwards, progress } = useTeamHistory(teamNumber);
 
   const formatEventDate = (startDate: string) => {
     try {
@@ -93,12 +19,12 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
         month: 'short', 
         day: 'numeric' 
       });
-    } catch (error) {
+    } catch {
       return 'Date TBD';
     }
   };
 
-  const renderAwards = (awards: any[]) => {
+  const renderAwards = (awards: { name: string }[]) => {
     if (!awards.length) return null;
     
     return (
@@ -111,41 +37,83 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
     );
   };
 
-  if (loading) {
+  // Loading skeleton for a year
+  const YearSkeleton = ({ year }: { year?: number }) => (
+    <div className="mb-6 animate-pulse">
+      <h3 className="text-lg font-semibold mb-3 border-b border-gray-700 pb-2">
+        {year ? `${year} Season` : <span className="bg-gray-700 rounded w-32 h-5 inline-block" />}
+      </h3>
+      <div className="space-y-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="bg-black/30 p-3 rounded">
+            <div className="flex justify-between items-center">
+              <span className="bg-gray-700 rounded w-48 h-4 inline-block" />
+              <span className="bg-gray-700 rounded w-16 h-4 inline-block" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Initial loading state
+  if (isLoading) {
     return (
       <section className="py-8 relative z-10">
         <h2 className="text-3xl font-bold mb-8 text-center">Team History</h2>
         <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`}>
-          <div className="text-center">
-            <div className="text-gray-400 animate-pulse">Loading team history...</div>
-          </div>
+          <YearSkeleton />
+          <YearSkeleton />
+          <YearSkeleton />
         </div>
       </section>
     );
   }
 
-  const years = Object.keys(historyData).sort((a, b) => parseInt(b) - parseInt(a));
-
   return (
     <section className="py-8 relative z-10">
       <h2 className="text-3xl font-bold mb-8 text-center">Team History</h2>
       <div className={`${getTeamCardGradientClass(teamNumber)} rounded-xl p-6 animate__animated animate__fadeIn border border-gray-800`}>
+        {/* Progress indicator when loading awards */}
+        {isLoadingAwards && progress.totalEvents > 0 && (
+          <div className="mb-4 p-3 bg-black/30 rounded">
+            <div className="flex items-center justify-between text-sm text-gray-400 mb-2">
+              <span>Loading event details...</span>
+              <span>{progress.loadedEvents} / {progress.totalEvents}</span>
+            </div>
+            <div className="w-full bg-gray-700 rounded-full h-1.5">
+              <div 
+                className="h-1.5 rounded-full transition-all duration-300"
+                style={{ 
+                  width: `${(progress.loadedEvents / progress.totalEvents) * 100}%`,
+                  backgroundColor: getTeamAccentStyle(teamNumber).color || '#f97316'
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         <div className="space-y-6">
           {years.length === 0 ? (
             <div className="text-center py-4">
               <p className="text-gray-400">No historical data available</p>
             </div>
           ) : (
-            years.map((year) => (
-              <div key={year} className="mb-6">
-                <h3 className="text-lg font-semibold mb-3 border-b border-gray-700 pb-2">
-                  {year} Season
+            years.map((yearData) => (
+              <div key={yearData.year} className="mb-6">
+                <h3 className="text-lg font-semibold mb-3 border-b border-gray-700 pb-2 flex items-center justify-between">
+                  <span>{yearData.year} Season</span>
+                  {yearData.loading && (
+                    <span className="text-xs text-gray-500 animate-pulse">Loading awards...</span>
+                  )}
                 </h3>
                 <div className="space-y-3">
-                  {historyData[year].map((event) => (
+                  {yearData.events.map((event) => (
                     <div 
                       key={event.key} 
-                      className="bg-black/30 p-3 rounded hover:bg-black/50 transition-colors"
+                      className={`bg-black/30 p-3 rounded hover:bg-black/50 transition-colors ${
+                        !event.awardsLoaded ? 'animate-pulse' : ''
+                      }`}
                     >
                       <div className="flex justify-between items-center">
                         <span className="font-medium text-white">
@@ -169,7 +137,12 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
                           {formatEventDate(event.start_date)}
                         </span>
                       </div>
-                      {renderAwards(event.awards)}
+                      {event.awardsLoaded && renderAwards(event.awards)}
+                      {!event.awardsLoaded && (
+                        <div className="mt-2">
+                          <span className="bg-gray-700 rounded w-32 h-3 inline-block" />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -190,7 +163,7 @@ export default function TeamHistory({ teamNumber, teamData }: TeamHistoryProps) 
                   <div className="bg-black/30 p-3 rounded">
                     <div className="font-medium" style={getTeamAccentStyle(teamNumber)}>Years Active</div>
                     <div className="text-white">
-                      {new Date().getFullYear() - teamData.rookie_year + 1} years
+                      {teamData.rookie_year ? new Date().getFullYear() - teamData.rookie_year + 1 : '-'} years
                     </div>
                   </div>
                   <div className="bg-black/30 p-3 rounded">

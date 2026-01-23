@@ -7,6 +7,16 @@ import TeamOverview from '../sections/team/Overview';
 import TeamMatches from '../sections/team/Matches';
 import TeamHistory from '../sections/team/History';
 
+interface TeamData {
+  nickname?: string;
+  school_name?: string;
+  rookie_year?: number;
+  city?: string;
+  state_prov?: string;
+  website?: string;
+  motto?: string;
+}
+
 export default function Team() {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => {
@@ -17,7 +27,7 @@ export default function Team() {
     // Initialize from URL parameters, default to 7790
     return searchParams.get('team') || '7790';
   });
-  const [teamData, setTeamData] = useState(null);
+  const [teamData, setTeamData] = useState<TeamData | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Keep URL hash in sync when tab changes
