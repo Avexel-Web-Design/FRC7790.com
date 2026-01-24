@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b tsconfig.app.json && vite build",
-    "build:cf": "npm run build && node --import tsx/esm scripts/pruneVideos.ts",
+    "build": "tsc -b tsconfig.app.json && vite build && node --import tsx/esm scripts/pruneVideos.ts",
     "build:functions": "tsc -b tsconfig.functions.json --noEmit",
     "lint": "eslint .",
     "preview": "vite preview",
