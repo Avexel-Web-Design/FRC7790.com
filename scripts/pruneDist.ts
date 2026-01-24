@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Prune large static assets from the built dist/ folder to shrink Android AAB size.
  * Intended for remote (server.url) mode where the app loads live assets over HTTPS.
@@ -7,7 +7,7 @@
  *   - Large images (png/jpg/webp/avif) above threshold (default 750 KB)
  *   - "hi-res" and "videos" subdirectories entirely
  * Usage:
- *   bun run scripts/pruneDist.ts          # uses defaults
+ *   npx tsx scripts/pruneDist.ts          # uses defaults
  * Env:
  *   PRUNE_IMAGE_THRESHOLD_KB=500        # adjust threshold
  *   DRY_RUN=1                           # only report, do not delete
@@ -15,8 +15,11 @@
 
 import { existsSync, readdirSync, statSync, unlinkSync, rmSync, type Stats } from 'fs'
 import { join, dirname, extname, relative, basename } from 'path'
+import { fileURLToPath } from 'url'
 
-const root = join(dirname(import.meta.dir), '')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const root = join(__dirname, '..')
 const distDir = join(root, 'dist')
 
 if (!existsSync(distDir)) {

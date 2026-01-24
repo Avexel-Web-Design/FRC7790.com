@@ -1,16 +1,20 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Simple migration runner for Cloudflare D1 using Wrangler.
  * Tracks applied migrations inside the database so you can run it repeatedly.
  * Usage:
- *   bun run scripts/migrateAll.ts            # defaults to dev DB
- *   bun run scripts/migrateAll.ts dev        # explicit dev
- *   bun run scripts/migrateAll.ts prod --remote  # production (with --remote)
+ *   npx tsx scripts/migrateAll.ts            # defaults to dev DB
+ *   npx tsx scripts/migrateAll.ts dev        # explicit dev
+ *   npx tsx scripts/migrateAll.ts prod --remote  # production (with --remote)
  */
 
 import { readdirSync } from 'fs'
 import { spawnSync } from 'child_process'
 import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 const MIGRATIONS_DIR = 'migrations'
 const DB_DEV = 'frc7790-com-dev'
@@ -23,7 +27,7 @@ const remoteFlag = args.includes('--remote')
 const dbName = env === 'prod' ? DB_PROD : DB_DEV
 console.log(`➡️  Applying migrations to ${dbName}${remoteFlag ? ' (remote)' : ' (local)'}...`)
 
-const root = join(dirname(import.meta.dir), '')
+const root = join(__dirname, '..')
 
 function run(label: string, argsArray: string[]): string {
   // Try using bunx wrangler first

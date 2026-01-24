@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Prune video files from dist/ for Cloudflare Pages deployment.
  * Cloudflare Pages has a 25MB per-file limit.
@@ -7,8 +7,11 @@
 
 import { existsSync, readdirSync, statSync, unlinkSync, rmSync } from 'fs'
 import { join, dirname, extname, relative } from 'path'
+import { fileURLToPath } from 'url'
 
-const root = join(dirname(import.meta.dir), '')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const root = join(__dirname, '..')
 const distDir = join(root, 'dist')
 
 if (!existsSync(distDir)) {

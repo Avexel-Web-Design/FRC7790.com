@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Automated Android release pipeline:
  * 1. Build web assets (remote mode by default)
@@ -7,19 +7,22 @@
  * 4. Run Gradle clean bundleRelease to produce AAB
  *
  * Usage:
- *   bun run android:release
+ *   npm run android:release
  * Optional env:
- *   PRUNE_IMAGE_THRESHOLD_KB=600 bun run android:release
- *   SKIP_PRUNE=1 bun run android:release (keeps all assets)
- *   DRY_RUN=1 bun run android:release (build only + report)
- *   CAP_USE_BUNDLED=1 bun run android:release (forces bundled mode – expect larger AAB)
+ *   PRUNE_IMAGE_THRESHOLD_KB=600 npm run android:release
+ *   SKIP_PRUNE=1 npm run android:release (keeps all assets)
+ *   DRY_RUN=1 npm run android:release (build only + report)
+ *   CAP_USE_BUNDLED=1 npm run android:release (forces bundled mode – expect larger AAB)
  */
 
 import { spawnSync, type SpawnSyncReturns } from 'child_process'
 import { existsSync } from 'fs'
 import { join, dirname, isAbsolute } from 'path'
+import { fileURLToPath } from 'url'
 
-const root = join(dirname(import.meta.dir), '')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const root = join(__dirname, '..')
 const isWin = process.platform === 'win32'
 
 function run(cmd: string, args: string[], opts: { cwd?: string } = {}): void {
@@ -90,31 +93,31 @@ if (process.env.DRY_RUN === '1') {
 }
 console.log(`Env flags: LEAN_DIST=${process.env.LEAN_DIST || ''} SKIP_PRUNE=${process.env.SKIP_PRUNE || ''} DRY_RUN=${process.env.DRY_RUN || ''}`)
 
-// Resolve commands - prefer bun
-const bunCmd = 'bun'
-const bunxCmd = 'bunx'
+// Resolve commands - use npm for cross-platform compatibility
+const npmCmd = isWin ? 'npm.cmd' : 'npm'
+const npxCmd = isWin ? 'npx.cmd' : 'npx'
 
 // 1. Build web
-run(bunCmd, ['run', 'build'])
+run(npmCmd, ['run', 'build'])
 
 // 2. Prune (unless skipped)
 if (process.env.DRY_RUN !== '1') {
   if (process.env.LEAN_DIST === '1') {
     console.log('LEAN_DIST=1: Generating ultra-lean dist (remote shell)')
-    run(bunCmd, ['run', 'scripts/minifyDistForRemote.ts'])
+    run(npxCmd, ['tsx', 'scripts/minifyDistForRemote.ts'])
   }
   if (process.env.SKIP_PRUNE === '1') {
     console.log('Skipping prune (SKIP_PRUNE=1)')
   } else {
-    run(bunCmd, ['run', 'prune:dist'])
+    run(npmCmd, ['run', 'prune:dist'])
   }
 } else {
   console.log('Skipping pruning/minify (DRY_RUN)')
 }
 
 // 3. Copy & sync
-run(bunxCmd, ['cap', 'copy', 'android'])
-run(bunxCmd, ['cap', 'sync', 'android'])
+run(npxCmd, ['cap', 'copy', 'android'])
+run(npxCmd, ['cap', 'sync', 'android'])
 
 if (process.env.DRY_RUN === '1') {
   console.log('DRY_RUN complete (no Gradle build).')

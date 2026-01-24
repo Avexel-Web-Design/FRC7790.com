@@ -1,15 +1,18 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Generates Android adaptive launcher icon PNGs from public/assets/images/logo.png
  * Uses sharp to rasterize at required sizes.
  * Foreground is scaled with padding; background color comes from ic_launcher_background.xml.
- * Usage: bun run scripts/generateIcons.ts
+ * Usage: npx tsx scripts/generateIcons.ts
  */
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { join, dirname, relative } from 'path'
+import { fileURLToPath } from 'url'
 
-const root = join(dirname(import.meta.dir), '')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const root = join(__dirname, '..')
 const SRC_IMG = join(root, 'public', 'assets', 'images', 'logo.png')
 const RES_DIR = join(root, 'android', 'app', 'src', 'main', 'res')
 

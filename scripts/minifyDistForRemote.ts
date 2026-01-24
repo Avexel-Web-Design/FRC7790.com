@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 /**
  * Create an ultra-lean dist/ for remote mode: keeps only a minimal index.html
  * that redirects (or loads) the live site. Removes JS/CSS bundles to shrink
@@ -8,8 +8,11 @@
 
 import { existsSync, readdirSync, rmSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
 
-const root = join(dirname(import.meta.dir), '')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const root = join(__dirname, '..')
 const dist = join(root, 'dist')
 
 if (!existsSync(dist)) {

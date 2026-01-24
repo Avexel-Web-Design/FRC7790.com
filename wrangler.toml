@@ -2,6 +2,10 @@ name = "frc7790"
 compatibility_date = "2024-06-24"
 pages_build_output_dir = "dist"
 
+# Build configuration for Cloudflare Pages
+[build]
+command = "npm install && npm run build:cf"
+
 # Development environment variables
 [vars]
 JWT_SECRET = "dev-jwt-secret-for-local-development"
