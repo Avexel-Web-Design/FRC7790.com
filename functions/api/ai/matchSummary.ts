@@ -1,4 +1,10 @@
 import { Hono } from 'hono';
+import { Effect } from 'effect';
+import { 
+  effectHandler, 
+  parseBody,
+  ValidationError
+} from '../lib/effect-hono';
 
 // Declare expected environment bindings for type safety
 interface EnvBindings {
@@ -23,6 +29,14 @@ interface MatchSummaryRequest {
   match?: any; // full match object (optional to avoid refetch latency)
 }
 
+interface Factor {
+  name: string;
+  blue: number;
+  red: number;
+  diff: number; // blue - red (positive means blue advantage)
+  impactRank?: number;
+}
+
 // Utility: build a concise stats line from match JSON
 function humanCompLevel(match: any): string {
   switch (match?.comp_level) {
@@ -33,14 +47,6 @@ function humanCompLevel(match: any): string {
     case 'f': return 'finals match';
     default: return 'match';
   }
-}
-
-interface Factor {
-  name: string;
-  blue: number;
-  red: number;
-  diff: number; // blue - red (positive means blue advantage)
-  impactRank?: number;
 }
 
 function classifyMargin(margin: number): string {
@@ -131,172 +137,281 @@ function buildStats(match: any): { prompt: string; fallback: string; factors: Fa
   return { prompt, fallback, factors };
 }
 
-const ai = new Hono();
-
 // System prompt for AI match summaries (used across all providers)
 const SYSTEM_PROMPT = 'You are an expert FIRST Robotics Competition commentator. Produce a concise 1-2 sentence recap. FIRST sentence: outcome & margin (if decisive). SECOND sentence (optional): key deciding factors using provided stats only (auto/endgame/penalties/objective bonuses). Do NOT repeat the raw score at the start. Do NOT mention event codes or match keys (e.g., say "qualification match 2" not "2025mitvc_qm2"). IMPORTANT: Convert technical field names into natural language (e.g., "teleopCoral" → "teleop coral", "autoPoints" → "auto points", "endGamePoints" → "endgame points", "foulPoints" → "foul points"). Break up camelCase and technical names into conversational phrases. Avoid speculation.';
 
-ai.post('/generate', async c => {
-  try {
-    const env = (c.env || {}) as EnvBindings; // typed view
-    
-    let body: MatchSummaryRequest;
+// Fetch match data from TBA
+const fetchMatchFromTBA = (matchKey: string, apiKey: string): Effect.Effect<any, Error, never> =>
+  Effect.tryPromise({
+    try: async () => {
+      const resp = await fetch(`https://www.thebluealliance.com/api/v3/match/${matchKey}`, {
+        headers: { 'X-TBA-Auth-Key': apiKey }
+      });
+      if (!resp.ok) {
+        throw new Error('Failed to fetch match data from TBA');
+      }
+      return resp.json();
+    },
+    catch: (err) => new Error(String(err))
+  });
+
+// Call OpenRouter API
+const callOpenRouter = (
+  apiKey: string, 
+  model: string, 
+  prompt: string,
+  siteUrl: string,
+  appName: string
+): Effect.Effect<string | null, never, never> =>
+  Effect.promise(async () => {
     try {
-      body = await c.req.json();
-    } catch (parseErr) {
-      console.error('JSON parse error:', parseErr);
-      return c.json({ error: 'Invalid JSON in request body', details: (parseErr as Error).message }, 400);
+      const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': siteUrl,
+          'X-Title': appName
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 160,
+          temperature: 0.5
+        })
+      });
+      if (resp.ok) {
+        const data: any = await resp.json();
+        const candidate = data.choices?.[0]?.message?.content?.trim();
+        if (candidate && candidate.length > 0) {
+          return candidate;
+        }
+      }
+    } catch (err) {
+      console.error('OpenRouter API error', err);
     }
+    return null;
+  });
+
+// Call Azure OpenAI API
+const callAzureOpenAI = (
+  endpoint: string,
+  deployment: string,
+  apiKey: string,
+  prompt: string
+): Effect.Effect<string | null, never, never> =>
+  Effect.promise(async () => {
+    try {
+      const resp = await fetch(`${endpoint}/openai/deployments/${deployment}/chat/completions?api-version=2024-02-15-preview`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': apiKey
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 160,
+          temperature: 0.5
+        })
+      });
+      if (resp.ok) {
+        const data: any = await resp.json();
+        const candidate = data.choices?.[0]?.message?.content?.trim();
+        if (candidate && candidate.length > 0) {
+          return candidate;
+        }
+      }
+    } catch (err) {
+      console.error('Azure OpenAI API error', err);
+    }
+    return null;
+  });
+
+// Call OpenAI API
+const callOpenAI = (
+  baseUrl: string,
+  model: string,
+  apiKey: string,
+  prompt: string
+): Effect.Effect<string | null, never, never> =>
+  Effect.promise(async () => {
+    try {
+      const resp = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 160,
+          temperature: 0.5
+        })
+      });
+      if (resp.ok) {
+        const data: any = await resp.json();
+        const candidate = data.choices?.[0]?.message?.content?.trim();
+        if (candidate && candidate.length > 0) {
+          return candidate;
+        }
+      }
+    } catch (err) {
+      console.error('OpenAI API error', err);
+    }
+    return null;
+  });
+
+// Call Groq API
+const callGroq = (
+  model: string,
+  apiKey: string,
+  prompt: string
+): Effect.Effect<string | null, never, never> =>
+  Effect.promise(async () => {
+    try {
+      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 160,
+          temperature: 0.5
+        })
+      });
+      if (resp.ok) {
+        const data: any = await resp.json();
+        const candidate = data.choices?.[0]?.message?.content?.trim();
+        if (candidate && candidate.length > 0) {
+          return candidate;
+        }
+      }
+    } catch (err) {
+      console.error('Groq API error', err);
+    }
+    return null;
+  });
+
+const ai = new Hono<{ Bindings: EnvBindings }>();
+
+ai.post('/generate', effectHandler((c) =>
+  Effect.gen(function* () {
+    const env = (c.env || {}) as EnvBindings;
     
+    const body = yield* parseBody<MatchSummaryRequest>(c);
     const { match_key, match } = body;
 
     if (!match_key && !match) {
-      return c.json({ error: 'match_key or match object required' }, 400);
+      return yield* Effect.fail(ValidationError.single('match_key or match object required'));
     }
 
     // If full match object not supplied, fetch from TBA (server-side) for better caching
     let matchData = match;
     if (!matchData && match_key) {
-      const resp = await fetch(`https://www.thebluealliance.com/api/v3/match/${match_key}`, {
-        headers: { 'X-TBA-Auth-Key': env.TBA_API_KEY || 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf' }
-      });
-      if (!resp.ok) {
-        return c.json({ error: 'Failed to fetch match data' }, 502);
+      const tbaApiKey = env.TBA_API_KEY || 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf';
+      matchData = yield* Effect.catchAll(
+        fetchMatchFromTBA(match_key, tbaApiKey),
+        () => Effect.succeed(null)
+      );
+      
+      if (!matchData) {
+        return { 
+          summary: 'Failed to fetch match data', 
+          model: 'fallback', 
+          cached: false, 
+          fallbackUsed: true, 
+          factors: [] 
+        };
       }
-      matchData = await resp.json();
     }
 
-  const { prompt, fallback, factors } = buildStats(matchData);
+    const { prompt, fallback, factors } = buildStats(matchData);
 
     // If no AI key configured, return deterministic fallback so UI still shows something
-  const openRouterKey = env.OPENROUTER_API_KEY; // Preferred if user wants OpenRouter
-  const apiKey = openRouterKey || env.OPENAI_API_KEY || env.AZURE_OPENAI_KEY || env.GROQ_API_KEY;
+    const openRouterKey = env.OPENROUTER_API_KEY; // Preferred if user wants OpenRouter
+    const apiKey = openRouterKey || env.OPENAI_API_KEY || env.AZURE_OPENAI_KEY || env.GROQ_API_KEY;
+    
     if (!apiKey) {
-  return c.json({ summary: fallback, model: 'fallback', cached: false, fallbackUsed: true, factors: [] });
+      return { 
+        summary: fallback, 
+        model: 'fallback', 
+        cached: false, 
+        fallbackUsed: true, 
+        factors: [] 
+      };
     }
 
-    // Simple provider selection (OpenAI compatible). Adjust base URL if Azure.
-  // Provider precedence: openrouter -> azure -> openai (direct) -> groq
-  const provider = openRouterKey ? 'openrouter' : (env.AZURE_OPENAI_DEPLOYMENT ? 'azure' : (env.OPENAI_API_KEY ? 'openai' : (env.GROQ_API_KEY ? 'groq' : 'fallback')));
-  let summaryText = fallback;
-  let usedAI = false;
+    // Provider precedence: openrouter -> azure -> openai (direct) -> groq
+    const provider = openRouterKey ? 'openrouter' : 
+                     (env.AZURE_OPENAI_DEPLOYMENT ? 'azure' : 
+                     (env.OPENAI_API_KEY ? 'openai' : 
+                     (env.GROQ_API_KEY ? 'groq' : 'fallback')));
+    
+    let summaryText = fallback;
+    let usedAI = false;
 
-    try {
-      if (provider === 'openrouter') {
-  const model = env.OPENROUTER_MODEL || 'z-ai/glm-4.5-air:free';
-        const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${openRouterKey}`,
-            'HTTP-Referer': env.OPENROUTER_SITE_URL || 'https://www.frc7790.com',
-            'X-Title': env.OPENROUTER_APP_NAME || 'FRC 7790'
-          },
-          body: JSON.stringify({
-            model,
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: prompt }
-            ],
-            max_tokens: 160,
-            temperature: 0.5
-          })
-        });
-        if (resp.ok) {
-          const data: any = await resp.json();
-          const candidate = data.choices?.[0]?.message?.content?.trim();
-          if (candidate && candidate.length > 0) {
-            summaryText = candidate;
-            usedAI = true;
-          }
-        }
-      } else if (provider === 'azure') {
-  const azureEndpoint = env.AZURE_OPENAI_ENDPOINT; // e.g., https://your-resource-name.openai.azure.com
-  const deployment = env.AZURE_OPENAI_DEPLOYMENT;
-        const resp = await fetch(`${azureEndpoint}/openai/deployments/${deployment}/chat/completions?api-version=2024-02-15-preview`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'api-key': apiKey
-          },
-          body: JSON.stringify({
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: prompt }
-            ],
-            max_tokens: 160,
-            temperature: 0.5
-          })
-        });
-        if (resp.ok) {
-          const data: any = await resp.json();
-          const candidate = data.choices?.[0]?.message?.content?.trim();
-          if (candidate && candidate.length > 0) {
-            summaryText = candidate; usedAI = true;
-          }
-        }
-      } else if (provider === 'openai') {
-        // OpenAI or other compat endpoint
-  const baseUrl = env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-        const resp = await fetch(`${baseUrl}/chat/completions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: env.OPENAI_MODEL || 'gpt-4o-mini',
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: prompt }
-            ],
-            max_tokens: 160,
-            temperature: 0.5
-          })
-        });
-        if (resp.ok) {
-          const data: any = await resp.json();
-          const candidate = data.choices?.[0]?.message?.content?.trim();
-          if (candidate && candidate.length > 0) { summaryText = candidate; usedAI = true; }
-        }
-      } else if (provider === 'groq') {
-        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: env.GROQ_MODEL || 'llama-3.1-70b-versatile',
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'user', content: prompt }
-            ],
-            max_tokens: 160,
-            temperature: 0.5
-          })
-        });
-        if (resp.ok) {
-          const data: any = await resp.json();
-          const candidate = data.choices?.[0]?.message?.content?.trim();
-          if (candidate && candidate.length > 0) { summaryText = candidate; usedAI = true; }
-        }
+    if (provider === 'openrouter' && openRouterKey) {
+      const model = env.OPENROUTER_MODEL || 'z-ai/glm-4.5-air:free';
+      const siteUrl = env.OPENROUTER_SITE_URL || 'https://www.frc7790.com';
+      const appName = env.OPENROUTER_APP_NAME || 'FRC 7790';
+      const result = yield* callOpenRouter(openRouterKey, model, prompt, siteUrl, appName);
+      if (result) {
+        summaryText = result;
+        usedAI = true;
       }
-    } catch (err) {
-      console.error('AI generation error', err);
-      // fall back silently
+    } else if (provider === 'azure' && env.AZURE_OPENAI_ENDPOINT && env.AZURE_OPENAI_DEPLOYMENT && env.AZURE_OPENAI_KEY) {
+      const result = yield* callAzureOpenAI(
+        env.AZURE_OPENAI_ENDPOINT,
+        env.AZURE_OPENAI_DEPLOYMENT,
+        env.AZURE_OPENAI_KEY,
+        prompt
+      );
+      if (result) {
+        summaryText = result;
+        usedAI = true;
+      }
+    } else if (provider === 'openai' && env.OPENAI_API_KEY) {
+      const baseUrl = env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+      const model = env.OPENAI_MODEL || 'gpt-4o-mini';
+      const result = yield* callOpenAI(baseUrl, model, env.OPENAI_API_KEY, prompt);
+      if (result) {
+        summaryText = result;
+        usedAI = true;
+      }
+    } else if (provider === 'groq' && env.GROQ_API_KEY) {
+      const model = env.GROQ_MODEL || 'llama-3.1-70b-versatile';
+      const result = yield* callGroq(model, env.GROQ_API_KEY, prompt);
+      if (result) {
+        summaryText = result;
+        usedAI = true;
+      }
     }
 
-  const fallbackUsed = !usedAI || summaryText === fallback;
-  return c.json({ summary: summaryText, model: provider, promptUsed: prompt, fallbackUsed, factors });
-  } catch (err) {
-    console.error('Match summary generation error:', err);
-    return c.json({ 
-      error: 'Failed to generate match summary', 
-      details: (err as Error).message,
-      stack: (err as Error).stack 
-    }, 500);
-  }
-});
+    const fallbackUsed = !usedAI || summaryText === fallback;
+    return { 
+      summary: summaryText, 
+      model: provider, 
+      promptUsed: prompt, 
+      fallbackUsed, 
+      factors 
+    };
+  })
+));
 
 export default ai;

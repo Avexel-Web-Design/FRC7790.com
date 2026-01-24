@@ -26,12 +26,12 @@ export const authMiddleware = createMiddleware<{
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = await verify(token, c.env.JWT_SECRET);
+    const decoded = await verify(token, c.env.JWT_SECRET, 'HS256');
     const user: AuthUser = {
       id: decoded.id as number,
       username: decoded.username as string,
       isAdmin: decoded.isAdmin as boolean,
-      userType: (decoded as any).userType as any
+      userType: (decoded as Record<string, unknown>).userType as 'member' | 'public' | undefined
     };
     c.set('user', user);
     await next();

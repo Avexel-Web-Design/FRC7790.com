@@ -1,143 +1,243 @@
-import { Hono } from 'hono';
-import { sign, verify } from 'hono/jwt';
-import { authMiddleware } from './middleware';
+/**
+ * Register Handler - Effect-based implementation
+ */
 
-interface CloudflareEnv {
-  DB: D1Database;
-  JWT_SECRET: string;
+import { Hono } from "hono"
+import { sign, verify } from "hono/jwt"
+import { Effect, pipe } from "effect"
+import {
+  effectHandler,
+  parseBody,
+  ValidationError,
+  AuthError,
+  ConflictError,
+  DbError,
+  execute,
+  type Env
+} from "../lib/effect-hono"
+
+// =============================================================================
+// Types
+// =============================================================================
+
+interface RegisterRequest {
+  username: string
+  password: string
+  is_admin?: boolean
+  user_type?: "member" | "public"
 }
 
-interface AuthUser {
-  id: number;
-  username: string;
-  isAdmin: boolean;
+interface RegisterResponse {
+  token: string
+  user: {
+    id: number
+    username: string
+    isAdmin: boolean
+    userType: string
+    avatar?: string
+  }
+  message: string
 }
 
-// Simple password hashing using Web Crypto API
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+// =============================================================================
+// Password Hashing
+// =============================================================================
+
+/**
+ * Hash password using Web Crypto API (SHA-256)
+ */
+const hashPassword = (password: string): Effect.Effect<string, never, never> =>
+  Effect.promise(async () => {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(password)
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("")
+  })
+
+// =============================================================================
+// Authorization Check
+// =============================================================================
+
+interface AuthorizationResult {
+  isAdmin: boolean
+  creatorIsAdmin: boolean
 }
 
-const register = new Hono<{ 
-  Bindings: CloudflareEnv;
-  Variables: { user: AuthUser };
-}>();
-
-register.post('/', async (c) => {
-  try {
-    const { username, password, is_admin, user_type } = await c.req.json();
-    
-    // Check if this is an admin creating a user with admin privileges
-    const authHeader = c.req.header('Authorization');
-  let isAdmin = false;
-  let creatorIsAdmin = false; // whether requester is admin (for user_type decision)
-    
-    if (is_admin === true) {
-      // Admin privileges requested, verify if requester is an admin
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return c.json({ error: 'Admin privileges cannot be assigned by non-admin users' }, 403);
-      }
-      
-      try {
-        const token = authHeader.split(' ')[1];
-        const decoded = await verify(token, c.env.JWT_SECRET);
-        if (!(decoded.isAdmin === true || decoded.isAdmin === 1)) {
-          return c.json({ error: 'Only administrators can create admin users' }, 403);
-        }
-        isAdmin = true;
-        creatorIsAdmin = true;
-      } catch (e) {
-        return c.json({ error: 'Invalid authorization for admin user creation' }, 401);
-      }
+/**
+ * Check if requester can create admin users
+ */
+const checkAdminAuthorization = (
+  authHeader: string | undefined,
+  requestedAdmin: boolean,
+  jwtSecret: string
+): Effect.Effect<AuthorizationResult, AuthError, never> =>
+  Effect.gen(function* () {
+    if (!requestedAdmin) {
+      return { isAdmin: false, creatorIsAdmin: false }
     }
+
+    // Admin privileges requested - verify requester is an admin
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return yield* Effect.fail(
+        AuthError.forbidden("Admin privileges cannot be assigned by non-admin users")
+      )
+    }
+
+    const token = authHeader.slice(7)
     
-    // Convert isAdmin to integer for DB
-    const isAdminValue = isAdmin ? 1 : 0;
+    const decoded = yield* Effect.tryPromise({
+      try: () => verify(token, jwtSecret, "HS256"),
+      catch: () => AuthError.invalidToken("Invalid authorization for admin user creation")
+    })
+
+    if (!(decoded.isAdmin === true || decoded.isAdmin === 1)) {
+      return yield* Effect.fail(
+        AuthError.forbidden("Only administrators can create admin users")
+      )
+    }
+
+    return { isAdmin: true, creatorIsAdmin: true }
+  })
+
+// =============================================================================
+// Validation
+// =============================================================================
+
+/**
+ * Validate registration input
+ */
+const validateInput = (
+  body: RegisterRequest,
+  userType: "member" | "public"
+): Effect.Effect<void, ValidationError, never> =>
+  Effect.gen(function* () {
+    const { username, password } = body
 
     if (!username || !password) {
-      return c.json({ error: 'Username and password are required' }, 400);
+      return yield* Effect.fail(ValidationError.single("Username and password are required"))
     }
 
     if (password.length < 6) {
-      return c.json({ error: 'Password must be at least 6 characters long' }, 400);
+      return yield* Effect.fail(ValidationError.single("Password must be at least 6 characters long"))
     }
 
-    // Determine account type: self-registered (public) vs admin-created (member by default)
-    // Admin may explicitly set user_type to 'public' or 'member'. Non-admins are forced to 'public'.
-    let userType: 'member' | 'public' = 'public';
-    if (creatorIsAdmin) {
-      if (user_type === 'public' || user_type === 'member') {
-        userType = user_type;
-      } else {
-        userType = 'member';
-      }
-    } else {
-      userType = 'public';
-    }
-
-    // For created (public) accounts, enforce username pattern [A-Za-z0-9._]+
-    const allowedUsername = /^[A-Za-z0-9._]+$/;
-    if (userType === 'public') {
-      if (!allowedUsername.test(username)) {
-        return c.json({ error: 'Username may only contain letters, numbers, underscores, and periods' }, 400);
-      }
-    }
-
-    const hashedPassword = await hashPassword(password);
-
-  const avatarValue = userType === 'member' ? `https://api.dicebear.com/7.x/initials/svg?seed=${username}` : null;
-    const { success, meta } = await c.env.DB.prepare(
-      'INSERT INTO users (username, password, avatar, is_admin, user_type) VALUES (?, ?, ?, ?, ?)'
-    )
-      .bind(
-        username,
-        hashedPassword,
-        avatarValue,
-        isAdminValue,
-        userType
+    // For public accounts, enforce username pattern [A-Za-z0-9._]+
+    const allowedUsername = /^[A-Za-z0-9._]+$/
+    if (userType === "public" && !allowedUsername.test(username)) {
+      return yield* Effect.fail(
+        ValidationError.single("Username may only contain letters, numbers, underscores, and periods")
       )
-      .run();
+    }
+  })
 
-    if (success) {
-      const userId = meta.last_row_id;
-      const token = await sign(
-        { 
-          id: userId, 
+// =============================================================================
+// Register Effect
+// =============================================================================
+
+/**
+ * Main register logic as an Effect
+ */
+const registerEffect = (
+  body: RegisterRequest,
+  authHeader: string | undefined,
+  jwtSecret: string
+): Effect.Effect<RegisterResponse, ValidationError | AuthError | ConflictError | DbError, import("../lib/db").D1> =>
+  Effect.gen(function* () {
+    const { username, password, is_admin, user_type } = body
+
+    // Check admin authorization
+    const { isAdmin, creatorIsAdmin } = yield* checkAdminAuthorization(
+      authHeader,
+      is_admin === true,
+      jwtSecret
+    )
+
+    // Determine user type
+    let userType: "member" | "public" = "public"
+    if (creatorIsAdmin) {
+      if (user_type === "public" || user_type === "member") {
+        userType = user_type
+      } else {
+        userType = "member"
+      }
+    }
+
+    // Validate input
+    yield* validateInput(body, userType)
+
+    // Hash password
+    const hashedPassword = yield* hashPassword(password)
+
+    // Prepare values
+    const isAdminValue = isAdmin ? 1 : 0
+    const avatarValue = userType === "member" 
+      ? `https://api.dicebear.com/7.x/initials/svg?seed=${username}` 
+      : null
+
+    // Insert user - handle unique constraint violation
+    const insertEffect = execute(
+      "INSERT INTO users (username, password, avatar, is_admin, user_type) VALUES (?, ?, ?, ?, ?)",
+      username,
+      hashedPassword,
+      avatarValue,
+      isAdminValue,
+      userType
+    )
+    
+    const result = yield* pipe(
+      insertEffect,
+      Effect.catchTag("DbError", (error): Effect.Effect<never, ConflictError | DbError, never> => {
+        if (error.message.includes("UNIQUE constraint failed")) {
+          return Effect.fail(ConflictError.field("username", "Username already exists"))
+        }
+        return Effect.fail(error)
+      })
+    )
+
+    const userId = result.lastRowId
+
+    // Generate JWT token
+    const token = yield* Effect.promise(() =>
+      sign(
+        {
+          id: userId,
           username: username,
           isAdmin: isAdminValue,
           userType,
           avatar: avatarValue || undefined,
           iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
-        }, 
-        c.env.JWT_SECRET
-      );
-
-      return c.json({ 
-        token,
-        user: {
-          id: userId,
-          username: username,
-          isAdmin: isAdminValue === 1,
-          userType,
-          avatar: avatarValue || undefined
+          exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60 // 24 hours
         },
-        message: 'Registration successful'
-      });
-    }
+        jwtSecret
+      )
+    )
 
-    return c.json({ error: 'Failed to register user' }, 500);
-  } catch (e) {
-    if (e instanceof Error && e.message.includes('UNIQUE constraint failed')) {
-      return c.json({ error: 'Username already exists' }, 409);
+    return {
+      token,
+      user: {
+        id: userId,
+        username: username,
+        isAdmin: isAdminValue === 1,
+        userType,
+        avatar: avatarValue || undefined
+      },
+      message: "Registration successful"
     }
-    console.error('Registration error:', e);
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-});
+  })
 
-export default register;
+// =============================================================================
+// Hono Router
+// =============================================================================
+
+const register = new Hono<{ Bindings: Env }>()
+
+register.post("/", effectHandler((c) =>
+  Effect.gen(function* () {
+    const body = yield* parseBody<RegisterRequest>(c)
+    const authHeader = c.req.header("Authorization")
+    return yield* registerEffect(body, authHeader, c.env.JWT_SECRET)
+  })
+))
+
+export default register

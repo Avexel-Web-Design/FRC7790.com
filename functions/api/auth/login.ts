@@ -1,58 +1,120 @@
-import { Hono } from 'hono';
-import { sign } from 'hono/jwt';
+/**
+ * Login Handler - Effect-based implementation
+ */
 
-interface CloudflareEnv {
-  DB: D1Database;
-  JWT_SECRET: string;
+import { Hono } from "hono"
+import { sign } from "hono/jwt"
+import { Effect } from "effect"
+import { 
+  effectHandler, 
+  parseBody, 
+  ValidationError, 
+  AuthError,
+  DbError,
+  queryOne,
+  type Env 
+} from "../lib/effect-hono"
+
+// =============================================================================
+// Types
+// =============================================================================
+
+interface LoginRequest {
+  username: string
+  password: string
 }
 
-// Simple password verification using Web Crypto API
-async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const computedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return computedHash === hashedPassword;
+interface UserRow {
+  id: number
+  username: string
+  password: string
+  is_admin: number
+  avatar: string | null
+  user_type: string
 }
 
-const login = new Hono<{ Bindings: CloudflareEnv }>();
+interface LoginResponse {
+  token: string
+  user: {
+    id: number
+    username: string
+    isAdmin: boolean
+    userType: string
+  }
+  message: string
+}
 
-login.post('/', async (c) => {
-  try {
-    const { username, password } = await c.req.json();
+// =============================================================================
+// Password Verification
+// =============================================================================
 
+/**
+ * Verify password using Web Crypto API (SHA-256)
+ */
+const verifyPassword = (
+  password: string, 
+  hashedPassword: string
+): Effect.Effect<boolean, never, never> =>
+  Effect.promise(async () => {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(password)
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const computedHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("")
+    return computedHash === hashedPassword
+  })
+
+// =============================================================================
+// Login Effect
+// =============================================================================
+
+/**
+ * Main login logic as an Effect
+ */
+const loginEffect = (
+  body: LoginRequest,
+  jwtSecret: string
+): Effect.Effect<LoginResponse, ValidationError | AuthError | DbError, import("../lib/db").D1> =>
+  Effect.gen(function* () {
+    const { username, password } = body
+
+    // Validate input
     if (!username || !password) {
-      return c.json({ error: 'Username and password are required' }, 400);
+      return yield* Effect.fail(ValidationError.single("Username and password are required"))
     }
 
-    const user = await c.env.DB.prepare('SELECT * FROM users WHERE username = ?')
-      .bind(username)
-      .first() as { id: number; username: string; password: string; is_admin: number; avatar: string | null; user_type: string } | null;
+    // Find user
+    const user = yield* queryOne<UserRow>(
+      "SELECT * FROM users WHERE username = ?",
+      username
+    )
 
     if (!user) {
-      return c.json({ error: 'Invalid credentials' }, 401);
+      return yield* Effect.fail(AuthError.invalidCredentials())
     }
 
-    const validPassword = await verifyPassword(password, user.password as string);
-
+    // Verify password
+    const validPassword = yield* verifyPassword(password, user.password)
     if (!validPassword) {
-      return c.json({ error: 'Invalid credentials' }, 401);
+      return yield* Effect.fail(AuthError.invalidCredentials())
     }
 
-    const token = await sign(
-      { 
-        id: user.id, 
-        username: user.username,
-        isAdmin: user.is_admin,
-        userType: user.user_type,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
-      }, 
-      c.env.JWT_SECRET
-    );
+    // Generate JWT token
+    const token = yield* Effect.promise(() => 
+      sign(
+        {
+          id: user.id,
+          username: user.username,
+          isAdmin: user.is_admin,
+          userType: user.user_type,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60 // 24 hours
+        },
+        jwtSecret
+      )
+    )
 
-    return c.json({ 
+    return {
       token,
       user: {
         id: user.id,
@@ -60,12 +122,21 @@ login.post('/', async (c) => {
         isAdmin: !!user.is_admin,
         userType: user.user_type
       },
-      message: 'Login successful'
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-});
+      message: "Login successful"
+    }
+  })
 
-export default login;
+// =============================================================================
+// Hono Router
+// =============================================================================
+
+const login = new Hono<{ Bindings: Env }>()
+
+login.post("/", effectHandler((c) =>
+  Effect.gen(function* () {
+    const body = yield* parseBody<LoginRequest>(c)
+    return yield* loginEffect(body, c.env.JWT_SECRET)
+  })
+))
+
+export default login

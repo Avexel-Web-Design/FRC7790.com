@@ -1,0 +1,10 @@
+# Bun configuration for FRC7790.com
+# https://bun.sh/docs/runtime/bunfig
+
+[install]
+# Use exact versions for reproducible builds
+exact = true
+
+[install.lockfile]
+# Print a command-line hint when the lockfile is saved
+print = "yarn"

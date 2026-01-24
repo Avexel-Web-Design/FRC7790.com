@@ -119,11 +119,15 @@ export function useEventData(eventCode: string) {
 
       // Fetch basic event data
       const event = await frcAPI.fetchEventData(eventCode);
-      setEventData(event);
+      setEventData(event as EventData);
 
       // Fetch teams for the event
       const eventTeams = await frcAPI.fetchEventTeams(eventCode);
-      setTeams(eventTeams);
+      setTeams(eventTeams.map(t => ({
+        ...t,
+        name: t.nickname || `Team ${t.team_number}`,
+        nickname: t.nickname || `Team ${t.team_number}`
+      })));
 
       // Only fetch competition data if event has started
       const eventStarted = new Date(event.start_date) <= new Date();
@@ -132,7 +136,10 @@ export function useEventData(eventCode: string) {
         // Fetch rankings
         try {
           const eventRankings = await frcAPI.fetchEventRankings(eventCode);
-          setRankings(eventRankings);
+          setRankings(eventRankings.map(r => ({
+            ...r,
+            team_name: r.team_name ?? undefined
+          })));
         } catch (err) {
           console.warn('Rankings not available yet:', err);
         }
@@ -140,8 +147,8 @@ export function useEventData(eventCode: string) {
         // Fetch matches
         try {
           const eventMatches = await frcAPI.fetchEventMatches(eventCode);
-          setMatches(eventMatches.filter(match => match.comp_level === 'qm'));
-          setPlayoffMatches(eventMatches.filter(match => match.comp_level !== 'qm'));
+          setMatches(eventMatches.filter((match): match is Match => match.comp_level === 'qm'));
+          setPlayoffMatches(eventMatches.filter((match): match is Match => match.comp_level !== 'qm'));
         } catch (err) {
           console.warn('Matches not available yet:', err);
         }
@@ -149,7 +156,7 @@ export function useEventData(eventCode: string) {
         // Fetch awards
         try {
           const eventAwards = await frcAPI.fetchEventAwards(eventCode);
-          setAwards(eventAwards);
+          setAwards(eventAwards as Award[]);
         } catch (err) {
           console.warn('Awards not available yet:', err);
         }

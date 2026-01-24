@@ -1,10 +1,17 @@
 import { Hono } from 'hono';
+import { Effect } from 'effect';
 import { authMiddleware } from '../auth/middleware';
-
-interface CloudflareEnv {
-  DB: D1Database;
-  JWT_SECRET: string;
-}
+import {
+  authEffectHandler,
+  parseBody,
+  type Env,
+  query,
+  queryOne,
+  execute,
+  ValidationError,
+  AuthError,
+  ConflictError
+} from '../lib/effect-hono';
 
 interface AuthUser {
   id: number;
@@ -12,63 +19,83 @@ interface AuthUser {
   isAdmin: boolean;
 }
 
-// Simple password hashing using Web Crypto API
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+interface DbUser {
+  id: number;
+  username: string;
+  is_admin: number;
+  created_at: string;
+  avatar_color: string | null;
+  user_type: string;
 }
 
+interface UpdateUserBody {
+  is_admin?: boolean;
+  username?: string;
+  password?: string;
+}
+
+// Simple password hashing using Web Crypto API
+const hashPassword = (password: string): Effect.Effect<string, never, never> =>
+  Effect.promise(async () => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  });
+
 const users = new Hono<{ 
-  Bindings: CloudflareEnv;
+  Bindings: Env;
   Variables: { user: AuthUser };
 }>();
 
 users.use('*', authMiddleware);
 
-users.get('/', async (c) => {
-  const user = c.get('user');
+// Get all users (admin only)
+users.get('/', authEffectHandler((c) =>
+  Effect.gen(function* () {
+    const user = c.get('user');
 
-  if (!user.isAdmin) {
-    return c.json({ error: 'Forbidden' }, 403);
-  }
-
-  try {
-    const type = c.req.query('user_type');
-    if (type === 'member' || type === 'public') {
-      const { results } = await c.env.DB.prepare(
-        'SELECT id, username, is_admin, created_at, avatar_color, user_type FROM users WHERE user_type = ? ORDER BY id ASC'
-      ).bind(type).all();
-      return c.json(results);
+    if (!user.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
     }
-    const { results } = await c.env.DB.prepare('SELECT id, username, is_admin, created_at, avatar_color, user_type FROM users ORDER BY id ASC').all();
-    return c.json(results);
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-});
+
+    const type = c.req.query('user_type');
+    
+    if (type === 'member' || type === 'public') {
+      const results = yield* query<DbUser>(
+        'SELECT id, username, is_admin, created_at, avatar_color, user_type FROM users WHERE user_type = ? ORDER BY id ASC',
+        type
+      );
+      return results;
+    }
+    
+    const results = yield* query<DbUser>(
+      'SELECT id, username, is_admin, created_at, avatar_color, user_type FROM users ORDER BY id ASC'
+    );
+    return results;
+  })
+));
 
 // Update user (for changing admin status, username, or password)
-users.put('/:userId', async (c) => {
-  const currentUser = c.get('user');
-  if (!currentUser.isAdmin) {
-    return c.json({ error: 'Forbidden' }, 403);
-  }
+users.put('/:userId', authEffectHandler((c) =>
+  Effect.gen(function* () {
+    const currentUser = c.get('user');
+    
+    if (!currentUser.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
+    }
 
-  const userId = parseInt(c.req.param('userId'), 10);
-  const body = await c.req.json();
-  
-  // Prevent changing your own admin status
-  if (userId === currentUser.id && body.is_admin !== undefined) {
-    return c.json({ error: 'Cannot modify your own admin status' }, 400);
-  }
-  
-  try {
+    const userId = parseInt(c.req.param('userId'), 10);
+    const body = yield* parseBody<UpdateUserBody>(c);
+    
+    // Prevent changing your own admin status
+    if (userId === currentUser.id && body.is_admin !== undefined) {
+      return yield* Effect.fail(ValidationError.single('Cannot modify your own admin status'));
+    }
+    
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: (string | number)[] = [];
 
     // Handle admin status update
     if (body.is_admin !== undefined) {
@@ -80,12 +107,14 @@ users.put('/:userId', async (c) => {
     // Handle username update
     if (body.username !== undefined && body.username.trim() !== '') {
       // Check if username already exists (excluding current user)
-      const existingUser = await c.env.DB.prepare('SELECT id FROM users WHERE username = ? AND id != ?')
-        .bind(body.username.trim(), userId)
-        .first();
+      const existingUser = yield* queryOne<{ id: number }>(
+        'SELECT id FROM users WHERE username = ? AND id != ?',
+        body.username.trim(),
+        userId
+      );
       
       if (existingUser) {
-        return c.json({ error: 'Username already exists' }, 400);
+        return yield* Effect.fail(ConflictError.field('username', 'Username already exists'));
       }
       
       updates.push('username = ?');
@@ -94,52 +123,45 @@ users.put('/:userId', async (c) => {
 
     // Handle password update
     if (body.password !== undefined && body.password.trim() !== '') {
-      const hashedPassword = await hashPassword(body.password.trim());
+      const hashedPassword = yield* hashPassword(body.password.trim());
       updates.push('password = ?');
       values.push(hashedPassword);
     }
 
     if (updates.length === 0) {
-      return c.json({ error: 'No valid fields to update' }, 400);
+      return yield* Effect.fail(ValidationError.single('No valid fields to update'));
     }
 
     // Add user ID to the end of values array
     values.push(userId);
 
-    const query = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
-    await c.env.DB.prepare(query).bind(...values).run();
+    const queryStr = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+    yield* execute(queryStr, ...values);
     
-    return c.json({ success: true });
-  } catch (error) {
-    console.error('Error updating user:', error);
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-});
+    return { success: true };
+  })
+));
 
 // Delete user
-users.delete('/:userId', async (c) => {
-  const currentUser = c.get('user');
-  if (!currentUser.isAdmin) {
-    return c.json({ error: 'Forbidden' }, 403);
-  }
-
-  const userId = parseInt(c.req.param('userId'), 10);
-  
-  // Prevent deleting your own account
-  if (userId === currentUser.id) {
-    return c.json({ error: 'Cannot delete your own account' }, 400);
-  }
-  
-  try {
-    await c.env.DB.prepare('DELETE FROM users WHERE id = ?')
-      .bind(userId)
-      .run();
+users.delete('/:userId', authEffectHandler((c) =>
+  Effect.gen(function* () {
+    const currentUser = c.get('user');
     
-    return c.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    return c.json({ error: 'Internal server error' }, 500);
-  }
-});
+    if (!currentUser.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
+    }
+
+    const userId = parseInt(c.req.param('userId'), 10);
+    
+    // Prevent deleting your own account
+    if (userId === currentUser.id) {
+      return yield* Effect.fail(ValidationError.single('Cannot delete your own account'));
+    }
+    
+    yield* execute('DELETE FROM users WHERE id = ?', userId);
+    
+    return { success: true };
+  })
+));
 
 export default users;

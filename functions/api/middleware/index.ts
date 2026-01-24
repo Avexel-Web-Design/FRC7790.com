@@ -71,7 +71,7 @@ export const rateLimitMiddleware = createMiddleware(async (c, next) => {
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.substring('Bearer '.length);
     try {
-      const decoded: any = await verify(token, c.env.JWT_SECRET);
+      const decoded: Record<string, unknown> = await verify(token, c.env.JWT_SECRET, 'HS256');
       if (decoded && typeof decoded.id === 'number') {
         key = `user:${decoded.id}`;
       }

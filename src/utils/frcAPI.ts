@@ -1,333 +1,469 @@
 /**
- * FRC API Service - TypeScript implementation of The Blue Alliance API
+ * FRC API Service - TypeScript implementation with Effect
  * 
  * This service provides type-safe access to FRC competition data,
  * including team rankings, match results, and event information.
+ * 
+ * Uses Effect for:
+ * - Type-safe error handling
+ * - Automatic retry logic
+ * - Service composition
+ * 
+ * Maintains backward compatibility with Promise-based API for gradual migration.
  */
 
+import { Effect, pipe } from "effect"
+import { 
+  NetworkError, 
+  ApiError, 
+  RateLimitError,
+  fetchExternal,
+  httpRequest,
+  AuthToken,
+  SessionId
+} from "../lib/effect"
+
 // API Configuration - centralized in config.ts
-import { API_HOSTS, TBA_CONFIG } from '../config';
-import { Capacitor, CapacitorHttp } from '@capacitor/core';
+import { API_HOSTS, TBA_CONFIG } from '../config'
+import { Capacitor, CapacitorHttp } from '@capacitor/core'
 
 // Re-export for backward compatibility
-export const TBA_AUTH_KEY = TBA_CONFIG.AUTH_KEY;
-const TBA_BASE_URL = TBA_CONFIG.BASE_URL;
-const FRC_TEAM_KEY = "frc7790";
+export const TBA_AUTH_KEY = TBA_CONFIG.AUTH_KEY
+const TBA_BASE_URL = TBA_CONFIG.BASE_URL
+const FRC_TEAM_KEY = "frc7790"
 
 // Time offsets for different event types (in milliseconds)
-const OFFSET_MS = 37 * 3600 * 1000; // 37 hour offset for district events
-const MICMP_OFFSET_MS = 20.5 * 3600 * 1000; // Michigan championship
-const TXCMP_OFFSET_MS = 17.5 * 3600 * 1000; // Texas championship
-const NECMP_OFFSET_MS = (17 + (1/6)) * 3600 * 1000; // New England championship
+const OFFSET_MS = 37 * 3600 * 1000 // 37 hour offset for district events
+const MICMP_OFFSET_MS = 20.5 * 3600 * 1000 // Michigan championship
+const TXCMP_OFFSET_MS = 17.5 * 3600 * 1000 // Texas championship
+const NECMP_OFFSET_MS = (17 + (1/6)) * 3600 * 1000 // New England championship
 
-// Type definitions
+// =============================================================================
+// Type Definitions
+// =============================================================================
+
 export interface TeamRanking {
-  rank: number;
-  team_key: string;
-  wins: number;
-  losses: number;
-  ties: number;
+  rank: number
+  team_key: string
+  wins: number
+  losses: number
+  ties: number
   record?: {
-    wins: number;
-    losses: number;
-    ties: number;
-  };
+    wins: number
+    losses: number
+    ties: number
+  }
 }
 
 export interface Match {
-  key: string;
-  comp_level: string;
-  match_number: number;
-  set_number?: number;
-  predicted_time: number;
-  actual_time?: number;
+  key: string
+  comp_level: string
+  match_number: number
+  set_number?: number
+  predicted_time: number
+  actual_time?: number
   alliances: {
-    blue: { team_keys: string[]; score?: number };
-    red: { team_keys: string[]; score?: number };
-  };
+    blue: { team_keys: string[]; score?: number }
+    red: { team_keys: string[]; score?: number }
+  }
 }
 
 export interface Event {
-  key: string;
-  name: string;
-  start_date: string;
-  end_date: string;
-  event_type: number;
+  key: string
+  name: string
+  start_date: string
+  end_date: string
+  event_type: number
 }
 
 export interface CompetitionData {
-  ranking: number;
-  totalTeams: number;
-  wins: number;
-  losses: number;
-  ties: number;
-  nextMatch: Match | null;
-  eventName: string;
+  ranking: number
+  totalTeams: number
+  wins: number
+  losses: number
+  ties: number
+  nextMatch: Match | null
+  eventName: string
 }
 
-// Helper functions
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
 export function getOffsetForEvent(eventKey: string): number {
-  if (!eventKey) return OFFSET_MS;
+  if (!eventKey) return OFFSET_MS
   
-  const eventLower = eventKey.toLowerCase();
+  const eventLower = eventKey.toLowerCase()
   
-  if (eventLower.includes('micmp')) return MICMP_OFFSET_MS;
-  if (eventLower.includes('txcmp')) return TXCMP_OFFSET_MS;
-  if (eventLower.includes('necmp')) return NECMP_OFFSET_MS;
+  if (eventLower.includes('micmp')) return MICMP_OFFSET_MS
+  if (eventLower.includes('txcmp')) return TXCMP_OFFSET_MS
+  if (eventLower.includes('necmp')) return NECMP_OFFSET_MS
   
-  return OFFSET_MS;
+  return OFFSET_MS
 }
 
 export function formatRankSuffix(rank: number): string {
   // Handle special cases for 11, 12, 13
   if (rank % 100 >= 11 && rank % 100 <= 13) {
-    return "th";
+    return "th"
   }
   
   // Handle standard cases based on last digit
   switch (rank % 10) {
-    case 1: return "st";
-    case 2: return "nd";
-    case 3: return "rd";
-    default: return "th";
+    case 1: return "st"
+    case 2: return "nd"
+    case 3: return "rd"
+    default: return "th"
   }
 }
 
 export function formatEventDate(startDate: string, endDate?: string): string {
-  if (!startDate) return "Date TBD";
+  if (!startDate) return "Date TBD"
   
   try {
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-    const start = new Date(startDate).toLocaleDateString('en-US', options);
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' }
+    const start = new Date(startDate).toLocaleDateString('en-US', options)
     
-    if (!endDate) return start;
+    if (!endDate) return start
     
-    const end = new Date(endDate).toLocaleDateString('en-US', options);
-    return `${start} - ${end}`;
-  } catch (e) {
-    return startDate;
+    const end = new Date(endDate).toLocaleDateString('en-US', options)
+    return `${start} - ${end}`
+  } catch {
+    return startDate
   }
 }
 
-// Fetch OPR / DPR / CCWM for an event
+// =============================================================================
+// Effect-based TBA API Functions
+// =============================================================================
+
+/**
+ * Fetch from The Blue Alliance API using Effect
+ */
+const fetchTBA = <T>(endpoint: string): Effect.Effect<T, NetworkError | ApiError, never> =>
+  fetchExternal<T>(`${TBA_BASE_URL}${endpoint}`, {
+    'X-TBA-Auth-Key': TBA_AUTH_KEY
+  })
+
+/**
+ * Fetch OPR / DPR / CCWM for an event (Effect version)
+ */
+export const fetchEventOPRsEffect = (eventKey: string): Effect.Effect<{
+  oprs: Record<string, number>
+  dprs: Record<string, number>
+  ccwms: Record<string, number>
+}, NetworkError | ApiError, never> =>
+  pipe(
+    fetchTBA<{
+      oprs: Record<string, number>
+      dprs: Record<string, number>
+      ccwms: Record<string, number>
+    }>(`/event/${eventKey}/oprs`),
+    Effect.catchAll(() => 
+      Effect.succeed({ oprs: {}, dprs: {}, ccwms: {} })
+    )
+  )
+
+// Legacy Promise-based version for backward compatibility
 export async function fetchEventOPRs(eventKey: string): Promise<{
-  oprs: Record<string, number>;
-  dprs: Record<string, number>;
-  ccwms: Record<string, number>;
+  oprs: Record<string, number>
+  dprs: Record<string, number>
+  ccwms: Record<string, number>
 }> {
   try {
     const res = await fetch(`${TBA_BASE_URL}/event/${eventKey}/oprs`, {
       headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY },
-    });
-    if (!res.ok) throw new Error(`TBA error ${res.status}`);
-    return res.json();
+    })
+    if (!res.ok) throw new Error(`TBA error ${res.status}`)
+    return res.json()
   } catch (e) {
-    console.error('Error fetching OPRs', e);
-    return { oprs: {}, dprs: {}, ccwms: {} };
+    console.error('Error fetching OPRs', e)
+    return { oprs: {}, dprs: {}, ccwms: {} }
   }
 }
 
-// API Service Class
+// =============================================================================
+// FRC API Service Class (Backward Compatible)
+// =============================================================================
+
+/**
+ * FRC API Service with Effect integration
+ * 
+ * This class maintains the original Promise-based API for backward compatibility
+ * while internally using Effect for better error handling and composition.
+ */
 export class FRCAPIService {
-  private static instance: FRCAPIService;
+  private static instance: FRCAPIService
   
   public static getInstance(): FRCAPIService {
     if (!FRCAPIService.instance) {
-      FRCAPIService.instance = new FRCAPIService();
+      FRCAPIService.instance = new FRCAPIService()
     }
-    return FRCAPIService.instance;
+    return FRCAPIService.instance
   }
 
-  private async fetchAPI(endpoint: string): Promise<any> {
-    try {
-      const response = await fetch(`${TBA_BASE_URL}${endpoint}`, {
-        headers: {
-          "X-TBA-Auth-Key": TBA_AUTH_KEY,
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error(`Error fetching ${endpoint}:`, error);
-      throw error;
-    }
+  // ===========================================================================
+  // Internal Effect-based Methods
+  // ===========================================================================
+
+  /**
+   * Make a request to our backend API using Effect
+   */
+  private requestEffect<T = unknown>(
+    method: string,
+    path: string,
+    data?: unknown
+  ): Effect.Effect<T, NetworkError | ApiError | RateLimitError, AuthToken | SessionId> {
+    return pipe(
+      httpRequest<T>({ method, path, data }),
+      Effect.map(response => response.data)
+    )
   }
 
-  // Generic request method for our own backend API with retry logic
-  async request(method: string, path: string, data?: any): Promise<Response> {
+  // ===========================================================================
+  // Public API Methods (Promise-based for backward compatibility)
+  // ===========================================================================
+
+  /**
+   * Generic request method for our own backend API with retry logic
+   */
+  async request(method: string, path: string, data?: unknown): Promise<Response> {
     // Determine environment: when running under Capacitor (capacitor:// or file:),
     // use the production host fallback list. Otherwise, use relative '/api'.
-    // On Android with androidScheme: 'https', protocol is https://localhost,
-    // so rely on Capacitor.isNativePlatform() instead of window.location.protocol
-    const isNative = Capacitor.isNativePlatform();
+    const isNative = Capacitor.isNativePlatform()
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token')
     // Use a stable random session id per install/tab to help rate limiting bucket by session when unauthenticated
-    let sessionId = localStorage.getItem('session_id');
+    let sessionId = localStorage.getItem('session_id')
     if (!sessionId) {
       // Generate a cryptographically secure random string
-      const randomUint8 = window.crypto.getRandomValues(new Uint8Array(16));
-      const randomStr = Array.from(randomUint8).map(b => b.toString(36)).join('');
-      sessionId = randomStr + Date.now().toString(36);
-      try { localStorage.setItem('session_id', sessionId); } catch {}
+      const randomUint8 = window.crypto.getRandomValues(new Uint8Array(16))
+      const randomStr = Array.from(randomUint8).map(b => b.toString(36)).join('')
+      sessionId = randomStr + Date.now().toString(36)
+      try { localStorage.setItem('session_id', sessionId) } catch {}
     }
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
       'X-Session-ID': sessionId,
-    };
-
+    }
 
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers['Authorization'] = `Bearer ${token}`
     }
 
     const config: RequestInit = {
       method,
       headers,
-    };
-
-    if (data) {
-      config.body = JSON.stringify(data);
-      console.log('Request data:', data);
     }
 
-    
+    if (data) {
+      config.body = JSON.stringify(data)
+      console.log('Request data:', data)
+    }
+
     try {
-      const candidates = isNative ? API_HOSTS : [''];
-      let lastError: unknown = null;
-      let lastRes: Response | undefined;
+      const candidates = isNative ? API_HOSTS : ['']
+      let lastError: unknown = null
+      let lastRes: Response | undefined
       for (const host of candidates) {
         try {
-          const url = host ? `${host}/api${path}` : `/api${path}`;
-          let res: Response;
+          const url = host ? `${host}/api${path}` : `/api${path}`
+          let res: Response
           if (isNative) {
             // Use Capacitor's official HTTP to bypass WebView CORS
-            const reqOpts: any = {
+            const reqOpts: {
+              method: string
+              url: string
+              headers: Record<string, string>
+              responseType: 'json'
+              connectTimeout: number
+              readTimeout: number
+              data?: unknown
+            } = {
               method: (method || 'GET').toUpperCase(),
               url,
               headers: headers as Record<string, string>,
               responseType: 'json',
               connectTimeout: 10000,
               readTimeout: 15000,
-            };
-            if (data !== undefined && data !== null) {
-              reqOpts.data = data;
             }
-            const httpResp = await CapacitorHttp.request(reqOpts);
+            if (data !== undefined && data !== null) {
+              reqOpts.data = data
+            }
+            const httpResp = await CapacitorHttp.request(reqOpts)
             // Synthesize a Response object so callers can .ok/.json()
-            const body = httpResp.data != null ? JSON.stringify(httpResp.data) : undefined;
+            const body = httpResp.data != null ? JSON.stringify(httpResp.data) : undefined
             res = new Response(body, {
               status: httpResp.status || 0,
               headers: new Headers(httpResp.headers as Record<string, string>),
-            });
+            })
           } else {
-            res = await fetch(url, config);
+            res = await fetch(url, config)
           }
-          if (res.ok) return res;
+          if (res.ok) return res
           // If rate limited, respect Retry-After header once with jittered backoff
           if (res.status === 429) {
-            const retryAfter = Number(res.headers.get('Retry-After') || '0');
-            const waitMs = (isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1000) + Math.floor(Math.random()*250);
-            await new Promise(r => setTimeout(r, Math.min(waitMs, 3000)));
+            const retryAfter = Number(res.headers.get('Retry-After') || '0')
+            const waitMs = (isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1000) + Math.floor(Math.random()*250)
+            await new Promise(r => setTimeout(r, Math.min(waitMs, 3000)))
             // single retry
             if (isNative) {
-              const reqOpts: any = {
+              const reqOpts: {
+                method: string
+                url: string
+                headers: Record<string, string>
+                responseType: 'json'
+                connectTimeout: number
+                readTimeout: number
+                data?: unknown
+              } = {
                 method: (method || 'GET').toUpperCase(),
                 url,
                 headers: headers as Record<string, string>,
                 responseType: 'json',
                 connectTimeout: 10000,
                 readTimeout: 15000,
-              };
-              if (data !== undefined && data !== null) reqOpts.data = data;
-              const httpResp = await CapacitorHttp.request(reqOpts);
-              const body = httpResp.data != null ? JSON.stringify(httpResp.data) : undefined;
-              res = new Response(body, { status: httpResp.status || 0, headers: new Headers(httpResp.headers as Record<string, string>) });
+              }
+              if (data !== undefined && data !== null) reqOpts.data = data
+              const httpResp = await CapacitorHttp.request(reqOpts)
+              const body = httpResp.data != null ? JSON.stringify(httpResp.data) : undefined
+              res = new Response(body, { status: httpResp.status || 0, headers: new Headers(httpResp.headers as Record<string, string>) })
             } else {
-              res = await fetch(url, config);
+              res = await fetch(url, config)
             }
-            if (res.ok) return res;
+            if (res.ok) return res
           }
-          lastRes = res;
+          lastRes = res
         } catch (e) {
-          lastError = e;
+          lastError = e
         }
       }
-      if (lastRes) return lastRes;
-      throw lastError ?? new Error('API request failed');
+      if (lastRes) return lastRes
+      throw lastError ?? new Error('API request failed')
     } catch (error) {
-      console.error(`API request error for ${method} ${path}:`, error);
-      throw error;
+      console.error(`API request error for ${method} ${path}:`, error)
+      throw error
     }
   }
 
   async get(path: string): Promise<Response> {
-    return this.request('GET', path);
+    return this.request('GET', path)
   }
 
-  async post(path: string, data: any): Promise<Response> {
-    return this.request('POST', path, data);
+  async post(path: string, data: unknown): Promise<Response> {
+    return this.request('POST', path, data)
   }
 
-  async put(path: string, data: any): Promise<Response> {
-    return this.request('PUT', path, data);
+  async put(path: string, data: unknown): Promise<Response> {
+    return this.request('PUT', path, data)
   }
 
   async delete(path: string): Promise<Response> {
-    return this.request('DELETE', path);
+    return this.request('DELETE', path)
+  }
+
+  // ===========================================================================
+  // Effect-based API Methods (New)
+  // ===========================================================================
+
+  /**
+   * Get request using Effect (new API)
+   */
+  getEffect<T>(path: string): Effect.Effect<T, NetworkError | ApiError | RateLimitError, AuthToken | SessionId> {
+    return this.requestEffect<T>('GET', path)
+  }
+
+  /**
+   * Post request using Effect (new API)
+   */
+  postEffect<T>(path: string, data: unknown): Effect.Effect<T, NetworkError | ApiError | RateLimitError, AuthToken | SessionId> {
+    return this.requestEffect<T>('POST', path, data)
+  }
+
+  /**
+   * Put request using Effect (new API)
+   */
+  putEffect<T>(path: string, data: unknown): Effect.Effect<T, NetworkError | ApiError | RateLimitError, AuthToken | SessionId> {
+    return this.requestEffect<T>('PUT', path, data)
+  }
+
+  /**
+   * Delete request using Effect (new API)
+   */
+  deleteEffect<T>(path: string): Effect.Effect<T, NetworkError | ApiError | RateLimitError, AuthToken | SessionId> {
+    return this.requestEffect<T>('DELETE', path)
+  }
+
+  // ===========================================================================
+  // TBA API Methods
+  // ===========================================================================
+
+  private async fetchAPI(endpoint: string): Promise<unknown> {
+    try {
+      const response = await fetch(`${TBA_BASE_URL}${endpoint}`, {
+        headers: {
+          "X-TBA-Auth-Key": TBA_AUTH_KEY,
+        },
+      })
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`)
+      }
+      
+      return await response.json()
+    } catch (error) {
+      console.error(`Error fetching ${endpoint}:`, error)
+      throw error
+    }
   }
 
   async getTeamEvents(year: number = new Date().getFullYear()): Promise<Event[]> {
-    return this.fetchAPI(`/team/${FRC_TEAM_KEY}/events/${year}/simple`);
+    return this.fetchAPI(`/team/${FRC_TEAM_KEY}/events/${year}/simple`) as Promise<Event[]>
   }
 
   async getCurrentEvent(): Promise<Event | null> {
     try {
-      const events = await this.getTeamEvents();
-      const now = new Date();
+      const events = await this.getTeamEvents()
+      const now = new Date()
       
       // Find current or next upcoming event
       const currentOrUpcoming = events.filter((event) => {
-        const eventEnd = new Date(event.end_date);
-        eventEnd.setDate(eventEnd.getDate() + 1); // Include the end day
-        return eventEnd >= now;
-      });
+        const eventEnd = new Date(event.end_date)
+        eventEnd.setDate(eventEnd.getDate() + 1) // Include the end day
+        return eventEnd >= now
+      })
       
-      currentOrUpcoming.sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
-      return currentOrUpcoming[0] || null;
+      currentOrUpcoming.sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
+      return currentOrUpcoming[0] || null
     } catch (error) {
-      console.error("Error getting current event:", error);
-      return null;
+      console.error("Error getting current event:", error)
+      return null
     }
   }
 
   async getEventRankings(eventKey: string): Promise<TeamRanking[]> {
     try {
-      const response = await this.fetchAPI(`/event/${eventKey}/rankings`);
+      const response = await this.fetchAPI(`/event/${eventKey}/rankings`) as { rankings?: TeamRanking[] } | null
       // TBA returns null for events that don't exist or haven't started
       if (!response || !response.rankings) {
-        return [];
+        return []
       }
-      return response.rankings;
+      return response.rankings
     } catch (error) {
-      console.error("Error fetching rankings:", error);
-      return [];
+      console.error("Error fetching rankings:", error)
+      return []
     }
   }
 
   async getTeamRanking(eventKey: string): Promise<{ rank: number; totalTeams: number; wins: number; losses: number; ties: number } | null> {
     try {
-      const rankings = await this.getEventRankings(eventKey);
-      const teamRanking = rankings.find(r => r.team_key === FRC_TEAM_KEY);
+      const rankings = await this.getEventRankings(eventKey)
+      const teamRanking = rankings.find(r => r.team_key === FRC_TEAM_KEY)
       
-      if (!teamRanking) return null;
+      if (!teamRanking) return null
       
       // TBA stores record in a nested object, fallback to direct properties
-      const record = teamRanking.record || teamRanking;
+      const record = teamRanking.record || teamRanking
       
       return {
         rank: teamRanking.rank,
@@ -335,43 +471,44 @@ export class FRCAPIService {
         wins: record.wins || 0,
         losses: record.losses || 0,
         ties: record.ties || 0
-      };
+      }
     } catch (error) {
-      console.error("Error getting team ranking:", error);
-      return null;
+      console.error("Error getting team ranking:", error)
+      return null
     }
   }
 
   async getTeamMatches(eventKey: string): Promise<Match[]> {
     try {
       // Use full endpoint (not /simple) to get actual_time and predicted_time for sorting
-      return await this.fetchAPI(`/team/${FRC_TEAM_KEY}/event/${eventKey}/matches`);
+      return await this.fetchAPI(`/team/${FRC_TEAM_KEY}/event/${eventKey}/matches`) as Match[]
     } catch (error) {
-      console.error("Error fetching team matches:", error);
-      return [];
+      console.error("Error fetching team matches:", error)
+      return []
     }
   }
+
   async getNextMatch(eventKey: string): Promise<Match | null> {
     try {
-      const matches = await this.getTeamMatches(eventKey);
+      const matches = await this.getTeamMatches(eventKey)
       
       // Find unplayed matches
-      const unplayed = matches.filter(match => !match.actual_time);
+      const unplayed = matches.filter(match => !match.actual_time)
       
-      if (unplayed.length === 0) return null;
+      if (unplayed.length === 0) return null
       
       // Sort by predicted time and return the earliest
-      unplayed.sort((a, b) => (a.predicted_time || 0) - (b.predicted_time || 0));
-      return unplayed[0];
+      unplayed.sort((a, b) => (a.predicted_time || 0) - (b.predicted_time || 0))
+      return unplayed[0]
     } catch (error) {
-      console.error("Error getting next match:", error);
-      return null;
+      console.error("Error getting next match:", error)
+      return null
     }
   }
 
   async getCompetitionData(): Promise<CompetitionData | null> {
     try {
-      const currentEvent = await this.getCurrentEvent();
+      const currentEvent = await this.getCurrentEvent()
       if (!currentEvent) {
         return {
           ranking: 0,
@@ -381,13 +518,13 @@ export class FRCAPIService {
           ties: 0,
           nextMatch: null,
           eventName: "No active event"
-        };
+        }
       }
 
       const [ranking, nextMatch] = await Promise.all([
         this.getTeamRanking(currentEvent.key),
         this.getNextMatch(currentEvent.key)
-      ]);
+      ])
 
       return {
         ranking: ranking?.rank || 0,
@@ -397,22 +534,22 @@ export class FRCAPIService {
         ties: ranking?.ties || 0,
         nextMatch,
         eventName: currentEvent.name
-      };
+      }
     } catch (error) {
-      console.error("Error getting competition data:", error);
-      return null;
+      console.error("Error getting competition data:", error)
+      return null
     }
   }
 
   formatMatchTime(match: Match): string {
-    if (!match.predicted_time) return "TBD";
+    if (!match.predicted_time) return "TBD"
     
-    const matchTime = new Date(match.predicted_time * 1000);
+    const matchTime = new Date(match.predicted_time * 1000)
     return matchTime.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit',
       hour12: true 
-    });
+    })
   }
 
   formatMatchName(match: Match): string {
@@ -422,95 +559,129 @@ export class FRCAPIService {
       'qf': 'QF', 
       'sf': 'SF',
       'f': 'F'
-    };
+    }
     
-    const type = typeMap[match.comp_level] || match.comp_level.toUpperCase();
+    const type = typeMap[match.comp_level] || match.comp_level.toUpperCase()
     
     // For 2025+ double-elimination format:
     // - Quals: Q1, Q2, etc. (match_number)
     // - SF: SF1, SF5, SF12, etc. (set_number represents bracket position)
     // - Finals: F1, F2, F3, F4 (match_number, since all are in set 1)
     if (match.comp_level === 'qm' || match.comp_level === 'f') {
-      return `${type}${match.match_number}`;
+      return `${type}${match.match_number}`
     } else if (match.set_number) {
       // Double-elimination format: SF1, SF5, SF12, QF1, etc.
-      return `${type}${match.set_number}`;
+      return `${type}${match.set_number}`
     } else {
       // Fallback for old format or missing set_number
-      return `${type}${match.match_number}`;
+      return `${type}${match.match_number}`
     }
   }
 
   getAllianceTeams(match: Match, alliance: 'blue' | 'red'): string {
     return match.alliances[alliance].team_keys
       .map(key => key.replace('frc', ''))
-      .join(', ');
+      .join(', ')
   }
 
-  async fetchEventData(eventCode: string): Promise<any> {
+  async fetchEventData(eventCode: string): Promise<{
+    key: string;
+    name: string;
+    event_code: string;
+    event_type: number;
+    start_date: string;
+    end_date: string;
+    year: number;
+    city?: string;
+    state_prov?: string;
+    country?: string;
+    [key: string]: unknown;
+  }> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}`, {
         headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-      });
+      })
       
       if (!response.ok) {
-        throw new Error(`Error fetching event: ${response.status}`);
+        throw new Error(`Error fetching event: ${response.status}`)
       }
       
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error("Error fetching event data:", error);
-      throw error;
+      console.error("Error fetching event data:", error)
+      throw error
     }
   }
 
-  async fetchEventTeams(eventCode: string): Promise<any[]> {
+  async fetchEventTeams(eventCode: string): Promise<Array<{ key: string; team_number: number; nickname?: string }>> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/teams`, {
         headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-      });
+      })
       
       if (!response.ok) {
-        throw new Error(`Error fetching event teams: ${response.status}`);
+        throw new Error(`Error fetching event teams: ${response.status}`)
       }
       
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error("Error fetching event teams:", error);
-      throw error;
+      console.error("Error fetching event teams:", error)
+      throw error
     }
   }
 
-  async fetchEventRankings(eventCode: string): Promise<any[]> {
+  async fetchEventRankings(eventCode: string): Promise<Array<{
+    rank: number
+    team_key: string
+    wins: number
+    losses: number
+    ties: number
+    ranking_points: number
+    qual_average: number
+    record: { wins: number; losses: number; ties: number }
+    sort_orders: number[]
+    matches_played: number
+    dq: number
+    extra_stats: number[]
+    team_name: string | null
+  }>> {
     try {
-      console.log(`Fetching rankings for event: ${eventCode}`);
+      console.log(`Fetching rankings for event: ${eventCode}`)
       const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/rankings`, {
         headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-      });
+      })
       
       if (!response.ok) {
-        throw new Error(`Error fetching event rankings: ${response.status}`);
+        throw new Error(`Error fetching event rankings: ${response.status}`)
       }
       
-      const data = await response.json();
-      console.log('Raw rankings API response:', data);
+      const data = await response.json()
+      console.log('Raw rankings API response:', data)
       
       // The API returns { rankings: [...], sort_order_info: [...] }
       // We need to process the rankings array and map the data correctly
       if (data.rankings && Array.isArray(data.rankings)) {
         // Fetch team data to get team names
-        let teamsData: any[] = [];
+        let teamsData: Array<{ key: string; nickname?: string }> = []
         try {
-          teamsData = await this.fetchEventTeams(eventCode);
+          teamsData = await this.fetchEventTeams(eventCode)
         } catch (error) {
-          console.warn('Could not fetch team data for rankings:', error);
+          console.warn('Could not fetch team data for rankings:', error)
         }
         
-        const processedRankings = data.rankings.map((ranking: any) => {
-          console.log('Processing ranking:', ranking);
+        const processedRankings = data.rankings.map((ranking: {
+          rank: number
+          team_key: string
+          record?: { wins: number; losses: number; ties: number }
+          sort_orders?: number[]
+          matches_played?: number
+          dq?: number
+          extra_stats?: number[]
+        }) => {
+          console.log('Processing ranking:', ranking)
           
           // Find team data for this ranking
-          const teamData = teamsData.find(team => team.key === ranking.team_key);
+          const teamData = teamsData.find(team => team.key === ranking.team_key)
           
           return {
             rank: ranking.rank,
@@ -526,19 +697,19 @@ export class FRCAPIService {
             dq: ranking.dq || 0,
             extra_stats: ranking.extra_stats || [],
             team_name: teamData?.nickname || null
-          };
-        });
+          }
+        })
         
-        console.log('Processed rankings:', processedRankings);
-        return processedRankings;
+        console.log('Processed rankings:', processedRankings)
+        return processedRankings
       }
       
       // If no rankings data, return empty array
-      console.log('No rankings data found in response');
-      return [];
+      console.log('No rankings data found in response')
+      return []
     } catch (error) {
-      console.error("Error fetching event rankings:", error);
-      throw error;
+      console.error("Error fetching event rankings:", error)
+      throw error
     }
   }
 
@@ -547,37 +718,61 @@ export class FRCAPIService {
    * @param eventCode The event key, e.g. "2024mimid"
    * @returns Array of alliance objects in seed order (element 0 = #1 alliance)
    */
-  async fetchEventAlliances(eventCode: string): Promise<any[]> {
+  async fetchEventAlliances(eventCode: string): Promise<Array<{
+    name?: string;
+    picks: string[];
+    status?: {
+      playoff_average?: number;
+      level?: string;
+      record?: { wins: number; losses: number; ties: number };
+      current_level_record?: { wins: number; losses: number; ties: number };
+    };
+  }>> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/alliances`, {
         headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-      });
+      })
 
       if (!response.ok) {
-        throw new Error(`Error fetching event alliances: ${response.status}`);
+        throw new Error(`Error fetching event alliances: ${response.status}`)
       }
 
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error("Error fetching event alliances:", error);
-      throw error;
+      console.error("Error fetching event alliances:", error)
+      throw error
     }
   }
 
-  async fetchEventMatches(eventCode: string): Promise<any[]> {
+  async fetchEventMatches(eventCode: string): Promise<Array<{
+    key: string;
+    comp_level: string;
+    set_number: number;
+    match_number: number;
+    alliances: {
+      red: { team_keys: string[]; score: number };
+      blue: { team_keys: string[]; score: number };
+    };
+    winning_alliance?: string;
+    time?: number;
+    actual_time?: number;
+    predicted_time?: number;
+    post_result_time?: number;
+    score_breakdown?: unknown;
+  }>> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/matches`, {
         headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-      });
+      })
       
       if (!response.ok) {
-        throw new Error(`Error fetching event matches: ${response.status}`);
+        throw new Error(`Error fetching event matches: ${response.status}`)
       }
       
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error("Error fetching event matches:", error);
-      throw error;
+      console.error("Error fetching event matches:", error)
+      throw error
     }
   }
 
@@ -587,18 +782,27 @@ export class FRCAPIService {
    * Fetch the district rankings list.
    * @param districtKey Full district key, e.g. "2025fim"
    */
-  async fetchDistrictRankings(districtKey: string): Promise<any[]> {
+  async fetchDistrictRankings(districtKey: string): Promise<Array<{
+    rank: number;
+    team_key: string;
+    point_total: number;
+    event_points?: Array<{
+      event_key: string;
+      district_cmp: boolean;
+      total: number;
+    }>;
+  }>> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/district/${districtKey}/rankings`, {
         headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY },
-      });
+      })
       if (!response.ok) {
-        throw new Error(`Error fetching district rankings: ${response.status}`);
+        throw new Error(`Error fetching district rankings: ${response.status}`)
       }
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error("Error fetching district rankings:", error);
-      throw error;
+      console.error("Error fetching district rankings:", error)
+      throw error
     }
   }
 
@@ -606,18 +810,27 @@ export class FRCAPIService {
    * Fetch all events in a district.
    * @param districtKey Full district key, e.g. "2025fim"
    */
-  async fetchDistrictEvents(districtKey: string): Promise<any[]> {
+  async fetchDistrictEvents(districtKey: string): Promise<Array<{
+    key: string;
+    name: string;
+    start_date: string;
+    end_date: string;
+    event_type: number;
+    city?: string;
+    state_prov?: string;
+    country?: string;
+  }>> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/district/${districtKey}/events`, {
         headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY },
-      });
+      })
       if (!response.ok) {
-        throw new Error(`Error fetching district events: ${response.status}`);
+        throw new Error(`Error fetching district events: ${response.status}`)
       }
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error("Error fetching district events:", error);
-      throw error;
+      console.error("Error fetching district events:", error)
+      throw error
     }
   }
 
@@ -625,18 +838,23 @@ export class FRCAPIService {
    * Fetch regional advancement rankings for a given season year.
    * @param year Four-digit season year, e.g. "2025"
    */
-  async fetchRegionalRankings(year: string): Promise<any[]> {
+  async fetchRegionalRankings(year: string): Promise<Array<{
+    rank: number;
+    team_key: string;
+    point_total?: number;
+    [key: string]: unknown;
+  }>> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/regional_advancement/${year}/rankings`, {
         headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-      });
+      })
       if (!response.ok) {
-        throw new Error(`Error fetching regional rankings: ${response.status}`);
+        throw new Error(`Error fetching regional rankings: ${response.status}`)
       }
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error("Error fetching regional rankings:", error);
-      throw error;
+      console.error("Error fetching regional rankings:", error)
+      throw error
     }
   }
 
@@ -644,92 +862,103 @@ export class FRCAPIService {
    * Fetch all regional events for a season year.
    * @param year Four-digit year
    */
-  async fetchSeasonRegionalEvents(year: string): Promise<any[]> {
+  async fetchSeasonRegionalEvents(year: string): Promise<Array<{ event_type: number; [key: string]: unknown }>> {
     try {
-      const events: any[] = await this.fetchAPI(`/events/${year}/simple`);
+      const events = await this.fetchAPI(`/events/${year}/simple`) as Array<{ event_type: number; [key: string]: unknown }>
       // event_type 0 indicates Regional, 99 preseason handled
-      return events.filter(e => e.event_type === 0);
+      return events.filter(e => e.event_type === 0)
     } catch (error) {
-      console.error("Error fetching regional events:", error);
-      throw error;
+      console.error("Error fetching regional events:", error)
+      throw error
     }
   }
 
   /* ------------------------- Event-specific endpoints ---------------------- */
-  async fetchEventAwards(eventCode: string): Promise<any[]> {
+  async fetchEventAwards(eventCode: string): Promise<Array<{
+    name: string;
+    award_type: number;
+    event_key: string;
+    recipient_list: Array<{
+      team_key?: string;
+      awardee?: string;
+    }>;
+    year: number;
+  }>> {
     try {
       const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/awards`, {
         headers: { "X-TBA-Auth-Key": TBA_AUTH_KEY }
-      });
+      })
       
       if (!response.ok) {
-        throw new Error(`Error fetching event awards: ${response.status}`);
+        throw new Error(`Error fetching event awards: ${response.status}`)
       }
       
-      return await response.json();
+      return await response.json()
     } catch (error) {
-      console.error("Error fetching event awards:", error);
-      throw error;
+      console.error("Error fetching event awards:", error)
+      throw error
     }
   }
 
   async fetchStatboticsEPA(eventCode: string, progressCallback?: (epaMap: { [teamKey: string]: number }) => void): Promise<{ [teamKey: string]: number }> {
     try {
-      console.log('Fetching EPA data from Statbotics for event:', eventCode);
+      console.log('Fetching EPA data from Statbotics for event:', eventCode)
       
       // First get the teams at this event from our existing TBA data
-      const eventTeams = await this.fetchEventTeams(eventCode);
-      console.log(`Found ${eventTeams.length} teams at event`);
+      const eventTeams = await this.fetchEventTeams(eventCode)
+      console.log(`Found ${eventTeams.length} teams at event`)
       
       if (eventTeams.length === 0) {
-        console.log('No teams found for event, cannot fetch EPA data');
-        return {};
+        console.log('No teams found for event, cannot fetch EPA data')
+        return {}
       }
       
       // Use Statbotics v3 API - /team_event/{teamNumber}/{eventKey}
-      const STATBOTICS_BASE_URL = 'https://api.statbotics.io/v3';
-      const epaMap: { [teamKey: string]: number } = {};
+      const STATBOTICS_BASE_URL = 'https://api.statbotics.io/v3'
+      const epaMap: { [teamKey: string]: number } = {}
       
       // Process all teams concurrently for maximum speed
       const allPromises = eventTeams.map(async (team) => {
         try {
-          const teamNumber = team.team_number;
-          const url = `${STATBOTICS_BASE_URL}/team_event/${teamNumber}/${eventCode}`;
+          const teamNumber = team.team_number
+          const url = `${STATBOTICS_BASE_URL}/team_event/${teamNumber}/${eventCode}`
           
-          const response = await fetch(url);
+          const response = await fetch(url)
           
           if (response.ok) {
-            const teamEventData = await response.json();
+            const teamEventData = await response.json() as {
+              epa?: { total_points?: { mean?: number } }
+            }
             
             // Extract EPA from the response
             if (teamEventData && teamEventData.epa && teamEventData.epa.total_points) {
-              const epaValue = teamEventData.epa.total_points.mean;
+              const epaValue = teamEventData.epa.total_points.mean
               if (epaValue !== null && epaValue !== undefined) {
-                epaMap[`frc${teamNumber}`] = epaValue;
+                epaMap[`frc${teamNumber}`] = epaValue
                 // Call progress callback if provided for incremental updates
                 if (progressCallback) {
-                  progressCallback({ ...epaMap });
+                  progressCallback({ ...epaMap })
                 }
               }
             }
           }
-        } catch (error) {
+        } catch {
           // Silently fail for individual teams to not slow down the rest
         }
-      });
+      })
       
       // Wait for all requests to complete
-      await Promise.all(allPromises);
+      await Promise.all(allPromises)
       
-      console.log(`Successfully fetched EPA for ${Object.keys(epaMap).length}/${eventTeams.length} teams`);
-      return epaMap;
+      console.log(`Successfully fetched EPA for ${Object.keys(epaMap).length}/${eventTeams.length} teams`)
+      return epaMap
       
     } catch (error) {
-      console.error("Error fetching EPA data:", error);
-      return {};
+      console.error("Error fetching EPA data:", error)
+      return {}
     }
   }
 }
 
 // Export singleton instance
-export const frcAPI = FRCAPIService.getInstance();
+export const frcAPI = FRCAPIService.getInstance()

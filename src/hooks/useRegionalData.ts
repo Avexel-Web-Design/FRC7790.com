@@ -41,8 +41,8 @@ export function useRegionalData(year: string) {
             frcAPI.fetchSeasonRegionalEvents(year)
           ])
         : [[], await frcAPI.fetchSeasonRegionalEvents(year)];
-      setRankings(rankData);
-      setEvents(eventData);
+      setRankings(rankData as RegionalRanking[]);
+      setEvents(eventData as unknown as RegionalEvent[]);
     } catch (err) {
       console.error('Error fetching regional data', err);
       setError(err instanceof Error ? err.message : 'Failed to load regional rankings');

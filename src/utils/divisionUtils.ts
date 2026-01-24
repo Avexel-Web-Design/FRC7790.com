@@ -52,12 +52,13 @@ export async function getDivisionMapping(eventKey: string): Promise<DivisionUtil
     
     // First, check if this is a championship event by fetching event details
     const eventData = await frcAPI.fetchEventData(eventKey);
-    const hasDivisions = eventData.division_keys && eventData.division_keys.length > 0;
+    const divisionKeys = (eventData as { division_keys?: string[] }).division_keys;
+    const hasDivisions = divisionKeys && divisionKeys.length > 0;
     
     // Fetch alliances for the current event
     const alliances = await frcAPI.fetchEventAlliances(eventKey);
     const allianceMapping: Record<string, number> = {};
-    alliances.forEach((alliance: any, index: number) => {
+    alliances.forEach((alliance: { picks: string[] }, index: number) => {
       const allianceNumber = index + 1;
       alliance.picks.forEach((teamKey: string) => {
         allianceMapping[teamKey] = allianceNumber;
@@ -67,29 +68,29 @@ export async function getDivisionMapping(eventKey: string): Promise<DivisionUtil
     const divisionMapping: DivisionMapping = {};
 
     // If this is a championship event, map alliance numbers to division names
-    if (hasDivisions) {
+    if (hasDivisions && divisionKeys) {
       // For each division, find which alliance actually won by looking at matches
-      for (let i = 0; i < eventData.division_keys.length; i++) {
-        const divisionKey = eventData.division_keys[i];
+      for (let i = 0; i < divisionKeys.length; i++) {
+        const divisionKey = divisionKeys[i];
         try {
           const divisionData = await frcAPI.fetchEventData(divisionKey);
           const divisionMatches = await frcAPI.fetchEventMatches(divisionKey);
           
           // Find the finals matches to determine the winner
           const finalsMatches = divisionMatches
-            .filter((match: any) => match.comp_level === 'f')
-            .sort((a: any, b: any) => a.match_number - b.match_number);
+            .filter((match) => match.comp_level === 'f')
+            .sort((a, b) => a.match_number - b.match_number);
           
           if (finalsMatches.length > 0) {
             // Find the last completed finals match to determine the winner
-            const completedFinalsMatches = finalsMatches.filter((match: any) => match.winning_alliance);
+            const completedFinalsMatches = finalsMatches.filter((match) => match.winning_alliance);
             
             if (completedFinalsMatches.length > 0) {
               const lastMatch = completedFinalsMatches[completedFinalsMatches.length - 1];
               const winningAlliance = lastMatch.winning_alliance;
               
               // Find which teams were on the winning alliance
-              if (winningAlliance && lastMatch?.alliances?.[winningAlliance]?.team_keys) {
+              if (winningAlliance && (winningAlliance === 'red' || winningAlliance === 'blue') && lastMatch?.alliances?.[winningAlliance]?.team_keys) {
                 const winningTeams = lastMatch.alliances[winningAlliance].team_keys;
                 
                 if (winningTeams.length > 0) {
@@ -99,7 +100,7 @@ export async function getDivisionMapping(eventKey: string): Promise<DivisionUtil
                   
                   if (championshipAllianceNumber) {
                     const processedName = processDivisionName(
-                      divisionData.short_name || `Division ${i + 1}`, 
+                      (divisionData as { short_name?: string }).short_name || `Division ${i + 1}`, 
                       eventKey
                     );
                     divisionMapping[championshipAllianceNumber] = processedName;
@@ -121,7 +122,7 @@ export async function getDivisionMapping(eventKey: string): Promise<DivisionUtil
     }
 
     return {
-      isChampionshipEvent: hasDivisions,
+      isChampionshipEvent: hasDivisions ?? false,
       divisionMapping,
       allianceMapping
     };

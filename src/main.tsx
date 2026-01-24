@@ -14,7 +14,7 @@ if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
     localStorage.removeItem('apiDebug');
   } catch {}
   const originalFetch = window.fetch.bind(window)
-  window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+  const customFetch = (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     try {
       if (typeof input === 'string') {
         if (input.startsWith('/api')) {
@@ -30,7 +30,7 @@ if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
             }
             return lastRes ?? originalFetch(`https://www.frc7790.com${input}`, init)
           }
-          return attempt() as unknown as Promise<Response>
+          return attempt()
         }
       } else if (input instanceof Request) {
         const url = input.url
@@ -48,12 +48,15 @@ if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
             const req = new Request(`https://www.frc7790.com${url}`, input)
             return lastRes ?? originalFetch(req, init)
           }
-          return attempt() as unknown as Promise<Response>
+          return attempt()
         }
       }
     } catch {}
-    return originalFetch(input as any, init)
+    return originalFetch(input, init)
   }
+  // Preserve any extra properties on the original fetch
+  Object.assign(customFetch, originalFetch)
+  window.fetch = customFetch as typeof fetch
 }
 
 createRoot(document.getElementById('root')!).render(
