@@ -7,7 +7,7 @@ export default function ScheduleHero() {
             className="text-white inline-block animate__animated animate__fadeInUp"
             style={{ animationDelay: '0.2s' }}
           >
-            2025
+            2026
           </span>
           {' '}
           <span
@@ -21,7 +21,7 @@ export default function ScheduleHero() {
           className="text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp"
           style={{ animationDelay: '0.6s' }}
         >
-          Join us at these exciting FRC events throughout the 2025 season
+          Join us at these exciting FRC events throughout the 2026 season
         </p>
       </div>
     </section>
