@@ -59,7 +59,7 @@
     "wrangler": "^4.22.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.4.3",
+    "@capacitor/cli": "^8.0.2",
     "@eslint/js": "^9.25.0",
     "@tsconfig/strictest": "^2.0.5",
     "@types/node": "^22.16.0",
