@@ -28,14 +28,26 @@ export default function SearchResults() {
 
 
 
-// Simple Levenshtein distance implementation
+  const normalizeText = (value: string): string =>
+    value
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+      .replace(/\s+/g, ' ');
+
+  const tokenize = (value: string): string[] => {
+    const normalized = normalizeText(value);
+    return normalized ? normalized.split(' ') : [];
+  };
+
   const levenshtein = (a: string, b: string): number => {
+    if (!a || !b) return Math.max(a.length, b.length);
     const matrix: number[][] = Array.from({ length: a.length + 1 }, () => []);
     for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
     for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
     for (let i = 1; i <= a.length; i++) {
       for (let j = 1; j <= b.length; j++) {
-        const cost = a[i - 1].toLowerCase() === b[j - 1].toLowerCase() ? 0 : 1;
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
         matrix[i][j] = Math.min(
           matrix[i - 1][j] + 1,
           matrix[i][j - 1] + 1,
@@ -44,6 +56,29 @@ export default function SearchResults() {
       }
     }
     return matrix[a.length][b.length];
+  };
+
+  const getTokenOverlapScore = (queryTokens: string[], targetTokens: string[]): number => {
+    if (queryTokens.length === 0 || targetTokens.length === 0) return 1;
+    const targetSet = new Set(targetTokens);
+    const matched = queryTokens.filter((token) => targetSet.has(token)).length;
+    return 1 - matched / queryTokens.length;
+  };
+
+  const computeFieldScore = (query: string, target: string): number => {
+    if (!target) return 1;
+    const normalizedTarget = normalizeText(target);
+    if (!normalizedTarget) return 1;
+    if (normalizedTarget.includes(query)) return 0;
+    const queryTokens = tokenize(query);
+    const targetTokens = normalizedTarget.split(' ');
+    const tokenPenalty = getTokenOverlapScore(queryTokens, targetTokens);
+    const lengthDiff = Math.abs(query.length - normalizedTarget.length);
+    if (lengthDiff > Math.max(query.length, normalizedTarget.length) * 0.8 && tokenPenalty > 0.6) {
+      return 1;
+    }
+    const dist = levenshtein(query, normalizedTarget) / Math.max(query.length, normalizedTarget.length);
+    return Math.min(1, Math.min(dist, tokenPenalty + 0.15));
   };
 
   // Filter and search whenever query changes
@@ -71,48 +106,34 @@ export default function SearchResults() {
       setLoading(true);
       
       try {
-        const normalizedQuery = query.toLowerCase();
+        const normalizedQuery = normalizeText(query);
+        const queryTokens = tokenize(query);
         const currentYear = new Date().getFullYear();
         
         // Check if query contains a year (4 consecutive digits)
         const yearInQuery = /\d{4}/.test(query);
-
-        const computeScore = (q: string, target: string): number => {
-          const lowerTarget = target.toLowerCase();
-          
-          // Fast path: exact substring match
-          if (lowerTarget.includes(q)) return 0;
-          
-          // Fast reject: if lengths are too different, skip expensive computation
-          const lengthDiff = Math.abs(q.length - lowerTarget.length);
-          if (lengthDiff > Math.max(q.length, lowerTarget.length) * 0.8) {
-            return 1; // Score of 1 = will be filtered out
-          }
-          
-          const dist = levenshtein(q, lowerTarget);
-          return dist / Math.max(q.length, lowerTarget.length);
-        };
+        const yearTokenMatch = query.match(/\b\d{4}\b/);
+        const queryYear = yearTokenMatch ? parseInt(yearTokenMatch[0], 10) : undefined;
 
         const scoredTeams = allTeams
           .map((t: any) => {
             const teamNumberStr = `${t.team_number}`;
             const nickname = t.nickname || '';
-            
-            // Quick substring check before expensive computation
-            if (teamNumberStr.includes(normalizedQuery) || nickname.toLowerCase().includes(normalizedQuery)) {
-              return {
-                team_number: t.team_number,
-                nickname: nickname,
-                score: 0 // Perfect match
-              };
-            }
-            
-            const numberScore = computeScore(normalizedQuery, teamNumberStr);
-            const nicknameScore = computeScore(normalizedQuery, nickname);
+            const name = t.name || '';
+            const city = t.city || '';
+            const state = t.state_prov || '';
+            const country = t.country || '';
+            const location = [city, state, country].filter(Boolean).join(' ');
+
+            const numberScore = computeFieldScore(normalizedQuery, teamNumberStr);
+            const nicknameScore = computeFieldScore(normalizedQuery, nickname);
+            const nameScore = computeFieldScore(normalizedQuery, name);
+            const locationScore = computeFieldScore(normalizedQuery, location);
+            const tokenMatchBonus = queryTokens.some((token) => teamNumberStr.includes(token)) ? 0 : 0.08;
             return {
               team_number: t.team_number,
               nickname: nickname,
-              score: Math.min(numberScore, nicknameScore)
+              score: Math.min(numberScore, nicknameScore, nameScore, locationScore) + tokenMatchBonus
             };
           })
           .filter((t) => t.score < 0.8); // Filter early to reduce sort size
@@ -121,12 +142,31 @@ export default function SearchResults() {
           .map((e: any) => {
             // Extract year from event key (format: 2025miket)
             const eventYear = parseInt(e.key.substring(0, 4));
-            
+            const eventCode = e.key.substring(4);
+            const keyMatch = normalizedQuery && normalizeText(e.key).includes(normalizedQuery);
+            const codeMatch = normalizedQuery && normalizeText(eventCode).includes(normalizedQuery);
+            const yearMatch = queryYear ? queryYear === eventYear : false;
+            const name = e.name || '';
+            const shortName = e.short_name || '';
+            const city = e.city || '';
+            const state = e.state_prov || '';
+            const country = e.country || '';
+            const location = [city, state, country].filter(Boolean).join(' ');
+
+            const nameScore = computeFieldScore(normalizedQuery, name);
+            const shortNameScore = computeFieldScore(normalizedQuery, shortName);
+            const locationScore = computeFieldScore(normalizedQuery, location);
+            const codeScore = computeFieldScore(normalizedQuery, eventCode);
+            const keyScore = computeFieldScore(normalizedQuery, e.key || '');
+            let score = Math.min(nameScore, shortNameScore, locationScore, codeScore, keyScore);
+            if (keyMatch || codeMatch) score = Math.min(score, 0.01);
+            if (yearMatch) score = Math.max(0, score - 0.05);
+            if (yearInQuery && queryYear && queryYear !== eventYear) score += 0.25;
             return {
               key: e.key,
               name: e.name,
               year: eventYear,
-              score: computeScore(normalizedQuery, e.name)
+              score: Math.min(1, score)
             };
           })
           .filter((e) => e.score < 0.8); // Filter early
@@ -159,8 +199,8 @@ export default function SearchResults() {
         });
         
 
-        setTeams(filteredTeams.slice(0, 15));
-        setEvents(filteredEvents.slice(0, 15));
+        setTeams(filteredTeams);
+        setEvents(filteredEvents);
         
 
         // Keep current tab if it still has results; otherwise switch to the other tab
