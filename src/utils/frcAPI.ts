@@ -873,6 +873,56 @@ export class FRCAPIService {
     }
   }
 
+  async fetchSeasonEvents(year: string): Promise<Array<{
+    key: string;
+    name: string;
+    start_date: string;
+    end_date: string;
+    event_type: number;
+    event_type_string?: string;
+    week?: number | null;
+    city?: string;
+    state_prov?: string;
+    country?: string;
+  }>> {
+    try {
+      return await this.fetchAPI(`/events/${year}`) as Array<{
+        key: string;
+        name: string;
+        start_date: string;
+        end_date: string;
+        event_type: number;
+        event_type_string?: string;
+        week?: number | null;
+        city?: string;
+        state_prov?: string;
+        country?: string;
+      }>
+    } catch (error) {
+      console.error("Error fetching season events:", error)
+      throw error
+    }
+  }
+
+  async fetchDistricts(year: string): Promise<Array<{
+    key: string;
+    abbreviation: string;
+    display_name: string;
+    year: number;
+  }>> {
+    try {
+      return await this.fetchAPI(`/districts/${year}`) as Array<{
+        key: string;
+        abbreviation: string;
+        display_name: string;
+        year: number;
+      }>
+    } catch (error) {
+      console.error("Error fetching districts:", error)
+      throw error
+    }
+  }
+
   /* ------------------------- Event-specific endpoints ---------------------- */
   async fetchEventAwards(eventCode: string): Promise<Array<{
     name: string;

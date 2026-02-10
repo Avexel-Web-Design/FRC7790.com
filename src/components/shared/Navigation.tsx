@@ -16,6 +16,7 @@ const navigationItems: NavigationItem[] = [
   { name: 'Sponsors', href: '/sponsors' },
   { name: 'Schedule', href: '/schedule' },
   { name: 'Scouting', href: '/scouting' },
+  { name: 'Atlas', href: '/atlas' },
 ];
 
 export default function Navigation() {
@@ -223,29 +224,7 @@ export default function Navigation() {
                 </Link>
               </li>
             </>
-          ) : (
-            <li>
-              <Link
-                to="/login"
-                className="transition-all duration-300 hover:scale-110 inline-block"
-                style={{
-                  color: location.pathname === '/login' ? accentColor : 'white'
-                }}
-                onMouseEnter={(e) => {
-                  if (location.pathname !== '/login') {
-                    e.currentTarget.style.color = accentColor;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (location.pathname !== '/login') {
-                    e.currentTarget.style.color = 'white';
-                  }
-                }}
-              >
-                Login
-              </Link>
-            </li>
-          )}
+          ) : null}
         </ul>
 
         {/* Mobile Menu Button */}
@@ -346,28 +325,7 @@ export default function Navigation() {
                   {user?.userType === 'public' ? 'Settings' : 'Dashboard'}
                 </Link>
               </>
-            ) : (
-              <Link
-                to="/login"
-                className="block py-2 text-lg transition-colors"
-                style={{
-                  color: location.pathname === '/login' ? accentColor : 'white'
-                }}
-                onMouseEnter={(e) => {
-                  if (location.pathname !== '/login') {
-                    e.currentTarget.style.color = accentColor;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (location.pathname !== '/login') {
-                    e.currentTarget.style.color = 'white';
-                  }
-                }}
-                onClick={() => setIsOpen(false)}
-              >
-                Login
-              </Link>
-            )}
+            ) : null}
           </div>
         </div>
       )}

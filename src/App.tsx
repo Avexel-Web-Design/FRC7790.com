@@ -14,6 +14,7 @@ import Match from './components/pages/Match';
 import District from './components/pages/District';
 import Regional from './components/pages/Regional';
 import SearchResults from './components/pages/SearchResults';
+import Atlas from './components/pages/Atlas';
 import Login from './components/pages/auth/Login';
 import CreateAccount from './components/pages/auth/CreateAccount';
 import Settings from './components/pages/Settings';
@@ -56,6 +57,7 @@ function App() {
             <Route path="/match" element={<Match />} />
             <Route path="/district" element={<District />} />
             <Route path="/regional" element={<Regional />} />
+            <Route path="/atlas" element={<Atlas />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/login" element={<Login />} />
             <Route path="/create-account" element={<CreateAccount />} />
