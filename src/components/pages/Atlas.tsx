@@ -161,6 +161,17 @@ export default function Atlas() {
         >
           Explore every district and event without searching.
         </p>
+        <div
+          className="mt-6 animate__animated animate__fadeInUp"
+          style={{ animationDelay: '0.35s' }}
+        >
+          <Link
+            to="/login"
+            className="inline-block px-6 py-2 border border-baywatch-orange text-baywatch-orange rounded-lg hover:bg-baywatch-orange hover:text-black transition-all duration-300"
+          >
+            Login
+          </Link>
+        </div>
       </section>
 
       {/* Tabs */}

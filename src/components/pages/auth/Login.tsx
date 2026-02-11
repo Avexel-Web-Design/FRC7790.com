@@ -53,7 +53,7 @@ const Login: React.FC = () => {
               className="bg-transparent shadow appearance-none border border-gray-700 rounded w-full py-2 px-3 text-baywatch-orange leading-tight focus:outline-none focus:shadow-outline focus:border-baywatch-orange [&:-webkit-autofill]:bg-transparent [&:-webkit-autofill]:text-baywatch-orange [&:-webkit-autofill]:shadow-[0_0_0_1000px_transparent_inset]"
               id="username"
               type="text"
-              placeholder="Name"
+              placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
