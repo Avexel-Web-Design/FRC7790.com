@@ -3,6 +3,7 @@ import NebulaLoader from '../../common/NebulaLoader';
 import { Link } from 'react-router-dom';
 import type { Match } from '../../../hooks/useEventData';
 import { getTeamColor } from '../../../utils/color';
+import { calculateEventHighScores, formatMatchNameForHighScore } from '../../../utils/eventStats';
 
 interface ScheduleProps {
   matches: Match[];
@@ -71,6 +72,11 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
     return [...matches].sort((a, b) => a.match_number - b.match_number);
   }, [matches]);
 
+  // Calculate high scores from matches
+  const highScores = useMemo(() => {
+    return calculateEventHighScores(matches);
+  }, [matches]);
+
   const handleTeamClick = (teamNumber: string) => {
     window.location.href = `/team?team=${teamNumber}`;
   };
@@ -79,6 +85,35 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
     <section className="tab-content py-8 relative z-10">
       <div className="container mx-auto sm:px-6">
         <h2 className="text-3xl font-bold mb-8 text-center">Match Schedule</h2>
+        
+        {/* Event High Score Display */}
+        {highScores.overallHighScore > 0 && (
+          <div className="card-gradient backdrop-blur-sm rounded-xl p-4 mb-6 border border-gray-700/50">
+            <div className="text-center">
+              <h3 className="text-baywatch-orange text-lg font-bold mb-3 flex items-center justify-center">
+                <i className="fas fa-trophy mr-2"></i>
+                Event High Score
+              </h3>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                <div className="text-center">
+                  <div className="text-2xl md:text-3xl font-bold text-white mb-1">
+                    {highScores.overallHighScore}
+                  </div>
+                  {highScores.highScoringMatch && (
+                    <div className="text-sm text-gray-400">
+                      {formatMatchNameForHighScore(highScores.highScoringMatch)}
+                    </div>
+                  )}
+                </div>
+                <div className="hidden md:block text-gray-500 mx-4">•</div>
+                <div className="text-center text-sm text-gray-400">
+                  <div>Blue High: <span className="text-blue-400 font-semibold">{highScores.blueHighScore}</span></div>
+                  <div>Red High: <span className="text-red-400 font-semibold">{highScores.redHighScore}</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="card-gradient backdrop-blur-sm rounded-xl sm:px-6 py-6 border border-gray-700/50">
           <div className="overflow-x-auto">
