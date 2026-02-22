@@ -7,8 +7,10 @@ interface MatchBreakdownProps {
 
 const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
   // Generate grid visualization for 2023 Charged Up
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const generateGridVisualization = (blueBreakdown: any, redBreakdown: any) => {
     // Helper function to generate grid visualization for a single alliance
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const generateAllianceGrid = (breakdown: any, allianceColor: 'blue' | 'red') => {
       const autoCommunity = breakdown.autoCommunity || { T: [], M: [], B: [] };
       const teleopCommunity = breakdown.teleopCommunity || { T: [], M: [], B: [] };
@@ -274,8 +276,10 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
   };
 
   // Generate reef visualization for 2025 Reefscape
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const generateReefVisualization = (blueBreakdown: any, redBreakdown: any) => {
     // Helper function to generate node visualization for a single alliance
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const generateAllianceReef = (breakdown: any, allianceColor: 'blue' | 'red') => {
       const autoReef = breakdown.autoReef || { topRow: {}, midRow: {}, botRow: {} };
       const teleopReef = breakdown.teleopReef || { topRow: {}, midRow: {}, botRow: {} };
@@ -463,11 +467,149 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
     // Determine if the match is a playoff (semifinals or finals)
     const isPlayoffMatch = matchData.key.includes('_sf') || matchData.key.includes('_f');
     
-    let breakdownSections;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let breakdownSections: any[] = [];
     let reefVisualization = null;
     let gridVisualization = null;
 
-    if (eventYear >= 2025) {
+    if (eventYear >= 2026) {
+      // 2026 Rebuilt Hub Breakdown
+      
+      // Auto Categories
+      const autoCategories = [];
+      autoCategories.push({
+        name: 'Hub',
+        blue: blueBreakdown?.hubScore?.autoPoints || '0',
+        red: redBreakdown?.hubScore?.autoPoints || '0'
+      });
+      
+      const blueAutoTowers = [];
+      const redAutoTowers = [];
+      for (let i = 1; i <= 3; i++) {
+        blueAutoTowers.push(blueBreakdown?.[`autoTowerRobot${i}`] || 'None');
+        redAutoTowers.push(redBreakdown?.[`autoTowerRobot${i}`] || 'None');
+      }
+      autoCategories.push({
+        name: 'Tower Interactions',
+        blue: `${blueAutoTowers.filter(status => status !== 'None').length}/2`,
+        red: `${redAutoTowers.filter(status => status !== 'None').length}/2`
+      });
+      autoCategories.push({
+        name: 'Tower',
+        blue: blueBreakdown?.autoTowerPoints || '0',
+        red: redBreakdown?.autoTowerPoints || '0'
+      });
+      autoCategories.push({
+        name: 'Auto',
+        blue: blueBreakdown?.totalAutoPoints || '0',
+        red: redBreakdown?.totalAutoPoints || '0'
+      });
+
+      // Teleop Categories
+      const teleopCategories = [];
+      teleopCategories.push({
+        name: 'Transition Shift',
+        blue: blueBreakdown?.hubScore?.transitionCount || '0',
+        red: redBreakdown?.hubScore?.transitionCount || '0'
+      });
+      teleopCategories.push({
+        name: 'Shift 1',
+        blue: blueBreakdown?.hubScore?.shift1Count || '0',
+        red: redBreakdown?.hubScore?.shift1Count || '0'
+      });
+      teleopCategories.push({
+        name: 'Shift 2',
+        blue: blueBreakdown?.hubScore?.shift2Count || '0',
+        red: redBreakdown?.hubScore?.shift2Count || '0'
+      });
+      teleopCategories.push({
+        name: 'Shift 3 ',
+        blue: blueBreakdown?.hubScore?.shift3Count || '0',
+        red: redBreakdown?.hubScore?.shift3Count || '0'
+      });
+      teleopCategories.push({
+        name: 'Shift 4',
+        blue: blueBreakdown?.hubScore?.shift4Count || '0',
+        red: redBreakdown?.hubScore?.shift4Count || '0'
+      });
+      teleopCategories.push({
+        name: 'Teleop',
+        blue: blueBreakdown?.totalTeleopPoints || '0',
+        red: redBreakdown?.totalTeleopPoints || '0'
+      });
+
+      // Endgame Categories
+      const endgameCategories = [];
+      endgameCategories.push({
+        name: 'Hub',
+        blue: blueBreakdown?.hubScore?.endgamePoints || '0',
+        red: redBreakdown?.hubScore?.endgamePoints || '0'
+      });
+      
+      const blueEndTowers = [];
+      const redEndTowers = [];
+      for (let i = 1; i <= 3; i++) {
+        blueEndTowers.push(blueBreakdown?.[`endGameTowerRobot${i}`] || 'None');
+        redEndTowers.push(redBreakdown?.[`endGameTowerRobot${i}`] || 'None');
+      }
+      endgameCategories.push({
+        name: 'Tower Interactions',
+        blue: `${blueEndTowers.filter(status => status !== 'None').length}/3`,
+        red: `${redEndTowers.filter(status => status !== 'None').length}/3`
+      });
+      endgameCategories.push({
+        name: 'Tower',
+        blue: blueBreakdown?.endGameTowerPoints || '0',
+        red: redBreakdown?.endGameTowerPoints || '0'
+      });
+      endgameCategories.push({
+        name: 'Endgame',
+        blue: ((blueBreakdown?.hubScore?.endgamePoints || 0) + (blueBreakdown?.endGameTowerPoints || 0)).toString(),
+        red: ((redBreakdown?.hubScore?.endgamePoints || 0) + (redBreakdown?.endGameTowerPoints || 0)).toString()
+      });
+
+      // Bonus Categories
+      const bonusCategories = [];
+      bonusCategories.push({
+        name: 'Energized Achieved',
+        blue: blueBreakdown?.energizedAchieved ? 'Yes' : 'No',
+        red: redBreakdown?.energizedAchieved ? 'Yes' : 'No'
+      });
+      bonusCategories.push({
+        name: 'Supercharged Achieved',
+        blue: blueBreakdown?.superchargedAchieved ? 'Yes' : 'No',
+        red: redBreakdown?.superchargedAchieved ? 'Yes' : 'No'
+      });
+      bonusCategories.push({
+        name: 'Traversal Achieved',
+        blue: blueBreakdown?.traversalAchieved ? 'Yes' : 'No',
+        red: redBreakdown?.traversalAchieved ? 'Yes' : 'No'
+      });
+      if (!isPlayoffMatch) {
+        bonusCategories.push({
+          name: 'Ranking Points',
+          blue: blueBreakdown?.rp || '0',
+          red: redBreakdown?.rp || '0'
+        });
+      }
+      
+      if ((blueBreakdown?.adjustPoints && blueBreakdown.adjustPoints !== 0) || 
+          (redBreakdown?.adjustPoints && redBreakdown.adjustPoints !== 0)) {
+        bonusCategories.push({
+          name: 'Adjustment Points',
+          blue: blueBreakdown?.adjustPoints || '0',
+          red: redBreakdown?.adjustPoints || '0'
+        });
+      }
+
+      breakdownSections = [
+        { title: 'Auto', items: autoCategories },
+        { title: 'Teleop', items: teleopCategories },
+        { title: 'Endgame', items: endgameCategories },
+        { title: 'Bonus', items: bonusCategories }
+      ];
+
+    } else if (eventYear === 2025) {
       // 2025 Reefscape breakdown - comprehensive like the original
       
       // Auto categories
@@ -626,6 +768,7 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
       });
 
       // Endgame categories
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const convertReefscapeEndgame = (status: any) => {
         if (!status || status === 'None') return '-';
         return status;
@@ -1329,6 +1472,7 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
       const teleopCategories = [];
       
       // Count hatch panels and cargo
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const countCargoShipItems = (breakdown: any, itemType: string) => {
         let count = 0;
         for (let i = 1; i <= 8; i++) {
@@ -1339,6 +1483,7 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
         return count;
       };
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const countRocketItems = (breakdown: any, itemType: string) => {
         let count = 0;
         const positions = [
@@ -2392,7 +2537,9 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
       // Coopertition (shared between alliances)
       const coopertitionCategories = [];
       
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const coopertitionStatus = (matchData?.score_breakdown as any)?.coopertition || 'None';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const coopertitionPoints = (matchData?.score_breakdown as any)?.coopertition_points || 0;
       
       coopertitionCategories.push({ 
@@ -2551,7 +2698,8 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
             </tr>
           </thead>
           <tbody>
-            {breakdownSections.map((section ) => (
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {breakdownSections.map((section: any) => (
               <React.Fragment key={section.title}>
                 {/* Section Header */}
                 <tr className="bg-white/5">
@@ -2560,7 +2708,8 @@ const MatchBreakdown: React.FC<MatchBreakdownProps> = ({ matchData }) => {
                   </td>
                 </tr>
                 {/* Section Items */}
-                {section.items.map((item ) => (
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {section.items.map((item: any) => (
                   <tr key={`${section.title}-${item.name}`} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                     <td className="p-3 text-gray-300">{item.name}</td>
                     <td className="p-3 text-center text-blue-400 font-mono font-semibold">{item.blue}</td>
