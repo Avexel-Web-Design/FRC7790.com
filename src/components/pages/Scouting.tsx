@@ -57,11 +57,17 @@ export default function Scouting() {
     } catch {}
     setPicked(saved);
     try {
-      const [evt, teamList, oprData] = await Promise.all([
+      const [evtResult, teamListResult, oprResult] = await Promise.allSettled([
         fetchEvent(code),
         fetchEventTeams(code),
         fetchEventOPRs(code),
       ]);
+
+      // If both Statbotics calls failed, show error but still try to continue
+      const evt = evtResult.status === 'fulfilled' ? evtResult.value : null;
+      const teamList = teamListResult.status === 'fulfilled' ? teamListResult.value : [];
+      const oprData = oprResult.status === 'fulfilled' ? oprResult.value : { oprs: {}, dprs: {}, ccwms: {} };
+
       // merge OPRs
       teamList.forEach((t) => {
         const key = `frc${t.team}`;
@@ -69,14 +75,29 @@ export default function Scouting() {
         t.dpr = oprData.dprs[key] ?? 0;
         t.ccwm = oprData.ccwms[key] ?? 0;
       });
-      setEventInfo(evt);
+
+      // Warn if Statbotics data was unavailable
+      const statboticsDown = evtResult.status === 'rejected' || teamListResult.status === 'rejected';
+      if (statboticsDown) {
+        console.warn('Statbotics data unavailable, showing partial results');
+      }
+
+      if (evt) setEventInfo(evt);
       setTeams(teamList);
       setEventCode(code);
+
       // push query param to URL
       const params = new URLSearchParams(window.location.search);
       params.set('event', code);
       const newUrl = `${window.location.pathname}?${params.toString()}`;
       window.history.replaceState(null, '', newUrl);
+
+      // If we got no teams at all, show an error
+      if (teamList.length === 0 && teamListResult.status === 'rejected') {
+        setError('EPA data unavailable from Statbotics. Try again later or check the event code.');
+      } else if (statboticsDown) {
+        setError('Some Statbotics data was unavailable. EPA stats may be incomplete.');
+      }
     } catch (err) {
       console.error(err);
       setError((err as Error).message);
