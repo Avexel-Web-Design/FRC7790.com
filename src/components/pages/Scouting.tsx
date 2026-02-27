@@ -92,12 +92,15 @@ export default function Scouting() {
         }
       }
 
-      // merge OPRs
+      // merge OPRs (defensively access in case TBA returned empty object)
+      const oprs = oprData.oprs ?? {};
+      const dprs = oprData.dprs ?? {};
+      const ccwms = oprData.ccwms ?? {};
       teamList.forEach((t) => {
         const key = `frc${t.team}`;
-        t.opr = oprData.oprs[key] ?? 0;
-        t.dpr = oprData.dprs[key] ?? 0;
-        t.ccwm = oprData.ccwms[key] ?? 0;
+        t.opr = oprs[key] ?? 0;
+        t.dpr = dprs[key] ?? 0;
+        t.ccwm = ccwms[key] ?? 0;
       });
 
       if (evt) setEventInfo(evt);

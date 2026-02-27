@@ -175,7 +175,12 @@ export async function fetchEventOPRs(eventKey: string): Promise<{
       headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY },
     })
     if (!res.ok) throw new Error(`TBA error ${res.status}`)
-    return res.json()
+    const data = await res.json()
+    return {
+      oprs: data.oprs ?? {},
+      dprs: data.dprs ?? {},
+      ccwms: data.ccwms ?? {},
+    }
   } catch (e) {
     console.error('Error fetching OPRs', e)
     return { oprs: {}, dprs: {}, ccwms: {} }
