@@ -50,7 +50,7 @@
     "@melloware/coloris": "^0.25.0",
     "@types/react-router-dom": "^5.3.3",
     "effect": "3.19.15",
-    "hono": "^4.10.3",
+    "hono": "^4.11.10",
     "lucide-react": "^0.575.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
