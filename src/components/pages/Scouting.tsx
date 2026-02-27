@@ -67,10 +67,6 @@ export default function Scouting() {
       let teamList = teamListResult.status === 'fulfilled' ? teamListResult.value : [];
       const oprData = oprResult.status === 'fulfilled' ? oprResult.value : { oprs: {}, dprs: {}, ccwms: {} };
 
-      // Detect if Statbotics had no useful data (API error or empty results)
-      const statboticsHasNoEPA = evtResult.status === 'rejected' || teamList.length === 0;
-      let usedTBAFallback = false;
-
       // Fallback: if Statbotics returned no teams (empty array or failed), build from TBA
       if (teamList.length === 0) {
         try {
@@ -86,7 +82,6 @@ export default function Scouting() {
             dpr: 0,
             ccwm: 0,
           }));
-          usedTBAFallback = true;
         } catch (tbaErr) {
           console.error('TBA team list fallback also failed:', tbaErr);
         }
@@ -107,9 +102,18 @@ export default function Scouting() {
       setTeams(teamList);
       setEventCode(code);
 
-      // If no EPA data, default sort to OPR instead of EPA (which will be all zeros)
-      if (statboticsHasNoEPA && teamList.length > 0) {
-        setSortKey('opr');
+      const hasOPRData = Object.keys(oprs).length > 0;
+      const hasEPAData = teamList.some((t) => t.epa > 0);
+
+      // Default sort to the best available metric
+      if (teamList.length > 0) {
+        if (hasEPAData) {
+          setSortKey('epa');
+        } else if (hasOPRData) {
+          setSortKey('opr');
+        } else {
+          setSortKey('team');
+        }
       }
 
       // push query param to URL
@@ -121,7 +125,9 @@ export default function Scouting() {
       // Show appropriate message based on what data is available
       if (teamList.length === 0) {
         setError('Could not load teams. Check the event code and try again.');
-      } else if (usedTBAFallback || statboticsHasNoEPA) {
+      } else if (!hasEPAData && !hasOPRData) {
+        setError('No match data available yet for this event. Stats will populate once matches are played.');
+      } else if (!hasEPAData) {
         setError('EPA data not yet available for this event. Showing OPR data only.');
       }
     } catch (err) {
