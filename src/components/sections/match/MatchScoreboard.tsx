@@ -1,4 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { 
+  Trophy, 
+  CirclePile, 
+  Circle, 
+  ChessRook, 
+  Bot, 
+  Ship, 
+  Music, 
+  Users 
+} from 'lucide-react';
+import CoralIcon from '../../icons/CoralIcon';
 import type { MatchData, TeamData } from '../../../hooks/useMatchData';
 import { getDivisionMapping, getAllianceDisplayName } from '../../../utils/divisionUtils';
 import { getTeamColor } from '../../../utils/color';
@@ -116,6 +127,116 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
     );
   };
 
+  const renderRankingPoints = (alliance: 'blue' | 'red') => {
+    if (matchData.comp_level !== 'qm') return null;
+
+    const eventYear = parseInt(matchData.event_key.substring(0, 4));
+    const breakdown = matchData.score_breakdown?.[alliance];
+    const isWin = matchData.winning_alliance === alliance;
+    const isTie = matchData.winning_alliance === '';
+
+    const rpIcons: { lucideIcon: React.ElementType; achieved: boolean | undefined; title: string }[] = [];
+
+    // Base Match RPs (Win/Tie)
+    rpIcons.push({
+      lucideIcon: Trophy,
+      achieved: isWin || isTie,
+      title: 'Match RP 1'
+    });
+
+    // In 2026 and 2025, wins are worth 3 RPs and ties are worth 1 RP
+    if (eventYear >= 2025) {
+      rpIcons.push({
+        lucideIcon: Trophy,
+        achieved: isWin,
+        title: 'Match RP 2'
+      });
+      rpIcons.push({
+        lucideIcon: Trophy,
+        achieved: isWin,
+        title: 'Match RP 3'
+      });
+    } else {
+      // Pre-2025, wins are worth 2 RPs and ties are worth 1 RP
+      rpIcons.push({
+        lucideIcon: Trophy,
+        achieved: isWin,
+        title: 'Match RP 2'
+      });
+    }
+
+    // Add game-specific RPs
+    if (eventYear >= 2026) {
+      rpIcons.push({
+        lucideIcon: Circle,
+        achieved: breakdown?.energizedAchieved,
+        title: 'Energized RP'
+      });
+      rpIcons.push({
+        lucideIcon: CirclePile,
+        achieved: breakdown?.superchargedAchieved,
+        title: 'Supercharged RP'
+      });
+      rpIcons.push({
+        lucideIcon: ChessRook,
+        achieved: breakdown?.traversalAchieved,
+        title: 'Traversal RP'
+      });
+    } else if (eventYear === 2025) {
+      rpIcons.push({
+        lucideIcon: Bot,
+        achieved: breakdown?.autoBonusAchieved,
+        title: 'Auto RP'
+      });
+      rpIcons.push({
+        lucideIcon: Ship,
+        achieved: breakdown?.bargeBonusAchieved,
+        title: 'Barge RP'
+      });
+      rpIcons.push({
+        lucideIcon: CoralIcon,
+        achieved: breakdown?.coralBonusAchieved,
+        title: 'Coral RP'
+      });
+    } else if (eventYear === 2024) {
+      rpIcons.push({
+        lucideIcon: Music,
+        achieved: breakdown?.melodyBonusAchieved,
+        title: 'Melody RP'
+      });
+      rpIcons.push({
+        lucideIcon: Users,
+        achieved: breakdown?.ensembleBonusAchieved,
+        title: 'Ensemble RP'
+      });
+    }
+
+    if (rpIcons.length === 0 || !breakdown) return null;
+
+    const baseColor = alliance === 'blue' ? 'text-blue-400' : 'text-red-400';
+    const bgColorClass = alliance === 'blue' ? 'bg-blue-500/20' : 'bg-red-500/20';
+    const ringColorClass = alliance === 'blue' ? 'ring-blue-500/50' : 'ring-red-500/50';
+
+    return (
+      <div className="mt-4 flex flex-col items-center">
+        <div className="flex gap-3 mb-1">
+          {rpIcons.map((rp, index) => {
+            const Icon = rp.lucideIcon;
+            return (
+              <div 
+                key={index} 
+                className={`flex items-center justify-center w-8 h-8 rounded-full ${rp.achieved ? `${baseColor} ${bgColorClass} ring-1 ${ringColorClass}` : 'text-gray-600 bg-gray-800/50'}`}
+                title={rp.title}
+              >
+                <Icon className="w-4 h-4" />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section className="py-8 relative z-10">
       <div className="container mx-auto px-6">
@@ -132,6 +253,7 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
               <div className="text-5xl md:text-7xl font-bold text-blue-400">
                 {matchData.alliances.blue.score !== null ? matchData.alliances.blue.score : '--'}
               </div>
+              {renderRankingPoints('blue')}
             </div>
             
             {/* VS Divider */}
@@ -150,6 +272,7 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
               <div className="text-5xl md:text-7xl font-bold text-red-400">
                 {matchData.alliances.red.score !== null ? matchData.alliances.red.score : '--'}
               </div>
+              {renderRankingPoints('red')}
             </div>
           </div>
           
