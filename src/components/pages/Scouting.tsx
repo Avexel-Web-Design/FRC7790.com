@@ -67,10 +67,12 @@ export default function Scouting() {
       let teamList = teamListResult.status === 'fulfilled' ? teamListResult.value : [];
       const oprData = oprResult.status === 'fulfilled' ? oprResult.value : { oprs: {}, dprs: {}, ccwms: {} };
 
-      const statboticsDown = evtResult.status === 'rejected' || teamListResult.status === 'rejected';
+      // Detect if Statbotics had no useful data (API error or empty results)
+      const statboticsHasNoEPA = evtResult.status === 'rejected' || teamList.length === 0;
+      let usedTBAFallback = false;
 
-      // Fallback: if Statbotics team list failed, build it from TBA
-      if (teamList.length === 0 && teamListResult.status === 'rejected') {
+      // Fallback: if Statbotics returned no teams (empty array or failed), build from TBA
+      if (teamList.length === 0) {
         try {
           const tbaTeams = await frcAPI.fetchEventTeams(code);
           teamList = tbaTeams.map((t) => ({
@@ -84,6 +86,7 @@ export default function Scouting() {
             dpr: 0,
             ccwm: 0,
           }));
+          usedTBAFallback = true;
         } catch (tbaErr) {
           console.error('TBA team list fallback also failed:', tbaErr);
         }
@@ -97,16 +100,12 @@ export default function Scouting() {
         t.ccwm = oprData.ccwms[key] ?? 0;
       });
 
-      if (statboticsDown) {
-        console.warn('Statbotics data unavailable, showing partial results');
-      }
-
       if (evt) setEventInfo(evt);
       setTeams(teamList);
       setEventCode(code);
 
-      // If Statbotics failed, default sort to OPR instead of EPA (which will be all zeros)
-      if (statboticsDown && teamList.length > 0) {
+      // If no EPA data, default sort to OPR instead of EPA (which will be all zeros)
+      if (statboticsHasNoEPA && teamList.length > 0) {
         setSortKey('opr');
       }
 
@@ -119,8 +118,8 @@ export default function Scouting() {
       // Show appropriate message based on what data is available
       if (teamList.length === 0) {
         setError('Could not load teams. Check the event code and try again.');
-      } else if (statboticsDown) {
-        setError('Statbotics is unavailable. Showing OPR data only — EPA stats will appear as 0.');
+      } else if (usedTBAFallback || statboticsHasNoEPA) {
+        setError('EPA data not yet available for this event. Showing OPR data only.');
       }
     } catch (err) {
       console.error(err);
