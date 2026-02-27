@@ -7,7 +7,7 @@ import InfoCards from '../sections/scouting/InfoCards';
 import StatusBanners from '../sections/scouting/StatusBanners';
 import { useScrollReveal } from '../../hooks/useScrollReveal';
 import { fetchEvent, fetchEventTeams } from '../../utils/statbotics';
-import { fetchEventOPRs } from '../../utils/frcAPI';
+import { fetchEventOPRs, frcAPI } from '../../utils/frcAPI';
 import type { StatEvent, StatTeam } from '../../utils/statbotics';
 
 export type SortKey = 'team' | 'epa' | 'epa_auto' | 'epa_teleop' | 'epa_endgame' | 'opr' | 'dpr' | 'ccwm';
@@ -63,10 +63,31 @@ export default function Scouting() {
         fetchEventOPRs(code),
       ]);
 
-      // If both Statbotics calls failed, show error but still try to continue
       const evt = evtResult.status === 'fulfilled' ? evtResult.value : null;
-      const teamList = teamListResult.status === 'fulfilled' ? teamListResult.value : [];
+      let teamList = teamListResult.status === 'fulfilled' ? teamListResult.value : [];
       const oprData = oprResult.status === 'fulfilled' ? oprResult.value : { oprs: {}, dprs: {}, ccwms: {} };
+
+      const statboticsDown = evtResult.status === 'rejected' || teamListResult.status === 'rejected';
+
+      // Fallback: if Statbotics team list failed, build it from TBA
+      if (teamList.length === 0 && teamListResult.status === 'rejected') {
+        try {
+          const tbaTeams = await frcAPI.fetchEventTeams(code);
+          teamList = tbaTeams.map((t) => ({
+            team: t.team_number,
+            nickname: t.nickname || '',
+            epa_auto: 0,
+            epa_teleop: 0,
+            epa_endgame: 0,
+            epa: 0,
+            opr: 0,
+            dpr: 0,
+            ccwm: 0,
+          }));
+        } catch (tbaErr) {
+          console.error('TBA team list fallback also failed:', tbaErr);
+        }
+      }
 
       // merge OPRs
       teamList.forEach((t) => {
@@ -76,8 +97,6 @@ export default function Scouting() {
         t.ccwm = oprData.ccwms[key] ?? 0;
       });
 
-      // Warn if Statbotics data was unavailable
-      const statboticsDown = evtResult.status === 'rejected' || teamListResult.status === 'rejected';
       if (statboticsDown) {
         console.warn('Statbotics data unavailable, showing partial results');
       }
@@ -86,17 +105,22 @@ export default function Scouting() {
       setTeams(teamList);
       setEventCode(code);
 
+      // If Statbotics failed, default sort to OPR instead of EPA (which will be all zeros)
+      if (statboticsDown && teamList.length > 0) {
+        setSortKey('opr');
+      }
+
       // push query param to URL
       const params = new URLSearchParams(window.location.search);
       params.set('event', code);
       const newUrl = `${window.location.pathname}?${params.toString()}`;
       window.history.replaceState(null, '', newUrl);
 
-      // If we got no teams at all, show an error
-      if (teamList.length === 0 && teamListResult.status === 'rejected') {
-        setError('EPA data unavailable from Statbotics. Try again later or check the event code.');
+      // Show appropriate message based on what data is available
+      if (teamList.length === 0) {
+        setError('Could not load teams. Check the event code and try again.');
       } else if (statboticsDown) {
-        setError('Some Statbotics data was unavailable. EPA stats may be incomplete.');
+        setError('Statbotics is unavailable. Showing OPR data only — EPA stats will appear as 0.');
       }
     } catch (err) {
       console.error(err);
