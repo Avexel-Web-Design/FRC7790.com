@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { Effect } from 'effect';
-import { authMiddleware } from '../auth/middleware';
+import { authMiddleware, AuthUser } from '../auth/middleware';
 import {
   authEffectHandler,
   parseBody,
@@ -12,12 +12,7 @@ import {
   AuthError,
   ConflictError
 } from '../lib/effect-hono';
-
-interface AuthUser {
-  id: number;
-  username: string;
-  isAdmin: boolean;
-}
+import { hashPassword } from '../lib/password';
 
 interface DbUser {
   id: number;
@@ -33,16 +28,6 @@ interface UpdateUserBody {
   username?: string;
   password?: string;
 }
-
-// Simple password hashing using Web Crypto API
-const hashPassword = (password: string): Effect.Effect<string, never, never> =>
-  Effect.promise(async () => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  });
 
 const users = new Hono<{ 
   Bindings: Env;

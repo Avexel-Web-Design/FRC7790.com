@@ -198,8 +198,7 @@ export default function Navigation() {
               </Link>
             </li>
           ))}
-          {isAuthenticated ? (
-            <>
+          {isAuthenticated && (
               <li>
                 <Link
                   to={user?.userType === 'public' ? '/settings' : '/dashboard'}
@@ -223,8 +222,7 @@ export default function Navigation() {
                   {user?.userType === 'public' ? 'Settings' : 'Dashboard'}
                 </Link>
               </li>
-            </>
-          ) : null}
+          )}
         </ul>
 
         {/* Mobile Menu Button */}
@@ -300,8 +298,7 @@ export default function Navigation() {
                 {item.name}
               </Link>
             ))}
-            {isAuthenticated ? (
-              <>
+            {isAuthenticated && (
                 <Link
                   to={user?.userType === 'public' ? '/settings' : '/dashboard'}
                   className="block py-2 text-lg transition-colors"
@@ -324,8 +321,7 @@ export default function Navigation() {
                 >
                   {user?.userType === 'public' ? 'Settings' : 'Dashboard'}
                 </Link>
-              </>
-            ) : null}
+            )}
           </div>
         </div>
       )}

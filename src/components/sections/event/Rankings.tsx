@@ -20,23 +20,6 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
   // Always show EPA column, but with placeholders until data loads
   const showEPA = true;
 
-  // Debug EPA data when it changes
-  React.useEffect(() => {
-    if (Object.keys(epaData).length > 0) {
-      console.log('EPA data available:', epaData);
-      console.log('Ranking team keys:', rankings.map(r => r.team_key));
-      console.log('EPA data keys:', Object.keys(epaData));
-    }
-  }, [epaData, rankings]);
-
-  // Debug logging to understand the data structure
-  React.useEffect(() => {
-    if (rankings.length > 0) {
-      console.log('Rankings data sample:', rankings[0]);
-      console.log('Full rankings:', rankings);
-    }
-  }, [rankings]);
-
   const formatTeamNumber = (teamKey: string): string => {
     return teamKey.replace('frc', '');
   };
@@ -118,7 +101,7 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
     });
-  }, [rankings, sortField, sortDirection]);
+  }, [rankings, sortField, sortDirection, epaData, displayMode]);
 
   const getSortIcon = (field: SortField) => {
     if (sortField !== field) return 'fas fa-sort text-gray-500';

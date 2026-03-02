@@ -157,12 +157,6 @@ function useEventData(eventCode: string | null, simulateAfterMatch: number | nul
               return timeA - timeB;
             });
           
-          // Debug: log match count and types
-          console.log('Total team 7790 matches:', team7790Matches.length);
-          console.log('Match breakdown:', team7790Matches.map((m: any) => `${m.comp_level}${m.set_number ? m.set_number : ''}-${m.match_number}`).join(', '));
-          console.log('Simulating after match:', simulateAfterMatch);
-          console.log('Next match would be index', simulateAfterMatch, ':', team7790Matches[simulateAfterMatch]?.key);
-          
           if (team7790Matches.length > simulateAfterMatch) {
             // Get the next match after the simulated point
             nextMatch = team7790Matches[simulateAfterMatch];

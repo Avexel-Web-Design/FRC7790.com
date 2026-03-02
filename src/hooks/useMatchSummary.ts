@@ -10,7 +10,7 @@ interface MatchSummaryResponse {
 
 interface UseMatchSummaryReturn {
   summary: string | null;
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
   regenerate: () => void;
   model?: string | null;
@@ -22,7 +22,7 @@ const STORAGE_KEY_PREFIX = 'match_summary_v3:';
 
 export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn {
   const [summary, setSummary] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nonce, setNonce] = useState(0);
   const [model, setModel] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn 
 
     let cancelled = false;
     const run = async () => {
-      setLoading(true); setError(null);
+      setIsLoading(true); setError(null);
       try {
         const resp = await fetch('/api/ai/match-summary/generate', {
           method: 'POST',
@@ -59,7 +59,7 @@ export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn 
       } catch (err) {
         if (!cancelled) setError((err as Error).message);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setIsLoading(false);
       }
     };
 
@@ -71,5 +71,5 @@ export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn 
     return () => { cancelled = true; };
   }, [match, nonce]);
 
-  return { summary, loading, error, regenerate, model, fallbackUsed };
+  return { summary, isLoading, error, regenerate, model, fallbackUsed };
 }

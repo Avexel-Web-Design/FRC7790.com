@@ -116,14 +116,12 @@ const Profile: React.FC = () => {
   }, []);
 
   const updateAvatarColor = async (color: string) => {
-    console.log('Updating avatar color to:', color);
     try {
       const response = await frcAPI.put('/profile', { avatar_color: color });
       if (response.ok) {
         setProfile((prev: Profile | null) => prev ? { ...prev, avatar_color: color } : null);
         updateUser({ avatarColor: color });
         setTempAvatarColor(''); // Clear temp color since we've saved to server
-        console.log('Avatar color updated successfully');
       } else {
         console.error('Failed to update avatar color on server');
       }
@@ -148,12 +146,8 @@ const Profile: React.FC = () => {
   };
 
   const openColorPicker = () => {
-    console.log('Avatar clicked! Opening color picker...');
     if (colorInputRef.current) {
-      console.log('Color input ref found, triggering click');
       colorInputRef.current.click();
-    } else {
-      console.error('Color input ref not found');
     }
   };
 

@@ -324,7 +324,10 @@ ai.post('/generate', effectHandler((c) =>
     // If full match object not supplied, fetch from TBA (server-side) for better caching
     let matchData = match;
     if (!matchData && match_key) {
-      const tbaApiKey = env.TBA_API_KEY || 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf';
+      const tbaApiKey = env.TBA_API_KEY;
+      if (!tbaApiKey) {
+        return yield* Effect.fail(ValidationError.single('TBA_API_KEY environment variable is not configured'));
+      }
       matchData = yield* Effect.catchAll(
         fetchMatchFromTBA(match_key, tbaApiKey),
         () => Effect.succeed(null)

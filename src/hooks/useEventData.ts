@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { frcAPI } from '../utils/frcAPI';
 
 export interface EventData {
@@ -178,19 +178,12 @@ export function useEventData(eventCode: string) {
     fetchEventData();
   }, [fetchEventData]);
 
-  // Auto-load EPA data when teams are loaded
-  useEffect(() => {
-    if (teams.length > 0 && Object.keys(epaData).length === 0) {
-      loadEpaData();
-    }
-  }, [teams]);
+  const epaLoadedRef = useRef(false);
 
-  const loadEpaData = async () => {
+  const loadEpaData = useCallback(async () => {
     if (!eventData) return;
     
     try {
-      console.log('Auto-loading EPA data for event:', eventData.key);
-      
       // Use progressive callback to update EPA data as it loads
       const epaResults = await frcAPI.fetchStatboticsEPA(eventData.key, (progressEpaData) => {
         setEpaData(prevData => ({ ...prevData, ...progressEpaData }));
@@ -198,11 +191,18 @@ export function useEventData(eventCode: string) {
       
       // Final update to ensure all data is set
       setEpaData(epaResults);
-      console.log('EPA data loading completed:', epaResults);
     } catch (err) {
       console.error('Error fetching EPA data:', err);
     }
-  };
+  }, [eventData]);
+
+  // Auto-load EPA data when teams are loaded
+  useEffect(() => {
+    if (teams.length > 0 && !epaLoadedRef.current) {
+      epaLoadedRef.current = true;
+      loadEpaData();
+    }
+  }, [teams, loadEpaData]);
 
   return {
     eventData,

@@ -1,13 +1,11 @@
+import type { ComponentType } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { Hash, MessagesSquare, ClipboardList, Calendar as CalendarIcon, User as UserIcon, Shield, Users } from 'lucide-react';
 
-export default function MobileDashboardNav() {
-  const { channelsHaveUnread, messagesHaveUnread } = useNotifications();
-  const { user } = useAuth();
-
-  const Item = ({ to, label, icon: Icon, showDot }: { to: string; label: string; icon: any; showDot?: boolean }) => (
+function Item({ to, label, icon: Icon, showDot }: { to: string; label: string; icon: ComponentType<{ className?: string }>; showDot?: boolean }) {
+  return (
     <NavLink
       to={to}
       className={({ isActive }) =>
@@ -18,13 +16,18 @@ export default function MobileDashboardNav() {
     >
       <div className="relative">
         <Icon className="w-5 h-5" />
-        {showDot ? (
+        {showDot && (
           <span className="absolute -top-1 -right-2 w-2.5 h-2.5 rounded-full bg-baywatch-orange shadow" />
-        ) : null}
+        )}
       </div>
       <span className="text-[11px] mt-0.5">{label}</span>
     </NavLink>
   );
+}
+
+export default function MobileDashboardNav() {
+  const { channelsHaveUnread, messagesHaveUnread } = useNotifications();
+  const { user } = useAuth();
 
   return (
     <nav 

@@ -17,6 +17,9 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
+// Cache duration - only allow refresh if last one was more than 30 seconds ago
+const CACHE_DURATION = 30000; // 30 seconds
+
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (context === undefined) {
@@ -39,39 +42,32 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [lastRefresh, setLastRefresh] = useState<number>(0);
   const [lastTotalUnread, setLastTotalUnread] = useState<number>(0);
 
-  // Cache duration - only allow refresh if last one was more than 30 seconds ago
-  const CACHE_DURATION = 30000; // 30 seconds
-
   const refreshNotifications = useCallback(async () => {
     if (!user) return;
 
     // Check if we should skip this refresh due to caching
     const now = Date.now();
     if (now - lastRefresh < CACHE_DURATION) {
-      console.log('NotificationContext: Skipping refresh due to cache (last refresh was', (now - lastRefresh) / 1000, 'seconds ago)');
       return;
     }
 
     try {
-      console.log('NotificationContext: Refreshing notifications for user', user.id);
       setLastRefresh(now);
       
       // Use the new combined endpoint to get all notification data in one call
       const allDataUrl = `/chat/notifications/all?user_id=${user.id}`;
-      console.log('NotificationContext: Fetching all notification data from', allDataUrl);
       const response = await frcAPI.get(allDataUrl);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('NotificationContext: Received notification data', data);
         
-        const { unreadCounts, totalUnread, channelsUnread, messagesUnread } = data;
+        const { unreadCounts: rawUnreadCounts, totalUnread: rawTotalUnread, channelsUnread, messagesUnread } = data;
         
         // Get the original unread count for the active channel (before filtering)
-        const activeChannelUnreadCount = activeChannel && unreadCounts[activeChannel] ? unreadCounts[activeChannel] : 0;
+        const activeChannelUnreadCount = activeChannel && rawUnreadCounts[activeChannel] ? rawUnreadCounts[activeChannel] : 0;
         
         // Filter out the active channel from unread counts
-        const filteredCounts = { ...unreadCounts };
+        const filteredCounts = { ...rawUnreadCounts };
         if (activeChannel && filteredCounts[activeChannel]) {
           delete filteredCounts[activeChannel];
         }
@@ -79,7 +75,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         setUnreadCounts(filteredCounts);
         
         // Subtract active channel's unread count from totals
-        const adjustedTotal = Math.max(0, totalUnread - activeChannelUnreadCount);
+        const adjustedTotal = Math.max(0, rawTotalUnread - activeChannelUnreadCount);
         
         // Determine if active channel is a regular channel or DM/group
         const isActiveChannelRegular = activeChannel && !activeChannel.startsWith('dm_') && !activeChannel.startsWith('group_');
@@ -103,8 +99,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         
         // Fallback to separate calls if the combined endpoint fails
         if (response.status === 404) {
-          console.log('NotificationContext: Combined endpoint not available, falling back to separate calls');
-          
           // Get unread counts for individual channels/conversations
           const unreadUrl = `/chat/notifications/unread?user_id=${user.id}`;
           const unreadResponse = await frcAPI.get(unreadUrl);
@@ -150,7 +144,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     } catch (error) {
       console.error('Error refreshing notifications:', error);
     }
-  }, [user, activeChannel, lastRefresh, CACHE_DURATION]);
+  }, [user, activeChannel, lastRefresh, lastTotalUnread]);
 
   const markChannelAsRead = async (channelId: string) => {
     if (!user) return;

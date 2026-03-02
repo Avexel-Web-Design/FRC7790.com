@@ -1,23 +1,31 @@
 import { createMiddleware } from 'hono/factory';
 import { verify } from 'hono/jwt';
 
-// Simple CORS middleware without hono/cors dependency
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = new Set([
+  'https://frc7790.com',
+  'https://www.frc7790.com',
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'capacitor://localhost',
+  'http://localhost',
+]);
+
+// Simple CORS middleware with origin whitelist
 export const corsMiddleware = createMiddleware(async (c, next) => {
-  // Echo the Origin for better compatibility with credentialed requests and WebViews
-  const origin = c.req.header('Origin') || '*';
-  c.header('Access-Control-Allow-Origin', origin);
-  if (origin !== '*') {
+  const origin = c.req.header('Origin');
+  
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    c.header('Access-Control-Allow-Origin', origin);
     c.header('Vary', 'Origin');
+    c.header('Access-Control-Allow-Credentials', 'true');
   }
+  
   c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  // If the browser sent Access-Control-Request-Headers, reflect them; otherwise provide a safe default
   const reqHdrs = c.req.header('Access-Control-Request-Headers');
   c.header('Access-Control-Allow-Headers', reqHdrs || 'Content-Type, Authorization, X-Session-ID');
-  // Only meaningful when the origin isn’t '*'; harmless otherwise
-  c.header('Access-Control-Allow-Credentials', 'true');
   c.header('Access-Control-Max-Age', '600');
 
-  // Handle preflight requests early
   if (c.req.method === 'OPTIONS') {
     return c.text('', 200);
   }
@@ -31,18 +39,7 @@ export const errorMiddleware = createMiddleware(async (c, next) => {
     await next();
   } catch (error) {
     console.error('API Error:', error);
-    
-    if (error instanceof Error) {
-      return c.json({ 
-        error: 'Internal Server Error',
-        message: error.message 
-      }, 500);
-    }
-    
-    return c.json({ 
-      error: 'Internal Server Error',
-      message: 'An unexpected error occurred' 
-    }, 500);
+    return c.json({ error: 'Internal Server Error' }, 500);
   }
 });
 

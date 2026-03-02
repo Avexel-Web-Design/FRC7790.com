@@ -83,6 +83,8 @@ interface ExceptionBody {
   exception_date: string;
 }
 
+const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
 const calendar = new Hono<{ 
   Bindings: Env;
   Variables: { user: AuthUser };
@@ -155,7 +157,6 @@ function generateRecurringInstances(baseEvent: CalendarEvent, startDate: Date, e
 
 function isValidOccurrence(date: Date, startDate: Date, config: any): boolean {
   const daysDiff = Math.floor((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
   switch (config.type) {
     case 'daily':
@@ -202,7 +203,6 @@ function isValidOccurrence(date: Date, startDate: Date, config: any): boolean {
 
 function getNextOccurrence(currentDate: Date, config: any): Date {
   const nextDate = new Date(currentDate);
-  const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
   switch (config.type) {
     case 'daily':

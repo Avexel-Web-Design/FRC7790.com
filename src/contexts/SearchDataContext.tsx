@@ -19,12 +19,14 @@ export function SearchDataProvider({ children }: { children: ReactNode }) {
     const fetchAllTeams = async (): Promise<any[]> => {
       const results: any[] = [];
       let page = 0;
-      while (true) {
+      const MAX_PAGES = 25;
+      while (page < MAX_PAGES) {
         const res = await fetch(`https://www.thebluealliance.com/api/v3/teams/${page}`, {
           headers: {
             'X-TBA-Auth-Key': TBA_AUTH_KEY
           }
         });
+        if (!res.ok) break;
         const data = await res.json();
         if (!Array.isArray(data) || data.length === 0) break;
         results.push(...data);
@@ -42,7 +44,7 @@ export function SearchDataProvider({ children }: { children: ReactNode }) {
       const eventPromises = years.map(year =>
         fetch(`https://www.thebluealliance.com/api/v3/events/${year}`, {
           headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY }
-        }).then(res => res.json())
+        }).then(res => { if (!res.ok) return []; return res.json(); })
       );
       
       const eventsByYear = await Promise.all(eventPromises);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { TBA_CONFIG } from '../config';
 
 export interface MatchData {
   key: string;
@@ -51,7 +52,7 @@ export interface UseMatchDataReturn {
   matchData: MatchData | null;
   eventData: EventData | null;
   teamData: TeamData[];
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
 }
 
@@ -59,7 +60,7 @@ export const useMatchData = (matchKey: string | null): UseMatchDataReturn => {
   const [matchData, setMatchData] = useState<MatchData | null>(null);
   const [eventData, setEventData] = useState<EventData | null>(null);
   const [teamData, setTeamData] = useState<TeamData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,13 +68,13 @@ export const useMatchData = (matchKey: string | null): UseMatchDataReturn => {
       setMatchData(null);
       setEventData(null);
       setTeamData([]);
-      setLoading(false);
+      setIsLoading(false);
       setError(null);
       return;
     }
 
     const loadMatchData = async () => {
-      setLoading(true);
+      setIsLoading(true);
       setError(null);
 
       try {
@@ -81,16 +82,16 @@ export const useMatchData = (matchKey: string | null): UseMatchDataReturn => {
         const eventKey = matchKey.split('_')[0];
 
         // Fetch match data
-        const matchResponse = await fetch(`https://www.thebluealliance.com/api/v3/match/${matchKey}`, {
-          headers: { "X-TBA-Auth-Key": "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf" }
+        const matchResponse = await fetch(`${TBA_CONFIG.BASE_URL}/match/${matchKey}`, {
+          headers: { "X-TBA-Auth-Key": TBA_CONFIG.AUTH_KEY }
         });
 
         if (!matchResponse.ok) throw new Error(`Match data HTTP error: ${matchResponse.status}`);
         const match = await matchResponse.json();
 
         // Fetch event data
-        const eventResponse = await fetch(`https://www.thebluealliance.com/api/v3/event/${eventKey}`, {
-          headers: { "X-TBA-Auth-Key": "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf" }
+        const eventResponse = await fetch(`${TBA_CONFIG.BASE_URL}/event/${eventKey}`, {
+          headers: { "X-TBA-Auth-Key": TBA_CONFIG.AUTH_KEY }
         });
 
         if (!eventResponse.ok) throw new Error(`Event data HTTP error: ${eventResponse.status}`);
@@ -103,8 +104,8 @@ export const useMatchData = (matchKey: string | null): UseMatchDataReturn => {
         ];
 
         const teamPromises = allTeamKeys.map(teamKey => 
-          fetch(`https://www.thebluealliance.com/api/v3/team/${teamKey}`, {
-            headers: { "X-TBA-Auth-Key": "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf" }
+          fetch(`${TBA_CONFIG.BASE_URL}/team/${teamKey}`, {
+            headers: { "X-TBA-Auth-Key": TBA_CONFIG.AUTH_KEY }
           }).then(res => {
             if (!res.ok) throw new Error(`Team data HTTP error for ${teamKey}: ${res.status}`);
             return res.json();
@@ -120,12 +121,12 @@ export const useMatchData = (matchKey: string | null): UseMatchDataReturn => {
         console.error("Error loading match data:", err);
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     loadMatchData();
   }, [matchKey]);
 
-  return { matchData, eventData, teamData, loading, error };
+  return { matchData, eventData, teamData, isLoading, error };
 };

@@ -1,9 +1,5 @@
 import { Context } from 'hono';
-import { D1Database } from '@cloudflare/workers-types';
-
-interface Env {
-  DB: D1Database;
-}
+import type { AuthUser } from '../auth/middleware';
 
 // Return minimal public information for all users so that any authenticated user
 // can start a direct-message conversation.
@@ -18,29 +14,25 @@ export async function getUsers(c: Context): Promise<Response> {
     });
   } catch (error) {
     console.error('Error fetching users list', error);
-    return new Response('Error fetching users list', { status: 500 });
+    return new Response('Internal server error', { status: 500 });
   }
 }
 
 // Return users sorted by most recent conversation activity for a specific user
 export async function getUsersByRecentActivity(c: Context): Promise<Response> {
   try {
-    const userIdStr = c.req.query('user_id');
-    if (!userIdStr) {
-      return new Response('User ID is required', { status: 400 });
+    const user = c.get('user') as AuthUser | undefined;
+    if (!user?.id) {
+      return new Response('Unauthorized', { status: 401 });
     }
-    
-    const userId = Number(userIdStr);
-    const userIdString = userIdStr; // Keep as string for LIKE queries
-    console.log(`getUsersByRecentActivity called for user ${userId}`);
+    const userId = user.id;
+    const userIdString = String(userId);
     
     // First, get all users except the current user
     const { results: allUsers } = await c.env.DB.prepare(
       "SELECT id, username, is_admin FROM users WHERE id != ? AND user_type = 'member' ORDER BY username COLLATE NOCASE ASC"
     ).bind(userId).all();
     
-    console.log(`Found ${allUsers.length} users (excluding current user)`);
-
     // Then, get the most recent message timestamp for each DM conversation involving this user
     const { results: recentMessages } = await c.env.DB.prepare(`
       SELECT 
@@ -56,23 +48,11 @@ export async function getUsersByRecentActivity(c: Context): Promise<Response> {
       ORDER BY last_message_time DESC
     `).bind(userIdString, userIdString).all();
     
-    console.log(`Found ${recentMessages.length} DM conversations:`, recentMessages);
-
-    // Also check what messages exist in general for debugging
-    const { results: allDMMessages } = await c.env.DB.prepare(`
-      SELECT channel_id, timestamp, sender_id 
-      FROM messages 
-      WHERE channel_id LIKE 'dm_%' 
-      ORDER BY timestamp DESC 
-      LIMIT 10
-    `).all();
-    console.log(`Sample DM messages in database:`, allDMMessages);
-
     // Create a map of user IDs to their last message time
     const userLastMessageMap = new Map<number, string>();
     
-    for (const msg of recentMessages as any[]) {
-      const channelId = msg.channel_id as string;
+    for (const msg of recentMessages as { channel_id: string; last_message_time: string }[]) {
+      const channelId = msg.channel_id;
       const parts = channelId.split('_');
       if (parts.length === 3) {
         const user1Id = parseInt(parts[1]);
@@ -82,13 +62,12 @@ export async function getUsersByRecentActivity(c: Context): Promise<Response> {
         // Only set if we haven't seen this user yet (since we're ordered by most recent)
         if (!userLastMessageMap.has(otherUserId)) {
           userLastMessageMap.set(otherUserId, msg.last_message_time);
-          console.log(`Mapped user ${otherUserId} to timestamp ${msg.last_message_time}`);
         }
       }
     }
 
     // Add last_message_time to users and sort them
-    const usersWithActivity = (allUsers as any[]).map(user => ({
+    const usersWithActivity = (allUsers as { id: number; username: string; is_admin: number }[]).map(user => ({
       ...user,
       last_message_time: userLastMessageMap.get(user.id) || ''
     }));
@@ -113,17 +92,11 @@ export async function getUsersByRecentActivity(c: Context): Promise<Response> {
       }
     });
 
-    console.log('Final sorted result:', usersWithActivity.map(u => ({ 
-      id: u.id, 
-      username: u.username, 
-      last_message_time: u.last_message_time 
-    })));
-
     return new Response(JSON.stringify(usersWithActivity), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error fetching users by recent activity', error);
-    return new Response('Error fetching users by recent activity', { status: 500 });
+    return new Response('Internal server error', { status: 500 });
   }
-} 
+}

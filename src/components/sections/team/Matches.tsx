@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getTeamCardGradientClass, getTeamAccentStyle, getTeamColor } from '../../../utils/color';
+import { TBA_CONFIG } from '../../../config';
 
 interface TeamMatchesProps {
   teamNumber: string;
@@ -21,9 +22,9 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
         setLoading(true);
         const currentYear = new Date().getFullYear();
         
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/events/${currentYear}`, {
+        const response = await fetch(`${TBA_CONFIG.BASE_URL}/team/frc${teamNumber}/events/${currentYear}`, {
           headers: {
-            'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
+            'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY
           }
         });
         
@@ -67,9 +68,9 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
       try {
         setMatchesLoading(true);
         
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/event/${selectedEvent}/matches`, {
+        const response = await fetch(`${TBA_CONFIG.BASE_URL}/team/frc${teamNumber}/event/${selectedEvent}/matches`, {
           headers: {
-            'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
+            'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY
           }
         });
         

@@ -19,7 +19,7 @@ export const generateColor = (username: string, customColor?: string | null): st
   // Convert hash to RGB hex
   for (let i = 0; i < 3; i++) {
     const value = (hash >> (i * 8)) & 0xff;
-    color += ("00" + value.toString(16)).substr(-2);
+    color += value.toString(16).padStart(2, '0');
   }
 
   return color;
@@ -69,7 +69,7 @@ export const getTeamTextClasses = (teamNumber: string): string => {
       return 'font-bold';
     case '7598':
       return 'font-bold';
-    case '5590':
+    case '5560':
       return 'font-bold';
     default:
       return '';
@@ -84,7 +84,7 @@ export const getTeamHoverClasses = (teamNumber: string): string => {
       return 'hover:opacity-80';
     case '7598':
       return 'hover:opacity-80';
-    case '5590':
+    case '5560':
       return 'hover:opacity-80';
     default:
       return '';

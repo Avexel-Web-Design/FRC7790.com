@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { Effect, pipe } from 'effect';
+import { Effect } from 'effect';
 import { authMiddleware, AuthUser } from '../auth/middleware';
 import { 
   authEffectHandler, 
@@ -12,27 +12,7 @@ import {
   NotFoundError,
   ConflictError
 } from '../lib/effect-hono';
-
-// Simple password hashing using Web Crypto API
-const hashPassword = (password: string): Effect.Effect<string, never, never> =>
-  Effect.promise(async () => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  });
-
-// Simple password verification using Web Crypto API
-const verifyPassword = (password: string, hashedPassword: string): Effect.Effect<boolean, never, never> =>
-  Effect.promise(async () => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const computedHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return computedHash === hashedPassword;
-  });
+import { hashPassword, verifyPassword } from '../lib/password';
 
 interface DbUser {
   id: number;
@@ -187,7 +167,7 @@ profile.post('/change-password', authEffectHandler((c) =>
     }
 
     // Verify current password
-    const validPassword = yield* verifyPassword(currentPassword, dbUser.password);
+    const { valid: validPassword } = yield* verifyPassword(currentPassword, dbUser.password);
     if (!validPassword) {
       return yield* Effect.fail(AuthError.invalidCredentials('Current password is incorrect'));
     }

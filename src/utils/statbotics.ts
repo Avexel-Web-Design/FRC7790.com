@@ -1,4 +1,6 @@
-const BASE = 'https://api.statbotics.io/v3';
+import { STATBOTICS_CONFIG } from '../config';
+
+const BASE = STATBOTICS_CONFIG.BASE_URL;
 
 export interface StatEvent {
   key: string;
