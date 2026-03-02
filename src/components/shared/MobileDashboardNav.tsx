@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { Hash, MessagesSquare, ClipboardList, Calendar as CalendarIcon, User as UserIcon, Shield, Users } from 'lucide-react';
+import { LayoutDashboard, ClipboardCheck, Clipboard, LineChart, Users, Layers, PenSquare, Archive, User as UserIcon, Shield } from 'lucide-react';
 
 export default function MobileDashboardNav() {
-  const { channelsHaveUnread, messagesHaveUnread } = useNotifications();
+  const channelsHaveUnread = false;
+  const messagesHaveUnread = false;
   const { user } = useAuth();
 
   const Item = ({ to, label, icon: Icon, showDot }: { to: string; label: string; icon: any; showDot?: boolean }) => (
@@ -34,10 +34,14 @@ export default function MobileDashboardNav() {
       }}
     >
       <div className="max-w-screen-sm mx-auto flex items-stretch">
-        <Item to="/dashboard" label="Channels" icon={Hash} showDot={channelsHaveUnread} />
-        <Item to="/messages" label="Messages" icon={MessagesSquare} showDot={messagesHaveUnread} />
-        <Item to="/calendar" label="Calendar" icon={CalendarIcon} />
-        <Item to="/tasks" label="Tasks" icon={ClipboardList} />
+        <Item to="/dashboard" label="Overview" icon={LayoutDashboard} showDot={channelsHaveUnread} />
+        <Item to="/dashboard/match" label="Match" icon={ClipboardCheck} showDot={messagesHaveUnread} />
+        <Item to="/dashboard/pit" label="Pit" icon={Clipboard} />
+        <Item to="/dashboard/archive" label="Archive" icon={Archive} />
+        {user?.isAdmin && <Item to="/dashboard/analytics" label="Stats" icon={LineChart} />}
+        {user?.isAdmin && <Item to="/dashboard/alliances" label="Allies" icon={Users} />}
+        {user?.isAdmin && <Item to="/dashboard/simulations" label="Sims" icon={Layers} />}
+        {user?.isAdmin && <Item to="/dashboard/strategy" label="Draw" icon={PenSquare} />}
         <Item to="/profile" label="Profile" icon={UserIcon} />
         {user?.isAdmin && (
           <>

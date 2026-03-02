@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Trophy, 
-  CirclePile, 
-  Circle, 
-  ChessRook, 
-  Bot, 
-  Ship, 
-  Music, 
-  Users 
+import {
+  Trophy,
+  CirclePile,
+  Circle,
+  ChessRook,
+  Bot,
+  Ship,
+  Music,
+  Users
 } from 'lucide-react';
 import CoralIcon from '../../icons/CoralIcon';
 import type { MatchData, TeamData } from '../../../hooks/useMatchData';

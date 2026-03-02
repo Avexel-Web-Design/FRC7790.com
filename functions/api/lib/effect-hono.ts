@@ -7,6 +7,7 @@
 
 import { Effect, Exit, Cause, pipe } from "effect"
 import type { Context as HonoContext } from "hono"
+import type { R2Bucket } from "@cloudflare/workers-types"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import { 
   ValidationError, 
@@ -25,6 +26,9 @@ import { D1, D1Live, type D1Database } from "./db"
 export interface Env {
   DB: D1Database
   JWT_SECRET: string
+  TBA_AUTH_KEY?: string
+  R2?: R2Bucket
+  R2_PUBLIC_URL?: string
   OPENROUTER_API_KEY?: string
   OPENROUTER_MODEL?: string
   OPENROUTER_SITE_URL?: string

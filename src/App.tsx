@@ -10,7 +10,7 @@ import Scouting from './components/pages/Scouting';
 import BecomeASponsor from './components/pages/BecomeASponsor';
 import Event from './components/pages/Event';
 import Team from './components/pages/Team';
-import Match from './components/pages/Match';
+import MatchPage from './components/pages/Match';
 import District from './components/pages/District';
 import Regional from './components/pages/Regional';
 import SearchResults from './components/pages/SearchResults';
@@ -18,14 +18,19 @@ import Atlas from './components/pages/Atlas';
 import Login from './components/pages/auth/Login';
 import CreateAccount from './components/pages/auth/CreateAccount';
 import Settings from './components/pages/Settings';
-import Calendar from './components/pages/calendar/Calendar';
-import Tasks from './components/pages/tasks/Tasks';
-import Channels from './components/pages/Channels';
+import Dashboard from './components/pages/scouting/Dashboard';
+import ScoutingMatch from './components/pages/scouting/Match';
+import Pit from './components/pages/scouting/Pit';
+import Analytics from './components/pages/scouting/Analytics';
+import Alliances from './components/pages/scouting/Alliances';
+import Simulations from './components/pages/scouting/Simulations';
+import Strategy from './components/pages/scouting/Strategy';
+import Share from './components/pages/scouting/Share';
+import Archive from './components/pages/scouting/Archive';
 import Profile from './components/pages/Profile';
 import AdminUsers from './components/pages/admin/AdminUsers';
 import AdminPublicUsers from './components/pages/admin/AdminPublicUsers';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import DirectMessages from './components/pages/DirectMessages';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { SearchDataProvider } from './contexts/SearchDataContext';
 import PrivacyPolicy from './components/pages/PrivacyPolicy';
@@ -54,7 +59,7 @@ function App() {
             <Route path="/become-a-sponsor" element={<BecomeASponsor />} />
             <Route path="/event" element={<Event />} />
             <Route path="/team" element={<Team />} />
-            <Route path="/match" element={<Match />} />
+            <Route path="/match" element={<MatchPage />} />
             <Route path="/district" element={<District />} />
             <Route path="/regional" element={<Regional />} />
             <Route path="/atlas" element={<Atlas />} />
@@ -63,6 +68,7 @@ function App() {
             <Route path="/create-account" element={<CreateAccount />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/scouting/share/:token" element={<Share />} />
           </Route>
 
           {/* Member-only routes (block public) */}
@@ -75,11 +81,9 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="/dashboard" element={<Channels />} />
-            <Route path="/channels" element={<Channels />} />
-            <Route path="/messages" element={<DirectMessages />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/match" element={<ScoutingMatch />} />
+            <Route path="/dashboard/pit" element={<Pit />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
 
@@ -93,7 +97,12 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="/admin" element={<Channels />} />
+            <Route path="/dashboard/analytics" element={<Analytics />} />
+            <Route path="/dashboard/alliances" element={<Alliances />} />
+            <Route path="/dashboard/simulations" element={<Simulations />} />
+            <Route path="/dashboard/strategy" element={<Strategy />} />
+            <Route path="/dashboard/archive" element={<Archive />} />
+            <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/public-users" element={<AdminPublicUsers />} />
           </Route>

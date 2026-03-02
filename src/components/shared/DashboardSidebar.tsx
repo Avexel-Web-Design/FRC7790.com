@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { HashtagIcon, CalendarIcon, CheckCircleIcon, UserCircleIcon, ShieldCheckIcon, ChatBubbleLeftRightIcon, ArrowRightStartOnRectangleIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, ClipboardDocumentCheckIcon, ClipboardIcon, PresentationChartLineIcon, UsersIcon, Squares2X2Icon, PencilSquareIcon, ArchiveBoxIcon, UserCircleIcon, ShieldCheckIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
 import NotificationDot from '../common/NotificationDot';
 
 interface DashboardSidebarProps {
@@ -11,7 +10,8 @@ interface DashboardSidebarProps {
 
 export default function DashboardSidebar({ isMobile = false, onNavigate }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
-  const { channelsHaveUnread, messagesHaveUnread } = useNotifications();
+  const channelsHaveUnread = false;
+  const messagesHaveUnread = false;
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -26,11 +26,18 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
   };
   // Navigation
   const navigation = [
-    { name: 'Channels', href: '/dashboard', icon: HashtagIcon },
-    { name: 'Messages', href: '/messages', icon: ChatBubbleLeftRightIcon },
-    { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
-    { name: 'Tasks', href: '/tasks', icon: CheckCircleIcon },
+    { name: 'Overview', href: '/dashboard', icon: HomeIcon },
+    { name: 'Match', href: '/dashboard/match', icon: ClipboardDocumentCheckIcon },
+    { name: 'Pit', href: '/dashboard/pit', icon: ClipboardIcon },
+    { name: 'Archive', href: '/dashboard/archive', icon: ArchiveBoxIcon },
     { name: 'Profile', href: '/profile', icon: UserCircleIcon },
+  ];
+
+  const scoutingAdminNavigation = [
+    { name: 'Analytics', href: '/dashboard/analytics', icon: PresentationChartLineIcon },
+    { name: 'Alliances', href: '/dashboard/alliances', icon: UsersIcon },
+    { name: 'Simulations', href: '/dashboard/simulations', icon: Squares2X2Icon },
+    { name: 'Strategy', href: '/dashboard/strategy', icon: PencilSquareIcon },
   ];
 
   const adminNavigation = [
@@ -54,16 +61,37 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
             >
               <item.icon className="w-5 h-5 mr-3" />
               <span>{item.name}</span>
-              {/* Show notification dot for channels */}
-              {item.name === 'Channels' && channelsHaveUnread && (
+              {item.name === 'Overview' && channelsHaveUnread && (
                 <NotificationDot show={true} position="absolute-right" size="small" />
               )}
-              {/* Show notification dot for messages */}
-              {item.name === 'Messages' && messagesHaveUnread && (
+              {item.name === 'Match' && messagesHaveUnread && (
                 <NotificationDot show={true} position="absolute-right" size="small" />
               )}
             </Link>
           ))}
+
+          {user?.isAdmin && (
+            <>
+              <div className="pt-4 mt-4 border-t border-gray-700">
+                <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  Strategy
+                </h3>
+                {scoutingAdminNavigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={handleNavigation}
+                    className={`flex items-center px-3 py-3 text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors ${
+                      location.pathname === item.href ? 'bg-baywatch-orange text-white' : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    <item.icon className="w-5 h-5 mr-3" />
+                    <span>{item.name}</span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
           
           {user?.isAdmin && (
             <>
@@ -122,18 +150,27 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
             }`}
           >
             <item.icon className="w-6 h-6" />
-            {/* Show notification dot for channels */}
-            {item.name === 'Channels' && channelsHaveUnread && (
+            {item.name === 'Overview' && channelsHaveUnread && (
               <NotificationDot show={true} position="top-right" size="small" />
             )}
-            {/* Show notification dot for messages */}
-            {item.name === 'Messages' && messagesHaveUnread && (
+            {item.name === 'Match' && messagesHaveUnread && (
               <NotificationDot show={true} position="top-right" size="small" />
             )}
           </Link>
         ))}
         {user?.isAdmin && (
           <div className="pt-4 mt-4 space-y-2 border-t border-gray-700">
+            {scoutingAdminNavigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
+                  location.pathname === item.href ? 'bg-baywatch-orange text-white hover:text-white' : ''
+                }`}
+              >
+                <item.icon className="w-6 h-6" />
+              </Link>
+            ))}
             {adminNavigation.map((item) => (
               <Link
                 key={item.name}
