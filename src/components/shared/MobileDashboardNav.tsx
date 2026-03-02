@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { LayoutDashboard, ClipboardCheck, Clipboard, LineChart, Users, Layers, PenSquare, Archive, User as UserIcon, Shield } from 'lucide-react';
 
 function Item({ to, label, icon: Icon, showDot }: { to: string; label: string; icon: ComponentType<{ className?: string }>; showDot?: boolean }) {
