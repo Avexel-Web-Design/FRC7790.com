@@ -129,12 +129,13 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
   }
 
   return (
-    <div className="flex flex-col w-16 bg-black text-white">
+    <div className="group flex flex-col w-16 hover:w-56 bg-black text-white transition-all duration-200 overflow-hidden">
       {/* Header with inset divider */}
-      <div className="flex items-center justify-center h-16 px-2">
-        <div className="flex-1 flex items-center justify-center border-b border-gray-700">
-          <Link to="/" className="flex items-center mb-2 space-x-2">
-            <img src="/assets/images/logo.svg" alt="Baywatch Robotics Logo" className="w-12 h-12" />
+      <div className="flex items-center h-16 px-2">
+        <div className="flex-1 flex items-center border-b border-gray-700">
+          <Link to="/" className="flex items-center mb-2 px-2 gap-3">
+            <img src="/assets/images/logo.svg" alt="Baywatch Robotics Logo" className="w-12 h-12 shrink-0" />
+            <span className="text-sm font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">FRC 7790</span>
           </Link>
         </div>
       </div>
@@ -143,11 +144,12 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
           <Link
             key={item.name}
             to={item.href}
-            className={`relative flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
+            className={`relative flex items-center py-2 px-2.5 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
               location.pathname === item.href ? 'bg-baywatch-orange text-white hover:text-white' : ''
             }`}
           >
-            <item.icon className="w-6 h-6" />
+            <item.icon className="w-6 h-6 shrink-0" />
+            <span className="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">{item.name}</span>
             {item.name === 'Overview' && channelsHaveUnread && (
               <NotificationDot show={true} position="top-right" size="small" />
             )}
@@ -158,26 +160,30 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
         ))}
         {user?.isAdmin && (
           <div className="pt-4 mt-4 space-y-2 border-t border-gray-700">
+            <span className="px-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">Strategy</span>
             {scoutingAdminNavigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
+                className={`flex items-center py-2 px-2.5 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
                   location.pathname === item.href ? 'bg-baywatch-orange text-white hover:text-white' : ''
                 }`}
               >
-                <item.icon className="w-6 h-6" />
+                <item.icon className="w-6 h-6 shrink-0" />
+                <span className="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">{item.name}</span>
               </Link>
             ))}
+            <span className="px-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">Admin</span>
             {adminNavigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
+                className={`flex items-center py-2 px-2.5 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
                   location.pathname === item.href ? 'bg-baywatch-orange text-white hover:text-white' : ''
                 }`}
               >
-                <item.icon className="w-6 h-6" />
+                <item.icon className="w-6 h-6 shrink-0" />
+                <span className="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">{item.name}</span>
               </Link>
             ))}
           </div>
@@ -188,9 +194,10 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
         <div className="border-t border-gray-700 p-4">
           <button
             onClick={handleLogout}
-            className="flex items-center w-full justify-center py-2 text-sm font-medium rounded-xl hover:text-baywatch-orange"
+            className="flex items-center w-full py-2 px-2.5 text-sm font-medium rounded-xl hover:text-baywatch-orange"
           >
-            <ArrowRightStartOnRectangleIcon className="w-6 h-6" />
+            <ArrowRightStartOnRectangleIcon className="w-6 h-6 shrink-0" />
+            <span className="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">Logout</span>
           </button>
         </div>
       </div>

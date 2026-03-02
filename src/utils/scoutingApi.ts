@@ -102,6 +102,11 @@ export async function fetchArchiveDetail(eventCode: string): Promise<unknown | n
   return res.json();
 }
 
+export async function deleteArchivedEvent(eventCode: string): Promise<void> {
+  const res = await frcAPI.delete(`/scouting/event/archives/${eventCode}`);
+  if (!res.ok) throw new Error('Failed to delete event');
+}
+
 export async function fetchTeamMetrics(): Promise<unknown | null> {
   const res = await frcAPI.get('/scouting/metrics/teams');
   if (!res.ok) return null;

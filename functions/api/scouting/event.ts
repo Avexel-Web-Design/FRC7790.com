@@ -218,6 +218,44 @@ event.get('/archives', effectHandler((c) =>
   })
 ));
 
+event.delete('/archives/:eventCode', authEffectHandler((c) =>
+  Effect.gen(function* () {
+    const user = c.get('user');
+    if (!user.isAdmin) {
+      return yield* Effect.fail(ValidationError.single('Admin required'));
+    }
+
+    const { eventCode } = c.req.param();
+
+    // Get event id for cascade deletes
+    const eventRow = yield* queryOne<{ id: number }>('SELECT id FROM scouting_events WHERE event_code = ?', eventCode);
+    const eventId = eventRow?.id || null;
+
+    // Delete all related data
+    yield* execute('DELETE FROM scouting_match_entries WHERE event_code = ?', eventCode);
+    yield* execute('DELETE FROM scouting_pit_entries WHERE event_code = ?', eventCode);
+    yield* execute('DELETE FROM scouting_drawings WHERE event_code = ?', eventCode);
+    // share_links don't have event_code, skip them
+    yield* execute('DELETE FROM scouting_statbotics_cache WHERE event_code = ?', eventCode);
+    yield* execute('DELETE FROM scouting_tba_opr_cache WHERE event_code = ?', eventCode);
+
+    if (eventId) {
+      yield* execute('DELETE FROM scouting_matches WHERE event_id = ?', eventId);
+      yield* execute('DELETE FROM scouting_event_teams WHERE event_id = ?', eventId);
+    }
+
+    yield* execute('DELETE FROM scouting_events WHERE event_code = ?', eventCode);
+
+    // Clear active event if this was the active one
+    const active = yield* queryOne<{ value: string }>('SELECT value FROM scouting_settings WHERE key = ?', 'active_event_code');
+    if (active?.value === eventCode) {
+      yield* execute('DELETE FROM scouting_settings WHERE key = ?', 'active_event_code');
+    }
+
+    return { message: 'Event deleted', event_code: eventCode };
+  })
+));
+
 event.get('/archives/:eventCode', effectHandler((c) =>
   Effect.gen(function* () {
     const { eventCode } = c.req.param();
