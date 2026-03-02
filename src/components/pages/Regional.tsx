@@ -37,7 +37,7 @@ const Regional: React.FC = () => {
       </section>
 
       {showRankings && (
-        <RegionalTabs activeTab={activeTab} onTabChange={(tab)=>setActiveTab(tab as any)} />
+        <RegionalTabs activeTab={activeTab} onTabChange={(tab)=>setActiveTab(tab as 'rankings' | 'events')} />
       )}
 
       {showRankings && activeTab === 'rankings' && (

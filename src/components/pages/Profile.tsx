@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
@@ -17,6 +18,7 @@ interface Profile {
 }
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const { logout, updateUser } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -597,7 +599,7 @@ const Profile: React.FC = () => {
                 <button
                   onClick={() => {
                     logout();
-                    window.location.href = '/';
+                    navigate('/');
                   }}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-md"
                 >

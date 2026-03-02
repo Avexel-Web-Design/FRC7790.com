@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getFavoritePrefs, parseTeamsInput } from '../../utils/favorites';
 import { fetchTeamPreferences, upsertTeamPreference, deleteTeamPreference, type TeamPreference } from '../../utils/preferences';
 
 const Settings: React.FC = () => {
+  const navigate = useNavigate();
   const { logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,8 +109,7 @@ const Settings: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    // Optional: navigate to home
-    window.location.href = '/';
+    navigate('/');
   };
 
   return (

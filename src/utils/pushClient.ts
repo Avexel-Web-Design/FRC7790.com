@@ -64,8 +64,8 @@ export async function initPushListeners() {
     try {
       console.log('[Push] received (foreground):', notification);
     } catch {}
-    const title = (notification as any).title || (notification as any).notification?.title || 'New message';
-    const body = (notification as any).body || (notification as any).notification?.body || '';
+    const title = notification.title || 'New message';
+    const body = notification.body || '';
     notifyNewMessage(title, body).catch(() => {});
   });
   await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {

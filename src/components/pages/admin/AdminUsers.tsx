@@ -121,7 +121,7 @@ const AdminUsers: React.FC = () => {
       const token = localStorage.getItem('token');
       
       // Only send fields that have been changed
-      const updateData: any = {};
+      const updateData: Record<string, string | boolean> = {};
       
       if (editUser.username.trim() !== editingUser.username) {
         updateData.username = editUser.username.trim();
@@ -155,8 +155,8 @@ const AdminUsers: React.FC = () => {
         setUsers(users.map(u => 
           u.id === editingUser.id ? { 
             ...u, 
-            username: updateData.username || u.username,
-            is_admin: updateData.is_admin !== undefined ? updateData.is_admin : u.is_admin
+            username: typeof updateData.username === 'string' ? updateData.username : u.username,
+            is_admin: typeof updateData.is_admin === 'boolean' ? updateData.is_admin : u.is_admin
           } : u
         ));
         setShowEditModal(false);

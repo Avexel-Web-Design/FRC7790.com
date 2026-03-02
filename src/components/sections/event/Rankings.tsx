@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { TeamRanking } from '../../../hooks/useEventData';
 import { getTeamColor } from '../../../utils/color';
 
@@ -13,6 +14,7 @@ type SortDirection = 'asc' | 'desc';
 type DisplayMode = 'number' | 'name';
 
 const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => {
+  const navigate = useNavigate();
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [displayMode, setDisplayMode] = useState<DisplayMode>('number');
@@ -58,8 +60,8 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
     if (!rankings.length) return [];
 
     return [...rankings].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       switch (sortField) {
         case 'rank':
@@ -109,7 +111,7 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
   };
 
   const handleTeamClick = (teamNumber: string) => {
-    window.location.href = `/team?team=${teamNumber}`;
+    navigate(`/team?team=${teamNumber}`);
   };
 
   return (

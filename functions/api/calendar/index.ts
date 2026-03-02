@@ -2,23 +2,18 @@ import { Hono } from 'hono';
 import { Effect } from 'effect';
 import { authMiddleware } from '../auth/middleware';
 import {
-  effectHandler,
   authEffectHandler,
   parseBody,
   type Env,
   type ApiError,
+  type AuthUser,
   query,
   queryOne,
   execute,
   ValidationError,
-  NotFoundError
+  NotFoundError,
+  AuthError
 } from '../lib/effect-hono';
-
-interface AuthUser {
-  id: number;
-  username: string;
-  isAdmin: boolean;
-}
 
 interface RecurrenceConfig {
   type: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
@@ -93,7 +88,14 @@ const calendar = new Hono<{
 calendar.use('*', authMiddleware);
 
 // Utility function to generate recurring event instances
-function generateRecurringInstances(baseEvent: CalendarEvent, startDate: Date, endDate: Date): any[] {
+interface RecurringEventInstance extends Omit<CalendarEvent, 'id'> {
+  id: string | number;
+  parent_event_id: number;
+  is_recurring_instance: boolean;
+  is_recurring: number;
+}
+
+function generateRecurringInstances(baseEvent: CalendarEvent, startDate: Date, endDate: Date): RecurringEventInstance[] {
   if (!baseEvent.is_recurring) {
     return [baseEvent];
   }
@@ -155,7 +157,21 @@ function generateRecurringInstances(baseEvent: CalendarEvent, startDate: Date, e
   return instances;
 }
 
-function isValidOccurrence(date: Date, startDate: Date, config: any): boolean {
+interface RecurrenceParsedConfig {
+  type: string | null;
+  interval: number;
+  daysOfWeek?: string[];
+  dayOfMonth?: number | null;
+  weekOfMonth?: number | null;
+  dayOfWeek?: string | null;
+  months?: number[];
+  endType: string;
+  endDate?: string | null;
+  occurrences?: number | null;
+  exceptions?: string[];
+}
+
+function isValidOccurrence(date: Date, startDate: Date, config: RecurrenceParsedConfig): boolean {
   const daysDiff = Math.floor((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
   switch (config.type) {
@@ -201,7 +217,7 @@ function isValidOccurrence(date: Date, startDate: Date, config: any): boolean {
   }
 }
 
-function getNextOccurrence(currentDate: Date, config: any): Date {
+function getNextOccurrence(currentDate: Date, config: RecurrenceParsedConfig): Date {
   const nextDate = new Date(currentDate);
 
   switch (config.type) {
@@ -279,7 +295,7 @@ function buildRecurrenceFields(is_recurring: boolean | undefined, recurrence: Re
 }
 
 // Get all calendar events
-calendar.get('/', effectHandler((c) =>
+calendar.get('/', authEffectHandler((c) =>
   Effect.gen(function* () {
     const startDate = c.req.query('start');
     const endDate = c.req.query('end');
@@ -321,7 +337,7 @@ calendar.get('/', effectHandler((c) =>
     
     // Generate recurring event instances if date range is provided
     if (startDate && endDate) {
-      const expandedEvents: any[] = [];
+      const expandedEvents: Array<CalendarEvent | RecurringEventInstance> = [];
       const start = new Date(startDate + 'T00:00:00');
       const end = new Date(endDate + 'T23:59:59');
       
@@ -337,7 +353,7 @@ calendar.get('/', effectHandler((c) =>
       // Add standalone instances (these are modified recurring instances)
       expandedEvents.push(...standaloneInstances);
       
-      return expandedEvents.sort((a: any, b: any) => {
+      return expandedEvents.sort((a, b) => {
         const dateA = new Date(a.event_date + ' ' + (a.event_time || '00:00'));
         const dateB = new Date(b.event_date + ' ' + (b.event_time || '00:00'));
         return dateA.getTime() - dateB.getTime();
@@ -433,7 +449,7 @@ calendar.post('/', authEffectHandler((c) =>
 ));
 
 // Get individual event by ID
-calendar.get('/:id', effectHandler((c) =>
+calendar.get('/:id', authEffectHandler((c) =>
   Effect.gen(function* () {
     const { id } = c.req.param();
     
@@ -451,8 +467,9 @@ calendar.get('/:id', effectHandler((c) =>
 ));
 
 // Update a calendar event
-calendar.put('/:id', effectHandler((c) =>
+calendar.put('/:id', authEffectHandler((c) =>
   Effect.gen(function* () {
+    const user = c.get('user');
     const { id } = c.req.param();
     const body = yield* parseBody<UpdateEventBody>(c);
     const { 
@@ -495,15 +512,11 @@ calendar.put('/:id', effectHandler((c) =>
     if (!existingEvent) {
       return yield* Effect.fail(NotFoundError.resource('Event'));
     }
-    
-    // Debug logging
-    console.log('PUT /calendar/:id Debug Info:');
-    console.log('ID:', id);
-    console.log('original_instance_date:', original_instance_date);
-    console.log('update_series:', update_series);
-    console.log('existingEvent.is_recurring:', existingEvent.is_recurring);
-    console.log('existingEvent.parent_event_id:', existingEvent.parent_event_id);
-    console.log('existingEvent.recurrence_exceptions:', existingEvent.recurrence_exceptions);
+
+    // Only the creator or an admin can update an event
+    if (existingEvent.created_by !== user.id && !user.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
+    }
     
     // Handle different update scenarios
     if (original_instance_date && !update_series) {
@@ -577,12 +590,6 @@ calendar.put('/:id', effectHandler((c) =>
       
     } else {
       // Either updating the entire series or a regular event
-      const targetId = id;
-      
-      console.log('Updating series/regular event:');
-      console.log('targetId:', targetId);
-      console.log('is_recurring:', is_recurring);
-      console.log('recurrence provided:', !!recurrence);
 
       // Prepare recurring event fields - preserve existing exceptions when updating a series
       const baseRecurrenceFields = buildRecurrenceFields(is_recurring, recurrence);
@@ -590,9 +597,6 @@ calendar.put('/:id', effectHandler((c) =>
         ...baseRecurrenceFields,
         recurrence_exceptions: existingEvent.recurrence_exceptions
       } : baseRecurrenceFields;
-      
-      console.log('recurrenceFields.recurrence_exceptions:', recurrenceFields.recurrence_exceptions);
-      console.log('About to update event with targetId:', targetId);
 
       yield* execute(`
         UPDATE calendar_events SET 
@@ -622,7 +626,7 @@ calendar.put('/:id', effectHandler((c) =>
         recurrenceFields.recurrence_end_date,
         recurrenceFields.recurrence_occurrences,
         recurrenceFields.recurrence_exceptions,
-        targetId
+        id
       );
 
       return { message: 'Event updated successfully' };
@@ -631,8 +635,9 @@ calendar.put('/:id', effectHandler((c) =>
 ));
 
 // Delete a calendar event
-calendar.delete('/:id', effectHandler((c) =>
+calendar.delete('/:id', authEffectHandler((c) =>
   Effect.gen(function* () {
+    const user = c.get('user');
     const { id } = c.req.param();
     
     // Try to parse body, but don't fail if empty - use Effect.catchAll to handle errors
@@ -653,6 +658,11 @@ calendar.delete('/:id', effectHandler((c) =>
 
     if (!existingEvent) {
       return yield* Effect.fail(NotFoundError.resource('Event'));
+    }
+
+    // Only the creator or an admin can delete an event
+    if (existingEvent.created_by !== user.id && !user.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
     }
 
     // Handle recurring event instance deletion
@@ -703,8 +713,9 @@ calendar.delete('/:id', effectHandler((c) =>
 ));
 
 // Add exception to recurring event
-calendar.post('/:id/exception', effectHandler((c) =>
+calendar.post('/:id/exception', authEffectHandler((c) =>
   Effect.gen(function* () {
+    const user = c.get('user');
     const { id } = c.req.param();
     const body = yield* parseBody<ExceptionBody>(c);
     const { exception_date } = body;
@@ -725,6 +736,11 @@ calendar.post('/:id/exception', effectHandler((c) =>
 
     if (!event) {
       return yield* Effect.fail(NotFoundError.resource('Event'));
+    }
+
+    // Only the creator or an admin can modify exceptions
+    if (event.created_by !== user.id && !user.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
     }
 
     if (!event.is_recurring) {
@@ -751,8 +767,9 @@ calendar.post('/:id/exception', effectHandler((c) =>
 ));
 
 // Remove exception from recurring event
-calendar.delete('/:id/exception', effectHandler((c) =>
+calendar.delete('/:id/exception', authEffectHandler((c) =>
   Effect.gen(function* () {
+    const user = c.get('user');
     const { id } = c.req.param();
     const body = yield* parseBody<ExceptionBody>(c);
     const { exception_date } = body;
@@ -768,6 +785,11 @@ calendar.delete('/:id/exception', effectHandler((c) =>
 
     if (!event) {
       return yield* Effect.fail(NotFoundError.resource('Event'));
+    }
+
+    // Only the creator or an admin can modify exceptions
+    if (event.created_by !== user.id && !user.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
     }
 
     if (!event.is_recurring) {
@@ -786,33 +808,6 @@ calendar.delete('/:id/exception', effectHandler((c) =>
     );
 
     return { message: 'Exception removed successfully' };
-  })
-));
-
-// Test endpoint to check recurring event generation
-calendar.get('/test/:id', effectHandler((c) =>
-  Effect.gen(function* () {
-    const { id } = c.req.param();
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + 3); // 3 months ahead
-
-    const event = yield* queryOne<CalendarEvent>(
-      'SELECT * FROM calendar_events WHERE id = ?',
-      id
-    );
-
-    if (!event) {
-      return yield* Effect.fail(NotFoundError.resource('Event'));
-    }
-
-    const instances = generateRecurringInstances(event, startDate, endDate);
-
-    return {
-      baseEvent: event,
-      generatedInstances: instances,
-      count: instances.length
-    };
   })
 ));
 

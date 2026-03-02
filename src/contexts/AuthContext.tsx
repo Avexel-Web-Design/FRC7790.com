@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { registerPushToken, initPushListeners } from '../utils/pushClient';
 import { fetchTeamPreferences } from '../utils/preferences';
 import type { ReactNode } from 'react';
@@ -28,112 +28,109 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/** Shared profile response shape from /api/profile */
+interface ProfileResponse {
+  id: number;
+  username: string;
+  is_admin: boolean;
+  user_type?: 'member' | 'public';
+  avatar?: string;
+  avatar_color?: string;
+}
+
+/** Map API profile response to internal User shape. */
+function mapProfileToUser(data: ProfileResponse): User {
+  return {
+    id: data.id,
+    username: data.username,
+    isAdmin: data.is_admin,
+    userType: data.user_type,
+    avatar: data.avatar,
+    avatarColor: data.avatar_color,
+  };
+}
+
+/**
+ * Fetch the user's profile from the API and run side-effects
+ * (push registration, team preferences caching).
+ * Returns the User on success, or null on failure.
+ */
+async function fetchProfileAndSetup(token: string): Promise<User | null> {
+  const response = await fetch('/api/profile', {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
+
+  if (!response.ok) return null;
+
+  const data: ProfileResponse = await response.json();
+  const user = mapProfileToUser(data);
+
+  // Best-effort side-effects (push registration + team prefs cache)
+  initPushListeners().catch(() => {});
+  registerPushToken(user.id).catch(() => {});
+  fetchTeamPreferences()
+    .then((prefs) => {
+      try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(prefs)); } catch {}
+    })
+    .catch(() => {});
+
+  return user;
+}
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // On mount: restore session from stored token
   useEffect(() => {
-    const fetchAndSetUser = async () => {
+    const restoreSession = async () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await fetch('/api/profile', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          if (response.ok) {
-            const userData = await response.json();
-            setUser({
-              id: userData.id,
-              username: userData.username,
-              isAdmin: userData.is_admin,
-              userType: userData.user_type,
-              avatar: userData.avatar,
-              avatarColor: userData.avatar_color,
-            });
-            // Best-effort push registration
-            initPushListeners().catch(() => {});
-            registerPushToken(userData.id).catch(() => {});
-            // Preload team preferences cache for highlighting
-            fetchTeamPreferences()
-              .then((prefs) => { try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(prefs)); } catch {} })
-              .catch(() => {});
+          const restored = await fetchProfileAndSetup(token);
+          if (restored) {
+            setUser(restored);
           } else {
             localStorage.removeItem('token');
           }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
+        } catch {
           localStorage.removeItem('token');
         }
       }
       setIsLoading(false);
     };
-    fetchAndSetUser();
+    restoreSession();
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
+  const login = useCallback(async (username: string, password: string): Promise<boolean> => {
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
 
-      if (response.ok) {
-        const { token } = await response.json();
-        localStorage.setItem('token', token);
+      if (!response.ok) return false;
 
-        // Immediately fetch the profile to avoid JWT decoding pitfalls
-        try {
-          const profileRes = await fetch('/api/profile', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (profileRes.ok) {
-            const userData = await profileRes.json();
-            setUser({
-              id: userData.id,
-              username: userData.username,
-              isAdmin: userData.is_admin,
-              userType: userData.user_type,
-              avatar: userData.avatar,
-              avatarColor: userData.avatar_color,
-            });
-            // Clear stale team prefs cache on login; Settings will refresh
-            try { localStorage.removeItem('team_prefs_cache_v1'); } catch {}
-            // Best-effort push registration
-            initPushListeners().catch(() => {});
-            registerPushToken(userData.id).catch(() => {});
-            // Preload team preferences cache for highlighting
-            fetchTeamPreferences()
-              .then((prefs) => { try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(prefs)); } catch {} })
-              .catch(() => {});
-          } else {
-            // Fallback minimal state
-            setUser({ id: 0, username, isAdmin: false });
-          }
-        } catch {
-          setUser({ id: 0, username, isAdmin: false });
-        }
+      const { token } = await response.json();
+      localStorage.setItem('token', token);
 
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
+      try { localStorage.removeItem('team_prefs_cache_v1'); } catch {}
+
+      const profileUser = await fetchProfileAndSetup(token);
+      setUser(profileUser ?? { id: 0, username, isAdmin: false });
+
+      return true;
+    } catch {
       return false;
     }
-  };
+  }, []);
 
-  const register = async (username: string, password: string): Promise<boolean> => {
+  const register = useCallback(async (username: string, password: string): Promise<boolean> => {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
 
@@ -143,52 +140,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!token) return false;
       localStorage.setItem('token', token);
 
-      // Fetch profile to populate user state
-      try {
-        const profileRes = await fetch('/api/profile', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (profileRes.ok) {
-          const userData = await profileRes.json();
-          setUser({
-            id: userData.id,
-            username: userData.username,
-            isAdmin: userData.is_admin,
-            userType: userData.user_type,
-            avatar: userData.avatar,
-            avatarColor: userData.avatar_color,
-          });
-          try { localStorage.removeItem('team_prefs_cache_v1'); } catch {}
-          // Best-effort push registration
-          initPushListeners().catch(() => {});
-          registerPushToken(userData.id).catch(() => {});
-          fetchTeamPreferences()
-            .then((prefs) => { try { localStorage.setItem('team_prefs_cache_v1', JSON.stringify(prefs)); } catch {} })
-            .catch(() => {});
-        } else {
-          setUser({ id: 0, username, isAdmin: false });
-        }
-      } catch {
-        setUser({ id: 0, username, isAdmin: false });
-      }
+      try { localStorage.removeItem('team_prefs_cache_v1'); } catch {}
+
+      const profileUser = await fetchProfileAndSetup(token);
+      setUser(profileUser ?? { id: 0, username, isAdmin: false });
 
       return true;
-    } catch (error) {
-      console.error('Register error:', error);
+    } catch {
       return false;
     }
-  };
+  }, []);
 
-  const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      setUser({ ...user, ...userData });
-    }
-  };
+  const updateUser = useCallback((userData: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...userData } : null);
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     setUser(null);
-  };
+  }, []);
 
   const value: AuthContextType = {
     user,

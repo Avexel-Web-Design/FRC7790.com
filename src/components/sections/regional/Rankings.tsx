@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { RegionalRanking } from '../../../hooks/useRegionalData';
 
 interface RegionalRankingsProps {
@@ -12,6 +13,7 @@ const getEventPoints = (r: RegionalRanking, idx: number): string => {
 };
 
 const RegionalRankings: React.FC<RegionalRankingsProps> = ({ rankings, isLoading }) => {
+  const navigate = useNavigate();
   return (
     <section className="py-8 relative z-10">
       <div className="container mx-auto px-6">
@@ -42,7 +44,7 @@ const RegionalRankings: React.FC<RegionalRankingsProps> = ({ rankings, isLoading
                 rankings.map(r => (
                   <tr key={r.team_key} className="hover:bg-gray-800/50 transition-all">
                     <td className="p-4 font-semibold">{r.rank}</td>
-                    <td className="p-4 text-baywatch-orange cursor-pointer" onClick={() => window.location.href = `/team?team=${r.team_key.replace('frc','')}`}>{r.team_key.replace('frc','')}</td>
+                    <td className="p-4 text-baywatch-orange cursor-pointer" onClick={() => navigate(`/team?team=${r.team_key.replace('frc','')}`)}>{r.team_key.replace('frc','')}</td>
                     <td className="p-4">{getEventPoints(r, 0)}</td>
                     <td className="p-4">{getEventPoints(r, 1)}</td>
                     <td className="p-4 font-semibold">{r.point_total?.toFixed(2)}</td>

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom
 import Layout from './components/shared/Layout';
 import DashboardLayout from './components/shared/DashboardLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ErrorBoundary from './components/shared/ErrorBoundary';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { SearchDataProvider } from './contexts/SearchDataContext';
 
@@ -40,6 +41,7 @@ const PageLoader = () => (
 
 function App() {
   return (
+    <ErrorBoundary>
     <NotificationProvider>
       <Router>
         <Suspense fallback={<PageLoader />}>
@@ -118,6 +120,7 @@ function App() {
         </Suspense>
       </Router>
     </NotificationProvider>
+    </ErrorBoundary>
   );
 }
 

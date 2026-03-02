@@ -8,7 +8,7 @@ async function getUserDeviceTokens(c: Context, userIds: number[]): Promise<strin
   const { results } = await c.env.DB.prepare(
     `SELECT token FROM user_devices WHERE user_id IN (${placeholders})`
   ).bind(...userIds).all();
-  return ((results as any[]) || []).map(r => (r as any).token).filter(Boolean);
+  return ((results as Array<{ token: string }>) || []).map(r => r.token).filter(Boolean);
 }
 
 async function filterMutedUsers(c: Context, channelId: string, userIds: number[]): Promise<number[]> {
@@ -17,7 +17,7 @@ async function filterMutedUsers(c: Context, channelId: string, userIds: number[]
   const { results } = await c.env.DB.prepare(
     `SELECT user_id FROM user_notification_settings WHERE channel_id = ? AND muted = 1 AND user_id IN (${placeholders})`
   ).bind(channelId, ...userIds).all();
-  const mutedSet = new Set(((results as any[]) || []).map(r => Number((r as any).user_id)));
+  const mutedSet = new Set(((results as Array<{ user_id: number }>) || []).map(r => Number(r.user_id)));
   return userIds.filter(id => !mutedSet.has(id));
 }
 
@@ -134,11 +134,11 @@ export async function sendPushToUsers(c: Context, userIds: number[], title: stri
       console.warn('Push: No FCM credentials configured');
       return;
     }
-    const payload: any = {
+    const payload = {
       registration_ids: tokens,
       notification: { title, body },
       data: data || {},
-      priority: 'high',
+      priority: 'high' as const,
     };
     const res = await fetch('https://fcm.googleapis.com/fcm/send', {
       method: 'POST',
@@ -172,13 +172,13 @@ export async function sendChannelMessagePush(c: Context, channelId: string, send
       const memberRows = await c.env.DB.prepare(
         'SELECT user_id FROM channel_members WHERE channel_id = ?'
       ).bind(channelId).all();
-      const members = ((memberRows.results as any[]) || []).map(r => Number((r as any).user_id));
+      const members = ((memberRows.results as Array<{ user_id: number }>) || []).map(r => Number(r.user_id));
       if (members.length) {
         recipients = members.filter(id => id !== senderId);
       } else {
         // Public channel: send to all users except sender
         const userRows = await c.env.DB.prepare('SELECT id FROM users').all();
-        const all = ((userRows.results as any[]) || []).map(r => Number((r as any).id));
+        const all = ((userRows.results as Array<{ id: number }>) || []).map(r => Number(r.id));
         recipients = all.filter(id => id !== senderId);
       }
     }

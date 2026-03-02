@@ -1,5 +1,6 @@
 import { useTeamContext } from '../../hooks/useTeamContext';
 import { getTeamColor } from '../../utils/color';
+import { hoverColorProps } from '../../utils/hoverStyle';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -18,13 +19,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-2xl social-icon youtube transition-colors"
-              style={{ color: accentColor }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#dc2626'; // YouTube red
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = accentColor;
-              }}
+              {...hoverColorProps(accentColor, '#dc2626')}
             >
               <i className="fab fa-youtube"></i>
             </a>
@@ -33,13 +28,7 @@ export default function Footer() {
               target="_blank"
               rel="noopener noreferrer"
               className="text-2xl social-icon instagram transition-colors"
-              style={{ color: accentColor }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#ec4899'; // Instagram pink
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = accentColor;
-              }}
+              {...hoverColorProps(accentColor, '#ec4899')}
             >
               <i className="fab fa-instagram"></i>
             </a>

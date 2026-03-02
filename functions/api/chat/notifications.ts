@@ -11,6 +11,113 @@ function getAuthenticatedUserId(c: Context): number {
   return user.id;
 }
 
+/**
+ * Batch-count unread messages for a list of channel IDs in a single query.
+ * Returns a map of channelId -> unread count (only non-zero entries).
+ */
+async function batchCountUnread(
+  db: D1Database,
+  channelIds: string[],
+  userId: number
+): Promise<Record<string, number>> {
+  if (channelIds.length === 0) return {};
+
+  // Get all read statuses in one query
+  const placeholders = channelIds.map(() => '?').join(',');
+  const readRows = await db.prepare(
+    `SELECT channel_id, last_read_timestamp FROM user_read_status WHERE user_id = ? AND channel_id IN (${placeholders})`
+  ).bind(userId, ...channelIds).all();
+
+  const readMap = new Map<string, string>();
+  for (const row of (readRows.results ?? []) as { channel_id: string; last_read_timestamp: string }[]) {
+    readMap.set(row.channel_id, row.last_read_timestamp);
+  }
+
+  // Count unread messages per channel in one query using a CASE/GROUP BY approach
+  // We build a UNION ALL of per-channel conditions to let D1 handle it in a single round-trip
+  // For D1 (SQLite), we use a simpler approach: one query with GROUP BY
+  const defaultTimestamp = '1970-01-01T00:00:00.000Z';
+
+  // Build per-channel timestamp conditions
+  // We query all messages across the channels and filter in SQL
+  const unreadRows = await db.prepare(`
+    SELECT m.channel_id, COUNT(*) as count
+    FROM messages m
+    LEFT JOIN user_read_status urs ON urs.user_id = ? AND urs.channel_id = m.channel_id
+    WHERE m.channel_id IN (${placeholders})
+      AND m.timestamp > COALESCE(urs.last_read_timestamp, ?)
+      AND m.sender_id != ?
+    GROUP BY m.channel_id
+  `).bind(userId, ...channelIds, defaultTimestamp, userId).all();
+
+  const result: Record<string, number> = {};
+  for (const row of (unreadRows.results ?? []) as { channel_id: string; count: number }[]) {
+    if (row.count > 0) {
+      result[row.channel_id] = row.count;
+    }
+  }
+  return result;
+}
+
+/**
+ * Fetch all channel IDs accessible to a user, split by type.
+ * Returns { regularIds, dmIds, groupIds } in a single logical unit.
+ */
+async function fetchUserChannelIds(
+  db: D1Database,
+  userId: number
+): Promise<{ regularIds: string[]; dmIds: string[]; groupIds: string[] }> {
+  const userIdStr = String(userId);
+
+  // Run all three channel queries in parallel
+  const [regularResult, dmResult, groupResult] = await Promise.all([
+    db.prepare(`
+      SELECT DISTINCT channels.id
+      FROM channels
+      LEFT JOIN channel_members ON channels.id = channel_members.channel_id AND channel_members.user_id = ?
+      WHERE channels.id NOT LIKE 'dm_%' AND channels.id NOT LIKE 'group_%'
+        AND (channels.is_private = 0 OR channel_members.user_id = ?)
+      ORDER BY channels.position ASC
+    `).bind(userId, userId).all(),
+
+    db.prepare(`
+      SELECT DISTINCT channel_id
+      FROM messages
+      WHERE channel_id LIKE 'dm_%'
+        AND (
+          channel_id LIKE 'dm_' || ? || '_%' 
+          OR channel_id LIKE 'dm_%_' || ?
+        )
+    `).bind(userIdStr, userIdStr).all(),
+
+    db.prepare(`
+      SELECT DISTINCT channels.id
+      FROM channels
+      LEFT JOIN channel_members ON channels.id = channel_members.channel_id
+      WHERE channels.id LIKE 'group_%' 
+        AND channel_members.user_id = ?
+    `).bind(userId).all(),
+  ]);
+
+  return {
+    regularIds: ((regularResult.results ?? []) as { id: string }[]).map(r => r.id),
+    dmIds: ((dmResult.results ?? []) as { channel_id: string }[]).map(r => r.channel_id),
+    groupIds: ((groupResult.results ?? []) as { id: string }[]).map(r => r.id),
+  };
+}
+
+/**
+ * Fetch the set of muted channel IDs for a user.
+ */
+async function fetchMutedChannelIds(db: D1Database, userId: number): Promise<Set<string>> {
+  const mutedRows = await db.prepare(
+    'SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1'
+  ).bind(userId).all();
+  return new Set(
+    ((mutedRows.results ?? []) as { channel_id: string }[]).map(r => r.channel_id)
+  );
+}
+
 // Mark a channel as read for the authenticated user
 export async function markChannelAsRead(c: Context): Promise<Response> {
   try {
@@ -34,8 +141,7 @@ export async function markChannelAsRead(c: Context): Promise<Response> {
     return new Response(JSON.stringify({ success: true, timestamp }), {
       headers: { 'Content-Type': 'application/json' }
     });
-  } catch (error) {
-    console.error('Error marking channel as read:', error);
+  } catch {
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -44,88 +150,31 @@ export async function markChannelAsRead(c: Context): Promise<Response> {
 export async function getAllNotificationData(c: Context): Promise<Response> {
   try {
     const userId = getAuthenticatedUserId(c);
-    const userIdStr = String(userId);
+    const db: D1Database = c.env.DB;
     
-    // Get all channels the user has access to
-    const { results: channels } = await c.env.DB.prepare(`
-      SELECT DISTINCT channels.*
-      FROM channels
-      LEFT JOIN channel_members ON channels.id = channel_members.channel_id AND channel_members.user_id = ?
-      WHERE channels.id NOT LIKE "dm_%" AND channels.id NOT LIKE "group_%" 
-        AND (channels.is_private = 0 OR channel_members.user_id = ?)
-      ORDER BY channels.position ASC
-    `).bind(userId, userId).all();
-    
-    // Get all DM conversations for this user
-    const { results: dmConversations } = await c.env.DB.prepare(`
-      SELECT DISTINCT channel_id
-      FROM messages
-      WHERE channel_id LIKE 'dm_%'
-        AND (
-          channel_id LIKE 'dm_' || ? || '_%' 
-          OR channel_id LIKE 'dm_%_' || ?
-        )
-    `).bind(userIdStr, userIdStr).all();
-    
-    // Get all group chats the user is a member of
-    const { results: groupChats } = await c.env.DB.prepare(`
-      SELECT DISTINCT channels.*
-      FROM channels
-      LEFT JOIN channel_members ON channels.id = channel_members.channel_id
-      WHERE channels.id LIKE "group_%" 
-        AND channel_members.user_id = ?
-    `).bind(userId).all();
-    
-    // Fetch muted channels for this user
-    const mutedRows = await c.env.DB.prepare(
-      'SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1'
-    ).bind(userId).all();
-    const mutedChannelIds = (mutedRows.results ?? []).map(r => (r as { channel_id: string }).channel_id);
-    const mutedSet = new Set(mutedChannelIds);
+    // Fetch channel IDs and muted set in parallel
+    const [channelIds, mutedSet] = await Promise.all([
+      fetchUserChannelIds(db, userId),
+      fetchMutedChannelIds(db, userId),
+    ]);
 
-    // Combine all channel/DM/group IDs and filter muted
-    const allChannelIds = [
-      ...channels.map((ch: { id: string }) => ch.id),
-      ...dmConversations.map((dm: { channel_id: string }) => dm.channel_id),
-      ...groupChats.map((g: { id: string }) => g.id)
-    ].filter((id) => !mutedSet.has(id));
+    // Combine all IDs, filtering muted ones
+    const regularFiltered = channelIds.regularIds.filter(id => !mutedSet.has(id));
+    const dmFiltered = channelIds.dmIds.filter(id => !mutedSet.has(id));
+    const groupFiltered = channelIds.groupIds.filter(id => !mutedSet.has(id));
+    const allChannelIds = [...regularFiltered, ...dmFiltered, ...groupFiltered];
     
-    const unreadCounts: Record<string, number> = {};
+    // Single batch query for all unread counts
+    const unreadCounts = await batchCountUnread(db, allChannelIds, userId);
+    
+    // Categorize totals
     let channelsUnread = 0;
     let messagesUnread = 0;
-    
-    // For each channel, count unread messages
-    for (const channelId of allChannelIds) {
-      try {
-        // Get user's last read timestamp for this channel
-        const readStatus = await c.env.DB.prepare(
-          'SELECT last_read_timestamp FROM user_read_status WHERE user_id = ? AND channel_id = ?'
-        ).bind(userId, channelId).first();
-        
-        const lastReadTimestamp = readStatus?.last_read_timestamp || '1970-01-01T00:00:00.000Z';
-        
-        // Count messages after the last read timestamp
-        const unreadResult = await c.env.DB.prepare(`
-          SELECT COUNT(*) as count
-          FROM messages
-          WHERE channel_id = ? 
-            AND timestamp > ?
-            AND sender_id != ?
-        `).bind(channelId, lastReadTimestamp, userId).first();
-        
-        const count = (unreadResult as { count: number } | null)?.count ?? 0;
-        if (count > 0) {
-          unreadCounts[channelId] = count;
-          
-          // Categorize by channel type for totals
-          if (channelId.startsWith('dm_') || channelId.startsWith('group_')) {
-            messagesUnread += count;
-          } else {
-            channelsUnread += count;
-          }
-        }
-      } catch (error) {
-        console.error(`Error counting unread for channel ${channelId}:`, error);
+    for (const [channelId, count] of Object.entries(unreadCounts)) {
+      if (channelId.startsWith('dm_') || channelId.startsWith('group_')) {
+        messagesUnread += count;
+      } else {
+        channelsUnread += count;
       }
     }
     
@@ -137,8 +186,7 @@ export async function getAllNotificationData(c: Context): Promise<Response> {
     }), {
       headers: { 'Content-Type': 'application/json' }
     });
-  } catch (error) {
-    console.error('Error getting notification data:', error);
+  } catch {
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -147,85 +195,25 @@ export async function getAllNotificationData(c: Context): Promise<Response> {
 export async function getUnreadCounts(c: Context): Promise<Response> {
   try {
     const userId = getAuthenticatedUserId(c);
-    const userIdStr = String(userId);
+    const db: D1Database = c.env.DB;
     
-    // Get all channels the user has access to
-    const { results: channels } = await c.env.DB.prepare(`
-      SELECT DISTINCT channels.*
-      FROM channels
-      LEFT JOIN channel_members ON channels.id = channel_members.channel_id AND channel_members.user_id = ?
-      WHERE channels.id NOT LIKE "dm_%" AND channels.id NOT LIKE "group_%" 
-        AND (channels.is_private = 0 OR channel_members.user_id = ?)
-      ORDER BY channels.position ASC
-    `).bind(userId, userId).all();
-    
-    // Get all DM conversations for this user
-    const { results: dmConversations } = await c.env.DB.prepare(`
-      SELECT DISTINCT channel_id
-      FROM messages
-      WHERE channel_id LIKE 'dm_%'
-        AND (
-          channel_id LIKE 'dm_' || ? || '_%' 
-          OR channel_id LIKE 'dm_%_' || ?
-        )
-    `).bind(userIdStr, userIdStr).all();
-    
-    // Get all group chats the user is a member of
-    const { results: groupChats } = await c.env.DB.prepare(`
-      SELECT DISTINCT channels.*
-      FROM channels
-      LEFT JOIN channel_members ON channels.id = channel_members.channel_id
-      WHERE channels.id LIKE "group_%" 
-        AND channel_members.user_id = ?
-    `).bind(userId).all();
-    
-    // Fetch muted channels for this user
-    const mutedRows = await c.env.DB.prepare(
-      'SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1'
-    ).bind(userId).all();
-    const mutedChannelIds = (mutedRows.results ?? []).map(r => (r as { channel_id: string }).channel_id);
-    const mutedSet = new Set(mutedChannelIds);
+    const [channelIds, mutedSet] = await Promise.all([
+      fetchUserChannelIds(db, userId),
+      fetchMutedChannelIds(db, userId),
+    ]);
 
-    // Combine all channel/DM/group IDs and filter muted
     const allChannelIds = [
-      ...channels.map((ch: { id: string }) => ch.id),
-      ...dmConversations.map((dm: { channel_id: string }) => dm.channel_id),
-      ...groupChats.map((g: { id: string }) => g.id)
-    ].filter((id) => !mutedSet.has(id));
+      ...channelIds.regularIds,
+      ...channelIds.dmIds,
+      ...channelIds.groupIds,
+    ].filter(id => !mutedSet.has(id));
     
-    const unreadCounts: Record<string, number> = {};
-    
-    // For each channel, count unread messages
-    for (const channelId of allChannelIds) {
-      try {
-        const readStatus = await c.env.DB.prepare(
-          'SELECT last_read_timestamp FROM user_read_status WHERE user_id = ? AND channel_id = ?'
-        ).bind(userId, channelId).first();
-        
-        const lastReadTimestamp = readStatus?.last_read_timestamp || '1970-01-01T00:00:00.000Z';
-        
-        const unreadResult = await c.env.DB.prepare(`
-          SELECT COUNT(*) as count
-          FROM messages
-          WHERE channel_id = ? 
-            AND timestamp > ?
-            AND sender_id != ?
-        `).bind(channelId, lastReadTimestamp, userId).first();
-        
-        const count = (unreadResult as { count: number } | null)?.count ?? 0;
-        if (count > 0) {
-          unreadCounts[channelId] = count;
-        }
-      } catch (error) {
-        console.error(`Error counting unread for channel ${channelId}:`, error);
-      }
-    }
+    const unreadCounts = await batchCountUnread(db, allChannelIds, userId);
     
     return new Response(JSON.stringify(unreadCounts), {
       headers: { 'Content-Type': 'application/json' }
     });
-  } catch (error) {
-    console.error('Error getting unread counts:', error);
+  } catch {
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -234,96 +222,24 @@ export async function getUnreadCounts(c: Context): Promise<Response> {
 export async function getTotalUnreadCount(c: Context): Promise<Response> {
   try {
     const userId = getAuthenticatedUserId(c);
-    const userIdStr = String(userId);
+    const db: D1Database = c.env.DB;
     
-    // Get regular channels the user has access to (excluding muted)
-    const { results: regularChannels } = await c.env.DB.prepare(`
-      SELECT DISTINCT channels.id as channel_id
-      FROM channels
-      LEFT JOIN channel_members ON channels.id = channel_members.channel_id AND channel_members.user_id = ?
-      WHERE channels.id NOT LIKE "dm_%" AND channels.id NOT LIKE "group_%" 
-        AND (channels.is_private = 0 OR channel_members.user_id = ?)
-        AND channels.id NOT IN (
-          SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1
-        )
-    `).bind(userId, userId, userId).all();
-    
-    // Get DM conversations for this user (excluding muted)
-    const { results: dmConversations } = await c.env.DB.prepare(`
-      SELECT DISTINCT m.channel_id as channel_id
-      FROM messages m
-      WHERE m.channel_id LIKE 'dm_%'
-        AND (m.channel_id LIKE 'dm_' || ? || '_%' OR m.channel_id LIKE 'dm_%_' || ?)
-        AND m.channel_id NOT IN (
-          SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1
-        )
-    `).bind(userIdStr, userIdStr, userId).all();
-    
-    // Get group chats the user is a member of (excluding muted)
-    const { results: groupChats } = await c.env.DB.prepare(`
-      SELECT DISTINCT channels.id as channel_id
-      FROM channels
-      LEFT JOIN channel_members ON channels.id = channel_members.channel_id
-      WHERE channels.id LIKE "group_%" 
-        AND channel_members.user_id = ?
-        AND channels.id NOT IN (
-          SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1
-        )
-    `).bind(userId, userId).all();
-    
-    let channelsUnread = 0;
-    let messagesUnread = 0;
-    
-    // Count unread in regular channels
-    for (const row of regularChannels as { channel_id: string }[]) {
-      const channelId = row.channel_id;
-      
-      try {
-        const readStatus = await c.env.DB.prepare(
-          'SELECT last_read_timestamp FROM user_read_status WHERE user_id = ? AND channel_id = ?'
-        ).bind(userId, channelId).first();
-        
-        const lastReadTimestamp = readStatus?.last_read_timestamp || '1970-01-01T00:00:00.000Z';
-        
-        const unreadResult = await c.env.DB.prepare(`
-          SELECT COUNT(*) as count
-          FROM messages
-          WHERE channel_id = ? 
-            AND timestamp > ?
-            AND sender_id != ?
-        `).bind(channelId, lastReadTimestamp, userId).first();
-        
-        channelsUnread += (unreadResult as { count: number } | null)?.count ?? 0;
-      } catch (error) {
-        console.error(`Error counting unread for channel ${channelId}:`, error);
-      }
-    }
-    
-    // Count unread in DMs and group chats
-    const allMessages = [...dmConversations, ...groupChats];
-    for (const row of allMessages as { channel_id: string }[]) {
-      const channelId = row.channel_id;
-      
-      try {
-        const readStatus = await c.env.DB.prepare(
-          'SELECT last_read_timestamp FROM user_read_status WHERE user_id = ? AND channel_id = ?'
-        ).bind(userId, channelId).first();
-        
-        const lastReadTimestamp = readStatus?.last_read_timestamp || '1970-01-01T00:00:00.000Z';
-        
-        const unreadResult = await c.env.DB.prepare(`
-          SELECT COUNT(*) as count
-          FROM messages
-          WHERE channel_id = ? 
-            AND timestamp > ?
-            AND sender_id != ?
-        `).bind(channelId, lastReadTimestamp, userId).first();
-        
-        messagesUnread += (unreadResult as { count: number } | null)?.count ?? 0;
-      } catch (error) {
-        console.error(`Error counting unread for conversation ${channelId}:`, error);
-      }
-    }
+    const [channelIds, mutedSet] = await Promise.all([
+      fetchUserChannelIds(db, userId),
+      fetchMutedChannelIds(db, userId),
+    ]);
+
+    const regularFiltered = channelIds.regularIds.filter(id => !mutedSet.has(id));
+    const dmFiltered = channelIds.dmIds.filter(id => !mutedSet.has(id));
+    const groupFiltered = channelIds.groupIds.filter(id => !mutedSet.has(id));
+
+    // Batch count for regular channels
+    const regularCounts = await batchCountUnread(db, regularFiltered, userId);
+    const channelsUnread = Object.values(regularCounts).reduce((sum, n) => sum + n, 0);
+
+    // Batch count for DMs + groups
+    const messageCounts = await batchCountUnread(db, [...dmFiltered, ...groupFiltered], userId);
+    const messagesUnread = Object.values(messageCounts).reduce((sum, n) => sum + n, 0);
     
     return new Response(JSON.stringify({ 
       totalUnread: channelsUnread + messagesUnread,
@@ -332,8 +248,7 @@ export async function getTotalUnreadCount(c: Context): Promise<Response> {
     }), {
       headers: { 'Content-Type': 'application/json' }
     });
-  } catch (error) {
-    console.error('Error getting total unread count:', error);
+  } catch {
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -353,8 +268,7 @@ export async function toggleMute(c: Context): Promise<Response> {
       ON CONFLICT(user_id, channel_id) DO UPDATE SET muted = excluded.muted
     `).bind(userId, channelId, muted ? 1 : 0).run();
     return new Response(JSON.stringify({ success: true, muted }), { headers: { 'Content-Type': 'application/json' } });
-  } catch (error) {
-    console.error('Error toggling mute:', error);
+  } catch {
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -373,8 +287,7 @@ export async function registerDevice(c: Context): Promise<Response> {
       ON CONFLICT(user_id, token) DO NOTHING
     `).bind(userId, platform, token).run();
     return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
-  } catch (error) {
-    console.error('Error registering device:', error);
+  } catch {
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -386,10 +299,9 @@ export async function getMutedSettings(c: Context): Promise<Response> {
     const rows = await c.env.DB.prepare(
       'SELECT channel_id FROM user_notification_settings WHERE user_id = ? AND muted = 1'
     ).bind(userId).all();
-    const muted = (rows.results ?? []).map(r => (r as { channel_id: string }).channel_id);
+    const muted = ((rows.results ?? []) as { channel_id: string }[]).map(r => r.channel_id);
     return new Response(JSON.stringify({ muted }), { headers: { 'Content-Type': 'application/json' } });
-  } catch (error) {
-    console.error('Error getting muted settings:', error);
+  } catch {
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -407,8 +319,7 @@ export async function getPushConfig(c: Context): Promise<Response> {
     return new Response(JSON.stringify({ mode, hasServiceAccount: hasSA, hasLegacyKey: hasLegacy, tokenCount }), {
       headers: { 'Content-Type': 'application/json' }
     });
-  } catch (e) {
-    console.error('Error getting push config:', e);
+  } catch {
     return new Response('Internal server error', { status: 500 });
   }
 }
@@ -419,8 +330,7 @@ export async function sendTestPush(c: Context): Promise<Response> {
     const userId = getAuthenticatedUserId(c);
     await sendPushToUsers(c, [userId], 'Test notification', 'This is a test push', { type: 'test' });
     return new Response(JSON.stringify({ success: true }), { headers: { 'Content-Type': 'application/json' } });
-  } catch (e) {
-    console.error('Error sending test push:', e);
+  } catch {
     return new Response('Internal server error', { status: 500 });
   }
 }

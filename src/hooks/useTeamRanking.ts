@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TBA_CONFIG } from '../config';
+import { fetchTBA } from './useTBA';
 
 interface TeamRankingData {
   rank: number | null;
@@ -38,21 +38,10 @@ const useTeamRanking = (teamNumber: string): TeamRankingData => {
         const currentYear = new Date().getFullYear();
         const yearsToTry = [currentYear, currentYear - 1];
 
-        // First, try to fetch the team's districts
-        const districtsResponse = await fetch(
-          `${TBA_CONFIG.BASE_URL}/team/frc${teamNumber}/districts`,
-          {
-            headers: {
-              'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY,
-            },
-          }
+        // Fetch the team's districts using centralized TBA fetcher
+        const districts = await fetchTBA<DistrictInfo[]>(
+          `/team/frc${teamNumber}/districts`
         );
-
-        if (!districtsResponse.ok) {
-          throw new Error('Failed to fetch districts');
-        }
-
-        const districts: DistrictInfo[] = await districtsResponse.json();
 
         // Try to find a district ranking for current year or previous year
         let foundRanking = false;
@@ -60,67 +49,55 @@ const useTeamRanking = (teamNumber: string): TeamRankingData => {
           const district = districts.find((d) => d.year === tryYear);
           if (!district) continue;
 
-          // Fetch rankings for this district
-          const rankingsResponse = await fetch(
-            `${TBA_CONFIG.BASE_URL}/district/${district.key}/rankings`,
-            {
-              headers: {
-                'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY,
-              },
+          try {
+            const rankings = await fetchTBA<RankingInfo[]>(
+              `/district/${district.key}/rankings`
+            );
+
+            const teamKey = `frc${teamNumber}`;
+            const teamRanking = rankings.find((r) => r.team_key === teamKey);
+
+            if (teamRanking) {
+              setRank(teamRanking.rank);
+              setTotalTeams(rankings.length);
+              setYear(tryYear);
+              setRankingType('district');
+              setError(null);
+              foundRanking = true;
+              break;
             }
-          );
-
-          if (!rankingsResponse.ok) {
+          } catch {
+            // District rankings not available for this year, try next
             continue;
-          }
-
-          const rankings: RankingInfo[] = await rankingsResponse.json();
-          const teamKey = `frc${teamNumber}`;
-          const teamRanking = rankings.find((r) => r.team_key === teamKey);
-
-          if (teamRanking) {
-            setRank(teamRanking.rank);
-            setTotalTeams(rankings.length);
-            setYear(tryYear);
-            setRankingType('district');
-            setError(null);
-            foundRanking = true;
-            break;
           }
         }
 
         // If no district ranking found, try regional rankings
         if (!foundRanking) {
           for (const tryYear of yearsToTry) {
-            const regionalResponse = await fetch(
-              `${TBA_CONFIG.BASE_URL}/regional_advancement/${tryYear}/rankings`,
-              {
-                headers: {
-                  'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY,
-                },
+            try {
+              const regionalRankings = await fetchTBA<RankingInfo[]>(
+                `/regional_advancement/${tryYear}/rankings`
+              );
+
+              const teamKey = `frc${teamNumber}`;
+              const teamRanking = regionalRankings.find((r) => r.team_key === teamKey);
+
+              if (teamRanking) {
+                setRank(teamRanking.rank);
+                setTotalTeams(regionalRankings.length);
+                setYear(tryYear);
+                setRankingType('regional');
+                setError(null);
+                break;
               }
-            );
-
-            if (!regionalResponse.ok) {
+            } catch {
+              // Regional rankings not available for this year, try next
               continue;
-            }
-
-            const regionalRankings: RankingInfo[] = await regionalResponse.json();
-            const teamKey = `frc${teamNumber}`;
-            const teamRanking = regionalRankings.find((r) => r.team_key === teamKey);
-
-            if (teamRanking) {
-              setRank(teamRanking.rank);
-              setTotalTeams(regionalRankings.length);
-              setYear(tryYear);
-              setRankingType('regional');
-              setError(null);
-              break;
             }
           }
         }
-      } catch (err) {
-        console.error('Error fetching team ranking:', err);
+      } catch {
         setError('Failed to load ranking');
       } finally {
         setIsLoading(false);

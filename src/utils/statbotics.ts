@@ -36,13 +36,27 @@ export async function fetchEvent(eventCode: string): Promise<StatEvent> {
   return fetchFromStatbotics(`/event/${eventCode}`);
 }
 
+interface StatboticsTeamEvent {
+  team: number;
+  team_name?: string;
+  nickname?: string;
+  epa?: {
+    total_points?: number | { mean?: number };
+    breakdown?: {
+      auto_points?: number;
+      teleop_points?: number;
+      endgame_points?: number;
+    };
+  };
+}
+
 export async function fetchEventTeams(eventCode: string): Promise<StatTeam[]> {
-  const data: any[] = await fetchFromStatbotics(
+  const data = await fetchFromStatbotics<StatboticsTeamEvent[]>(
     `/team_events?event=${eventCode}&limit=100`
   );
     return data.map((t) => {
     const epaObj = t.epa || {};
-    const total = typeof epaObj.total_points === 'number' ? epaObj.total_points : epaObj.total_points?.mean ?? 0;
+    const total = typeof epaObj.total_points === 'number' ? epaObj.total_points : (epaObj.total_points as { mean?: number } | undefined)?.mean ?? 0;
     const breakdown = epaObj.breakdown || {};
     return {
       team: t.team,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import NebulaLoader from '../../common/NebulaLoader';
 import type { Team } from '../../../hooks/useEventData';
 import { getTeamColor } from '../../../utils/color';
@@ -9,12 +10,13 @@ interface RegisteredTeamsProps {
 }
 
 const RegisteredTeams: React.FC<RegisteredTeamsProps> = ({ teams, isLoading }) => {
+  const navigate = useNavigate();
   const formatTeamNumber = (teamKey: string): string => {
     return teamKey.replace('frc', '');
   };
 
   const handleTeamClick = (teamNumber: string) => {
-    window.location.href = `/team?team=${teamNumber}`;
+    navigate(`/team?team=${teamNumber}`);
   };
 
   // Sort teams numerically by team number
@@ -53,7 +55,6 @@ const RegisteredTeams: React.FC<RegisteredTeamsProps> = ({ teams, isLoading }) =
                 style={isFav ? { 
                   borderColor: favColor + '80', 
                   boxShadow: `0 10px 20px -8px ${favColor}33`,
-                  ['--hover-shadow' as any]: `0 10px 20px -8px ${favColor}66`
                 } : undefined}
                 onMouseEnter={(e) => {
                   if (isFav && favColor) {

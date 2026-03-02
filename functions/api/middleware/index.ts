@@ -46,10 +46,26 @@ export const errorMiddleware = createMiddleware(async (c, next) => {
 // Rate limiting middleware (enhanced and safer implementation)
 type Bucket = { count: number; resetTime: number };
 const requestCounts = new Map<string, Bucket>();
+let lastEviction = 0;
+const EVICTION_INTERVAL_MS = 60_000; // Run eviction at most once per minute
+
+/** Remove stale entries to prevent unbounded memory growth. */
+function evictStaleEntries(now: number): void {
+  if (now - lastEviction < EVICTION_INTERVAL_MS) return;
+  lastEviction = now;
+  for (const [key, bucket] of requestCounts) {
+    if (now > bucket.resetTime) {
+      requestCounts.delete(key);
+    }
+  }
+}
 
 export const rateLimitMiddleware = createMiddleware(async (c, next) => {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
+
+  // Periodically evict expired entries to prevent memory leak
+  evictStaleEntries(now);
   const path = c.req.path;
   const method = c.req.method.toUpperCase();
 

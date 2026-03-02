@@ -54,7 +54,7 @@ export interface Match {
   predicted_time?: number;
   actual_time?: number;
   post_result_time?: number;
-  score_breakdown?: any;
+  score_breakdown?: Record<string, unknown>;
   alliances: {
     blue: {
       team_keys: string[];
@@ -69,7 +69,7 @@ export interface Match {
       surrogate_team_keys?: string[];
     };
   };
-  videos?: any[];
+  videos?: Array<{ type: string; key: string }>;
   time?: number;
   winning_alliance?: 'red' | 'blue' | '';
 }

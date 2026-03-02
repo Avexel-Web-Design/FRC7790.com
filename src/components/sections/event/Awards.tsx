@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Award } from '../../../hooks/useEventData';
 
 interface AwardsProps {
@@ -7,6 +8,7 @@ interface AwardsProps {
 }
 
 const Awards: React.FC<AwardsProps> = ({ awards, isLoading }) => {
+  const navigate = useNavigate();
   const formatTeamNumber = (teamKey: string): string => {
     return teamKey.replace('frc', '');
   };
@@ -77,7 +79,7 @@ const Awards: React.FC<AwardsProps> = ({ awards, isLoading }) => {
   };
 
   const handleTeamClick = (teamNumber: string) => {
-    window.location.href = `/team?team=${teamNumber}`;
+    navigate(`/team?team=${teamNumber}`);
   };
 
   // Rearrange awards so that Engineering Inspiration appears directly below Finalist, which is below Winner

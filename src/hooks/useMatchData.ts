@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TBA_CONFIG } from '../config';
+import { fetchTBA } from './useTBA';
 
 export interface MatchData {
   key: string;
@@ -21,8 +21,10 @@ export interface MatchData {
     };
   };
   score_breakdown?: {
-    blue: any;
-    red: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    blue: Record<string, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    red: Record<string, any>;
   };
   videos?: Array<{
     type: string;
@@ -81,44 +83,26 @@ export const useMatchData = (matchKey: string | null): UseMatchDataReturn => {
         // Parse event key from match key (e.g., extract "2025milac" from "2025milac_qm1")
         const eventKey = matchKey.split('_')[0];
 
-        // Fetch match data
-        const matchResponse = await fetch(`${TBA_CONFIG.BASE_URL}/match/${matchKey}`, {
-          headers: { "X-TBA-Auth-Key": TBA_CONFIG.AUTH_KEY }
-        });
-
-        if (!matchResponse.ok) throw new Error(`Match data HTTP error: ${matchResponse.status}`);
-        const match = await matchResponse.json();
-
-        // Fetch event data
-        const eventResponse = await fetch(`${TBA_CONFIG.BASE_URL}/event/${eventKey}`, {
-          headers: { "X-TBA-Auth-Key": TBA_CONFIG.AUTH_KEY }
-        });
-
-        if (!eventResponse.ok) throw new Error(`Event data HTTP error: ${eventResponse.status}`);
-        const event = await eventResponse.json();
+        // Fetch match and event data in parallel using centralized TBA fetcher
+        const [match, event] = await Promise.all([
+          fetchTBA<MatchData>(`/match/${matchKey}`),
+          fetchTBA<EventData>(`/event/${eventKey}`),
+        ]);
 
         // Fetch team data for all teams in the match
         const allTeamKeys = [
           ...match.alliances.blue.team_keys,
-          ...match.alliances.red.team_keys
+          ...match.alliances.red.team_keys,
         ];
 
-        const teamPromises = allTeamKeys.map(teamKey => 
-          fetch(`${TBA_CONFIG.BASE_URL}/team/${teamKey}`, {
-            headers: { "X-TBA-Auth-Key": TBA_CONFIG.AUTH_KEY }
-          }).then(res => {
-            if (!res.ok) throw new Error(`Team data HTTP error for ${teamKey}: ${res.status}`);
-            return res.json();
-          })
+        const teams = await Promise.all(
+          allTeamKeys.map(teamKey => fetchTBA<TeamData>(`/team/${teamKey}`))
         );
-
-        const teams = await Promise.all(teamPromises);
 
         setMatchData(match);
         setEventData(event);
         setTeamData(teams);
       } catch (err) {
-        console.error("Error loading match data:", err);
         setError(err instanceof Error ? err.message : 'Unknown error occurred');
       } finally {
         setIsLoading(false);
