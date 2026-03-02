@@ -5,7 +5,7 @@ pages_build_output_dir = "dist"
 # Development environment variables
 [vars]
 JWT_SECRET = "dev-jwt-secret-for-local-development"
-TBA_AUTH_KEY = ""
+TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf"
 R2_PUBLIC_URL = "https://e87627256aa02e9a62b363bea9fabd33.r2.dev/frc7790-scouting"
 OPENROUTER_MODEL = "nvidia/nemotron-nano-9b-v2:free"
 OPENROUTER_SITE_URL = "https://www.frc7790.com"
@@ -20,7 +20,7 @@ database_id = "278373e6-1ee1-4452-a3d1-805776a2ef1f"
 # Production environment (used by Pages automatic deployments)
 [env.production.vars]
 JWT_SECRET = "frc7790-baywatch-production-jwt-secret-2025-secure-key-change-if-needed"
-TBA_AUTH_KEY = ""
+TBA_AUTH_KEY = "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf"
 R2_PUBLIC_URL = "https://e87627256aa02e9a62b363bea9fabd33.r2.dev/frc7790-scouting"
 OPENROUTER_MODEL = "nvidia/nemotron-nano-9b-v2:free"
 OPENROUTER_SITE_URL = "https://www.frc7790.com"
