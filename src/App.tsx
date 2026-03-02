@@ -24,14 +24,21 @@ const Atlas = lazy(() => import('./components/pages/Atlas'));
 const Login = lazy(() => import('./components/pages/auth/Login'));
 const CreateAccount = lazy(() => import('./components/pages/auth/CreateAccount'));
 const Settings = lazy(() => import('./components/pages/Settings'));
-const Calendar = lazy(() => import('./components/pages/calendar/Calendar'));
-const Tasks = lazy(() => import('./components/pages/tasks/Tasks'));
-const Channels = lazy(() => import('./components/pages/Channels'));
 const Profile = lazy(() => import('./components/pages/Profile'));
 const AdminUsers = lazy(() => import('./components/pages/admin/AdminUsers'));
 const AdminPublicUsers = lazy(() => import('./components/pages/admin/AdminPublicUsers'));
-const DirectMessages = lazy(() => import('./components/pages/DirectMessages'));
 const PrivacyPolicy = lazy(() => import('./components/pages/PrivacyPolicy'));
+
+// Scouting dashboard pages
+const Dashboard = lazy(() => import('./components/pages/scouting/Dashboard'));
+const ScoutingMatch = lazy(() => import('./components/pages/scouting/Match'));
+const Pit = lazy(() => import('./components/pages/scouting/Pit'));
+const Analytics = lazy(() => import('./components/pages/scouting/Analytics'));
+const Alliances = lazy(() => import('./components/pages/scouting/Alliances'));
+const Simulations = lazy(() => import('./components/pages/scouting/Simulations'));
+const Strategy = lazy(() => import('./components/pages/scouting/Strategy'));
+const Share = lazy(() => import('./components/pages/scouting/Share'));
+const Archive = lazy(() => import('./components/pages/scouting/Archive'));
 
 const PageLoader = () => (
   <div className="min-h-screen bg-black flex items-center justify-center">
@@ -73,6 +80,7 @@ function App() {
               <Route path="/create-account" element={<CreateAccount />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/scouting/share/:token" element={<Share />} />
             </Route>
 
             {/* Member-only routes (block public) */}
@@ -85,10 +93,9 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/dashboard" element={<Channels />} />
-              <Route path="/messages" element={<DirectMessages />} />
-              <Route path="/calendar" element={<Calendar />} />
-              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/match" element={<ScoutingMatch />} />
+              <Route path="/dashboard/pit" element={<Pit />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
 
@@ -102,6 +109,12 @@ function App() {
                 </ProtectedRoute>
               }
             >
+              <Route path="/dashboard/analytics" element={<Analytics />} />
+              <Route path="/dashboard/alliances" element={<Alliances />} />
+              <Route path="/dashboard/simulations" element={<Simulations />} />
+              <Route path="/dashboard/strategy" element={<Strategy />} />
+              <Route path="/dashboard/archive" element={<Archive />} />
+              <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/public-users" element={<AdminPublicUsers />} />
             </Route>
