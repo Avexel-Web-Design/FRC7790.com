@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getTeamCardGradientClass, getTeamAccentStyle, getTeamColor } from '../../../utils/color';
+import { TBA_CONFIG } from '../../../config';
 
 interface TeamMatchesProps {
   teamNumber: string;
@@ -8,6 +9,7 @@ interface TeamMatchesProps {
 }
 
 export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
+  const navigate = useNavigate();
   const [eventsData, setEventsData] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string>('');
   const [qualMatches, setQualMatches] = useState<any[]>([]);
@@ -21,9 +23,9 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
         setLoading(true);
         const currentYear = new Date().getFullYear();
         
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/events/${currentYear}`, {
+        const response = await fetch(`${TBA_CONFIG.BASE_URL}/team/frc${teamNumber}/events/${currentYear}`, {
           headers: {
-            'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
+            'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY
           }
         });
         
@@ -67,9 +69,9 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
       try {
         setMatchesLoading(true);
         
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/event/${selectedEvent}/matches`, {
+        const response = await fetch(`${TBA_CONFIG.BASE_URL}/team/frc${teamNumber}/event/${selectedEvent}/matches`, {
           headers: {
-            'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
+            'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY
           }
         });
         
@@ -176,7 +178,7 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
                 alliance === 'blue' ? 'text-blue-400 hover:text-blue-400' : 'text-red-400 hover:text-red-400'}
             `}
             style={isCurrentTeam ? getTeamAccentStyle(teamNumber) : undefined}
-            onClick={() => window.location.href = `/team?team=${teamNum}`}
+            onClick={() => navigate(`/team?team=${teamNum}`)}
           >
             {teamNum}
           </span>

@@ -118,7 +118,7 @@ const AdminPublicUsers: React.FC = () => {
     try {
       setEditError('');
       const token = localStorage.getItem('token');
-      const updateData: any = {};
+      const updateData: Record<string, string | boolean> = {};
       if (editUser.username.trim() !== editingUser.username) updateData.username = editUser.username.trim();
       if (editUser.password.trim() !== '') updateData.password = editUser.password.trim();
       if (editUser.is_admin !== editingUser.is_admin) updateData.is_admin = editUser.is_admin;
@@ -132,8 +132,8 @@ const AdminPublicUsers: React.FC = () => {
       if (response.ok) {
         setUsers(users.map(u => u.id === editingUser.id ? {
           ...u,
-          username: updateData.username || u.username,
-          is_admin: updateData.is_admin !== undefined ? updateData.is_admin : u.is_admin
+          username: typeof updateData.username === 'string' ? updateData.username : u.username,
+          is_admin: typeof updateData.is_admin === 'boolean' ? updateData.is_admin : u.is_admin
         } : u));
         setShowEditModal(false);
         setEditingUser(null);

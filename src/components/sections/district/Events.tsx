@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { DistrictEvent } from '../../../hooks/useDistrictData';
 import { formatEventDate } from '../../../utils/frcAPI';
 
@@ -8,8 +9,9 @@ interface DistrictEventsProps {
 }
 
 const DistrictEvents: React.FC<DistrictEventsProps> = ({ events, isLoading }) => {
+  const navigate = useNavigate();
   const handleEventClick = (eventKey: string) => {
-    window.location.href = `/event?event=${eventKey}`;
+    navigate(`/event?event=${eventKey}`);
   };
 
   return (

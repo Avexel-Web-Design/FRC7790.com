@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getTeamCardGradientClass, getTeamAccentStyle } from '../../../utils/color';
+import { TBA_CONFIG } from '../../../config';
 
 interface CurrentEventProps {
   teamNumber: string;
@@ -64,9 +65,9 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
         
         if (targetEvent) {
           // Fetch detailed event data
-          const eventResponse = await fetch(`https://www.thebluealliance.com/api/v3/event/${targetEvent.key}`, {
+          const eventResponse = await fetch(`${TBA_CONFIG.BASE_URL}/event/${targetEvent.key}`, {
             headers: {
-              'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
+              'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY
             }
           });
 
@@ -76,9 +77,9 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
             // If it's a current event, get team status
             if (currentEvent) {
               try {
-                const statusResponse = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/event/${targetEvent.key}/status`, {
+                const statusResponse = await fetch(`${TBA_CONFIG.BASE_URL}/team/frc${teamNumber}/event/${targetEvent.key}/status`, {
                   headers: {
-                    'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
+                    'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY
                   }
                 });
 
@@ -92,9 +93,9 @@ export default function CurrentEvent({ teamNumber, eventsData }: CurrentEventPro
 
               // Get next match
               try {
-                const matchesResponse = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/event/${targetEvent.key}/matches`, {
+                const matchesResponse = await fetch(`${TBA_CONFIG.BASE_URL}/team/frc${teamNumber}/event/${targetEvent.key}/matches`, {
                   headers: {
-                    'X-TBA-Auth-Key': 'gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf'
+                    'X-TBA-Auth-Key': TBA_CONFIG.AUTH_KEY
                   }
                 });
 

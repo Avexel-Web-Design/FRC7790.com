@@ -10,6 +10,7 @@ import Schedule from '../sections/event/Schedule';
 import Playoffs from '../sections/event/Playoffs';
 import Awards from '../sections/event/Awards';
 import { useEventData } from '../../hooks/useEventData';
+import { TBA_CONFIG } from '../../config';
 
 const Event: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -65,8 +66,8 @@ const Event: React.FC = () => {
       if (!eventData) return;
       
       try {
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/event/${eventCode}`, {
-          headers: { "X-TBA-Auth-Key": "gdgkcwgh93dBGQjVXlh0ndD4GIkiQlzzbaRu9NUHGfk72tPVG2a69LF2BoYB1QNf" }
+        const response = await fetch(`${TBA_CONFIG.BASE_URL}/event/${eventCode}`, {
+          headers: { "X-TBA-Auth-Key": TBA_CONFIG.AUTH_KEY }
         });
         
         if (response.ok) {

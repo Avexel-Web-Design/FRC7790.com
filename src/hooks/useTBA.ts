@@ -13,6 +13,16 @@ import type { SWRConfiguration, SWRResponse } from 'swr';
 import { TBA_CONFIG, CACHE_CONFIG } from '../config';
 import { cacheUtils } from '../utils/swrCache';
 
+// Custom error class for TBA API errors with HTTP status
+class TBAError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'TBAError';
+    this.status = status;
+  }
+}
+
 // TBA API fetcher with caching
 async function tbaFetcher<T>(endpoint: string): Promise<T> {
   const url = `${TBA_CONFIG.BASE_URL}${endpoint}`;
@@ -24,9 +34,7 @@ async function tbaFetcher<T>(endpoint: string): Promise<T> {
   });
   
   if (!response.ok) {
-    const error = new Error(`TBA API error: ${response.status} ${response.statusText}`);
-    (error as any).status = response.status;
-    throw error;
+    throw new TBAError(`TBA API error: ${response.status} ${response.statusText}`, response.status);
   }
   
   const data = await response.json();

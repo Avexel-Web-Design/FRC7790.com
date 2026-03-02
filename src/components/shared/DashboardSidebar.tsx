@@ -94,7 +94,6 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
           )}
           
           {user?.isAdmin && (
-            <>
               <div className="pt-4 mt-4 border-t border-gray-700">
                 <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                   Admin
@@ -113,7 +112,6 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
                   </Link>
                 ))}
               </div>
-            </>
           )}
           
           <div className="pt-4 mt-4 border-t border-gray-700">

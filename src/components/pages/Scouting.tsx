@@ -152,7 +152,7 @@ export default function Scouting() {
   const filteredTeams = useMemo(() => {
     let arr = [...teams];
     if (sortKey === 'team') arr.sort((a, b) => a.team - b.team);
-    else arr.sort((a, b) => (b as any)[sortKey] - (a as any)[sortKey]);
+    else arr.sort((a, b) => b[sortKey] - a[sortKey]);
     if (showAvailableOnly) arr = arr.filter((t) => !picked[t.team]);
     return arr;
   }, [teams, sortKey, showAvailableOnly, picked]);

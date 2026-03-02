@@ -34,9 +34,7 @@ export default function TeamsTable({ teams, picked, togglePicked }: Props) {
             return (
               <tr
                 key={t.team}
-                className={
-                  idx % 2 === 0 ? 'bg-black/30' : 'bg-black/10' + ' hover:bg-baywatch-orange/10'
-                }
+                className={`${idx % 2 === 0 ? 'bg-black/30' : 'bg-black/10'} hover:bg-baywatch-orange/10`}
               >
                 <td className="p-2 text-center">{idx + 1}</td>
                 <td className="p-2 text-center">

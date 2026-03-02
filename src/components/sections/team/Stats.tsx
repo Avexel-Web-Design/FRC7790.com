@@ -14,7 +14,7 @@ interface TeamStatsProps {
 }
 
 export default function TeamStats({ teamNumber, teamData, eventsData }: TeamStatsProps) {
-  const { rank: teamRank, totalTeams, year: rankingYear, loading: rankingLoading, rankingType } = useTeamRanking(teamNumber);
+  const { rank: teamRank, totalTeams, year: rankingYear, isLoading: rankingLoading, rankingType } = useTeamRanking(teamNumber);
   const currentYear = new Date().getFullYear();
 
   // Extract event keys for parallel fetching

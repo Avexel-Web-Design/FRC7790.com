@@ -23,7 +23,7 @@ const Tasks: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [filter, setFilter] = useState<'pending' | 'completed'>('pending');
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Array<{ id: number; username: string }>>([]);
   const [newTask, setNewTask] = useState({
     title: '',
     description: '',

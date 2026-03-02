@@ -4,7 +4,7 @@
 
 import { Hono } from "hono"
 import { sign, verify } from "hono/jwt"
-import { Effect, pipe } from "effect"
+import { Effect } from "effect"
 import {
   effectHandler,
   parseBody,
@@ -15,6 +15,7 @@ import {
   execute,
   type Env
 } from "../lib/effect-hono"
+import { hashPassword } from '../lib/password'
 
 // =============================================================================
 // Types
@@ -38,22 +39,6 @@ interface RegisterResponse {
   }
   message: string
 }
-
-// =============================================================================
-// Password Hashing
-// =============================================================================
-
-/**
- * Hash password using Web Crypto API (SHA-256)
- */
-const hashPassword = (password: string): Effect.Effect<string, never, never> =>
-  Effect.promise(async () => {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(password)
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map(b => b.toString(16).padStart(2, "0")).join("")
-  })
 
 // =============================================================================
 // Authorization Check
@@ -185,7 +170,7 @@ const registerEffect = (
       userType
     )
     
-    const result = yield* pipe(
+    const result = yield* Effect.pipe(
       insertEffect,
       Effect.catchTag("DbError", (error): Effect.Effect<never, ConflictError | DbError, never> => {
         if (error.message.includes("UNIQUE constraint failed")) {

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { TeamRanking } from '../../../hooks/useEventData';
 import { getTeamColor } from '../../../utils/color';
 
@@ -13,29 +14,13 @@ type SortDirection = 'asc' | 'desc';
 type DisplayMode = 'number' | 'name';
 
 const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => {
+  const navigate = useNavigate();
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [displayMode, setDisplayMode] = useState<DisplayMode>('number');
   
   // Always show EPA column, but with placeholders until data loads
   const showEPA = true;
-
-  // Debug EPA data when it changes
-  React.useEffect(() => {
-    if (Object.keys(epaData).length > 0) {
-      console.log('EPA data available:', epaData);
-      console.log('Ranking team keys:', rankings.map(r => r.team_key));
-      console.log('EPA data keys:', Object.keys(epaData));
-    }
-  }, [epaData, rankings]);
-
-  // Debug logging to understand the data structure
-  React.useEffect(() => {
-    if (rankings.length > 0) {
-      console.log('Rankings data sample:', rankings[0]);
-      console.log('Full rankings:', rankings);
-    }
-  }, [rankings]);
 
   const formatTeamNumber = (teamKey: string): string => {
     return teamKey.replace('frc', '');
@@ -75,8 +60,8 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
     if (!rankings.length) return [];
 
     return [...rankings].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       switch (sortField) {
         case 'rank':
@@ -118,7 +103,7 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
         return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
     });
-  }, [rankings, sortField, sortDirection]);
+  }, [rankings, sortField, sortDirection, epaData, displayMode]);
 
   const getSortIcon = (field: SortField) => {
     if (sortField !== field) return 'fas fa-sort text-gray-500';
@@ -126,7 +111,7 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
   };
 
   const handleTeamClick = (teamNumber: string) => {
-    window.location.href = `/team?team=${teamNumber}`;
+    navigate(`/team?team=${teamNumber}`);
   };
 
   return (

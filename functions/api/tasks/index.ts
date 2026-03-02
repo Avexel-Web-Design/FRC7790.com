@@ -3,22 +3,17 @@ import { Effect } from 'effect';
 import { sendPushToUsers } from '../utils/push';
 import { authMiddleware } from '../auth/middleware';
 import {
-  effectHandler,
   authEffectHandler,
   parseBody,
   type Env,
+  type AuthUser,
   query,
   queryOne,
   execute,
   ValidationError,
-  NotFoundError
+  NotFoundError,
+  AuthError
 } from '../lib/effect-hono';
-
-interface AuthUser {
-  id: number;
-  username: string;
-  isAdmin: boolean;
-}
 
 interface Task {
   id: number;
@@ -37,6 +32,7 @@ interface Task {
 
 interface TaskPrev {
   assigned_to: number | null;
+  created_by: number;
   title: string;
 }
 
@@ -69,7 +65,7 @@ const tasks = new Hono<{
 tasks.use('*', authMiddleware);
 
 // Get all tasks
-tasks.get('/', effectHandler((c) =>
+tasks.get('/', authEffectHandler((c) =>
   Effect.gen(function* () {
     const results = yield* query<Task>(`
       SELECT t.*, 
@@ -118,9 +114,9 @@ tasks.post('/', authEffectHandler((c) =>
     if (assigned_to) {
       yield* Effect.promise(async () => {
         try {
-          await sendPushToUsers(c as any, [Number(assigned_to)], 'New Task Assigned', title, { type: 'task', action: 'created' });
-        } catch (e) {
-          console.warn('tasks.create push failed', e);
+          await sendPushToUsers(c as unknown as Parameters<typeof sendPushToUsers>[0], [Number(assigned_to)], 'New Task Assigned', title, { type: 'task', action: 'created' });
+        } catch {
+          // Push notification failure is non-critical
         }
       });
     }
@@ -130,8 +126,9 @@ tasks.post('/', authEffectHandler((c) =>
 ));
 
 // Update a task
-tasks.put('/:id', effectHandler((c) =>
+tasks.put('/:id', authEffectHandler((c) =>
   Effect.gen(function* () {
+    const user = c.get('user');
     const { id } = c.req.param();
     const body = yield* parseBody<UpdateTaskBody>(c);
     const { title, description, completed, assigned_to, due_date, priority } = body;
@@ -149,10 +146,19 @@ tasks.put('/:id', effectHandler((c) =>
       return yield* Effect.fail(ValidationError.single('Invalid due date format. Use YYYY-MM-DD'));
     }
 
-    // Fetch previous assignee to detect changes
-    const prev = yield* queryOne<TaskPrev>('SELECT assigned_to, title FROM tasks WHERE id = ?', id);
-    const prevAssigned = prev ? prev.assigned_to : null;
-    const prevTitle = prev ? prev.title : title;
+    // Fetch previous task to detect changes and verify ownership
+    const prev = yield* queryOne<TaskPrev>('SELECT assigned_to, created_by, title FROM tasks WHERE id = ?', id);
+    if (!prev) {
+      return yield* Effect.fail(NotFoundError.resource('Task'));
+    }
+
+    // Only the creator, the assignee, or an admin can update a task
+    if (prev.created_by !== user.id && prev.assigned_to !== user.id && !user.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
+    }
+
+    const prevAssigned = prev.assigned_to;
+    const prevTitle = prev.title;
 
     yield* execute(
       'UPDATE tasks SET title = ?, description = ?, completed = ?, assigned_to = ?, due_date = ?, priority = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
@@ -169,9 +175,9 @@ tasks.put('/:id', effectHandler((c) =>
     if (assigned_to && Number(assigned_to) !== Number(prevAssigned)) {
       yield* Effect.promise(async () => {
         try {
-          await sendPushToUsers(c as any, [Number(assigned_to)], 'Task Assigned', title || prevTitle, { type: 'task', action: 'updated' });
-        } catch (e) {
-          console.warn('tasks.update push failed', e);
+          await sendPushToUsers(c as unknown as Parameters<typeof sendPushToUsers>[0], [Number(assigned_to)], 'Task Assigned', title || prevTitle, { type: 'task', action: 'updated' });
+        } catch {
+          // Push notification failure is non-critical
         }
       });
     }
@@ -181,14 +187,24 @@ tasks.put('/:id', effectHandler((c) =>
 ));
 
 // Toggle task completion
-tasks.patch('/:id/complete', effectHandler((c) =>
+tasks.patch('/:id/complete', authEffectHandler((c) =>
   Effect.gen(function* () {
+    const user = c.get('user');
     const { id } = c.req.param();
     const body = yield* parseBody<CompleteBody>(c);
     const { completed } = body;
 
     if (typeof completed !== 'boolean') {
       return yield* Effect.fail(ValidationError.single('Invalid completed status'));
+    }
+
+    // Verify the task exists and user has permission
+    const task = yield* queryOne<Task>('SELECT created_by, assigned_to FROM tasks WHERE id = ?', id);
+    if (!task) {
+      return yield* Effect.fail(NotFoundError.resource('Task'));
+    }
+    if (task.created_by !== user.id && task.assigned_to !== user.id && !user.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
     }
 
     yield* execute(
@@ -202,9 +218,20 @@ tasks.patch('/:id/complete', effectHandler((c) =>
 ));
 
 // Delete a task
-tasks.delete('/:id', effectHandler((c) =>
+tasks.delete('/:id', authEffectHandler((c) =>
   Effect.gen(function* () {
+    const user = c.get('user');
     const { id } = c.req.param();
+
+    // Verify the task exists and user has permission
+    const task = yield* queryOne<Task>('SELECT created_by FROM tasks WHERE id = ?', id);
+    if (!task) {
+      return yield* Effect.fail(NotFoundError.resource('Task'));
+    }
+    // Only creator or admin can delete
+    if (task.created_by !== user.id && !user.isAdmin) {
+      return yield* Effect.fail(AuthError.forbidden());
+    }
 
     yield* execute('DELETE FROM tasks WHERE id = ?', id);
 

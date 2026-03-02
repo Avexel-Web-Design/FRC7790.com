@@ -17,8 +17,7 @@ export default function ApiDebugBadge() {
     const t = setInterval(() => {
       check();
       try {
-        // @ts-ignore
-        const dbg = (window as any).__API_DEBUG__ as { lastHost?: string; lastStatus?: number | 'error'; lastError?: string | null } | undefined;
+        const dbg = (window as unknown as Record<string, unknown>).__API_DEBUG__ as { lastHost?: string; lastStatus?: number | 'error'; lastError?: string | null } | undefined;
         if (dbg) {
           setInfo({ host: dbg.lastHost ?? null, status: dbg.lastStatus ?? null, error: dbg.lastError ?? null });
         }

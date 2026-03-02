@@ -16,7 +16,7 @@ const Match: React.FC = () => {
   const navigate = useNavigate();
   const matchKey = searchParams.get('match');
 
-  const { matchData, eventData, teamData, loading, error } = useMatchData(matchKey);
+  const { matchData, eventData, teamData, isLoading, error } = useMatchData(matchKey);
 
   if (!matchKey) {
     return (
@@ -31,7 +31,7 @@ const Match: React.FC = () => {
     );
   }
 
-  if (loading) {
+  if (isLoading) {
     return <LoadingOverlay />;
   }
 

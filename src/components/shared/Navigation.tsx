@@ -4,7 +4,8 @@ import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/o
 import { useAuth } from '../../contexts/AuthContext';
 import { useTeamContext } from '../../hooks/useTeamContext';
 import { getTeamColor } from '../../utils/color';
-import { TBA_AUTH_KEY } from '../../utils/frcAPI';
+import { fetchTBA } from '../../hooks/useTBA';
+import { hoverColorProps, hoverBorderProps } from '../../utils/hoverStyle';
 
 interface NavigationItem {
   name: string;
@@ -55,10 +56,8 @@ export default function Navigation() {
     // Helper function to check if a team exists
     const teamExists = async (teamNumber: string): Promise<boolean> => {
       try {
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/team/frc${teamNumber}`, {
-          headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY }
-        });
-        return response.ok;
+        await fetchTBA(`/team/frc${teamNumber}`);
+        return true;
       } catch {
         return false;
       }
@@ -67,10 +66,8 @@ export default function Navigation() {
     // Helper function to check if an event exists
     const eventExists = async (eventCode: string): Promise<boolean> => {
       try {
-        const response = await fetch(`https://www.thebluealliance.com/api/v3/event/${eventCode}`, {
-          headers: { 'X-TBA-Auth-Key': TBA_AUTH_KEY }
-        });
-        return response.ok;
+        await fetchTBA(`/event/${eventCode}`);
+        return true;
       } catch {
         return false;
       }
@@ -137,15 +134,7 @@ export default function Navigation() {
         {/* Search Bar (Desktop) */}
         <div 
           className="hidden md:flex items-center bg-black/30 rounded-lg border border-gray-700 transition-all duration-300 px-3 py-1 mx-4 flex-grow max-w-md"
-          style={{
-            borderColor: '#374151'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = `${accentColor}50`;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = '#374151';
-          }}
+          {...hoverBorderProps('#374151', `${accentColor}50`)}
         >
           <form onSubmit={handleSearch} className="flex items-center w-full">
             <input
@@ -159,13 +148,7 @@ export default function Navigation() {
             <button
               type="submit"
               className="text-gray-400 transition-colors"
-              style={{ color: '#9ca3af' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = accentColor;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#9ca3af';
-              }}
+              {...hoverColorProps('#9ca3af', accentColor)}
               aria-label="Search"
             >
               <MagnifyingGlassIcon className="h-5 w-5" />
@@ -198,8 +181,7 @@ export default function Navigation() {
               </Link>
             </li>
           ))}
-          {isAuthenticated ? (
-            <>
+          {isAuthenticated && (
               <li>
                 <Link
                   to={user?.userType === 'public' ? '/settings' : '/dashboard'}
@@ -223,20 +205,13 @@ export default function Navigation() {
                   {user?.userType === 'public' ? 'Settings' : 'Dashboard'}
                 </Link>
               </li>
-            </>
-          ) : null}
+          )}
         </ul>
 
         {/* Mobile Menu Button */}
         <button
           className="md:hidden text-white transition-colors"
-          style={{ color: 'white' }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = accentColor;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = 'white';
-          }}
+          {...hoverColorProps('white', accentColor)}
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle mobile menu"
         >
@@ -264,13 +239,7 @@ export default function Navigation() {
               <button 
                 type="submit" 
                 className="text-gray-400 transition-colors"
-                style={{ color: '#9ca3af' }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = accentColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#9ca3af';
-                }}
+                {...hoverColorProps('#9ca3af', accentColor)}
               >
                 <MagnifyingGlassIcon className="h-5 w-5" />
               </button>
@@ -300,8 +269,7 @@ export default function Navigation() {
                 {item.name}
               </Link>
             ))}
-            {isAuthenticated ? (
-              <>
+            {isAuthenticated && (
                 <Link
                   to={user?.userType === 'public' ? '/settings' : '/dashboard'}
                   className="block py-2 text-lg transition-colors"
@@ -324,8 +292,7 @@ export default function Navigation() {
                 >
                   {user?.userType === 'public' ? 'Settings' : 'Dashboard'}
                 </Link>
-              </>
-            ) : null}
+            )}
           </div>
         </div>
       )}

@@ -2,7 +2,7 @@ import { getTeamCardGradientClass, getTeamAccentStyle } from '../../../utils/col
 
 interface TeamLinksProps {
   teamNumber: string;
-  teamData: any;
+  teamData: Record<string, unknown> | null;
 }
 
 export default function TeamLinks({ teamNumber }: TeamLinksProps) {

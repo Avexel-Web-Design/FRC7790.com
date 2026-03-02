@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { frcAPI } from '../../utils/frcAPI';
 import { generateColor } from '../../utils/color';
@@ -17,6 +18,7 @@ interface Profile {
 }
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const { logout, updateUser } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -116,14 +118,12 @@ const Profile: React.FC = () => {
   }, []);
 
   const updateAvatarColor = async (color: string) => {
-    console.log('Updating avatar color to:', color);
     try {
       const response = await frcAPI.put('/profile', { avatar_color: color });
       if (response.ok) {
         setProfile((prev: Profile | null) => prev ? { ...prev, avatar_color: color } : null);
         updateUser({ avatarColor: color });
         setTempAvatarColor(''); // Clear temp color since we've saved to server
-        console.log('Avatar color updated successfully');
       } else {
         console.error('Failed to update avatar color on server');
       }
@@ -148,12 +148,8 @@ const Profile: React.FC = () => {
   };
 
   const openColorPicker = () => {
-    console.log('Avatar clicked! Opening color picker...');
     if (colorInputRef.current) {
-      console.log('Color input ref found, triggering click');
       colorInputRef.current.click();
-    } else {
-      console.error('Color input ref not found');
     }
   };
 
@@ -603,7 +599,7 @@ const Profile: React.FC = () => {
                 <button
                   onClick={() => {
                     logout();
-                    window.location.href = '/';
+                    navigate('/');
                   }}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-500 rounded-md"
                 >

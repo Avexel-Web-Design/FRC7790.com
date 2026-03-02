@@ -94,10 +94,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function FancyList({ children }: { children: React.ReactNode }) {
   return (
-    <ul className="mt-4 space-y-2 [&>li]:pl-6 [&>li]:relative text-gray-300">
-      {Array.isArray(children) ? children.map((li, i) => (
-        <li key={i} className="before:content-[''] before:absolute before:left-1 before:top-2 before:w-2 before:h-2 before:rounded-full before:bg-baywatch-orange">{li}</li>
-      )) : children}
+    <ul className="mt-4 space-y-2 text-gray-300 [&>li]:pl-6 [&>li]:relative [&>li]:before:content-[''] [&>li]:before:absolute [&>li]:before:left-1 [&>li]:before:top-2 [&>li]:before:w-2 [&>li]:before:h-2 [&>li]:before:rounded-full [&>li]:before:bg-baywatch-orange">
+      {children}
     </ul>
   );
 }

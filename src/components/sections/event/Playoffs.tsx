@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Match } from '../../../hooks/useEventData';
 import NebulaLoader from '../../common/NebulaLoader';
 import { getDivisionMapping, getAllianceDisplayName, type DivisionMapping } from '../../../utils/divisionUtils';
@@ -26,6 +26,7 @@ interface BracketMatch {
 }
 
 const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
+  const navigate = useNavigate();
   // Alliance mapping (team_key -> alliance number)
   const [allianceMapping, setAllianceMapping] = useState<Record<string, number>>({});
   // Division mapping (alliance number -> division name) for championship events
@@ -34,7 +35,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
   const [isAllianceLoading, setIsAllianceLoading] = useState(false);
   const [bracketType, setBracketType] = useState<'2-team' | '4-team' | '8-team' | 'single-elim-bo3'>('8-team');
   // Alliance data for the listing section
-  const [alliances, setAlliances] = useState<any[]>([]);
+  const [alliances, setAlliances] = useState<Array<{ name?: string; picks: string[]; status?: { playoff_average?: number; level?: string; record?: { wins: number; losses: number; ties: number }; current_level_record?: { wins: number; losses: number; ties: number } } }>>([]);
   const [isAlliancesLoading, setIsAlliancesLoading] = useState(false);
   // Track if bracket is fully mounted (for animations)
   const [isMounted, setIsMounted] = useState(false);
@@ -709,7 +710,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      window.location.href = `/team?team=${team}`;
+                      navigate(`/team?team=${team}`);
                     }}
                   >
                     {team}
@@ -737,7 +738,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      window.location.href = `/team?team=${team}`;
+                      navigate(`/team?team=${team}`);
                     }}
                   >
                     {team}

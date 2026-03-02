@@ -17,6 +17,9 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
+// Cache duration - only allow refresh if last one was more than 30 seconds ago
+const CACHE_DURATION = 30000; // 30 seconds
+
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (context === undefined) {
@@ -29,6 +32,45 @@ interface NotificationProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Given raw notification data and the currently active channel,
+ * compute adjusted counts (excluding the active channel from totals).
+ */
+function computeAdjustedCounts(
+  rawUnreadCounts: Record<string, number>,
+  rawTotalUnread: number,
+  channelsUnread: number,
+  messagesUnread: number,
+  activeChannel: string | null
+) {
+  const activeChannelUnreadCount =
+    activeChannel && rawUnreadCounts[activeChannel] ? rawUnreadCounts[activeChannel] : 0;
+
+  // Filter active channel out of the counts map
+  const filteredCounts = { ...rawUnreadCounts };
+  if (activeChannel && filteredCounts[activeChannel]) {
+    delete filteredCounts[activeChannel];
+  }
+
+  const adjustedTotal = Math.max(0, rawTotalUnread - activeChannelUnreadCount);
+
+  const isActiveChannelRegular =
+    activeChannel && !activeChannel.startsWith('dm_') && !activeChannel.startsWith('group_');
+  const adjustedChannelsUnread = isActiveChannelRegular
+    ? Math.max(0, channelsUnread - activeChannelUnreadCount)
+    : channelsUnread;
+  const adjustedMessagesUnread = !isActiveChannelRegular
+    ? Math.max(0, messagesUnread - activeChannelUnreadCount)
+    : messagesUnread;
+
+  return {
+    filteredCounts,
+    adjustedTotal,
+    adjustedChannelsUnread,
+    adjustedMessagesUnread,
+  };
+}
+
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const { user } = useAuth();
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
@@ -39,120 +81,76 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [lastRefresh, setLastRefresh] = useState<number>(0);
   const [lastTotalUnread, setLastTotalUnread] = useState<number>(0);
 
-  // Cache duration - only allow refresh if last one was more than 30 seconds ago
-  const CACHE_DURATION = 30000; // 30 seconds
-
   const refreshNotifications = useCallback(async () => {
     if (!user) return;
 
     // Check if we should skip this refresh due to caching
     const now = Date.now();
     if (now - lastRefresh < CACHE_DURATION) {
-      console.log('NotificationContext: Skipping refresh due to cache (last refresh was', (now - lastRefresh) / 1000, 'seconds ago)');
       return;
     }
 
     try {
-      console.log('NotificationContext: Refreshing notifications for user', user.id);
       setLastRefresh(now);
       
-      // Use the new combined endpoint to get all notification data in one call
-      const allDataUrl = `/chat/notifications/all?user_id=${user.id}`;
-      console.log('NotificationContext: Fetching all notification data from', allDataUrl);
-      const response = await frcAPI.get(allDataUrl);
+      // Use the combined endpoint to get all notification data in one call
+      const response = await frcAPI.get(`/chat/notifications/all?user_id=${user.id}`);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('NotificationContext: Received notification data', data);
-        
-        const { unreadCounts, totalUnread, channelsUnread, messagesUnread } = data;
-        
-        // Get the original unread count for the active channel (before filtering)
-        const activeChannelUnreadCount = activeChannel && unreadCounts[activeChannel] ? unreadCounts[activeChannel] : 0;
-        
-        // Filter out the active channel from unread counts
-        const filteredCounts = { ...unreadCounts };
-        if (activeChannel && filteredCounts[activeChannel]) {
-          delete filteredCounts[activeChannel];
-        }
-        
-        setUnreadCounts(filteredCounts);
-        
-        // Subtract active channel's unread count from totals
-        const adjustedTotal = Math.max(0, totalUnread - activeChannelUnreadCount);
-        
-        // Determine if active channel is a regular channel or DM/group
-        const isActiveChannelRegular = activeChannel && !activeChannel.startsWith('dm_') && !activeChannel.startsWith('group_');
-        const adjustedChannelsUnread = isActiveChannelRegular 
-          ? Math.max(0, channelsUnread - activeChannelUnreadCount)
-          : channelsUnread;
-        const adjustedMessagesUnread = !isActiveChannelRegular 
-          ? Math.max(0, messagesUnread - activeChannelUnreadCount)
-          : messagesUnread;
-        
-        // Fire a lightweight local notification if unread increased and we're not focused on that channel
-        if (adjustedTotal > lastTotalUnread) {
+        const adjusted = computeAdjustedCounts(
+          data.unreadCounts,
+          data.totalUnread,
+          data.channelsUnread,
+          data.messagesUnread,
+          activeChannel
+        );
+
+        if (adjusted.adjustedTotal > lastTotalUnread) {
           notifyNewMessage('New messages', 'You have unread messages');
         }
-        setLastTotalUnread(adjustedTotal);
-        setTotalUnread(adjustedTotal);
-        setChannelsHaveUnread(adjustedChannelsUnread > 0);
-        setMessagesHaveUnread(adjustedMessagesUnread > 0);
-      } else {
-        console.error('NotificationContext: Failed to fetch notification data', response.status);
-        
-        // Fallback to separate calls if the combined endpoint fails
-        if (response.status === 404) {
-          console.log('NotificationContext: Combined endpoint not available, falling back to separate calls');
-          
-          // Get unread counts for individual channels/conversations
-          const unreadUrl = `/chat/notifications/unread?user_id=${user.id}`;
-          const unreadResponse = await frcAPI.get(unreadUrl);
-          if (unreadResponse.ok) {
-            const counts = await unreadResponse.json();
-            
-            // Filter out the active channel from unread counts
-            const filteredCounts = { ...counts };
-            if (activeChannel && filteredCounts[activeChannel]) {
-              delete filteredCounts[activeChannel];
-            }
-            
-            setUnreadCounts(filteredCounts);
-            
-            // Get total unread count for sidebar badges
-            const totalUrl = `/chat/notifications/total?user_id=${user.id}`;
-            const totalResponse = await frcAPI.get(totalUrl);
-            if (totalResponse.ok) {
-              const { totalUnread: total, channelsUnread, messagesUnread } = await totalResponse.json();
-              
-              const activeChannelUnreadCount = activeChannel && counts[activeChannel] ? counts[activeChannel] : 0;
-              const adjustedTotal = Math.max(0, total - activeChannelUnreadCount);
-              
-              const isActiveChannelRegular = activeChannel && !activeChannel.startsWith('dm_') && !activeChannel.startsWith('group_');
-              const adjustedChannelsUnread = isActiveChannelRegular 
-                ? Math.max(0, channelsUnread - activeChannelUnreadCount)
-                : channelsUnread;
-              const adjustedMessagesUnread = !isActiveChannelRegular 
-                ? Math.max(0, messagesUnread - activeChannelUnreadCount)
-                : messagesUnread;
-              
-              if (adjustedTotal > lastTotalUnread) {
-                notifyNewMessage('New messages', 'You have unread messages');
-              }
-              setLastTotalUnread(adjustedTotal);
-              setTotalUnread(adjustedTotal);
-              setChannelsHaveUnread(adjustedChannelsUnread > 0);
-              setMessagesHaveUnread(adjustedMessagesUnread > 0);
-            }
+
+        setUnreadCounts(adjusted.filteredCounts);
+        setLastTotalUnread(adjusted.adjustedTotal);
+        setTotalUnread(adjusted.adjustedTotal);
+        setChannelsHaveUnread(adjusted.adjustedChannelsUnread > 0);
+        setMessagesHaveUnread(adjusted.adjustedMessagesUnread > 0);
+      } else if (response.status === 404) {
+        // Fallback to separate calls if the combined endpoint is not available
+        const [unreadResponse, totalResponse] = await Promise.all([
+          frcAPI.get(`/chat/notifications/unread?user_id=${user.id}`),
+          frcAPI.get(`/chat/notifications/total?user_id=${user.id}`),
+        ]);
+
+        if (unreadResponse.ok && totalResponse.ok) {
+          const counts: Record<string, number> = await unreadResponse.json();
+          const { totalUnread: total, channelsUnread, messagesUnread } = await totalResponse.json();
+
+          const adjusted = computeAdjustedCounts(
+            counts,
+            total,
+            channelsUnread,
+            messagesUnread,
+            activeChannel
+          );
+
+          if (adjusted.adjustedTotal > lastTotalUnread) {
+            notifyNewMessage('New messages', 'You have unread messages');
           }
+
+          setUnreadCounts(adjusted.filteredCounts);
+          setLastTotalUnread(adjusted.adjustedTotal);
+          setTotalUnread(adjusted.adjustedTotal);
+          setChannelsHaveUnread(adjusted.adjustedChannelsUnread > 0);
+          setMessagesHaveUnread(adjusted.adjustedMessagesUnread > 0);
         }
       }
-    } catch (error) {
-      console.error('Error refreshing notifications:', error);
+    } catch {
+      // Network error - keep existing state
     }
-  }, [user, activeChannel, lastRefresh, CACHE_DURATION]);
+  }, [user, activeChannel, lastRefresh, lastTotalUnread]);
 
-  const markChannelAsRead = async (channelId: string) => {
+  const markChannelAsRead = useCallback(async (channelId: string) => {
     if (!user) return;
 
     try {
@@ -172,12 +170,12 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         setLastRefresh(0);
         await refreshNotifications();
       }
-    } catch (error) {
-      console.error('Error marking channel as read:', error);
+    } catch {
+      // Network error - keep existing state
     }
-  };
+  }, [user, refreshNotifications]);
 
-  // Auto-refresh notifications every 2 minutes (reduced frequency)
+  // Auto-refresh notifications every 2 minutes
   useEffect(() => {
     if (user) {
       refreshNotifications();
@@ -187,32 +185,29 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
   }, [user, refreshNotifications]);
 
-  // Debounced refresh when active channel changes (avoid immediate refresh)
+  // Debounced refresh when active channel changes
   useEffect(() => {
     if (user && activeChannel !== null) {
       const timeoutId = setTimeout(() => {
         refreshNotifications();
-      }, 1000); // Wait 1 second before refreshing
+      }, 1000);
       
       return () => clearTimeout(timeoutId);
     }
   }, [activeChannel, user, refreshNotifications]);
 
-  // Initial load when user logs in
+  // Clear state when user logs out
   useEffect(() => {
-    if (user) {
-      refreshNotifications();
-    } else {
-      // Clear notifications when user logs out
+    if (!user) {
       setUnreadCounts({});
       setTotalUnread(0);
       setChannelsHaveUnread(false);
       setMessagesHaveUnread(false);
       setActiveChannel(null);
     }
-  }, [user, refreshNotifications]);
+  }, [user]);
 
-  const value = {
+  const value: NotificationContextType = {
     unreadCounts,
     totalUnread,
     channelsHaveUnread,

@@ -24,7 +24,7 @@ import {
 } from "../lib/effect"
 
 // API Configuration - centralized in config.ts
-import { API_HOSTS, TBA_CONFIG } from '../config'
+import { API_HOSTS, TBA_CONFIG, STATBOTICS_CONFIG } from '../config'
 import { Capacitor, CapacitorHttp } from '@capacitor/core'
 
 // Re-export for backward compatibility
@@ -969,7 +969,7 @@ export class FRCAPIService {
       }
       
       // Use Statbotics v3 API - /team_event/{teamNumber}/{eventKey}
-      const STATBOTICS_BASE_URL = 'https://api.statbotics.io/v3'
+      const STATBOTICS_BASE_URL = STATBOTICS_CONFIG.BASE_URL
       const epaMap: { [teamKey: string]: number } = {}
       
       // Process all teams concurrently for maximum speed

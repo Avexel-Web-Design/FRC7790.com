@@ -14,6 +14,7 @@ import {
   queryOne,
   type Env 
 } from "../lib/effect-hono"
+import { verifyPassword } from '../lib/password'
 
 // =============================================================================
 // Types
@@ -45,26 +46,6 @@ interface LoginResponse {
 }
 
 // =============================================================================
-// Password Verification
-// =============================================================================
-
-/**
- * Verify password using Web Crypto API (SHA-256)
- */
-const verifyPassword = (
-  password: string, 
-  hashedPassword: string
-): Effect.Effect<boolean, never, never> =>
-  Effect.promise(async () => {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(password)
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    const computedHash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("")
-    return computedHash === hashedPassword
-  })
-
-// =============================================================================
 // Login Effect
 // =============================================================================
 
@@ -94,7 +75,7 @@ const loginEffect = (
     }
 
     // Verify password
-    const validPassword = yield* verifyPassword(password, user.password)
+    const { valid: validPassword, isLegacyHash } = yield* verifyPassword(password, user.password)
     if (!validPassword) {
       return yield* Effect.fail(AuthError.invalidCredentials())
     }

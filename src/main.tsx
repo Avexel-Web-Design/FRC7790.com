@@ -59,7 +59,9 @@ if (typeof window !== 'undefined' && Capacitor.isNativePlatform()) {
   window.fetch = customFetch as typeof fetch
 }
 
-createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Root element #root not found in document');
+createRoot(rootElement).render(
   <StrictMode>
     <AuthProvider>
       <App />

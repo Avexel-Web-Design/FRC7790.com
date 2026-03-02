@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { RegionalEvent } from '../../../hooks/useRegionalData';
 import { formatEventDate } from '../../../utils/frcAPI';
 
@@ -8,8 +9,9 @@ interface RegionalEventsProps {
 }
 
 const RegionalEvents: React.FC<RegionalEventsProps> = ({ events, isLoading }) => {
+  const navigate = useNavigate();
   const handleEventClick = (eventKey: string) => {
-    window.location.href = `/event?event=${eventKey}`;
+    navigate(`/event?event=${eventKey}`);
   };
 
   return (

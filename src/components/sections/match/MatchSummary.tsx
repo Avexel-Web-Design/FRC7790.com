@@ -5,7 +5,7 @@ import { useMatchSummary } from '../../../hooks/useMatchSummary';
 interface MatchSummaryProps { matchData: MatchData; }
 
 export const MatchSummary: React.FC<MatchSummaryProps> = ({ matchData }) => {
-  const { summary, loading, error, regenerate, model, fallbackUsed } = useMatchSummary(matchData);
+  const { summary, isLoading, error, regenerate, model, fallbackUsed } = useMatchSummary(matchData);
 
   return (
     <div>
@@ -19,29 +19,29 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ matchData }) => {
       <div className="card-gradient backdrop-blur-sm border border-white/10 rounded-xl p-5 mb-8 animate__animated animate__fadeInUp" style={{ animationDelay: '0.35s' }}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            {loading && (
+            {isLoading && (
               <div className="space-y-2">
                 <div className="h-4 bg-white/10 rounded w-5/6 animate-pulse" />
                 <div className="h-4 bg-white/10 rounded w-4/6 animate-pulse" />
               </div>
             )}
-            {!loading && error && (
+            {!isLoading && error && (
               <div className="text-sm text-red-400">
                 Failed to load summary: {error}
                 <button onClick={regenerate} className="ml-2 underline text-baywatch-orange">Retry</button>
               </div>
             )}
-            {!loading && !error && summary && (
+            {!isLoading && !error && summary && (
               <p className="text-gray-200 leading-relaxed text-sm md:text-base">{summary}</p>
             )}
-            {!loading && !error && !summary && (
+            {!isLoading && !error && !summary && (
               <p className="text-gray-400 text-sm">Summary unavailable.</p>
             )}
           </div>
           <div className="flex flex-col items-end gap-2">
             <button
               onClick={regenerate}
-              disabled={loading}
+              disabled={isLoading}
               className="px-3 py-2 text-xs rounded bg-baywatch-orange/20 hover:bg-baywatch-orange/30 text-baywatch-orange font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               aria-label="Regenerate summary"
             >

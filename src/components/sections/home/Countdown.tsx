@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useFRCCompetitionData } from '../../../hooks/useFRCData';
 import { frcAPI } from '../../../utils/frcAPI';
+import type { Match } from '../../../utils/frcAPI';
 
 // 2026 Season Events Schedule
 const EVENTS_2026 = [
@@ -109,7 +110,7 @@ function useEventData(eventCode: string | null, simulateAfterMatch: number | nul
     wins: number;
     losses: number;
     ties: number;
-    nextMatch: any;
+    nextMatch: Match | null;
     eventName: string;
     eventLocation: string;
   } | null>(null);
@@ -144,24 +145,18 @@ function useEventData(eventCode: string | null, simulateAfterMatch: number | nul
         if (simulateAfterMatch !== null && allMatches && allMatches.length > 0) {
           // Find all of team 7790's matches
           const team7790Matches = allMatches
-            .filter((m: any) => {
+            .filter((m: Match) => {
               const blueTeams = m.alliances?.blue?.team_keys || [];
               const redTeams = m.alliances?.red?.team_keys || [];
               return blueTeams.includes('frc7790') || redTeams.includes('frc7790');
             })
-            .sort((a: any, b: any) => {
+            .sort((a: Match, b: Match) => {
               // Sort by actual_time or predicted_time (chronological order)
               // This works for both quals and the 2025 double-elimination playoffs
               const timeA = a.actual_time || a.predicted_time || 0;
               const timeB = b.actual_time || b.predicted_time || 0;
               return timeA - timeB;
             });
-          
-          // Debug: log match count and types
-          console.log('Total team 7790 matches:', team7790Matches.length);
-          console.log('Match breakdown:', team7790Matches.map((m: any) => `${m.comp_level}${m.set_number ? m.set_number : ''}-${m.match_number}`).join(', '));
-          console.log('Simulating after match:', simulateAfterMatch);
-          console.log('Next match would be index', simulateAfterMatch, ':', team7790Matches[simulateAfterMatch]?.key);
           
           if (team7790Matches.length > simulateAfterMatch) {
             // Get the next match after the simulated point

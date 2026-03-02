@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import NebulaLoader from '../../common/NebulaLoader';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { Match } from '../../../hooks/useEventData';
 import { getTeamColor } from '../../../utils/color';
 
@@ -10,6 +10,7 @@ interface ScheduleProps {
 }
 
 const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
+  const navigate = useNavigate();
   const formatTeamNumber = (teamKey: string): string => {
     return teamKey.replace('frc', '');
   };
@@ -72,7 +73,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
   }, [matches]);
 
   const handleTeamClick = (teamNumber: string) => {
-    window.location.href = `/team?team=${teamNumber}`;
+    navigate(`/team?team=${teamNumber}`);
   };
 
   return (
