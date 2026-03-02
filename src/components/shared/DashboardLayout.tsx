@@ -8,7 +8,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="h-screen bg-gray-100">
+    <div className="h-screen bg-black">
       {/* Desktop Layout */}
       <div className="hidden md:flex h-full">
         <DashboardSidebar />

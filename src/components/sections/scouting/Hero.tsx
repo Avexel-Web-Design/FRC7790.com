@@ -38,25 +38,32 @@ export default function Hero({ defaultEvent = '', onLoadEvent }: HeroProps) {
         >
           Compare and rank teams at events using EPA (Expected Points Added) statistics from Statbotics and power ratings from The Blue Alliance. Track team selection during alliance selections.
         </p>
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row items-center mt-4 justify-center gap-4 max-w-lg mx-auto animate__animated animate__fadeInUp"
+        <div
+          className="flex flex-col sm:flex-row items-center mt-6 justify-center gap-4 max-w-2xl mx-auto animate__animated animate__fadeInUp"
           style={{ animationDelay: '0.4s' }}
         >
-          <input
-            type="text"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            placeholder="Enter event code (e.g. 2025milac)"
-            className="flex-1 px-4 py-2 rounded bg-black/40 border border-gray-700 focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="btn-orange-glow px-4 py-2 rounded font-semibold hover:scale-105 transition-transform"
+          <form onSubmit={handleSubmit} className="flex flex-1 w-full sm:w-auto gap-3">
+            <input
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Enter event code (e.g. 2026okok)"
+              className="flex-1 px-4 py-2 rounded bg-black/40 border border-gray-700 focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="btn-orange-glow px-4 py-2 rounded font-semibold hover:scale-105 transition-transform"
+            >
+              Search
+            </button>
+          </form>
+          <a
+            href="/dashboard"
+            className="w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-baywatch-orange/60 px-4 py-2 text-sm font-semibold text-baywatch-orange hover:bg-baywatch-orange/10"
           >
-            Search
-          </button>
-        </form>
+            Scouting App Login
+          </a>
+        </div>
       </div>
     </section>
   );
