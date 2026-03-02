@@ -58,7 +58,13 @@ export default function ScoutingDashboard() {
               Scouting is locked until an admin starts an event.
             </p>
             {isAdmin && (
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleStart();
+                }}
+                className="mt-4 flex flex-col gap-3 sm:flex-row"
+              >
                 <input
                   type="text"
                   value={eventCode}
@@ -67,14 +73,13 @@ export default function ScoutingDashboard() {
                   className="flex-1 rounded-lg border border-gray-700 bg-black px-3 py-2 text-sm text-white"
                 />
                 <button
-                  type="button"
-                  onClick={handleStart}
+                  type="submit"
                   disabled={busy}
                   className="rounded-lg bg-baywatch-orange px-4 py-2 text-sm font-semibold text-black disabled:opacity-60"
                 >
                   Start event
                 </button>
-              </div>
+              </form>
             )}
             {status && <p className="mt-3 text-sm text-gray-400">{status}</p>}
           </section>

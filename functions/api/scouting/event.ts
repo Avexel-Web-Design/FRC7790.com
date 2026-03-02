@@ -209,6 +209,79 @@ event.post('/end', authEffectHandler((c) =>
   })
 ));
 
+// GET /event/teams - returns teams for the active event
+event.get('/teams', effectHandler((c) =>
+  Effect.gen(function* () {
+    const active = yield* queryOne<{ value: string }>('SELECT value FROM scouting_settings WHERE key = ?', 'active_event_code');
+    const activeCode = active?.value || null;
+    if (!activeCode) return { teams: [] };
+
+    const eventRow = yield* queryOne<{ id: number }>('SELECT id FROM scouting_events WHERE event_code = ?', activeCode);
+    const eventId = eventRow?.id || null;
+    if (!eventId) return { teams: [] };
+
+    const teams = yield* query<{ team_number: number; nickname: string | null }>(
+      `SELECT st.team_number, st.nickname
+       FROM scouting_event_teams setmap
+       JOIN scouting_teams st ON st.id = setmap.team_id
+       WHERE setmap.event_id = ?
+       ORDER BY st.team_number ASC`,
+      eventId
+    );
+
+    return { teams };
+  })
+));
+
+// GET /event/matches - returns matches for the active event
+event.get('/matches', effectHandler((c) =>
+  Effect.gen(function* () {
+    const active = yield* queryOne<{ value: string }>('SELECT value FROM scouting_settings WHERE key = ?', 'active_event_code');
+    const activeCode = active?.value || null;
+    if (!activeCode) return { matches: [] };
+
+    const eventRow = yield* queryOne<{ id: number }>('SELECT id FROM scouting_events WHERE event_code = ?', activeCode);
+    const eventId = eventRow?.id || null;
+    if (!eventId) return { matches: [] };
+
+    const matches = yield* query<Record<string, unknown>>(
+      `SELECT match_key, match_type, match_number, set_number, red_teams, blue_teams,
+              scheduled_time, actual_time, winning_alliance
+       FROM scouting_matches
+       WHERE event_id = ?
+       ORDER BY
+         CASE match_type
+           WHEN 'qm' THEN 1
+           WHEN 'sf' THEN 2
+           WHEN 'f' THEN 3
+           ELSE 4
+         END,
+         match_number ASC`,
+      eventId
+    );
+
+    return { matches };
+  })
+));
+
+// GET /event/rankings - fetches live rankings from TBA for the active event
+event.get('/rankings', effectHandler((c) =>
+  Effect.gen(function* () {
+    const active = yield* queryOne<{ value: string }>('SELECT value FROM scouting_settings WHERE key = ?', 'active_event_code');
+    const activeCode = active?.value || null;
+    if (!activeCode) return { rankings: [] };
+
+    const authKey = c.req.header('X-TBA-Auth-Key') || c.env.TBA_AUTH_KEY || '';
+    if (!authKey) return { rankings: [] };
+
+    const data = yield* Effect.promise(async () =>
+      fetchTba<{ rankings: Array<Record<string, unknown>> }>(`/event/${activeCode}/rankings`, authKey)
+    );
+
+    return { rankings: data?.rankings || [] };
+  })
+));
+
 event.get('/archives', effectHandler((c) =>
   Effect.gen(function* () {
     const rows = yield* query<Record<string, unknown>>(

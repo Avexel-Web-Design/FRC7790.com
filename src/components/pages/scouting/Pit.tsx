@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useScoutingQueue } from '../../../hooks/useScoutingQueue';
 import { useActiveEvent } from '../../../hooks/useActiveEvent';
-import { submitPitEntry, uploadPitImage } from '../../../utils/scoutingApi';
+import { submitPitEntry, uploadPitImage, fetchEventTeams } from '../../../utils/scoutingApi';
+import type { EventTeam } from '../../../utils/scoutingApi';
+import SearchableSelect from '../../common/SearchableSelect';
+import type { SearchableOption } from '../../common/SearchableSelect';
 
 export default function PitScouting() {
   const { enqueue, syncQueue, stats, syncing } = useScoutingQueue();
@@ -17,6 +20,22 @@ export default function PitScouting() {
   const [imageUrl, setImageUrl] = useState('');
   const [status, setStatus] = useState<{ type: 'idle' | 'success' | 'error'; message?: string }>({ type: 'idle' });
   const [uploading, setUploading] = useState(false);
+  const [teams, setTeams] = useState<EventTeam[]>([]);
+
+  useEffect(() => {
+    if (!activeEvent) return;
+    fetchEventTeams().then(setTeams);
+  }, [activeEvent]);
+
+  const teamOptions: SearchableOption[] = useMemo(
+    () =>
+      teams.map((t) => ({
+        value: String(t.team_number),
+        label: String(t.team_number),
+        sublabel: t.nickname || undefined,
+      })),
+    [teams],
+  );
 
   const handleUpload = async () => {
     if (!imageFile) return;
@@ -94,12 +113,11 @@ export default function PitScouting() {
           <section className="rounded-2xl border border-gray-800 bg-black/50 p-6">
             <h2 className="text-lg font-semibold text-white">Team Info</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <input
-                type="number"
+              <SearchableSelect
+                options={teamOptions}
                 value={teamNumber}
-                onChange={(e) => setTeamNumber(e.target.value)}
+                onChange={setTeamNumber}
                 placeholder="Team number"
-                className="rounded-lg border border-gray-700 bg-black px-3 py-2 text-sm text-white"
                 required
               />
             </div>

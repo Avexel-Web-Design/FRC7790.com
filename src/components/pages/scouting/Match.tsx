@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useScoutingQueue } from '../../../hooks/useScoutingQueue';
 import { useActiveEvent } from '../../../hooks/useActiveEvent';
-import { submitMatchEntry } from '../../../utils/scoutingApi';
+import { submitMatchEntry, fetchEventTeams, fetchEventMatches } from '../../../utils/scoutingApi';
+import type { EventTeam, EventMatch } from '../../../utils/scoutingApi';
+import SearchableSelect from '../../common/SearchableSelect';
+import type { SearchableOption } from '../../common/SearchableSelect';
 
 type EndgameClimb = 'None' | 'L1' | 'L2' | 'L3';
 
@@ -19,6 +22,36 @@ export default function MatchScouting() {
   const [status, setStatus] = useState<{ type: 'idle' | 'success' | 'error'; message?: string }>({
     type: 'idle'
   });
+  const [teams, setTeams] = useState<EventTeam[]>([]);
+  const [matches, setMatches] = useState<EventMatch[]>([]);
+
+  useEffect(() => {
+    if (!activeEvent) return;
+    fetchEventTeams().then(setTeams);
+    fetchEventMatches().then(setMatches);
+  }, [activeEvent]);
+
+  const matchOptions: SearchableOption[] = useMemo(
+    () =>
+      matches
+        .filter((m) => m.match_type === 'qm')
+        .map((m) => ({
+          value: String(m.match_number),
+          label: `Q${m.match_number}`,
+          sublabel: `${m.red_teams.replace(/frc/g, '')} vs ${m.blue_teams.replace(/frc/g, '')}`,
+        })),
+    [matches],
+  );
+
+  const teamOptions: SearchableOption[] = useMemo(
+    () =>
+      teams.map((t) => ({
+        value: String(t.team_number),
+        label: String(t.team_number),
+        sublabel: t.nickname || undefined,
+      })),
+    [teams],
+  );
 
   const adjustCounter = (setter: (value: number) => void, value: number, delta: number) => {
     const next = Math.max(0, value + delta);
@@ -88,20 +121,18 @@ export default function MatchScouting() {
           <section className="rounded-2xl border border-gray-800 bg-black/50 p-6">
             <h2 className="text-lg font-semibold text-white">Pre-Match</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-3">
-              <input
-                type="number"
+              <SearchableSelect
+                options={matchOptions}
                 value={matchNumber}
-                onChange={(e) => setMatchNumber(e.target.value)}
+                onChange={setMatchNumber}
                 placeholder="Match number"
-                className="rounded-lg border border-gray-700 bg-black px-3 py-2 text-sm text-white"
                 required
               />
-              <input
-                type="number"
+              <SearchableSelect
+                options={teamOptions}
                 value={teamNumber}
-                onChange={(e) => setTeamNumber(e.target.value)}
+                onChange={setTeamNumber}
                 placeholder="Team number"
-                className="rounded-lg border border-gray-700 bg-black px-3 py-2 text-sm text-white"
                 required
               />
             </div>

@@ -51,6 +51,12 @@ export default function ScoutingStrategy() {
         )}
 
         {activeEvent && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveDrawing();
+            }}
+          >
           <div className="mt-6 grid gap-4 md:grid-cols-2">
           <input
             type="number"
@@ -67,9 +73,7 @@ export default function ScoutingStrategy() {
             className="rounded-lg border border-gray-700 bg-black px-3 py-2 text-sm text-white"
           />
         </div>
-        )}
 
-        {activeEvent && (
           <textarea
             value={dataJson}
             onChange={(e) => setDataJson(e.target.value)}
@@ -77,13 +81,10 @@ export default function ScoutingStrategy() {
             className="mt-4 w-full rounded-lg border border-gray-700 bg-black px-3 py-2 text-sm text-white"
             rows={8}
           />
-        )}
 
-        {activeEvent && (
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button
-              type="button"
-              onClick={saveDrawing}
+              type="submit"
               className="rounded-lg bg-baywatch-orange px-4 py-2 text-sm font-semibold text-black"
             >
               Save + Create Share Link
@@ -98,6 +99,7 @@ export default function ScoutingStrategy() {
             )}
             {status && <span className="text-xs text-gray-400">{status}</span>}
           </div>
+          </form>
         )}
       </div>
     </div>

@@ -39,6 +39,9 @@ const Simulations = lazy(() => import('./components/pages/scouting/Simulations')
 const Strategy = lazy(() => import('./components/pages/scouting/Strategy'));
 const Share = lazy(() => import('./components/pages/scouting/Share'));
 const Archive = lazy(() => import('./components/pages/scouting/Archive'));
+const ScoutingTeams = lazy(() => import('./components/pages/scouting/Teams'));
+const ScoutingRankings = lazy(() => import('./components/pages/scouting/Rankings'));
+const ScoutingSchedule = lazy(() => import('./components/pages/scouting/Schedule'));
 
 const PageLoader = () => (
   <div className="min-h-screen bg-black flex items-center justify-center">
@@ -96,6 +99,9 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/match" element={<ScoutingMatch />} />
               <Route path="/dashboard/pit" element={<Pit />} />
+              <Route path="/dashboard/teams" element={<ScoutingTeams />} />
+              <Route path="/dashboard/rankings" element={<ScoutingRankings />} />
+              <Route path="/dashboard/schedule" element={<ScoutingSchedule />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
 

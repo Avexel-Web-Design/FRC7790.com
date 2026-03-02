@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { HomeIcon, ClipboardDocumentCheckIcon, ClipboardIcon, PresentationChartLineIcon, UsersIcon, Squares2X2Icon, PencilSquareIcon, ArchiveBoxIcon, UserCircleIcon, ShieldCheckIcon, ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, ClipboardDocumentCheckIcon, ClipboardIcon, PresentationChartLineIcon, UsersIcon, Squares2X2Icon, PencilSquareIcon, ArchiveBoxIcon, UserCircleIcon, ShieldCheckIcon, ArrowRightStartOnRectangleIcon, UserGroupIcon, TrophyIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
 import NotificationDot from '../common/NotificationDot';
 
 interface DashboardSidebarProps {
@@ -29,6 +29,9 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
     { name: 'Overview', href: '/dashboard', icon: HomeIcon },
     { name: 'Match', href: '/dashboard/match', icon: ClipboardDocumentCheckIcon },
     { name: 'Pit', href: '/dashboard/pit', icon: ClipboardIcon },
+    { name: 'Teams', href: '/dashboard/teams', icon: UserGroupIcon },
+    { name: 'Rankings', href: '/dashboard/rankings', icon: TrophyIcon },
+    { name: 'Schedule', href: '/dashboard/schedule', icon: CalendarDaysIcon },
     { name: 'Archive', href: '/dashboard/archive', icon: ArchiveBoxIcon },
     { name: 'Profile', href: '/profile', icon: UserCircleIcon },
   ];

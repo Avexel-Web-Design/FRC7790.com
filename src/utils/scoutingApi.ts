@@ -112,3 +112,41 @@ export async function fetchTeamMetrics(): Promise<unknown | null> {
   if (!res.ok) return null;
   return res.json();
 }
+
+export interface EventTeam {
+  team_number: number;
+  nickname: string | null;
+}
+
+export interface EventMatch {
+  match_key: string;
+  match_type: string;
+  match_number: number;
+  set_number: number;
+  red_teams: string;
+  blue_teams: string;
+  scheduled_time: number | null;
+  actual_time: number | null;
+  winning_alliance: string | null;
+}
+
+export async function fetchEventTeams(): Promise<EventTeam[]> {
+  const res = await frcAPI.get('/scouting/event/teams');
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data?.teams as EventTeam[]) || [];
+}
+
+export async function fetchEventMatches(): Promise<EventMatch[]> {
+  const res = await frcAPI.get('/scouting/event/matches');
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data?.matches as EventMatch[]) || [];
+}
+
+export async function fetchEventRankings(): Promise<unknown[]> {
+  const res = await frcAPI.get('/scouting/event/rankings');
+  if (!res.ok) return [];
+  const data = await res.json();
+  return (data?.rankings as unknown[]) || [];
+}

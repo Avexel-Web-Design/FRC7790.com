@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
-import { LayoutDashboard, ClipboardCheck, Clipboard, LineChart, Users, Layers, PenSquare, Archive, User as UserIcon, Shield } from 'lucide-react';
+import { LayoutDashboard, ClipboardCheck, Clipboard, LineChart, Users, Layers, PenSquare, Archive, User as UserIcon, Shield, UsersRound, Trophy, CalendarDays } from 'lucide-react';
 
 function Item({ to, label, icon: Icon, showDot }: { to: string; label: string; icon: ComponentType<{ className?: string }>; showDot?: boolean }) {
   return (
@@ -40,6 +40,9 @@ export default function MobileDashboardNav() {
         <Item to="/dashboard" label="Overview" icon={LayoutDashboard} showDot={channelsHaveUnread} />
         <Item to="/dashboard/match" label="Match" icon={ClipboardCheck} showDot={messagesHaveUnread} />
         <Item to="/dashboard/pit" label="Pit" icon={Clipboard} />
+        <Item to="/dashboard/teams" label="Teams" icon={UsersRound} />
+        <Item to="/dashboard/rankings" label="Ranks" icon={Trophy} />
+        <Item to="/dashboard/schedule" label="Sched" icon={CalendarDays} />
         <Item to="/dashboard/archive" label="Archive" icon={Archive} />
         {user?.isAdmin && <Item to="/dashboard/analytics" label="Stats" icon={LineChart} />}
         {user?.isAdmin && <Item to="/dashboard/alliances" label="Allies" icon={Users} />}
