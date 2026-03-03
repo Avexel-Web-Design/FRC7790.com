@@ -19,9 +19,7 @@ const Login: React.FC = () => {
     try {
       const success = await login(username, password);
       if (success) {
-        // Navigate to dashboard; the dashboard/settings page will handle
-        // redirect based on live user state (user is stale in this closure)
-        navigate('/dashboard');
+        navigate('/profile');
       } else {
         setError('Invalid username or password');
       }

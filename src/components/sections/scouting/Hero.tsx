@@ -39,10 +39,10 @@ export default function Hero({ defaultEvent = '', onLoadEvent }: HeroProps) {
           Compare and rank teams at events using EPA (Expected Points Added) statistics from Statbotics and power ratings from The Blue Alliance. Track team selection during alliance selections.
         </p>
         <div
-          className="flex flex-col sm:flex-row items-center mt-6 justify-center gap-4 max-w-2xl mx-auto animate__animated animate__fadeInUp"
+          className="flex items-center mt-6 justify-center gap-4 max-w-2xl mx-auto animate__animated animate__fadeInUp"
           style={{ animationDelay: '0.4s' }}
         >
-          <form onSubmit={handleSubmit} className="flex flex-1 w-full sm:w-auto gap-3">
+          <form onSubmit={handleSubmit} className="flex flex-1 w-full gap-3">
             <input
               type="text"
               value={code}
@@ -57,12 +57,6 @@ export default function Hero({ defaultEvent = '', onLoadEvent }: HeroProps) {
               Search
             </button>
           </form>
-          <a
-            href="/dashboard"
-            className="w-full sm:w-auto inline-flex items-center justify-center rounded-md border border-baywatch-orange/60 px-4 py-2 text-sm font-semibold text-baywatch-orange hover:bg-baywatch-orange/10"
-          >
-            Scouting App Login
-          </a>
         </div>
       </div>
     </section>

@@ -29,20 +29,6 @@ const AdminUsers = lazy(() => import('./components/pages/admin/AdminUsers'));
 const AdminPublicUsers = lazy(() => import('./components/pages/admin/AdminPublicUsers'));
 const PrivacyPolicy = lazy(() => import('./components/pages/PrivacyPolicy'));
 
-// Scouting dashboard pages
-const Dashboard = lazy(() => import('./components/pages/scouting/Dashboard'));
-const ScoutingMatch = lazy(() => import('./components/pages/scouting/Match'));
-const Pit = lazy(() => import('./components/pages/scouting/Pit'));
-const Analytics = lazy(() => import('./components/pages/scouting/Analytics'));
-const Alliances = lazy(() => import('./components/pages/scouting/Alliances'));
-const Simulations = lazy(() => import('./components/pages/scouting/Simulations'));
-const Strategy = lazy(() => import('./components/pages/scouting/Strategy'));
-const Share = lazy(() => import('./components/pages/scouting/Share'));
-const Archive = lazy(() => import('./components/pages/scouting/Archive'));
-const ScoutingTeams = lazy(() => import('./components/pages/scouting/Teams'));
-const ScoutingRankings = lazy(() => import('./components/pages/scouting/Rankings'));
-const ScoutingSchedule = lazy(() => import('./components/pages/scouting/Schedule'));
-
 const PageLoader = () => (
   <div className="min-h-screen bg-black flex items-center justify-center">
     <div className="text-white text-lg">Loading...</div>
@@ -83,7 +69,6 @@ function App() {
               <Route path="/create-account" element={<CreateAccount />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/scouting/share/:token" element={<Share />} />
             </Route>
 
             {/* Member-only routes (block public) */}
@@ -96,12 +81,6 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/match" element={<ScoutingMatch />} />
-              <Route path="/dashboard/pit" element={<Pit />} />
-              <Route path="/dashboard/teams" element={<ScoutingTeams />} />
-              <Route path="/dashboard/rankings" element={<ScoutingRankings />} />
-              <Route path="/dashboard/schedule" element={<ScoutingSchedule />} />
               <Route path="/profile" element={<Profile />} />
             </Route>
 
@@ -115,12 +94,6 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/dashboard/analytics" element={<Analytics />} />
-              <Route path="/dashboard/alliances" element={<Alliances />} />
-              <Route path="/dashboard/simulations" element={<Simulations />} />
-              <Route path="/dashboard/strategy" element={<Strategy />} />
-              <Route path="/dashboard/archive" element={<Archive />} />
-              <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/public-users" element={<AdminPublicUsers />} />
             </Route>

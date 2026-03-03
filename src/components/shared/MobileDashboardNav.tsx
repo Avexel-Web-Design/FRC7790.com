@@ -1,10 +1,9 @@
 import type { ComponentType } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { LayoutDashboard, ClipboardCheck, Clipboard, LineChart, Users, Layers, PenSquare, Archive, User as UserIcon, Shield, UsersRound, Trophy, CalendarDays } from 'lucide-react';
+import { User as UserIcon, Users, Shield } from 'lucide-react';
 
-function Item({ to, label, icon: Icon, showDot }: { to: string; label: string; icon: ComponentType<{ className?: string }>; showDot?: boolean }) {
+function Item({ to, label, icon: Icon }: { to: string; label: string; icon: ComponentType<{ className?: string }> }) {
   return (
     <NavLink
       to={to}
@@ -16,9 +15,6 @@ function Item({ to, label, icon: Icon, showDot }: { to: string; label: string; i
     >
       <div className="relative">
         <Icon className="w-5 h-5" />
-        {showDot && (
-          <span className="absolute -top-1 -right-2 w-2.5 h-2.5 rounded-full bg-baywatch-orange shadow" />
-        )}
       </div>
       <span className="text-[11px] mt-0.5">{label}</span>
     </NavLink>
@@ -26,7 +22,6 @@ function Item({ to, label, icon: Icon, showDot }: { to: string; label: string; i
 }
 
 export default function MobileDashboardNav() {
-  const { channelsHaveUnread, messagesHaveUnread } = useNotifications();
   const { user } = useAuth();
 
   return (
@@ -37,17 +32,6 @@ export default function MobileDashboardNav() {
       }}
     >
       <div className="max-w-screen-sm mx-auto flex items-stretch">
-        <Item to="/dashboard" label="Overview" icon={LayoutDashboard} showDot={channelsHaveUnread} />
-        <Item to="/dashboard/match" label="Match" icon={ClipboardCheck} showDot={messagesHaveUnread} />
-        <Item to="/dashboard/pit" label="Pit" icon={Clipboard} />
-        <Item to="/dashboard/teams" label="Teams" icon={UsersRound} />
-        <Item to="/dashboard/rankings" label="Ranks" icon={Trophy} />
-        <Item to="/dashboard/schedule" label="Sched" icon={CalendarDays} />
-        <Item to="/dashboard/archive" label="Archive" icon={Archive} />
-        {user?.isAdmin && <Item to="/dashboard/analytics" label="Stats" icon={LineChart} />}
-        {user?.isAdmin && <Item to="/dashboard/alliances" label="Allies" icon={Users} />}
-        {user?.isAdmin && <Item to="/dashboard/simulations" label="Sims" icon={Layers} />}
-        {user?.isAdmin && <Item to="/dashboard/strategy" label="Draw" icon={PenSquare} />}
         <Item to="/profile" label="Profile" icon={UserIcon} />
         {user?.isAdmin && (
           <>

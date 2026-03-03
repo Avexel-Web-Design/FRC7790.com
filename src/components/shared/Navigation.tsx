@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '../../contexts/AuthContext';
 import { useTeamContext } from '../../hooks/useTeamContext';
 import { getTeamColor } from '../../utils/color';
 import { fetchTBA } from '../../hooks/useTBA';
@@ -24,7 +23,6 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const { isAuthenticated, user } = useAuth();
   const { isTeamPage, teamNumber } = useTeamContext();
   const location = useLocation();
   const navigate = useNavigate();
@@ -181,31 +179,6 @@ export default function Navigation() {
               </Link>
             </li>
           ))}
-          {isAuthenticated && (
-              <li>
-                <Link
-                  to={user?.userType === 'public' ? '/settings' : '/dashboard'}
-                  className="transition-all duration-300 hover:scale-110 inline-block"
-                  style={{
-                    color: (user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard') ? accentColor : 'white'
-                  }}
-                  onMouseEnter={(e) => {
-                    const isActive = user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard';
-                    if (!isActive) {
-                      e.currentTarget.style.color = accentColor;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    const isActive = user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard';
-                    if (!isActive) {
-                      e.currentTarget.style.color = 'white';
-                    }
-                  }}
-                >
-                  {user?.userType === 'public' ? 'Settings' : 'Dashboard'}
-                </Link>
-              </li>
-          )}
         </ul>
 
         {/* Mobile Menu Button */}
@@ -269,30 +242,6 @@ export default function Navigation() {
                 {item.name}
               </Link>
             ))}
-            {isAuthenticated && (
-                <Link
-                  to={user?.userType === 'public' ? '/settings' : '/dashboard'}
-                  className="block py-2 text-lg transition-colors"
-                  style={{
-                    color: (user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard') ? accentColor : 'white'
-                  }}
-                  onMouseEnter={(e) => {
-                    const isActive = user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard';
-                    if (!isActive) {
-                      e.currentTarget.style.color = accentColor;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    const isActive = user?.userType === 'public' ? location.pathname === '/settings' : location.pathname === '/dashboard';
-                    if (!isActive) {
-                      e.currentTarget.style.color = 'white';
-                    }
-                  }}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {user?.userType === 'public' ? 'Settings' : 'Dashboard'}
-                </Link>
-            )}
           </div>
         </div>
       )}

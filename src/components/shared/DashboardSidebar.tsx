@@ -1,7 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { HomeIcon, ClipboardDocumentCheckIcon, ClipboardIcon, PresentationChartLineIcon, UsersIcon, Squares2X2Icon, PencilSquareIcon, ArchiveBoxIcon, UserCircleIcon, ShieldCheckIcon, ArrowRightStartOnRectangleIcon, UserGroupIcon, TrophyIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
-import NotificationDot from '../common/NotificationDot';
+import { UserCircleIcon, ShieldCheckIcon, ArrowRightStartOnRectangleIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 interface DashboardSidebarProps {
   isMobile?: boolean;
@@ -10,8 +9,6 @@ interface DashboardSidebarProps {
 
 export default function DashboardSidebar({ isMobile = false, onNavigate }: DashboardSidebarProps) {
   const { user, logout } = useAuth();
-  const channelsHaveUnread = false;
-  const messagesHaveUnread = false;
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -24,23 +21,9 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
   const handleNavigation = () => {
     if (onNavigate) onNavigate();
   };
-  // Navigation
-  const navigation = [
-    { name: 'Overview', href: '/dashboard', icon: HomeIcon },
-    { name: 'Match', href: '/dashboard/match', icon: ClipboardDocumentCheckIcon },
-    { name: 'Pit', href: '/dashboard/pit', icon: ClipboardIcon },
-    { name: 'Teams', href: '/dashboard/teams', icon: UserGroupIcon },
-    { name: 'Rankings', href: '/dashboard/rankings', icon: TrophyIcon },
-    { name: 'Schedule', href: '/dashboard/schedule', icon: CalendarDaysIcon },
-    { name: 'Archive', href: '/dashboard/archive', icon: ArchiveBoxIcon },
-    { name: 'Profile', href: '/profile', icon: UserCircleIcon },
-  ];
 
-  const scoutingAdminNavigation = [
-    { name: 'Analytics', href: '/dashboard/analytics', icon: PresentationChartLineIcon },
-    { name: 'Alliances', href: '/dashboard/alliances', icon: UsersIcon },
-    { name: 'Simulations', href: '/dashboard/simulations', icon: Squares2X2Icon },
-    { name: 'Strategy', href: '/dashboard/strategy', icon: PencilSquareIcon },
+  const navigation = [
+    { name: 'Profile', href: '/profile', icon: UserCircleIcon },
   ];
 
   const adminNavigation = [
@@ -51,7 +34,6 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
   if (isMobile) {
     return (
       <div className="text-white">
-        {/* Mobile Menu Content */}
         <div className="space-y-1">
           {navigation.map((item) => (
             <Link
@@ -64,38 +46,9 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
             >
               <item.icon className="w-5 h-5 mr-3" />
               <span>{item.name}</span>
-              {item.name === 'Overview' && channelsHaveUnread && (
-                <NotificationDot show={true} position="absolute-right" size="small" />
-              )}
-              {item.name === 'Match' && messagesHaveUnread && (
-                <NotificationDot show={true} position="absolute-right" size="small" />
-              )}
             </Link>
           ))}
 
-          {user?.isAdmin && (
-            <>
-              <div className="pt-4 mt-4 border-t border-gray-700">
-                <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                  Strategy
-                </h3>
-                {scoutingAdminNavigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    onClick={handleNavigation}
-                    className={`flex items-center px-3 py-3 text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors ${
-                      location.pathname === item.href ? 'bg-baywatch-orange text-white' : 'text-gray-300 hover:text-white'
-                    }`}
-                  >
-                    <item.icon className="w-5 h-5 mr-3" />
-                    <span>{item.name}</span>
-                  </Link>
-                ))}
-              </div>
-            </>
-          )}
-          
           {user?.isAdmin && (
               <div className="pt-4 mt-4 border-t border-gray-700">
                 <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
@@ -153,29 +106,10 @@ export default function DashboardSidebar({ isMobile = false, onNavigate }: Dashb
           >
             <item.icon className="w-6 h-6 shrink-0" />
             <span className="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">{item.name}</span>
-            {item.name === 'Overview' && channelsHaveUnread && (
-              <NotificationDot show={true} position="top-right" size="small" />
-            )}
-            {item.name === 'Match' && messagesHaveUnread && (
-              <NotificationDot show={true} position="top-right" size="small" />
-            )}
           </Link>
         ))}
         {user?.isAdmin && (
           <div className="pt-4 mt-4 space-y-2 border-t border-gray-700">
-            <span className="px-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">Strategy</span>
-            {scoutingAdminNavigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className={`flex items-center py-2 px-2.5 text-sm font-medium rounded-xl hover:text-baywatch-orange ${
-                  location.pathname === item.href ? 'bg-baywatch-orange text-white hover:text-white' : ''
-                }`}
-              >
-                <item.icon className="w-6 h-6 shrink-0" />
-                <span className="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">{item.name}</span>
-              </Link>
-            ))}
             <span className="px-2.5 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">Admin</span>
             {adminNavigation.map((item) => (
               <Link
