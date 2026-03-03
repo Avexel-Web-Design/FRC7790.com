@@ -13,6 +13,8 @@ import CoralIcon from '../../icons/CoralIcon';
 import type { MatchData, TeamData } from '../../../hooks/useMatchData';
 import { getDivisionMapping, getAllianceDisplayName } from '../../../utils/divisionUtils';
 import { getTeamColor } from '../../../utils/color';
+import { useEventHighScores } from '../../../hooks/useEventHighScores';
+import { formatMatchNameForHighScore } from '../../../utils/eventStats';
 
 interface MatchScoreboardProps {
   matchData: MatchData;
@@ -21,6 +23,9 @@ interface MatchScoreboardProps {
 
 const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }) => {
   const [allianceNumbers, setAllianceNumbers] = useState<{ blue: string; red: string }>({ blue: '?', red: '?' });
+  
+  // Fetch event high scores
+  const { highScores, loading: highScoresLoading } = useEventHighScores(matchData.event_key);
 
   // Create a map of team keys to team data for quick lookup
   const teamMap = teamData.reduce((map, team) => {
@@ -279,6 +284,35 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
           {/* Match Result Banner */}
           {getResultBanner()}
         </div>
+        
+        {/* Event High Score Section */}
+        {highScores && !highScoresLoading && (
+          <div className="card-gradient backdrop-blur-sm border border-white/10 rounded-xl p-4 md:p-6 mt-6 animate__animated animate__fadeInUp" style={{ animationDelay: '0.4s' }}>
+            <div className="text-center">
+              <h3 className="text-baywatch-orange text-lg font-bold mb-3 flex items-center justify-center">
+                <i className="fas fa-trophy mr-2"></i>
+                Event High Score
+              </h3>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                <div className="text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-white mb-1">
+                    {highScores.overallHighScore}
+                  </div>
+                  {highScores.highScoringMatch && (
+                    <div className="text-sm text-gray-400">
+                      {formatMatchNameForHighScore(highScores.highScoringMatch)}
+                    </div>
+                  )}
+                </div>
+                <div className="hidden md:block text-gray-500 mx-4">•</div>
+                <div className="text-center text-sm text-gray-400">
+                  <div>Blue High: <span className="text-blue-400 font-semibold">{highScores.blueHighScore}</span></div>
+                  <div>Red High: <span className="text-red-400 font-semibold">{highScores.redHighScore}</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
     </section>
