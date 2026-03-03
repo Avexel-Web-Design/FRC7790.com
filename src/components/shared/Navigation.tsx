@@ -9,14 +9,15 @@ import { hoverColorProps, hoverBorderProps } from '../../utils/hoverStyle';
 interface NavigationItem {
   name: string;
   href: string;
+  external?: boolean;
 }
 
 const navigationItems: NavigationItem[] = [
   { name: 'Robots', href: '/robots' },
   { name: 'Sponsors', href: '/sponsors' },
   { name: 'Schedule', href: '/schedule' },
-  { name: 'Scouting', href: '/scouting' },
   { name: 'Atlas', href: '/atlas' },
+  { name: 'Lighthouse', href: 'https://lighthouse.frc7790.com', external: true },
 ];
 
 export default function Navigation() {
@@ -158,25 +159,43 @@ export default function Navigation() {
         <ul className="hidden md:flex space-x-8">
           {navigationItems.map((item) => (
             <li key={item.name}>
-              <Link
-                to={item.href}
-                className="transition-all duration-300 hover:scale-110 inline-block"
-                style={{
-                  color: location.pathname === item.href ? accentColor : 'white'
-                }}
-                onMouseEnter={(e) => {
-                  if (location.pathname !== item.href) {
+              {item.external ? (
+                <a
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-all duration-300 hover:scale-110 inline-block"
+                  style={{ color: 'white' }}
+                  onMouseEnter={(e) => {
                     e.currentTarget.style.color = accentColor;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (location.pathname !== item.href) {
+                  }}
+                  onMouseLeave={(e) => {
                     e.currentTarget.style.color = 'white';
-                  }
-                }}
-              >
-                {item.name}
-              </Link>
+                  }}
+                >
+                  {item.name}
+                </a>
+              ) : (
+                <Link
+                  to={item.href}
+                  className="transition-all duration-300 hover:scale-110 inline-block"
+                  style={{
+                    color: location.pathname === item.href ? accentColor : 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (location.pathname !== item.href) {
+                      e.currentTarget.style.color = accentColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== item.href) {
+                      e.currentTarget.style.color = 'white';
+                    }
+                  }}
+                >
+                  {item.name}
+                </Link>
+              )}
             </li>
           ))}
         </ul>
@@ -219,29 +238,49 @@ export default function Navigation() {
             </form>
 
             {/* Mobile Navigation Links */}
-            {navigationItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="block py-2 text-lg transition-colors"
-                style={{
-                  color: location.pathname === item.href ? accentColor : 'white'
-                }}
-                onMouseEnter={(e) => {
-                  if (location.pathname !== item.href) {
+            {navigationItems.map((item) =>
+              item.external ? (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block py-2 text-lg transition-colors"
+                  style={{ color: 'white' }}
+                  onMouseEnter={(e) => {
                     e.currentTarget.style.color = accentColor;
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (location.pathname !== item.href) {
+                  }}
+                  onMouseLeave={(e) => {
                     e.currentTarget.style.color = 'white';
-                  }
-                }}
-                onClick={() => setIsOpen(false)}
-              >
-                {item.name}
-              </Link>
-            ))}
+                  }}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
+                </a>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="block py-2 text-lg transition-colors"
+                  style={{
+                    color: location.pathname === item.href ? accentColor : 'white'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (location.pathname !== item.href) {
+                      e.currentTarget.style.color = accentColor;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== item.href) {
+                      e.currentTarget.style.color = 'white';
+                    }
+                  }}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              )
+            )}
           </div>
         </div>
       )}

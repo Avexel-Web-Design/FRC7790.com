@@ -12,7 +12,6 @@ const Home = lazy(() => import('./components/pages/Home'));
 const Robots = lazy(() => import('./components/pages/Robots'));
 const Sponsors = lazy(() => import('./components/pages/Sponsors'));
 const Schedule = lazy(() => import('./components/pages/Schedule'));
-const Scouting = lazy(() => import('./components/pages/Scouting'));
 const BecomeASponsor = lazy(() => import('./components/pages/BecomeASponsor'));
 const Event = lazy(() => import('./components/pages/Event'));
 const Team = lazy(() => import('./components/pages/Team'));
@@ -56,7 +55,6 @@ function App() {
               <Route path="/robots" element={<Robots />} />
               <Route path="/sponsors" element={<Sponsors />} />
               <Route path="/schedule" element={<Schedule />} />
-              <Route path="/scouting" element={<Scouting />} />
               <Route path="/become-a-sponsor" element={<BecomeASponsor />} />
               <Route path="/event" element={<Event />} />
               <Route path="/team" element={<Team />} />
