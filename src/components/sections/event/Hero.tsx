@@ -50,16 +50,6 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
     }
   };
 
-  const getTwitchUrl = () => {
-    // Generate Twitch URL based on event
-    if (eventData?.livestream?.channel) {
-      return `https://www.twitch.tv/${eventData.livestream.channel}`;
-    }
-    
-    // Default to main FRC channel
-    return 'https://www.twitch.tv/firstinspires';
-  };
-
   const getDistrictUrl = () => {
     if (eventData?.district) {
       return `/district?district=${eventData.district.key}`;
@@ -104,15 +94,6 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
         </p>
         
         <div className="flex justify-center mt-6 gap-4 flex-wrap">
-          <a 
-            href={getTwitchUrl()}
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="inline-flex items-center text-[#A970FF] bg-[#6441A4]/20 hover:bg-[#6441A4]/30 transition-colors duration-300 px-4 py-2 rounded-lg"
-          >
-            <i className="fab fa-twitch mr-2"></i> Watch Live
-          </a>
-          
           <a 
             href={`/scouting?event=${eventCode}`}
             className="inline-flex items-center text-baywatch-orange bg-baywatch-orange/20 hover:bg-baywatch-orange/40 transition-all duration-300 px-4 py-2 rounded-lg border border-baywatch-orange/30 hover:border-baywatch-orange hover:scale-105 hover:shadow-md hover:shadow-baywatch-orange/20"
