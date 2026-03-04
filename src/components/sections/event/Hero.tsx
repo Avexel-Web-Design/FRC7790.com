@@ -70,16 +70,15 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
       <div className="container mx-auto px-6">
         <h1 className="text-5xl md:text-7xl font-bold text-center">
           <span 
-            className={`text-white inline-block animate__animated animate__fadeInUp ${isLoading ? 'animate-pulse' : ''}`}
-            style={{ animationDelay: '0.2s', textShadow: '0 0 20px rgba(255, 107, 0, 0.3)' }}
+            className={`text-white inline-block ${isLoading ? 'animate-pulse' : ''}`}
+            style={{ textShadow: '0 0 20px rgba(255, 107, 0, 0.3)' }}
           >
             {getEventCity()}
           </span>
           {' '}
           <span 
-            className={`text-baywatch-orange inline-block animate__animated animate__fadeInUp ${isLoading ? 'animate-pulse' : ''}`}
+            className={`text-baywatch-orange inline-block ${isLoading ? 'animate-pulse' : ''}`}
             style={{ 
-              animationDelay: '0.4s',
               textShadow: '0 0 20px rgba(255, 107, 0, 0.5)'
             }}
           >
@@ -87,8 +86,7 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
         </h1>
         
         <p 
-          className={`text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp ${isLoading ? 'animate-pulse' : ''}`}
-          style={{ animationDelay: '0.6s' }}
+          className={`text-gray-400 text-center mt-4 max-w-2xl mx-auto ${isLoading ? 'animate-pulse' : ''}`}
         >
           {getEventDetails()}
         </p>
