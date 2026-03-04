@@ -102,7 +102,8 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
   };
 
   const getResultBanner = () => {
-    if (matchData.alliances.blue.score === null || matchData.alliances.red.score === null) {
+    if (matchData.alliances.blue.score === null || matchData.alliances.blue.score < 0 ||
+        matchData.alliances.red.score === null || matchData.alliances.red.score < 0) {
       return null;
     }
 
@@ -251,7 +252,7 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
                 {renderTeamList(matchData.alliances.blue.team_keys, 'blue')}
               </div>
               <div className="text-5xl md:text-7xl font-bold text-blue-400">
-                {matchData.alliances.blue.score !== null ? matchData.alliances.blue.score : '--'}
+                {matchData.alliances.blue.score !== null && matchData.alliances.blue.score >= 0 ? matchData.alliances.blue.score : '--'}
               </div>
               {renderRankingPoints('blue')}
             </div>
@@ -270,7 +271,7 @@ const MatchScoreboard: React.FC<MatchScoreboardProps> = ({ matchData, teamData }
                 {renderTeamList(matchData.alliances.red.team_keys, 'red')}
               </div>
               <div className="text-5xl md:text-7xl font-bold text-red-400">
-                {matchData.alliances.red.score !== null ? matchData.alliances.red.score : '--'}
+                {matchData.alliances.red.score !== null && matchData.alliances.red.score >= 0 ? matchData.alliances.red.score : '--'}
               </div>
               {renderRankingPoints('red')}
             </div>
