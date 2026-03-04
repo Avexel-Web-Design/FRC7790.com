@@ -635,21 +635,24 @@ export class FRCAPIService {
     }
   }
 
-  async fetchEventRankings(eventCode: string): Promise<Array<{
-    rank: number
-    team_key: string
-    wins: number
-    losses: number
-    ties: number
-    ranking_points: number
-    qual_average: number
-    record: { wins: number; losses: number; ties: number }
-    sort_orders: number[]
-    matches_played: number
-    dq: number
-    extra_stats: number[]
-    team_name: string | null
-  }>> {
+  async fetchEventRankings(eventCode: string): Promise<{
+    rankings: Array<{
+      rank: number
+      team_key: string
+      wins: number
+      losses: number
+      ties: number
+      ranking_points: number
+      qual_average: number
+      record: { wins: number; losses: number; ties: number }
+      sort_orders: number[]
+      matches_played: number
+      dq: number
+      extra_stats: number[]
+      team_name: string | null
+    }>
+    sort_order_info: Array<{ name: string; precision: number }>
+  }> {
     try {
       console.log(`Fetching rankings for event: ${eventCode}`)
       const response = await fetch(`${TBA_BASE_URL}/event/${eventCode}/rankings`, {
@@ -706,12 +709,15 @@ export class FRCAPIService {
         })
         
         console.log('Processed rankings:', processedRankings)
-        return processedRankings
+        return {
+          rankings: processedRankings,
+          sort_order_info: data.sort_order_info || []
+        }
       }
       
-      // If no rankings data, return empty array
+      // If no rankings data, return empty
       console.log('No rankings data found in response')
-      return []
+      return { rankings: [], sort_order_info: [] }
     } catch (error) {
       console.error("Error fetching event rankings:", error)
       throw error

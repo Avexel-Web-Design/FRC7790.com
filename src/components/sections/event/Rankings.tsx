@@ -7,13 +7,14 @@ interface RankingsProps {
   rankings: TeamRanking[];
   epaData: { [teamKey: string]: number };
   isLoading: boolean;
+  sortOrderInfo?: Array<{ name: string; precision: number }>;
 }
 
 type SortField = 'rank' | 'team_key' | 'ranking_points' | 'record' | 'qual_average' | 'epa';
 type SortDirection = 'asc' | 'desc';
 type DisplayMode = 'number' | 'name';
 
-const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => {
+const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading, sortOrderInfo }) => {
   const navigate = useNavigate();
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -201,7 +202,7 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
                     onClick={() => handleSort('qual_average')}
                   >
                     <div className="flex items-center">
-                      Coopertition Score
+                      {sortOrderInfo && sortOrderInfo[1] ? sortOrderInfo[1].name : 'Coopertition Score'}
                       <i className={`ml-2 ${getSortIcon('qual_average')}`}></i>
                     </div>
                   </th>
