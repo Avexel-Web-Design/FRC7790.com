@@ -51,8 +51,13 @@ export default function SponsorsGrid() {
       url: "#"
     },
     {
-      name: "SURF",
+      name: "Surf Internet",
       logo: "/assets/images/Sponsors/SURF_Horiz_Navy_Blue_PMS_logo_Logo.jpg",
+      url: "#"
+    },
+    {
+      name: "Rocking Horse",
+      logo: "/assets/images/Sponsors/Rocking+Horse+background+and+logo+Red-02.webp",
       url: "#"
     },
     {
