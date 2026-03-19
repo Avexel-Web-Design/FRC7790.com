@@ -37,6 +37,12 @@ interface Factor {
   impactRank?: number;
 }
 
+interface AIResponse {
+  text: string | null;
+  error: string | null;
+  model: string;
+}
+
 // Utility: build a concise stats line from match JSON
 function humanCompLevel(match: any): string {
   switch (match?.comp_level) {
@@ -162,7 +168,7 @@ const callOpenRouter = (
   prompt: string,
   siteUrl: string,
   appName: string
-): Effect.Effect<string | null, never, never> =>
+): Effect.Effect<AIResponse, never, never> =>
   Effect.promise(async () => {
     try {
       const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -187,13 +193,17 @@ const callOpenRouter = (
         const data: any = await resp.json();
         const candidate = data.choices?.[0]?.message?.content?.trim();
         if (candidate && candidate.length > 0) {
-          return candidate;
+          return { text: candidate, error: null, model };
         }
+        return { text: null, error: 'OpenRouter returned an empty completion', model };
       }
+      const errText = await resp.text();
+      return { text: null, error: `OpenRouter HTTP ${resp.status}: ${errText.slice(0, 300)}`, model };
     } catch (err) {
       console.error('OpenRouter API error', err);
+      return { text: null, error: `OpenRouter request failed: ${String(err)}`, model };
     }
-    return null;
+    return { text: null, error: 'OpenRouter returned no result', model };
   });
 
 // Call Azure OpenAI API
@@ -368,15 +378,32 @@ ai.post('/generate', effectHandler((c) =>
     
     let summaryText = fallback;
     let usedAI = false;
+    let aiError: string | null = null;
+    let modelUsed: string = provider;
 
     if (provider === 'openrouter' && openRouterKey) {
-      const model = env.OPENROUTER_MODEL || 'z-ai/glm-4.5-air:free';
+      const model = env.OPENROUTER_MODEL || 'nvidia/nemotron-nano-9b-v2:free';
       const siteUrl = env.OPENROUTER_SITE_URL || 'https://www.frc7790.com';
       const appName = env.OPENROUTER_APP_NAME || 'FRC 7790';
       const result = yield* callOpenRouter(openRouterKey, model, prompt, siteUrl, appName);
-      if (result) {
-        summaryText = result;
+      if (result.text) {
+        summaryText = result.text;
         usedAI = true;
+        modelUsed = result.model;
+      } else {
+        aiError = result.error;
+        const fallbackModel = 'nvidia/nemotron-nano-9b-v2:free';
+        if (model !== fallbackModel) {
+          const retry = yield* callOpenRouter(openRouterKey, fallbackModel, prompt, siteUrl, appName);
+          if (retry.text) {
+            summaryText = retry.text;
+            usedAI = true;
+            modelUsed = retry.model;
+            aiError = null;
+          } else {
+            aiError = retry.error || aiError;
+          }
+        }
       }
     } else if (provider === 'azure' && env.AZURE_OPENAI_ENDPOINT && env.AZURE_OPENAI_DEPLOYMENT && env.AZURE_OPENAI_KEY) {
       const result = yield* callAzureOpenAI(
@@ -409,10 +436,11 @@ ai.post('/generate', effectHandler((c) =>
     const fallbackUsed = !usedAI || summaryText === fallback;
     return { 
       summary: summaryText, 
-      model: provider, 
+      model: usedAI ? modelUsed : provider,
       promptUsed: prompt, 
       fallbackUsed, 
-      factors 
+      factors,
+      aiError
     };
   })
 ));
