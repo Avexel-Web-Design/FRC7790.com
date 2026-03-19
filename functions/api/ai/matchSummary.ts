@@ -198,7 +198,8 @@ const callOpenRouter = (
   model: string, 
   prompt: string,
   siteUrl: string,
-  appName: string
+  appName: string,
+  maxTokens = 220
 ): Effect.Effect<AIResponse, never, never> =>
   Effect.promise(async () => {
     try {
@@ -216,7 +217,7 @@ const callOpenRouter = (
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: prompt }
           ],
-          max_tokens: 220,
+          max_tokens: maxTokens,
           temperature: 0.5
         })
       });
@@ -430,8 +431,23 @@ ai.post('/generate', effectHandler((c) =>
       } else {
         aiError = result.error;
         const fallbackModel = 'nvidia/nemotron-nano-9b-v2:free';
-        if (model !== fallbackModel) {
-          const retry = yield* callOpenRouter(openRouterKey, fallbackModel, prompt, siteUrl, appName);
+        const isLengthStop = Boolean(result.error && result.error.includes('finish_reason=length'));
+
+        if (isLengthStop) {
+          const concisePrompt = `${prompt}\n\nOutput requirements: Return only the final recap in 1-2 short sentences. No preface.`;
+          const retryLong = yield* callOpenRouter(openRouterKey, model, concisePrompt, siteUrl, appName, 600);
+          if (retryLong.text) {
+            summaryText = retryLong.text;
+            usedAI = true;
+            modelUsed = retryLong.model;
+            aiError = null;
+          } else {
+            aiError = retryLong.error || aiError;
+          }
+        }
+
+        if (!usedAI && model !== fallbackModel) {
+          const retry = yield* callOpenRouter(openRouterKey, fallbackModel, prompt, siteUrl, appName, 320);
           if (retry.text) {
             summaryText = retry.text;
             usedAI = true;
