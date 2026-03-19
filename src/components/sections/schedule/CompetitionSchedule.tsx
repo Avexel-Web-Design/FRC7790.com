@@ -137,10 +137,14 @@ function getNextMatch(matches: TeamEventMatch[]): TeamEventMatch | null {
   return unplayed[0] ?? null;
 }
 
-function getLatestPlayedMatch(matches: TeamEventMatch[]): TeamEventMatch | null {
+function getLatestPlayedMatch(matches: TeamEventMatch[], eventKey?: string): TeamEventMatch | null {
   const played = matches
     .filter((match) => Boolean(match.actual_time))
     .sort((a, b) => (b.actual_time ?? 0) - (a.actual_time ?? 0));
+
+  if (eventKey === '2026milac' && played.length > 1) {
+    return played[1];
+  }
 
   return played[0] ?? null;
 }
@@ -182,6 +186,64 @@ function formatLastMatchResult(match: TeamEventMatch): string {
   return `${outcome} ${ourScore}-${opponentScore}`;
 }
 
+function didTeamWinMatch(match: TeamEventMatch): boolean | null {
+  const alliance = getTeamAlliance(match);
+  const redScore = match.alliances.red.score;
+  const blueScore = match.alliances.blue.score;
+
+  if (alliance === null || redScore === null || blueScore === null || redScore < 0 || blueScore < 0) {
+    return null;
+  }
+
+  if (redScore === blueScore) {
+    return null;
+  }
+
+  if (alliance === 'red') {
+    return redScore > blueScore;
+  }
+
+  return blueScore > redScore;
+}
+
+function getAlliancePlacement(matches: TeamEventMatch[]): string | null {
+  const playoffPlayed = matches
+    .filter((match) => match.comp_level !== 'qm' && Boolean(match.actual_time))
+    .sort((a, b) => (b.actual_time ?? 0) - (a.actual_time ?? 0));
+
+  if (playoffPlayed.length === 0) {
+    return null;
+  }
+
+  const latestPlayoffMatch = playoffPlayed[0];
+  const wonLatest = didTeamWinMatch(latestPlayoffMatch);
+
+  if (latestPlayoffMatch.comp_level === 'f') {
+    return wonLatest ? '1st' : '2nd';
+  }
+
+  if (wonLatest) {
+    return '1st';
+  }
+
+  const bracketMatchNumber = latestPlayoffMatch.set_number ?? latestPlayoffMatch.match_number;
+
+  switch (bracketMatchNumber) {
+    case 13:
+      return '3rd';
+    case 12:
+      return '4th';
+    case 9:
+    case 10:
+      return '5th';
+    case 5:
+    case 6:
+      return '7th';
+    default:
+      return null;
+  }
+}
+
 function EventStatsPanel({ eventKey, mode }: { eventKey: string; mode: 'live' | 'completed' }) {
   const { data: statusData, isLoading: isStatusLoading, error: statusError } = useTeamEventStatus(TEAM_NUMBER, eventKey);
   const { data: matchesData, isLoading: isMatchesLoading, error: matchesError } = useTBA<TeamEventMatch[]>(
@@ -192,9 +254,12 @@ function EventStatsPanel({ eventKey, mode }: { eventKey: string; mode: 'live' | 
   const record = ranking?.record;
   const totalTeams = statusData?.qual?.num_teams;
   const playoff = statusData?.playoff;
+  const allianceNumber = statusData?.alliance?.number;
+  const madePlayoffs = Boolean(allianceNumber || playoff);
 
   const nextMatch = useMemo(() => getNextMatch(matchesData ?? []), [matchesData]);
-  const latestPlayedMatch = useMemo(() => getLatestPlayedMatch(matchesData ?? []), [matchesData]);
+  const latestPlayedMatch = useMemo(() => getLatestPlayedMatch(matchesData ?? [], eventKey), [matchesData, eventKey]);
+  const alliancePlacement = useMemo(() => getAlliancePlacement(matchesData ?? []), [matchesData]);
 
   const hasErrors = Boolean(statusError || matchesError);
   const isLoading = isStatusLoading || isMatchesLoading;
@@ -215,37 +280,67 @@ function EventStatsPanel({ eventKey, mode }: { eventKey: string; mode: 'live' | 
     );
   }
 
+  if (mode === 'live') {
+    return (
+      <div className="mt-6">
+        <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
+          <div className="rounded-lg bg-black/30 p-4">
+            <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">Current Ranking</h4>
+            <div className="text-3xl font-bold text-baywatch-orange">{ranking ? `#${ranking.rank}` : 'TBD'}</div>
+            <div className="mt-1 text-sm text-gray-400">
+              {ranking && totalTeams ? `of ${totalTeams} teams` : 'Waiting for ranking data'}
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-black/30 p-4">
+            <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">Next Match</h4>
+            <div className="text-3xl font-bold text-baywatch-orange">{nextMatch ? formatMatchLabel(nextMatch) : 'None'}</div>
+            <div className="mt-1 text-sm text-gray-400">
+              {nextMatch ? 'Unplayed team match' : 'No upcoming matches'}
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-black/30 p-4">
+            <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">Record</h4>
+            <div className="text-3xl font-bold text-baywatch-orange">
+              {record ? `${record.wins}-${record.losses}-${record.ties}` : '0-0-0'}
+            </div>
+            <div className="mt-1 text-sm text-gray-400">Auto-refreshing every 30 seconds</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-6">
       <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
         <div className="rounded-lg bg-black/30 p-4">
-          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">
-            {mode === 'live' ? 'Current Ranking' : 'Final Ranking'}
-          </h4>
+          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">Final Ranking</h4>
           <div className="text-3xl font-bold text-baywatch-orange">{ranking ? `#${ranking.rank}` : 'TBD'}</div>
           <div className="mt-1 text-sm text-gray-400">
-            {ranking && totalTeams ? `of ${totalTeams} teams` : 'Waiting for ranking data'}
+            {madePlayoffs && record
+              ? `${record.wins}-${record.losses}-${record.ties}`
+              : ranking && totalTeams
+                ? `of ${totalTeams} teams`
+                : 'Waiting for ranking data'}
           </div>
         </div>
 
         <div className="rounded-lg bg-black/30 p-4">
           <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">
-            {mode === 'live' ? 'Next Match' : 'Latest Match'}
+            {madePlayoffs ? 'Alliance Placement' : 'Latest Match'}
           </h4>
           <div className="text-3xl font-bold text-baywatch-orange">
-            {mode === 'live'
-              ? nextMatch
-                ? formatMatchLabel(nextMatch)
-                : 'Done'
+            {madePlayoffs
+              ? alliancePlacement ?? 'TBD'
               : latestPlayedMatch
                 ? formatMatchLabel(latestPlayedMatch)
                 : 'TBD'}
           </div>
           <div className="mt-1 text-sm text-gray-400">
-            {mode === 'live'
-              ? nextMatch
-                ? 'Unplayed team match'
-                : 'No upcoming matches'
+            {madePlayoffs
+              ? alliancePlacement ? 'Based on elimination finish' : 'Placement unavailable'
               : latestPlayedMatch
                 ? formatLastMatchResult(latestPlayedMatch)
                 : 'No played matches logged'}
@@ -253,16 +348,20 @@ function EventStatsPanel({ eventKey, mode }: { eventKey: string; mode: 'live' | 
         </div>
 
         <div className="rounded-lg bg-black/30 p-4">
-          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">Record</h4>
+          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">
+            {madePlayoffs ? 'Alliance Number' : 'Record'}
+          </h4>
           <div className="text-3xl font-bold text-baywatch-orange">
-            {record ? `${record.wins}-${record.losses}-${record.ties}` : '0-0-0'}
+            {madePlayoffs
+              ? allianceNumber ? `#${allianceNumber}` : 'TBD'
+              : record
+                ? `${record.wins}-${record.losses}-${record.ties}`
+                : '0-0-0'}
           </div>
           <div className="mt-1 text-sm text-gray-400">
-            {mode === 'completed'
-              ? playoff?.record
-                ? `Playoffs ${playoff.record.wins}-${playoff.record.losses}-${playoff.record.ties}`
-                : playoff?.status ?? 'No playoff data'
-              : 'Auto-refreshing every 30 seconds'}
+            {madePlayoffs
+              ? statusData?.alliance?.pick ? `Pick ${statusData.alliance.pick}` : 'No alliance selection data'
+              : 'Qualification record'}
           </div>
         </div>
       </div>
