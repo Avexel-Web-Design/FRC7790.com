@@ -43,6 +43,37 @@ interface AIResponse {
   model: string;
 }
 
+const extractAssistantText = (data: any): string | null => {
+  const fromMessage = data?.choices?.[0]?.message?.content;
+  if (typeof fromMessage === 'string' && fromMessage.trim().length > 0) {
+    return fromMessage.trim();
+  }
+
+  if (Array.isArray(fromMessage)) {
+    const joined = fromMessage
+      .map((part: any) => {
+        if (typeof part === 'string') return part;
+        if (typeof part?.text === 'string') return part.text;
+        return '';
+      })
+      .join(' ')
+      .trim();
+    if (joined.length > 0) return joined;
+  }
+
+  const fromText = data?.choices?.[0]?.text;
+  if (typeof fromText === 'string' && fromText.trim().length > 0) {
+    return fromText.trim();
+  }
+
+  const outputText = data?.output?.[0]?.content?.[0]?.text;
+  if (typeof outputText === 'string' && outputText.trim().length > 0) {
+    return outputText.trim();
+  }
+
+  return null;
+};
+
 // Utility: build a concise stats line from match JSON
 function humanCompLevel(match: any): string {
   switch (match?.comp_level) {
@@ -185,17 +216,23 @@ const callOpenRouter = (
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: prompt }
           ],
-          max_tokens: 160,
+          max_tokens: 220,
           temperature: 0.5
         })
       });
       if (resp.ok) {
         const data: any = await resp.json();
-        const candidate = data.choices?.[0]?.message?.content?.trim();
+        const candidate = extractAssistantText(data);
         if (candidate && candidate.length > 0) {
           return { text: candidate, error: null, model };
         }
-        return { text: null, error: 'OpenRouter returned an empty completion', model };
+        const finishReason = data?.choices?.[0]?.finish_reason || data?.choices?.[0]?.finishReason || 'unknown';
+        const responseId = data?.id || 'unknown';
+        return {
+          text: null,
+          error: `OpenRouter returned an empty completion (finish_reason=${String(finishReason)}, id=${String(responseId)})`,
+          model
+        };
       }
       const errText = await resp.text();
       return { text: null, error: `OpenRouter HTTP ${resp.status}: ${errText.slice(0, 300)}`, model };
