@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 
+interface EventDateRange {
+  start: Date;
+  end: Date;
+}
+
+type EventStatus = 'upcoming' | 'live' | 'completed';
+
 interface CountdownProps {
   targetDate: Date;
 }
@@ -58,12 +65,85 @@ function Countdown({ targetDate }: CountdownProps) {
   );
 }
 
+interface LiveUpdatesProps {
+  eventKey: string;
+}
+
+function LiveUpdates({ eventKey }: LiveUpdatesProps) {
+  return (
+    <div className="mt-6 rounded-lg border border-baywatch-orange/40 bg-black/30 p-5">
+      <div className="flex items-center justify-center gap-2 text-baywatch-orange">
+        <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-baywatch-orange"></span>
+        <span className="text-sm font-semibold uppercase tracking-wide">Live updates in progress</span>
+      </div>
+      <p className="mt-3 text-center text-gray-300">
+        This event is currently active. View the latest rankings, match scores, and playoff progress on the event page.
+      </p>
+      <div className="mt-4 text-center">
+        <span className="inline-flex rounded-full bg-baywatch-orange/20 px-3 py-1 text-sm text-white">
+          Auto-refreshing data available on event details
+        </span>
+      </div>
+      <div className="mt-4 text-center">
+        <a
+          href={`/event?event=${eventKey}`}
+          className="inline-flex items-center gap-2 rounded-full bg-baywatch-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-baywatch-orange/90"
+        >
+          Open live event page
+          <i className="fas fa-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function getEventStatus({ start, end }: EventDateRange, now: Date): EventStatus {
+  const currentTime = now.getTime();
+
+  if (currentTime < start.getTime()) {
+    return 'upcoming';
+  }
+
+  if (currentTime > end.getTime()) {
+    return 'completed';
+  }
+
+  return 'live';
+}
+
 export default function CompetitionSchedule() {
-  // 2026 Event Dates
-  const lakeCityDate = new Date('2026-03-13T08:00:00');
-  const traverseCityDate = new Date('2026-03-19T08:00:00');
-  const districtChampionshipDate = new Date('2026-04-15T08:00:00');
-  const firstChampionshipDate = new Date('2026-04-28T08:00:00');
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 30000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // 2026 Event Date Ranges
+  const lakeCityDateRange: EventDateRange = {
+    start: new Date('2026-03-13T08:00:00'),
+    end: new Date('2026-03-15T23:59:59')
+  };
+  const traverseCityDateRange: EventDateRange = {
+    start: new Date('2026-03-19T08:00:00'),
+    end: new Date('2026-03-21T23:59:59')
+  };
+  const districtChampionshipDateRange: EventDateRange = {
+    start: new Date('2026-04-15T08:00:00'),
+    end: new Date('2026-04-17T23:59:59')
+  };
+  const firstChampionshipDateRange: EventDateRange = {
+    start: new Date('2026-04-28T08:00:00'),
+    end: new Date('2026-05-01T23:59:59')
+  };
+
+  const lakeCityStatus = getEventStatus(lakeCityDateRange, now);
+  const traverseCityStatus = getEventStatus(traverseCityDateRange, now);
+  const districtChampionshipStatus = getEventStatus(districtChampionshipDateRange, now);
+  const firstChampionshipStatus = getEventStatus(firstChampionshipDateRange, now);
 
   return (
     <section
@@ -98,40 +178,41 @@ export default function CompetitionSchedule() {
                     </span>
                   </div>
                   
-                  {/* Countdown Section for Lake City District Event */}
-                  <Countdown targetDate={lakeCityDate} />
+                  {lakeCityStatus === 'upcoming' && <Countdown targetDate={lakeCityDateRange.start} />}
 
-                  {/* 2025 Results Section for Lake City Regional - COMMENTED OUT
-                  <div className="mt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Final Ranking</h4>
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="text-4xl font-bold text-baywatch-orange">15</span>
-                          <span className="text-sm text-gray-400 self-end mb-1">th</span>
+                  {lakeCityStatus === 'live' && <LiveUpdates eventKey="2026milac" />}
+
+                  {lakeCityStatus === 'completed' && (
+                    <div className="mt-6">
+                      <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Final Ranking</h4>
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="text-4xl font-bold text-baywatch-orange">15</span>
+                            <span className="mb-1 self-end text-sm text-gray-400">th</span>
+                          </div>
+                          <span className="mt-1 block text-gray-400">of 37 teams</span>
+                          <div className="mt-1 text-sm text-gray-400">6-6-0</div>
                         </div>
-                        <span className="text-gray-400 block mt-1">of 37 teams</span>
-                        <div className="text-sm text-gray-400 mt-1">6-6-0</div>
-                      </div>
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Alliance</h4>
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-baywatch-orange mb-1">5</div>
-                          <span className="text-sm bg-baywatch-orange/20 px-2 py-1 rounded-full text-white">
-                            First Pick
-                          </span>
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Alliance</h4>
+                          <div className="text-center">
+                            <div className="mb-1 text-4xl font-bold text-baywatch-orange">5</div>
+                            <span className="rounded-full bg-baywatch-orange/20 px-2 py-1 text-sm text-white">
+                              First Pick
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Playoffs</h4>
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-baywatch-orange">3rd</div>
-                          <div className="text-sm text-gray-400 mt-1">2-2-0</div>
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Playoffs</h4>
+                          <div className="text-center">
+                            <div className="text-4xl font-bold text-baywatch-orange">3rd</div>
+                            <div className="mt-1 text-sm text-gray-400">2-2-0</div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  */}
+                  )}
                   
                   <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
                     <i className="fas fa-external-link-alt"></i>
@@ -160,42 +241,43 @@ export default function CompetitionSchedule() {
                     </span>
                   </div>
                   
-                  {/* Countdown Section for Traverse City District Event */}
-                  <Countdown targetDate={traverseCityDate} />
+                  {traverseCityStatus === 'upcoming' && <Countdown targetDate={traverseCityDateRange.start} />}
 
-                  {/* 2025 Results Section for Traverse City Regional - COMMENTED OUT
-                  <div className="mt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Final Ranking</h4>
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="text-4xl font-bold text-baywatch-orange">1</span>
-                          <span className="text-sm text-gray-400 self-end mb-1">st</span>
-                        </div>
-                        <span className="text-gray-400 block mt-1">of 40 teams</span>
-                        <div className="text-sm text-gray-400 mt-1">9-3-0</div>
-                      </div>
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Alliance</h4>
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-baywatch-orange mb-1">1</div>
-                          <span className="text-sm bg-baywatch-orange/20 px-2 py-1 rounded-full text-white">
-                            <i className="fas fa-crown mr-1"></i>Captain
-                          </span>
-                        </div>
-                      </div>
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Playoffs</h4>
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-yellow-500">
-                            <i className="fas fa-medal"></i> 1st <i className="fas fa-medal"></i>
+                  {traverseCityStatus === 'live' && <LiveUpdates eventKey="2026mitvc" />}
+
+                  {traverseCityStatus === 'completed' && (
+                    <div className="mt-6">
+                      <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Final Ranking</h4>
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="text-4xl font-bold text-baywatch-orange">1</span>
+                            <span className="mb-1 self-end text-sm text-gray-400">st</span>
                           </div>
-                          <div className="text-sm text-gray-400 mt-1">6-2-1</div>
+                          <span className="mt-1 block text-gray-400">of 40 teams</span>
+                          <div className="mt-1 text-sm text-gray-400">9-3-0</div>
+                        </div>
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Alliance</h4>
+                          <div className="text-center">
+                            <div className="mb-1 text-4xl font-bold text-baywatch-orange">1</div>
+                            <span className="rounded-full bg-baywatch-orange/20 px-2 py-1 text-sm text-white">
+                              <i className="mr-1 fas fa-crown"></i>Captain
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Playoffs</h4>
+                          <div className="text-center">
+                            <div className="text-4xl font-bold text-yellow-500">
+                              <i className="fas fa-medal"></i> 1st <i className="fas fa-medal"></i>
+                            </div>
+                            <div className="mt-1 text-sm text-gray-400">6-2-1</div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  */}
+                  )}
                   
                   <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
                     <i className="fas fa-external-link-alt"></i>
@@ -227,40 +309,43 @@ export default function CompetitionSchedule() {
                     </span>
                   </div>
                   
-                  {/* Countdown Section for FIM District Championship */}
-                  <Countdown targetDate={districtChampionshipDate} />
+                  {districtChampionshipStatus === 'upcoming' && (
+                    <Countdown targetDate={districtChampionshipDateRange.start} />
+                  )}
 
-                  {/* 2025 Results Section for FIM District Championship - COMMENTED OUT
-                  <div className="mt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Final Ranking</h4>
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="text-4xl font-bold text-baywatch-orange">16</span>
-                          <span className="text-sm text-gray-400 self-end mb-1">th</span>
+                  {districtChampionshipStatus === 'live' && <LiveUpdates eventKey="2026micmp" />}
+
+                  {districtChampionshipStatus === 'completed' && (
+                    <div className="mt-6">
+                      <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Final Ranking</h4>
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="text-4xl font-bold text-baywatch-orange">16</span>
+                            <span className="mb-1 self-end text-sm text-gray-400">th</span>
+                          </div>
+                          <span className="mt-1 block text-gray-400">of 40 teams</span>
+                          <div className="mt-1 text-sm text-gray-400">7-5-0</div>
                         </div>
-                        <span className="text-gray-400 block mt-1">of 40 teams</span>
-                        <div className="text-sm text-gray-400 mt-1">7-5-0</div>
-                      </div>
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Alliance</h4>
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-baywatch-orange mb-1">3</div>
-                          <span className="text-sm bg-baywatch-orange/20 px-2 py-1 rounded-full text-white">
-                            Second Pick
-                          </span>
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Alliance</h4>
+                          <div className="text-center">
+                            <div className="mb-1 text-4xl font-bold text-baywatch-orange">3</div>
+                            <span className="rounded-full bg-baywatch-orange/20 px-2 py-1 text-sm text-white">
+                              Second Pick
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Playoffs</h4>
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-baywatch-orange">7th</div>
-                          <div className="text-sm text-gray-400 mt-1">0-2-0</div>
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Playoffs</h4>
+                          <div className="text-center">
+                            <div className="text-4xl font-bold text-baywatch-orange">7th</div>
+                            <div className="mt-1 text-sm text-gray-400">0-2-0</div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  */}
+                  )}
                   
                   <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
                     <i className="fas fa-external-link-alt"></i>
@@ -292,44 +377,47 @@ export default function CompetitionSchedule() {
                     </span>
                   </div>
                   
-                  {/* Countdown Section for FIRST Championship */}
-                  <Countdown targetDate={firstChampionshipDate} />
+                  {firstChampionshipStatus === 'upcoming' && (
+                    <Countdown targetDate={firstChampionshipDateRange.start} />
+                  )}
 
-                  {/* 2025 Results for FIRST Championship - COMMENTED OUT
-                  <div className="mt-6" id="championship-results">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Final Ranking</h4>
-                        <div className="flex items-center justify-center gap-1">
-                          <span className="text-4xl font-bold text-baywatch-orange">41</span>
-                          <span className="text-sm text-gray-400 self-end mb-1">st</span>
-                        </div>
-                        <span className="text-gray-400 block mt-1">of 75 teams</span>
-                        <div className="text-sm text-gray-400 mt-1">6-4-0</div>
-                      </div>
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Alliance</h4>
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-baywatch-orange mb-1">
-                            <i className="fas fa-times"></i>
+                  {firstChampionshipStatus === 'live' && <LiveUpdates eventKey="2026cmptx" />}
+
+                  {firstChampionshipStatus === 'completed' && (
+                    <div className="mt-6" id="championship-results">
+                      <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Final Ranking</h4>
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="text-4xl font-bold text-baywatch-orange">41</span>
+                            <span className="mb-1 self-end text-sm text-gray-400">st</span>
                           </div>
-                          <span className="text-sm bg-baywatch-orange/20 px-2 py-1 rounded-full text-white">
-                            No selection
-                          </span>
+                          <span className="mt-1 block text-gray-400">of 75 teams</span>
+                          <div className="mt-1 text-sm text-gray-400">6-4-0</div>
                         </div>
-                      </div>
-                      <div className="p-4 bg-black/30 rounded-lg flex flex-col items-center">
-                        <h4 className="text-lg font-semibold mb-2">Playoffs</h4>
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-baywatch-orange">
-                            <i className="fas fa-minus"></i>
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Alliance</h4>
+                          <div className="text-center">
+                            <div className="mb-1 text-4xl font-bold text-baywatch-orange">
+                              <i className="fas fa-times"></i>
+                            </div>
+                            <span className="rounded-full bg-baywatch-orange/20 px-2 py-1 text-sm text-white">
+                              No selection
+                            </span>
                           </div>
-                          <div className="text-sm text-gray-400 mt-1">Did not qualify</div>
+                        </div>
+                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
+                          <h4 className="mb-2 text-lg font-semibold">Playoffs</h4>
+                          <div className="text-center">
+                            <div className="text-4xl font-bold text-baywatch-orange">
+                              <i className="fas fa-minus"></i>
+                            </div>
+                            <div className="mt-1 text-sm text-gray-400">Did not qualify</div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  */}
+                  )}
                   
                   <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
                     <i className="fas fa-external-link-alt"></i>
