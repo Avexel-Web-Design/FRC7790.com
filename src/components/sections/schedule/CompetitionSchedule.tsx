@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTBA, useTeamEventStatus } from '../../../hooks/useTBA';
 
 interface EventDateRange {
   start: Date;
@@ -6,9 +7,42 @@ interface EventDateRange {
 }
 
 type EventStatus = 'upcoming' | 'live' | 'completed';
+type AllianceColor = 'red' | 'blue';
+
+const TEAM_NUMBER = '7790';
+const TEAM_KEY = `frc${TEAM_NUMBER}`;
+
+interface TeamEventMatch {
+  key: string;
+  comp_level: string;
+  match_number: number;
+  set_number?: number;
+  predicted_time?: number;
+  time?: number;
+  actual_time?: number;
+  alliances: {
+    blue: {
+      team_keys: string[];
+      score: number | null;
+    };
+    red: {
+      team_keys: string[];
+      score: number | null;
+    };
+  };
+}
 
 interface CountdownProps {
   targetDate: Date;
+}
+
+interface EventCardData {
+  key: string;
+  name: string;
+  dateLabel: string;
+  locationLabel: string;
+  range: EventDateRange;
+  qualificationPending?: boolean;
 }
 
 function Countdown({ targetDate }: CountdownProps) {
@@ -44,54 +78,22 @@ function Countdown({ targetDate }: CountdownProps) {
   return (
     <div className="mt-6">
       <div className="grid grid-cols-4 gap-4 text-center">
-        <div className="p-4 bg-black/30 rounded-lg">
+        <div className="rounded-lg bg-black/30 p-4">
           <div className="text-3xl font-bold text-baywatch-orange">{timeLeft.days}</div>
           <div className="text-sm text-gray-400">Days</div>
         </div>
-        <div className="p-4 bg-black/30 rounded-lg">
+        <div className="rounded-lg bg-black/30 p-4">
           <div className="text-3xl font-bold text-baywatch-orange">{timeLeft.hours}</div>
           <div className="text-sm text-gray-400">Hours</div>
         </div>
-        <div className="p-4 bg-black/30 rounded-lg">
+        <div className="rounded-lg bg-black/30 p-4">
           <div className="text-3xl font-bold text-baywatch-orange">{timeLeft.minutes}</div>
           <div className="text-sm text-gray-400">Minutes</div>
         </div>
-        <div className="p-4 bg-black/30 rounded-lg">
+        <div className="rounded-lg bg-black/30 p-4">
           <div className="text-3xl font-bold text-baywatch-orange">{timeLeft.seconds}</div>
           <div className="text-sm text-gray-400">Seconds</div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-interface LiveUpdatesProps {
-  eventKey: string;
-}
-
-function LiveUpdates({ eventKey }: LiveUpdatesProps) {
-  return (
-    <div className="mt-6 rounded-lg border border-baywatch-orange/40 bg-black/30 p-5">
-      <div className="flex items-center justify-center gap-2 text-baywatch-orange">
-        <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-baywatch-orange"></span>
-        <span className="text-sm font-semibold uppercase tracking-wide">Live updates in progress</span>
-      </div>
-      <p className="mt-3 text-center text-gray-300">
-        This event is currently active. View the latest rankings, match scores, and playoff progress on the event page.
-      </p>
-      <div className="mt-4 text-center">
-        <span className="inline-flex rounded-full bg-baywatch-orange/20 px-3 py-1 text-sm text-white">
-          Auto-refreshing data available on event details
-        </span>
-      </div>
-      <div className="mt-4 text-center">
-        <a
-          href={`/event?event=${eventKey}`}
-          className="inline-flex items-center gap-2 rounded-full bg-baywatch-orange px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-baywatch-orange/90"
-        >
-          Open live event page
-          <i className="fas fa-arrow-right"></i>
-        </a>
       </div>
     </div>
   );
@@ -111,6 +113,202 @@ function getEventStatus({ start, end }: EventDateRange, now: Date): EventStatus 
   return 'live';
 }
 
+function getTeamAlliance(match: TeamEventMatch): AllianceColor | null {
+  if (match.alliances.blue.team_keys.includes(TEAM_KEY)) {
+    return 'blue';
+  }
+
+  if (match.alliances.red.team_keys.includes(TEAM_KEY)) {
+    return 'red';
+  }
+
+  return null;
+}
+
+function getMatchSortTime(match: TeamEventMatch): number {
+  return match.predicted_time ?? match.time ?? 0;
+}
+
+function getNextMatch(matches: TeamEventMatch[]): TeamEventMatch | null {
+  const unplayed = matches
+    .filter((match) => !match.actual_time)
+    .sort((a, b) => getMatchSortTime(a) - getMatchSortTime(b));
+
+  return unplayed[0] ?? null;
+}
+
+function getLatestPlayedMatch(matches: TeamEventMatch[]): TeamEventMatch | null {
+  const played = matches
+    .filter((match) => Boolean(match.actual_time))
+    .sort((a, b) => (b.actual_time ?? 0) - (a.actual_time ?? 0));
+
+  return played[0] ?? null;
+}
+
+function formatMatchLabel(match: TeamEventMatch): string {
+  const typeMap: Record<string, string> = {
+    qm: 'Q',
+    ef: 'EF',
+    qf: 'QF',
+    sf: 'SF',
+    f: 'F'
+  };
+  const type = typeMap[match.comp_level] ?? match.comp_level.toUpperCase();
+
+  if (match.comp_level === 'qm' || match.comp_level === 'f') {
+    return `${type}${match.match_number}`;
+  }
+
+  if (match.set_number) {
+    return `${type}${match.set_number}`;
+  }
+
+  return `${type}${match.match_number}`;
+}
+
+function formatLastMatchResult(match: TeamEventMatch): string {
+  const alliance = getTeamAlliance(match);
+  const redScore = match.alliances.red.score;
+  const blueScore = match.alliances.blue.score;
+
+  if (alliance === null || redScore === null || blueScore === null || redScore < 0 || blueScore < 0) {
+    return 'Result pending';
+  }
+
+  const ourScore = alliance === 'red' ? redScore : blueScore;
+  const opponentScore = alliance === 'red' ? blueScore : redScore;
+  const outcome = ourScore > opponentScore ? 'W' : ourScore < opponentScore ? 'L' : 'T';
+
+  return `${outcome} ${ourScore}-${opponentScore}`;
+}
+
+function EventStatsPanel({ eventKey, mode }: { eventKey: string; mode: 'live' | 'completed' }) {
+  const { data: statusData, isLoading: isStatusLoading, error: statusError } = useTeamEventStatus(TEAM_NUMBER, eventKey);
+  const { data: matchesData, isLoading: isMatchesLoading, error: matchesError } = useTBA<TeamEventMatch[]>(
+    `/team/${TEAM_KEY}/event/${eventKey}/matches`
+  );
+
+  const ranking = statusData?.qual?.ranking;
+  const record = ranking?.record;
+  const totalTeams = statusData?.qual?.num_teams;
+  const playoff = statusData?.playoff;
+
+  const nextMatch = useMemo(() => getNextMatch(matchesData ?? []), [matchesData]);
+  const latestPlayedMatch = useMemo(() => getLatestPlayedMatch(matchesData ?? []), [matchesData]);
+
+  const hasErrors = Boolean(statusError || matchesError);
+  const isLoading = isStatusLoading || isMatchesLoading;
+
+  if (isLoading && !statusData && !matchesData) {
+    return (
+      <p className="mt-6 text-center text-gray-300">
+        {mode === 'live' ? 'Loading live event data...' : 'Loading event results...'}
+      </p>
+    );
+  }
+
+  if (hasErrors) {
+    return (
+      <p className="mt-6 text-center text-gray-300">
+        Live data is temporarily unavailable. Open the event page for the latest updates.
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-6">
+      <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
+        <div className="rounded-lg bg-black/30 p-4">
+          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">
+            {mode === 'live' ? 'Current Ranking' : 'Final Ranking'}
+          </h4>
+          <div className="text-3xl font-bold text-baywatch-orange">{ranking ? `#${ranking.rank}` : 'TBD'}</div>
+          <div className="mt-1 text-sm text-gray-400">
+            {ranking && totalTeams ? `of ${totalTeams} teams` : 'Waiting for ranking data'}
+          </div>
+        </div>
+
+        <div className="rounded-lg bg-black/30 p-4">
+          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">
+            {mode === 'live' ? 'Next Match' : 'Latest Match'}
+          </h4>
+          <div className="text-3xl font-bold text-baywatch-orange">
+            {mode === 'live'
+              ? nextMatch
+                ? formatMatchLabel(nextMatch)
+                : 'Done'
+              : latestPlayedMatch
+                ? formatMatchLabel(latestPlayedMatch)
+                : 'TBD'}
+          </div>
+          <div className="mt-1 text-sm text-gray-400">
+            {mode === 'live'
+              ? nextMatch
+                ? 'Unplayed team match'
+                : 'No upcoming matches'
+              : latestPlayedMatch
+                ? formatLastMatchResult(latestPlayedMatch)
+                : 'No played matches logged'}
+          </div>
+        </div>
+
+        <div className="rounded-lg bg-black/30 p-4">
+          <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-300">Record</h4>
+          <div className="text-3xl font-bold text-baywatch-orange">
+            {record ? `${record.wins}-${record.losses}-${record.ties}` : '0-0-0'}
+          </div>
+          <div className="mt-1 text-sm text-gray-400">
+            {mode === 'completed'
+              ? playoff?.record
+                ? `Playoffs ${playoff.record.wins}-${playoff.record.losses}-${playoff.record.ties}`
+                : playoff?.status ?? 'No playoff data'
+              : 'Auto-refreshing every 30 seconds'}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EventCard({ event, status }: { event: EventCardData; status: EventStatus }) {
+  return (
+    <div className="relative mb-20 reveal">
+      <a href={`/event?event=${event.key}`} className="block relative z-20">
+        <div className="group rounded-xl border border-baywatch-orange/20 bg-black p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,102,0,0.5)]">
+          {event.qualificationPending && (
+            <div className="absolute -top-2 -right-2 rounded-full bg-baywatch-orange px-3 py-1 text-sm">
+              Qualification Pending
+            </div>
+          )}
+
+          <h3 className="mb-2 text-center text-2xl font-bold text-baywatch-orange glow-orange">{event.name}</h3>
+
+          <div className="mb-4 flex flex-wrap justify-center gap-4">
+            <span className="rounded-full bg-baywatch-orange/20 px-3 py-1 text-sm">
+              <i className="far fa-calendar-alt mr-2"></i>
+              {event.dateLabel}
+            </span>
+            <span className="rounded-full bg-baywatch-orange/20 px-3 py-1 text-sm">
+              <i className="fas fa-map-marker-alt mr-2"></i>
+              {event.locationLabel}
+            </span>
+          </div>
+
+          {status === 'upcoming' && <Countdown targetDate={event.range.start} />}
+
+          {status === 'live' && <EventStatsPanel eventKey={event.key} mode="live" />}
+
+          {status === 'completed' && <EventStatsPanel eventKey={event.key} mode="completed" />}
+
+          <div className="absolute bottom-4 right-4 text-baywatch-orange/50 transition-colors group-hover:text-baywatch-orange">
+            <i className="fas fa-external-link-alt"></i>
+          </div>
+        </div>
+      </a>
+    </div>
+  );
+}
+
 export default function CompetitionSchedule() {
   const [now, setNow] = useState(() => new Date());
 
@@ -122,309 +320,78 @@ export default function CompetitionSchedule() {
     return () => clearInterval(timer);
   }, []);
 
-  // 2026 Event Date Ranges
-  const lakeCityDateRange: EventDateRange = {
-    start: new Date('2026-03-13T08:00:00'),
-    end: new Date('2026-03-15T23:59:59')
-  };
-  const traverseCityDateRange: EventDateRange = {
-    start: new Date('2026-03-19T08:00:00'),
-    end: new Date('2026-03-21T23:59:59')
-  };
-  const districtChampionshipDateRange: EventDateRange = {
-    start: new Date('2026-04-15T08:00:00'),
-    end: new Date('2026-04-17T23:59:59')
-  };
-  const firstChampionshipDateRange: EventDateRange = {
-    start: new Date('2026-04-28T08:00:00'),
-    end: new Date('2026-05-01T23:59:59')
-  };
-
-  const lakeCityStatus = getEventStatus(lakeCityDateRange, now);
-  const traverseCityStatus = getEventStatus(traverseCityDateRange, now);
-  const districtChampionshipStatus = getEventStatus(districtChampionshipDateRange, now);
-  const firstChampionshipStatus = getEventStatus(firstChampionshipDateRange, now);
+  const events: EventCardData[] = [
+    {
+      key: '2026milac',
+      name: 'Lake City District Event',
+      dateLabel: 'March 13-15, 2026',
+      locationLabel: '251 Russell Rd, Lake City, MI',
+      range: {
+        start: new Date('2026-03-13T08:00:00'),
+        end: new Date('2026-03-15T23:59:59')
+      }
+    },
+    {
+      key: '2026mitvc',
+      name: 'Traverse City District Event',
+      dateLabel: 'March 19-21, 2026',
+      locationLabel: '5376 N Long Lake Rd, Traverse City, MI',
+      range: {
+        start: new Date('2026-03-19T08:00:00'),
+        end: new Date('2026-03-21T23:59:59')
+      }
+    },
+    {
+      key: '2026micmp',
+      name: 'FIM District Championship',
+      dateLabel: 'April 15-17, 2026',
+      locationLabel: '7400 Bay Road, Saginaw, MI',
+      qualificationPending: true,
+      range: {
+        start: new Date('2026-04-15T08:00:00'),
+        end: new Date('2026-04-17T23:59:59')
+      }
+    },
+    {
+      key: '2026cmptx',
+      name: 'FIRST Championship',
+      dateLabel: 'April 28 - May 1, 2026',
+      locationLabel: '1001 Avenida De Las Americas, Houston, TX',
+      qualificationPending: true,
+      range: {
+        start: new Date('2026-04-28T08:00:00'),
+        end: new Date('2026-05-01T23:59:59')
+      }
+    }
+  ];
 
   return (
-    <section
-      className="py-16 relative z-10 animate__animated animate__fadeInUp"
-      style={{ animationDelay: '1s' }}
-    >
+    <section className="relative z-10 animate__animated animate__fadeInUp py-16" style={{ animationDelay: '1s' }}>
       <div className="container mx-auto px-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Timeline */}
+        <div className="mx-auto max-w-4xl">
           <div className="relative">
-            {/* Vertical Line */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-[calc(100%-2rem)] bg-gradient-to-b from-baywatch-orange/50 via-baywatch-orange/40 to-baywatch-orange/30 top-0"></div>
+            <div className="absolute left-1/2 top-0 h-[calc(100%-2rem)] w-1 -translate-x-1/2 transform bg-gradient-to-b from-baywatch-orange/50 via-baywatch-orange/40 to-baywatch-orange/30"></div>
 
-            {/* Starting dot */}
-            <div className="flex items-center justify-center mb-12">
-              <div className="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"></div>
+            <div className="mb-12 flex items-center justify-center">
+              <div className="relative z-10 h-8 w-8 rounded-full bg-baywatch-orange glow-orange"></div>
             </div>
 
-            {/* Event 1: Lake City District Event */}
-            <div className="relative mb-20 reveal">
-              <a href="/event?event=2026milac" className="block relative z-20">
-                <div className="rounded-xl p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,102,0,0.5)] group bg-black border border-baywatch-orange/20">
-                  <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
-                    Lake City District Event
-                  </h3>
-                  <div className="flex flex-wrap gap-4 mb-4 justify-center">
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="far fa-calendar-alt mr-2"></i>March 13-15, 2026
-                    </span>
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-map-marker-alt mr-2"></i>251 Russell Rd, Lake City, MI
-                    </span>
-                  </div>
-                  
-                  {lakeCityStatus === 'upcoming' && <Countdown targetDate={lakeCityDateRange.start} />}
+            {events.map((event, index) => {
+              const status = getEventStatus(event.range, now);
+              const isLast = index === events.length - 1;
 
-                  {lakeCityStatus === 'live' && <LiveUpdates eventKey="2026milac" />}
+              return (
+                <div key={event.key}>
+                  <EventCard event={event} status={status} />
 
-                  {lakeCityStatus === 'completed' && (
-                    <div className="mt-6">
-                      <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Final Ranking</h4>
-                          <div className="flex items-center justify-center gap-1">
-                            <span className="text-4xl font-bold text-baywatch-orange">15</span>
-                            <span className="mb-1 self-end text-sm text-gray-400">th</span>
-                          </div>
-                          <span className="mt-1 block text-gray-400">of 37 teams</span>
-                          <div className="mt-1 text-sm text-gray-400">6-6-0</div>
-                        </div>
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Alliance</h4>
-                          <div className="text-center">
-                            <div className="mb-1 text-4xl font-bold text-baywatch-orange">5</div>
-                            <span className="rounded-full bg-baywatch-orange/20 px-2 py-1 text-sm text-white">
-                              First Pick
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Playoffs</h4>
-                          <div className="text-center">
-                            <div className="text-4xl font-bold text-baywatch-orange">3rd</div>
-                            <div className="mt-1 text-sm text-gray-400">2-2-0</div>
-                          </div>
-                        </div>
-                      </div>
+                  {!isLast && (
+                    <div className="-mb-12 mt-8 flex items-center justify-center">
+                      <div className="relative z-10 h-8 w-8 rounded-full bg-baywatch-orange glow-orange"></div>
                     </div>
                   )}
-                  
-                  <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
-                    <i className="fas fa-external-link-alt"></i>
-                  </div>
                 </div>
-              </a>
-              {/* Dot between events */}
-              <div className="flex items-center justify-center -mb-12 mt-8">
-                <div className="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"></div>
-              </div>
-            </div>
-
-            {/* Event 2: Traverse City District Event */}
-            <div className="relative mb-20 reveal">
-              <a href="/event?event=2026mitvc" className="block relative z-20">
-                <div className="rounded-xl p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,102,0,0.5)] group bg-black border border-baywatch-orange/20">
-                  <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
-                    Traverse City District Event
-                  </h3>
-                  <div className="flex flex-wrap gap-4 mb-4 justify-center">
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="far fa-calendar-alt mr-2"></i>March 19-21, 2026
-                    </span>
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-map-marker-alt mr-2"></i>5376 N Long Lake Rd, Traverse City, MI
-                    </span>
-                  </div>
-                  
-                  {traverseCityStatus === 'upcoming' && <Countdown targetDate={traverseCityDateRange.start} />}
-
-                  {traverseCityStatus === 'live' && <LiveUpdates eventKey="2026mitvc" />}
-
-                  {traverseCityStatus === 'completed' && (
-                    <div className="mt-6">
-                      <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Final Ranking</h4>
-                          <div className="flex items-center justify-center gap-1">
-                            <span className="text-4xl font-bold text-baywatch-orange">1</span>
-                            <span className="mb-1 self-end text-sm text-gray-400">st</span>
-                          </div>
-                          <span className="mt-1 block text-gray-400">of 40 teams</span>
-                          <div className="mt-1 text-sm text-gray-400">9-3-0</div>
-                        </div>
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Alliance</h4>
-                          <div className="text-center">
-                            <div className="mb-1 text-4xl font-bold text-baywatch-orange">1</div>
-                            <span className="rounded-full bg-baywatch-orange/20 px-2 py-1 text-sm text-white">
-                              <i className="mr-1 fas fa-crown"></i>Captain
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Playoffs</h4>
-                          <div className="text-center">
-                            <div className="text-4xl font-bold text-yellow-500">
-                              <i className="fas fa-medal"></i> 1st <i className="fas fa-medal"></i>
-                            </div>
-                            <div className="mt-1 text-sm text-gray-400">6-2-1</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
-                    <i className="fas fa-external-link-alt"></i>
-                  </div>
-                </div>
-              </a>
-              {/* Dot between events */}
-              <div className="flex items-center justify-center -mb-12 mt-8">
-                <div className="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"></div>
-              </div>
-            </div>
-
-            {/* Event 3: FIM District Championship */}
-            <div className="relative mb-20 reveal">
-              <a href="/event?event=2026micmp" className="block relative z-20">
-                <div className="rounded-xl p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,102,0,0.5)] group bg-black border border-baywatch-orange/20">
-                  <div className="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange rounded-full text-sm">
-                    Qualification Pending
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
-                    FIM District Championship
-                  </h3>
-                  <div className="flex flex-wrap gap-4 mb-4 justify-center">
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="far fa-calendar-alt mr-2"></i>April 15-17, 2026
-                    </span>
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-map-marker-alt mr-2"></i>7400 Bay Road, Saginaw, MI
-                    </span>
-                  </div>
-                  
-                  {districtChampionshipStatus === 'upcoming' && (
-                    <Countdown targetDate={districtChampionshipDateRange.start} />
-                  )}
-
-                  {districtChampionshipStatus === 'live' && <LiveUpdates eventKey="2026micmp" />}
-
-                  {districtChampionshipStatus === 'completed' && (
-                    <div className="mt-6">
-                      <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Final Ranking</h4>
-                          <div className="flex items-center justify-center gap-1">
-                            <span className="text-4xl font-bold text-baywatch-orange">16</span>
-                            <span className="mb-1 self-end text-sm text-gray-400">th</span>
-                          </div>
-                          <span className="mt-1 block text-gray-400">of 40 teams</span>
-                          <div className="mt-1 text-sm text-gray-400">7-5-0</div>
-                        </div>
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Alliance</h4>
-                          <div className="text-center">
-                            <div className="mb-1 text-4xl font-bold text-baywatch-orange">3</div>
-                            <span className="rounded-full bg-baywatch-orange/20 px-2 py-1 text-sm text-white">
-                              Second Pick
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Playoffs</h4>
-                          <div className="text-center">
-                            <div className="text-4xl font-bold text-baywatch-orange">7th</div>
-                            <div className="mt-1 text-sm text-gray-400">0-2-0</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
-                    <i className="fas fa-external-link-alt"></i>
-                  </div>
-                </div>
-              </a>
-              {/* Dot between events */}
-              <div className="flex items-center justify-center -mb-12 mt-8">
-                <div className="w-8 h-8 bg-baywatch-orange rounded-full relative z-10 glow-orange"></div>
-              </div>
-            </div>
-
-            {/* Event 4: FIRST Championship */}
-            <div className="relative reveal">
-              <a href="/event?event=2026cmptx" className="block relative z-20">
-                <div className="rounded-xl p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,102,0,0.5)] group bg-black border border-baywatch-orange/20">
-                  <div className="absolute -top-2 -right-2 px-3 py-1 bg-baywatch-orange rounded-full text-sm">
-                    Qualification Pending
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2 text-baywatch-orange glow-orange text-center">
-                    FIRST Championship
-                  </h3>
-                  <div className="flex flex-wrap gap-4 mb-4 justify-center">
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="far fa-calendar-alt mr-2"></i>April 28 - May 1, 2026
-                    </span>
-                    <span className="px-3 py-1 bg-baywatch-orange/20 rounded-full text-sm">
-                      <i className="fas fa-map-marker-alt mr-2"></i>1001 Avenida De Las Americas, Houston, TX
-                    </span>
-                  </div>
-                  
-                  {firstChampionshipStatus === 'upcoming' && (
-                    <Countdown targetDate={firstChampionshipDateRange.start} />
-                  )}
-
-                  {firstChampionshipStatus === 'live' && <LiveUpdates eventKey="2026cmptx" />}
-
-                  {firstChampionshipStatus === 'completed' && (
-                    <div className="mt-6" id="championship-results">
-                      <div className="grid grid-cols-1 gap-4 text-center md:grid-cols-3">
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Final Ranking</h4>
-                          <div className="flex items-center justify-center gap-1">
-                            <span className="text-4xl font-bold text-baywatch-orange">41</span>
-                            <span className="mb-1 self-end text-sm text-gray-400">st</span>
-                          </div>
-                          <span className="mt-1 block text-gray-400">of 75 teams</span>
-                          <div className="mt-1 text-sm text-gray-400">6-4-0</div>
-                        </div>
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Alliance</h4>
-                          <div className="text-center">
-                            <div className="mb-1 text-4xl font-bold text-baywatch-orange">
-                              <i className="fas fa-times"></i>
-                            </div>
-                            <span className="rounded-full bg-baywatch-orange/20 px-2 py-1 text-sm text-white">
-                              No selection
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center rounded-lg bg-black/30 p-4">
-                          <h4 className="mb-2 text-lg font-semibold">Playoffs</h4>
-                          <div className="text-center">
-                            <div className="text-4xl font-bold text-baywatch-orange">
-                              <i className="fas fa-minus"></i>
-                            </div>
-                            <div className="mt-1 text-sm text-gray-400">Did not qualify</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="absolute bottom-4 right-4 text-baywatch-orange/50 group-hover:text-baywatch-orange transition-colors">
-                    <i className="fas fa-external-link-alt"></i>
-                  </div>
-                </div>
-              </a>
-            </div>
+              );
+            })}
           </div>
         </div>
       </div>
