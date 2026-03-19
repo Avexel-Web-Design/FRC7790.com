@@ -272,7 +272,7 @@ function EventStatsPanel({ eventKey, mode }: { eventKey: string; mode: 'live' | 
 
 function EventCard({ event, status }: { event: EventCardData; status: EventStatus }) {
   return (
-    <div className="relative mb-20 reveal">
+    <div className="relative reveal">
       <a href={`/event?event=${event.key}`} className="block relative z-20">
         <div className="group rounded-xl border border-baywatch-orange/20 bg-black p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,102,0,0.5)]">
           {event.qualificationPending && (
@@ -365,6 +365,28 @@ export default function CompetitionSchedule() {
     }
   ];
 
+  const eventStatuses = useMemo(() => events.map((event) => getEventStatus(event.range, now)), [events, now]);
+  const liveEventIndex = eventStatuses.findIndex((status) => status === 'live');
+
+  const hasLiveEvent = liveEventIndex !== -1;
+  const allUpcoming = eventStatuses.every((status) => status === 'upcoming');
+  const allCompleted = eventStatuses.every((status) => status === 'completed');
+
+  let pulsingBetweenIndex: number | null = null;
+  if (!hasLiveEvent && !allUpcoming) {
+    if (allCompleted) {
+      pulsingBetweenIndex = events.length > 1 ? events.length - 2 : null;
+    } else {
+      const lastCompletedIndex = eventStatuses.reduce(
+        (acc, status, index) => (status === 'completed' ? index : acc),
+        -1
+      );
+      pulsingBetweenIndex = lastCompletedIndex >= 0 ? lastCompletedIndex : null;
+    }
+  }
+
+  const pulseStartDot = !hasLiveEvent && allUpcoming;
+
   return (
     <section className="relative z-10 animate__animated animate__fadeInUp py-16" style={{ animationDelay: '1s' }}>
       <div className="container mx-auto px-6">
@@ -373,20 +395,23 @@ export default function CompetitionSchedule() {
             <div className="absolute left-1/2 top-0 h-[calc(100%-2rem)] w-1 -translate-x-1/2 transform bg-gradient-to-b from-baywatch-orange/50 via-baywatch-orange/40 to-baywatch-orange/30"></div>
 
             <div className="mb-12 flex items-center justify-center">
-              <div className="relative z-10 h-8 w-8 rounded-full bg-baywatch-orange glow-orange"></div>
+              <div className={`relative z-10 h-8 w-8 rounded-full bg-baywatch-orange glow-orange ${pulseStartDot ? 'animate-pulse' : ''}`}></div>
             </div>
 
             {events.map((event, index) => {
-              const status = getEventStatus(event.range, now);
+              const status = eventStatuses[index];
               const isLast = index === events.length - 1;
+              const pulseThisBetweenDot = !hasLiveEvent && pulsingBetweenIndex === index;
 
               return (
-                <div key={event.key}>
+                <div key={event.key} className="mb-16 last:mb-0">
                   <EventCard event={event} status={status} />
 
                   {!isLast && (
-                    <div className="-mb-12 mt-8 flex items-center justify-center">
-                      <div className="relative z-10 h-8 w-8 rounded-full bg-baywatch-orange glow-orange"></div>
+                    <div className="my-10 flex items-center justify-center">
+                      <div
+                        className={`relative z-10 h-8 w-8 rounded-full bg-baywatch-orange glow-orange ${pulseThisBetweenDot ? 'animate-pulse' : ''}`}
+                      ></div>
                     </div>
                   )}
                 </div>
