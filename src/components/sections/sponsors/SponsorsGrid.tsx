@@ -42,7 +42,7 @@ export default function SponsorsGrid() {
     },
     {
       name: "Burns & McDonnell",
-      logo: "/assets/images/Sponsors/Burns-&-McDonnell_logo.png",
+      logo: "/assets/images/Sponsors/Burns-&McDonnell_logo.png",
       url: "#"
     },
     {
@@ -72,7 +72,7 @@ export default function SponsorsGrid() {
     },
     {
       name: "Johnston Engineering",
-      logo: "/assets/images/Sponsors/JohnstonEngineering.jpg",
+      logo: "/assets/images/Sponsors/JohnstonEngineering.png",
       url: "#"
     }
   ];
