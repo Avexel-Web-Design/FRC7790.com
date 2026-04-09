@@ -49,7 +49,7 @@
     "@heroicons/react": "^2.2.0",
     "@melloware/coloris": "^0.25.0",
     "@types/react-router-dom": "^5.3.3",
-    "effect": "3.19.15",
+    "effect": "3.20.0",
     "hono": "^4.12.12",
     "lucide-react": "^0.576.0",
     "react": "^19.1.0",
