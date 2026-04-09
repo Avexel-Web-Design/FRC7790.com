@@ -71,6 +71,16 @@ export default function SponsorsGrid() {
       url: "#"
     },
     {
+      name: "Harbor Barber",
+      logo: "/assets/images/Sponsors/Harbor-Barber.svg",
+      url: "#"
+    },
+    {
+      name: "Dave Kring",
+      logo: "/assets/images/Sponsors/Dave-Kring.webp",
+      url: "#"
+    },
+    {
       name: "Johnston Engineering",
       logo: "/assets/images/Sponsors/JohnstonEngineering.png",
       url: "#"
