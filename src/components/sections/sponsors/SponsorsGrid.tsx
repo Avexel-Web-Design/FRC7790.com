@@ -77,7 +77,7 @@ export default function SponsorsGrid() {
     },
     {
       name: "Dave Kring",
-      logo: "/assets/images/Sponsors/Dave-Kring.webp",
+      logo: "/assets/images/Sponsors/Dave-Kring.png",
       url: "#"
     },
     {
