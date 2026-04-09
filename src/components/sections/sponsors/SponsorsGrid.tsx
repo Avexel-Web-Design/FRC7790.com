@@ -52,7 +52,7 @@ export default function SponsorsGrid() {
     },
     {
       name: "Surf Internet",
-      logo: "/assets/images/Sponsors/SURF_Horiz_Navy_Blue_PMS_logo_Logo.jpg",
+      logo: "/assets/images/Sponsors/SURF_Horiz_Navy_Blue_PMS_logo_Logo.png",
       url: "#"
     },
     {
