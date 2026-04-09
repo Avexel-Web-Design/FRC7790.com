@@ -42,7 +42,7 @@ export default function SponsorsGrid() {
     },
     {
       name: "Burns & McDonnell",
-      logo: "/assets/images/Sponsors/Burns-&-McDonnell_logo.webp",
+      logo: "/assets/images/Sponsors/Burns-&-McDonnell_logo.png",
       url: "#"
     },
     {
