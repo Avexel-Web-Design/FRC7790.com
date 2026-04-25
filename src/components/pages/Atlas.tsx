@@ -131,9 +131,25 @@ export default function Atlas() {
   }, [events, selectedWeek]);
 
   const sortedEvents = useMemo(() => {
-    return [...filteredEvents].sort(
+    const chronologically = [...filteredEvents].sort(
       (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
     );
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const splitIndex = chronologically.findIndex((event) => {
+      const end = new Date(event.end_date);
+      end.setHours(0, 0, 0, 0);
+      return end >= now;
+    });
+
+    if (splitIndex <= 0) return chronologically;
+
+    return [
+      ...chronologically.slice(splitIndex),
+      ...chronologically.slice(0, splitIndex),
+    ];
   }, [filteredEvents]);
 
   const sortedDistricts = useMemo(() => {
