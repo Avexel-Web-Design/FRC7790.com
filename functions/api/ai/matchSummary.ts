@@ -370,7 +370,7 @@ ai.post('/generate', effectHandler((c) =>
     let usedAI = false;
 
     if (provider === 'openrouter' && openRouterKey) {
-      const model = env.OPENROUTER_MODEL || 'z-ai/glm-4.5-air:free';
+      const model = env.OPENROUTER_MODEL || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
       const siteUrl = env.OPENROUTER_SITE_URL || 'https://www.frc7790.com';
       const appName = env.OPENROUTER_APP_NAME || 'FRC 7790';
       const result = yield* callOpenRouter(openRouterKey, model, prompt, siteUrl, appName);
