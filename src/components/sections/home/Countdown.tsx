@@ -175,8 +175,10 @@ function useEventData(eventCode: string | null, simulateAfterMatch: number | nul
               
               const blueTeams = match.alliances?.blue?.team_keys || [];
               const isBlue = blueTeams.includes('frc7790');
-              const blueScore = match.alliances?.blue?.score || 0;
-              const redScore = match.alliances?.red?.score || 0;
+              const rawBlue = match.alliances?.blue?.score;
+              const rawRed = match.alliances?.red?.score;
+              const blueScore = rawBlue != null && rawBlue >= 0 ? rawBlue : 0;
+              const redScore = rawRed != null && rawRed >= 0 ? rawRed : 0;
               
               if (blueScore === redScore) {
                 simulatedTies++;

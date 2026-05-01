@@ -35,6 +35,7 @@ const Event: React.FC = () => {
     error, 
     isUpcoming, 
     rankings,
+    sortOrderInfo,
     matches,
     playoffMatches,
     awards,
@@ -152,6 +153,7 @@ const Event: React.FC = () => {
                   rankings={rankings}
                   epaData={epaData}
                   isLoading={isLoading}
+                  sortOrderInfo={sortOrderInfo}
                 />
               )}
               

@@ -188,7 +188,8 @@ export default function TeamMatches({ teamNumber }: TeamMatchesProps) {
   };
 
   const getMatchResult = (match: any) => {
-    if (!match.alliances.blue.score || !match.alliances.red.score) {
+    if (match.alliances.blue.score == null || match.alliances.blue.score < 0 ||
+        match.alliances.red.score == null || match.alliances.red.score < 0) {
       return { blue: '-', red: '-', winner: null };
     }
 

@@ -37,6 +37,43 @@ interface Factor {
   impactRank?: number;
 }
 
+interface AIResponse {
+  text: string | null;
+  error: string | null;
+  model: string;
+}
+
+const extractAssistantText = (data: any): string | null => {
+  const fromMessage = data?.choices?.[0]?.message?.content;
+  if (typeof fromMessage === 'string' && fromMessage.trim().length > 0) {
+    return fromMessage.trim();
+  }
+
+  if (Array.isArray(fromMessage)) {
+    const joined = fromMessage
+      .map((part: any) => {
+        if (typeof part === 'string') return part;
+        if (typeof part?.text === 'string') return part.text;
+        return '';
+      })
+      .join(' ')
+      .trim();
+    if (joined.length > 0) return joined;
+  }
+
+  const fromText = data?.choices?.[0]?.text;
+  if (typeof fromText === 'string' && fromText.trim().length > 0) {
+    return fromText.trim();
+  }
+
+  const outputText = data?.output?.[0]?.content?.[0]?.text;
+  if (typeof outputText === 'string' && outputText.trim().length > 0) {
+    return outputText.trim();
+  }
+
+  return null;
+};
+
 // Utility: build a concise stats line from match JSON
 function humanCompLevel(match: any): string {
   switch (match?.comp_level) {
@@ -161,8 +198,9 @@ const callOpenRouter = (
   model: string, 
   prompt: string,
   siteUrl: string,
-  appName: string
-): Effect.Effect<string | null, never, never> =>
+  appName: string,
+  maxTokens = 220
+): Effect.Effect<AIResponse, never, never> =>
   Effect.promise(async () => {
     try {
       const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -179,21 +217,31 @@ const callOpenRouter = (
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: prompt }
           ],
-          max_tokens: 160,
+          max_tokens: maxTokens,
           temperature: 0.5
         })
       });
       if (resp.ok) {
         const data: any = await resp.json();
-        const candidate = data.choices?.[0]?.message?.content?.trim();
+        const candidate = extractAssistantText(data);
         if (candidate && candidate.length > 0) {
-          return candidate;
+          return { text: candidate, error: null, model };
         }
+        const finishReason = data?.choices?.[0]?.finish_reason || data?.choices?.[0]?.finishReason || 'unknown';
+        const responseId = data?.id || 'unknown';
+        return {
+          text: null,
+          error: `OpenRouter returned an empty completion (finish_reason=${String(finishReason)}, id=${String(responseId)})`,
+          model
+        };
       }
+      const errText = await resp.text();
+      return { text: null, error: `OpenRouter HTTP ${resp.status}: ${errText.slice(0, 300)}`, model };
     } catch (err) {
       console.error('OpenRouter API error', err);
+      return { text: null, error: `OpenRouter request failed: ${String(err)}`, model };
     }
-    return null;
+    return { text: null, error: 'OpenRouter returned no result', model };
   });
 
 // Call Azure OpenAI API
@@ -368,15 +416,47 @@ ai.post('/generate', effectHandler((c) =>
     
     let summaryText = fallback;
     let usedAI = false;
+    let aiError: string | null = null;
+    let modelUsed: string = provider;
 
     if (provider === 'openrouter' && openRouterKey) {
       const model = env.OPENROUTER_MODEL || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
       const siteUrl = env.OPENROUTER_SITE_URL || 'https://www.frc7790.com';
       const appName = env.OPENROUTER_APP_NAME || 'FRC 7790';
       const result = yield* callOpenRouter(openRouterKey, model, prompt, siteUrl, appName);
-      if (result) {
-        summaryText = result;
+      if (result.text) {
+        summaryText = result.text;
         usedAI = true;
+        modelUsed = result.model;
+      } else {
+        aiError = result.error;
+        const fallbackModel = 'nvidia/nemotron-nano-9b-v2:free';
+        const isLengthStop = Boolean(result.error && result.error.includes('finish_reason=length'));
+
+        if (isLengthStop) {
+          const concisePrompt = `${prompt}\n\nOutput requirements: Return only the final recap in 1-2 short sentences. No preface.`;
+          const retryLong = yield* callOpenRouter(openRouterKey, model, concisePrompt, siteUrl, appName, 600);
+          if (retryLong.text) {
+            summaryText = retryLong.text;
+            usedAI = true;
+            modelUsed = retryLong.model;
+            aiError = null;
+          } else {
+            aiError = retryLong.error || aiError;
+          }
+        }
+
+        if (!usedAI && model !== fallbackModel) {
+          const retry = yield* callOpenRouter(openRouterKey, fallbackModel, prompt, siteUrl, appName, 320);
+          if (retry.text) {
+            summaryText = retry.text;
+            usedAI = true;
+            modelUsed = retry.model;
+            aiError = null;
+          } else {
+            aiError = retry.error || aiError;
+          }
+        }
       }
     } else if (provider === 'azure' && env.AZURE_OPENAI_ENDPOINT && env.AZURE_OPENAI_DEPLOYMENT && env.AZURE_OPENAI_KEY) {
       const result = yield* callAzureOpenAI(
@@ -409,10 +489,11 @@ ai.post('/generate', effectHandler((c) =>
     const fallbackUsed = !usedAI || summaryText === fallback;
     return { 
       summary: summaryText, 
-      model: provider, 
+      model: usedAI ? modelUsed : provider,
       promptUsed: prompt, 
       fallbackUsed, 
-      factors 
+      factors,
+      aiError
     };
   })
 ));

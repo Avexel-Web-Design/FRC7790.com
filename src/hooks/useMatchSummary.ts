@@ -6,6 +6,7 @@ interface MatchSummaryResponse {
   model?: string;
   promptUsed?: string;
   fallbackUsed?: boolean;
+  aiError?: string;
 }
 
 interface UseMatchSummaryReturn {
@@ -15,6 +16,7 @@ interface UseMatchSummaryReturn {
   regenerate: () => void;
   model?: string | null;
   fallbackUsed: boolean;
+  aiError: string | null;
 }
 
 // Bump version to invalidate prior cache after factor enrichment
@@ -27,12 +29,13 @@ export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn 
   const [nonce, setNonce] = useState(0);
   const [model, setModel] = useState<string | null>(null);
   const [fallbackUsed, setFallbackUsed] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const regenerate = useCallback(() => setNonce(n => n + 1), []);
 
   useEffect(() => {
     if (!match) {
-      setSummary(null); setError(null); return;
+      setSummary(null); setError(null); setAiError(null); return;
     }
 
     const cacheKey = STORAGE_KEY_PREFIX + match.key;
@@ -54,10 +57,14 @@ export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn 
           setSummary(data.summary);
           setModel(data.model || null);
           setFallbackUsed(Boolean(data.fallbackUsed || data.model === 'fallback'));
+          setAiError(data.aiError || null);
           localStorage.setItem(cacheKey, data.summary);
         }
       } catch (err) {
-        if (!cancelled) setError((err as Error).message);
+        if (!cancelled) {
+          setError((err as Error).message);
+          setAiError(null);
+        }
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -71,5 +78,5 @@ export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn 
     return () => { cancelled = true; };
   }, [match, nonce]);
 
-  return { summary, isLoading, error, regenerate, model, fallbackUsed };
+  return { summary, isLoading, error, regenerate, model, fallbackUsed, aiError };
 }

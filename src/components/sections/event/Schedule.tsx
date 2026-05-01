@@ -19,19 +19,9 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
     return `Q${match.match_number}`;
   };
 
-  const formatMatchTime = (match: Match): string => {
-    if (!match.predicted_time) return 'TBD';
-    
-    const matchTime = new Date(match.predicted_time * 1000);
-    return matchTime.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  };
-
   const formatScore = (match: Match): React.ReactNode => {
-    if (!match.alliances.blue.score && !match.alliances.red.score) {
+    if (match.alliances.blue.score == null || match.alliances.blue.score < 0 ||
+        match.alliances.red.score == null || match.alliances.red.score < 0) {
       return '';
     }
     
@@ -87,7 +77,6 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
               <thead>
                 <tr className="text-left">
                   <th className="p-2 sm:p-4 text-baywatch-orange">Match</th>
-                  <th className="p-2 sm:p-4 text-baywatch-orange">Time</th>
                   <th className="p-2 sm:p-4 text-baywatch-orange">Blue Alliance</th>
                   <th className="p-2 sm:p-4 text-baywatch-orange">Red Alliance</th>
                   <th className="p-2 sm:p-4 text-baywatch-orange">Score</th>
@@ -96,7 +85,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
               <tbody className="text-gray-300">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="p-4 text-center">
+                    <td colSpan={4} className="p-4 text-center">
                       <div className="flex justify-center items-center space-x-2">
                         <NebulaLoader size={24} />
                         <span>Loading schedule...</span>
@@ -105,7 +94,7 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                   </tr>
                 ) : sortedMatches.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="p-4 text-center text-gray-400">
+                    <td colSpan={4} className="p-4 text-center text-gray-400">
                       <i className="fas fa-info-circle mr-2"></i>
                       No matches scheduled yet
                     </td>
@@ -131,9 +120,6 @@ const Schedule: React.FC<ScheduleProps> = ({ matches, isLoading }) => {
                             {formatMatchName(match)} <i className="fas fa-arrow-up-right-from-square ml-0.5"></i>
                           </Link>
                           {isOurMatch && <i className="fas fa-star text-baywatch-orange ml-2"></i>}
-                        </td>
-                        <td className="p-2 sm:p-4 text-sm text-gray-400">
-                          {formatMatchTime(match)}
                         </td>
                         <td className="p-2 sm:p-4">
                           <div className="flex flex-wrap gap-1">

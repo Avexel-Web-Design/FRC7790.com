@@ -7,13 +7,14 @@ interface RankingsProps {
   rankings: TeamRanking[];
   epaData: { [teamKey: string]: number };
   isLoading: boolean;
+  sortOrderInfo?: Array<{ name: string; precision: number }>;
 }
 
 type SortField = 'rank' | 'team_key' | 'ranking_points' | 'record' | 'qual_average' | 'epa';
 type SortDirection = 'asc' | 'desc';
 type DisplayMode = 'number' | 'name';
 
-const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => {
+const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading, sortOrderInfo }) => {
   const navigate = useNavigate();
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -21,6 +22,13 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
   
   // Always show EPA column, but with placeholders until data loads
   const showEPA = true;
+
+  // Find the coopertition sort order index dynamically from sort_order_info
+  const coopIndex = useMemo(() => {
+    if (!sortOrderInfo) return -1;
+    return sortOrderInfo.findIndex(info => /coop/i.test(info.name));
+  }, [sortOrderInfo]);
+  const showCoop = coopIndex >= 0;
 
   const formatTeamNumber = (teamKey: string): string => {
     return teamKey.replace('frc', '');
@@ -40,11 +48,9 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
            0;
   };
 
-  const getQualAverage = (ranking: TeamRanking): number => {
-    // Try different possible fields for qualification average
-    return ranking.qual_average || 
-           (ranking.sort_orders && ranking.sort_orders[1]) || 
-           0;
+  const getCoopScore = (ranking: TeamRanking): number => {
+    if (coopIndex < 0) return 0;
+    return (ranking.sort_orders && ranking.sort_orders[coopIndex]) || 0;
   };
 
   const handleSort = (field: SortField) => {
@@ -86,8 +92,8 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
           bValue = b.wins || 0;
           break;
         case 'qual_average':
-          aValue = getQualAverage(a);
-          bValue = getQualAverage(b);
+          aValue = getCoopScore(a);
+          bValue = getCoopScore(b);
           break;
         case 'epa':
           aValue = epaData[a.team_key] || 0;
@@ -196,15 +202,17 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
                       <i className={`ml-2 ${getSortIcon('record')}`}></i>
                     </div>
                   </th>
-                  <th 
-                    className="p-4 text-baywatch-orange cursor-pointer hover:bg-baywatch-orange/10 transition-colors"
-                    onClick={() => handleSort('qual_average')}
-                  >
-                    <div className="flex items-center">
-                      Coopertition Score
-                      <i className={`ml-2 ${getSortIcon('qual_average')}`}></i>
-                    </div>
-                  </th>
+                  {showCoop && (
+                    <th 
+                      className="p-4 text-baywatch-orange cursor-pointer hover:bg-baywatch-orange/10 transition-colors"
+                      onClick={() => handleSort('qual_average')}
+                    >
+                      <div className="flex items-center">
+                        Coopertition Score
+                        <i className={`ml-2 ${getSortIcon('qual_average')}`}></i>
+                      </div>
+                    </th>
+                  )}
                   {showEPA && (
                     <th 
                       className="p-4 text-baywatch-orange cursor-pointer hover:bg-baywatch-orange/10 transition-colors"
@@ -221,7 +229,7 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
               <tbody className="text-gray-300">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={showEPA ? 6 : 5} className="p-4 text-center">
+                    <td colSpan={(showCoop ? 5 : 4) + (showEPA ? 1 : 0)} className="p-4 text-center">
                       <div className="flex justify-center items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-baywatch-orange/30 border-t-baywatch-orange rounded-full animate-spin"></div>
                         <span>Loading rankings...</span>
@@ -230,7 +238,7 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
                   </tr>
                 ) : sortedRankings.length === 0 ? (
                   <tr>
-                    <td colSpan={showEPA ? 6 : 5} className="p-4 text-center text-gray-400">
+                    <td colSpan={(showCoop ? 5 : 4) + (showEPA ? 1 : 0)} className="p-4 text-center text-gray-400">
                       <i className="fas fa-info-circle mr-2"></i>
                       No rankings available yet
                     </td>
@@ -289,7 +297,9 @@ const Rankings: React.FC<RankingsProps> = ({ rankings, epaData, isLoading }) => 
                         </td>
                         <td className="p-4">{getRankingPoints(ranking).toFixed(2)}</td>
                         <td className="p-4">{formatRecord(ranking)}</td>
-                        <td className="p-4">{getQualAverage(ranking).toFixed(2)}</td>
+                        {showCoop && (
+                          <td className="p-4">{getCoopScore(ranking).toFixed(2)}</td>
+                        )}
                         {showEPA && (
                           <td className="p-4">
                             {epaData[ranking.team_key] !== undefined ? (

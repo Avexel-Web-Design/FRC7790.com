@@ -99,6 +99,7 @@ export interface Team {
 export function useEventData(eventCode: string) {
   const [eventData, setEventData] = useState<EventData | null>(null);
   const [rankings, setRankings] = useState<TeamRanking[]>([]);
+  const [sortOrderInfo, setSortOrderInfo] = useState<Array<{ name: string; precision: number }>>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [playoffMatches, setPlayoffMatches] = useState<Match[]>([]);
   const [awards, setAwards] = useState<Award[]>([]);
@@ -135,11 +136,12 @@ export function useEventData(eventCode: string) {
       if (eventStarted) {
         // Fetch rankings
         try {
-          const eventRankings = await frcAPI.fetchEventRankings(eventCode);
-          setRankings(eventRankings.map(r => ({
+          const eventRankingsResult = await frcAPI.fetchEventRankings(eventCode);
+          setRankings(eventRankingsResult.rankings.map(r => ({
             ...r,
             team_name: r.team_name ?? undefined
           })));
+          setSortOrderInfo(eventRankingsResult.sort_order_info);
         } catch (err) {
           console.warn('Rankings not available yet:', err);
         }
@@ -207,6 +209,7 @@ export function useEventData(eventCode: string) {
   return {
     eventData,
     rankings,
+    sortOrderInfo,
     matches,
     playoffMatches,
     awards,

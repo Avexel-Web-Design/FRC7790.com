@@ -50,16 +50,6 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
     }
   };
 
-  const getTwitchUrl = () => {
-    // Generate Twitch URL based on event
-    if (eventData?.livestream?.channel) {
-      return `https://www.twitch.tv/${eventData.livestream.channel}`;
-    }
-    
-    // Default to main FRC channel
-    return 'https://www.twitch.tv/firstinspires';
-  };
-
   const getDistrictUrl = () => {
     if (eventData?.district) {
       return `/district?district=${eventData.district.key}`;
@@ -80,16 +70,15 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
       <div className="container mx-auto px-6">
         <h1 className="text-5xl md:text-7xl font-bold text-center">
           <span 
-            className={`text-white inline-block animate__animated animate__fadeInUp ${isLoading ? 'animate-pulse' : ''}`}
-            style={{ animationDelay: '0.2s', textShadow: '0 0 20px rgba(255, 107, 0, 0.3)' }}
+            className={`text-white inline-block ${isLoading ? 'animate-pulse' : ''}`}
+            style={{ textShadow: '0 0 20px rgba(255, 107, 0, 0.3)' }}
           >
             {getEventCity()}
           </span>
           {' '}
           <span 
-            className={`text-baywatch-orange inline-block animate__animated animate__fadeInUp ${isLoading ? 'animate-pulse' : ''}`}
+            className={`text-baywatch-orange inline-block ${isLoading ? 'animate-pulse' : ''}`}
             style={{ 
-              animationDelay: '0.4s',
               textShadow: '0 0 20px rgba(255, 107, 0, 0.5)'
             }}
           >
@@ -97,22 +86,12 @@ const EventHero: React.FC<EventHeroProps> = ({ eventData, eventCode, isLoading }
         </h1>
         
         <p 
-          className={`text-gray-400 text-center mt-4 max-w-2xl mx-auto animate__animated animate__fadeInUp ${isLoading ? 'animate-pulse' : ''}`}
-          style={{ animationDelay: '0.6s' }}
+          className={`text-gray-400 text-center mt-4 max-w-2xl mx-auto ${isLoading ? 'animate-pulse' : ''}`}
         >
           {getEventDetails()}
         </p>
         
         <div className="flex justify-center mt-6 gap-4 flex-wrap">
-          <a 
-            href={getTwitchUrl()}
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="inline-flex items-center text-[#A970FF] bg-[#6441A4]/20 hover:bg-[#6441A4]/30 transition-colors duration-300 px-4 py-2 rounded-lg"
-          >
-            <i className="fab fa-twitch mr-2"></i> Watch Live
-          </a>
-          
           <a 
             href={`/scouting?event=${eventCode}`}
             className="inline-flex items-center text-baywatch-orange bg-baywatch-orange/20 hover:bg-baywatch-orange/40 transition-all duration-300 px-4 py-2 rounded-lg border border-baywatch-orange/30 hover:border-baywatch-orange hover:scale-105 hover:shadow-md hover:shadow-baywatch-orange/20"

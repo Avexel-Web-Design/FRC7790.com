@@ -579,8 +579,8 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
         red: match.alliances.red.team_keys.map(formatTeamNumber)
       },
       scores: {
-        blue: match.alliances.blue.score || 0,
-        red: match.alliances.red.score || 0
+        blue: match.alliances.blue.score != null && match.alliances.blue.score >= 0 ? match.alliances.blue.score : 0,
+        red: match.alliances.red.score != null && match.alliances.red.score >= 0 ? match.alliances.red.score : 0
       },
       winner: match.winning_alliance === '' ? undefined : match.winning_alliance
     };
@@ -652,7 +652,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                   );
                 })}
               </div>
-              <div className="ml-2 font-semibold text-blue-400">{scores.blue ?? '--'}</div>
+              <div className="ml-2 font-semibold text-blue-400">{bracketMatch.match && winner ? scores.blue : '--'}</div>
             </div>
 
             {/* Divider */}
@@ -676,7 +676,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                   );
                 })}
               </div>
-              <div className="ml-2 font-semibold text-red-400">{scores.red ?? '--'}</div>
+              <div className="ml-2 font-semibold text-red-400">{bracketMatch.match && winner ? scores.red : '--'}</div>
             </div>
           </div>
         </div>
@@ -684,6 +684,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
     }
 
     // Render clickable match box for matches with data
+    const hasBeenPlayed = winner !== undefined;
     return (
       <Link
         to={`/match?match=${bracketMatch.match.key}`}
@@ -718,7 +719,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                 );
               })}
             </div>
-            <div className="ml-2 font-semibold text-blue-400">{scores.blue ?? '--'}</div>
+            <div className="ml-2 font-semibold text-blue-400">{hasBeenPlayed ? scores.blue : '--'}</div>
           </div>
 
           {/* Divider */}
@@ -746,7 +747,7 @@ const Playoffs: React.FC<PlayoffsProps> = ({ playoffMatches, isLoading }) => {
                 );
               })}
             </div>
-            <div className="ml-2 font-semibold text-red-400">{scores.red ?? '--'}</div>
+            <div className="ml-2 font-semibold text-red-400">{hasBeenPlayed ? scores.red : '--'}</div>
           </div>
         </div>
       </Link>

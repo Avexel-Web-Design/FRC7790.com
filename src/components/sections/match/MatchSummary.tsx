@@ -5,7 +5,7 @@ import { useMatchSummary } from '../../../hooks/useMatchSummary';
 interface MatchSummaryProps { matchData: MatchData; }
 
 export const MatchSummary: React.FC<MatchSummaryProps> = ({ matchData }) => {
-  const { summary, isLoading, error, regenerate, model, fallbackUsed } = useMatchSummary(matchData);
+  const { summary, isLoading, error, regenerate, model, fallbackUsed, aiError } = useMatchSummary(matchData);
 
   return (
     <div>
@@ -58,6 +58,11 @@ export const MatchSummary: React.FC<MatchSummaryProps> = ({ matchData }) => {
             <span className="px-2 py-0.5 rounded bg-white/5 text-gray-400">{model}</span>
           )}
         </div>
+        {fallbackUsed && aiError && (
+          <div className="mt-2 text-[11px] text-amber-300/80">
+            AI fallback reason: {aiError}
+          </div>
+        )}
       </div>
     </div>
   );

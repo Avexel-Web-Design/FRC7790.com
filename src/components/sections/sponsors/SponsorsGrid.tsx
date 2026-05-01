@@ -39,6 +39,51 @@ export default function SponsorsGrid() {
       name: "Mastercam", 
       logo: "/assets/images/Sponsors/Mastercam.svg",
       url: "https://mastercam.com"
+    },
+    {
+      name: "Burns & McDonnell",
+      logo: "/assets/images/Sponsors/Burns-&McDonnell_logo.png",
+      url: "#"
+    },
+    {
+      name: "Lyric",
+      logo: "/assets/images/Sponsors/lyric.png",
+      url: "#"
+    },
+    {
+      name: "Surf Internet",
+      logo: "/assets/images/Sponsors/SURF_Horiz_Navy_Blue_PMS_logo_Logo.png",
+      url: "#"
+    },
+    {
+      name: "Rocking Horse",
+      logo: "/assets/images/Sponsors/Rocking+Horse+background+and+logo+Red-02.webp",
+      url: "#"
+    },
+    {
+      name: "Sunrise",
+      logo: "/assets/images/Sponsors/Sunrise.avif",
+      url: "#"
+    },
+    {
+      name: "Petoskey Plastics",
+      logo: "/assets/images/Sponsors/PetoskeyPlastics.png",
+      url: "#"
+    },
+    {
+      name: "Harbor Barber",
+      logo: "/assets/images/Sponsors/Harbor-Barber.svg",
+      url: "#"
+    },
+    {
+      name: "Dave Kring",
+      logo: "/assets/images/Sponsors/Dave-Kring.png",
+      url: "#"
+    },
+    {
+      name: "Johnston Engineering",
+      logo: "/assets/images/Sponsors/JohnstonEngineering.png",
+      url: "#"
     }
   ];
 
