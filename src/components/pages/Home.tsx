@@ -1,11 +1,12 @@
-import { useEffect } from 'react';
+import { Suspense, useEffect, lazy } from 'react';
 import Hero from '../sections/home/Hero';
-import LiveUpdates from '../sections/home/LiveUpdates';
-import Countdown from '../sections/home/Countdown';
 import Robot from '../sections/home/Robot';
 import GameInfo from '../sections/home/GameInfo';
 import Contact from '../sections/home/Contact';
 import { updateSEO, SEO_CONFIGS } from '../../utils/seo';
+
+const LiveUpdates = lazy(() => import('../sections/home/LiveUpdates'));
+const Countdown = lazy(() => import('../sections/home/Countdown'));
 
 export default function Home() {
   useEffect(() => {
@@ -15,8 +16,10 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <LiveUpdates />
-      <Countdown />
+      <Suspense fallback={null}>
+        <LiveUpdates />
+        <Countdown />
+      </Suspense>
       <Contact />
       <Robot />
       <GameInfo />
