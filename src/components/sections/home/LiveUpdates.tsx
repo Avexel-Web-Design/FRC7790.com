@@ -31,11 +31,17 @@ export default function LiveUpdates() {
       }
     };
 
-    fetchData();
+    // Delay initial fetch to after first paint so TBA calls don't block LCP
+    const raf = requestAnimationFrame(() => {
+      fetchData();
+    });
 
     // Set up automatic refresh every 30 seconds during active events
     const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearInterval(interval);
+    };
   }, []);
 
   // Don't render if no competition data or no active event
