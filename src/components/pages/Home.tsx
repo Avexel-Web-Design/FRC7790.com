@@ -18,6 +18,8 @@ export default function Home() {
       <Hero />
       <Suspense fallback={null}>
         <LiveUpdates />
+      </Suspense>
+      <Suspense fallback={null}>
         <Countdown />
       </Suspense>
       <Contact />
