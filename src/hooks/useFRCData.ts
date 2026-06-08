@@ -23,18 +23,18 @@ export function useFRCCompetitionData(refreshInterval: number = 30000) {
 
   useEffect(() => {
     // Delay initial fetch to after first paint so TBA calls don't block LCP
-    const raf = requestAnimationFrame(() => {
+    const timer = setTimeout(() => {
       fetchData();
-    });
+    }, 0);
 
     if (refreshInterval > 0) {
       const interval = setInterval(fetchData, refreshInterval);
       return () => {
-        cancelAnimationFrame(raf);
+        clearTimeout(timer);
         clearInterval(interval);
       };
     }
-    return () => cancelAnimationFrame(raf);
+    return () => clearTimeout(timer);
   }, [fetchData, refreshInterval]);
 
   return {

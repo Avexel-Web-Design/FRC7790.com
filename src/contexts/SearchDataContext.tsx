@@ -95,7 +95,14 @@ export function SearchDataProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    loadData();
+    // Defer search data until browser is idle so it doesn't block LCP
+    if ('requestIdleCallback' in window) {
+      const idleId = requestIdleCallback(() => loadData(), { timeout: 5000 });
+      return () => cancelIdleCallback(idleId);
+    } else {
+      const timer = setTimeout(loadData, 2000);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   return (

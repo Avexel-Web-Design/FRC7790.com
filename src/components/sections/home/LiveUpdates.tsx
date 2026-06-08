@@ -32,14 +32,14 @@ export default function LiveUpdates() {
     };
 
     // Delay initial fetch to after first paint so TBA calls don't block LCP
-    const raf = requestAnimationFrame(() => {
+    const timer = setTimeout(() => {
       fetchData();
-    });
+    }, 0);
 
     // Set up automatic refresh every 30 seconds during active events
     const interval = setInterval(fetchData, 30000);
     return () => {
-      cancelAnimationFrame(raf);
+      clearTimeout(timer);
       clearInterval(interval);
     };
   }, []);
