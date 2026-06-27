@@ -175,7 +175,7 @@ export default function Atlas() {
           className="mt-4 text-gray-400 animate__animated animate__fadeInUp"
           style={{ animationDelay: '0.3s' }}
         >
-          Explore every district and event without searching.
+          Explore every district and event.
         </p>
         <div
           className="mt-6 animate__animated animate__fadeInUp"
