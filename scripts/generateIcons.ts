@@ -25,7 +25,7 @@ let sharp: typeof import('sharp').default
 try {
   sharp = (await import('sharp')).default
 } catch {
-  console.error('✖ sharp not installed. Install with: bun add -D sharp')
+  console.error('✖ sharp not installed. Install with: npm install --save-dev sharp')
   process.exit(1)
 }
 
