@@ -30,21 +30,12 @@ console.log(`➡️  Applying migrations to ${dbName}${remoteFlag ? ' (remote)' 
 const root = join(__dirname, '..')
 
 function run(label: string, argsArray: string[]): string {
-  // Try using bunx wrangler first
-  let res = spawnSync('bunx', ['wrangler', ...argsArray], { 
+  const npxCommand = process.platform === 'win32' ? 'npx.cmd' : 'npx'
+  const res = spawnSync(npxCommand, ['--no-install', 'wrangler', ...argsArray], {
     encoding: 'utf8',
     cwd: root
   })
-  
-  if (res.error) {
-    // Fallback to npx
-    console.log(`↺ Fallback to npx for ${label}`)
-    res = spawnSync('npx', ['--yes', 'wrangler', ...argsArray], { 
-      encoding: 'utf8',
-      cwd: root
-    })
-  }
-  
+
   if (res.error) {
     console.error(`✖ ${label} failed:`, res.error.message)
     process.exit(1)

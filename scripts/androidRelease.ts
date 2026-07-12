@@ -62,7 +62,7 @@ function run(cmd: string, args: string[], opts: { cwd?: string } = {}): void {
     // Secondary fallback for npm/npx using npm_execpath
     if ((cmd === 'npm.cmd' || cmd === 'npx.cmd') && process.env.npm_execpath) {
       const cli = process.env.npm_execpath
-      console.log(`↺ Fallback via bun ${cli}`)
+      console.log(`↺ Fallback via Node.js ${cli}`)
       const nodeArgs = [cli, ...args]
       res = spawnSync(process.execPath, nodeArgs, { 
         stdio: 'inherit', 
@@ -127,7 +127,7 @@ if (process.env.DRY_RUN === '1') {
 // 4. Gradle bundleRelease
 const androidDir = join(root, 'android')
 if (!existsSync(androidDir)) {
-  console.error('Android directory missing. Did you run bunx cap add android?')
+  console.error('Android directory missing. Did you run npx cap add android?')
   process.exit(1)
 }
 const gradleCmd = isWin ? 'gradlew.bat' : './gradlew'
