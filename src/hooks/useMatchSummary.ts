@@ -19,8 +19,8 @@ interface UseMatchSummaryReturn {
   aiError: string | null;
 }
 
-// Bump version to invalidate prior cache after factor enrichment
-const STORAGE_KEY_PREFIX = 'match_summary_v3:';
+// Bump version to invalidate prompt-echo summaries from older model defaults.
+const STORAGE_KEY_PREFIX = 'match_summary_v4:';
 
 export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn {
   const [summary, setSummary] = useState<string | null>(null);

@@ -43,6 +43,20 @@ interface AIResponse {
   model: string;
 }
 
+const DEFAULT_OPENROUTER_MODEL = 'google/gemma-4-26b-a4b-it:free';
+const OPENROUTER_FALLBACK_MODEL = 'openrouter/free';
+
+const isPromptEcho = (text: string): boolean => {
+  const normalized = text.toLowerCase();
+  return [
+    'we need to produce',
+    'structured_json=',
+    'first sentence:',
+    'output requirements:',
+    'using provided stats only'
+  ].some(marker => normalized.includes(marker));
+};
+
 const extractAssistantText = (data: any): string | null => {
   const fromMessage = data?.choices?.[0]?.message?.content;
   if (typeof fromMessage === 'string' && fromMessage.trim().length > 0) {
@@ -225,6 +239,9 @@ const callOpenRouter = (
         const data: any = await resp.json();
         const candidate = extractAssistantText(data);
         if (candidate && candidate.length > 0) {
+          if (isPromptEcho(candidate)) {
+            return { text: null, error: 'OpenRouter echoed the prompt instead of producing a summary', model };
+          }
           return { text: candidate, error: null, model };
         }
         const finishReason = data?.choices?.[0]?.finish_reason || data?.choices?.[0]?.finishReason || 'unknown';
@@ -272,6 +289,7 @@ const callAzureOpenAI = (
         const data: any = await resp.json();
         const candidate = data.choices?.[0]?.message?.content?.trim();
         if (candidate && candidate.length > 0) {
+          if (isPromptEcho(candidate)) return null;
           return candidate;
         }
       }
@@ -310,6 +328,7 @@ const callOpenAI = (
         const data: any = await resp.json();
         const candidate = data.choices?.[0]?.message?.content?.trim();
         if (candidate && candidate.length > 0) {
+          if (isPromptEcho(candidate)) return null;
           return candidate;
         }
       }
@@ -347,6 +366,7 @@ const callGroq = (
         const data: any = await resp.json();
         const candidate = data.choices?.[0]?.message?.content?.trim();
         if (candidate && candidate.length > 0) {
+          if (isPromptEcho(candidate)) return null;
           return candidate;
         }
       }
@@ -420,7 +440,7 @@ ai.post('/generate', effectHandler((c) =>
     let modelUsed: string = provider;
 
     if (provider === 'openrouter' && openRouterKey) {
-      const model = env.OPENROUTER_MODEL || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
+      const model = env.OPENROUTER_MODEL || DEFAULT_OPENROUTER_MODEL;
       const siteUrl = env.OPENROUTER_SITE_URL || 'https://www.frc7790.com';
       const appName = env.OPENROUTER_APP_NAME || 'FRC 7790';
       const result = yield* callOpenRouter(openRouterKey, model, prompt, siteUrl, appName);
@@ -430,7 +450,7 @@ ai.post('/generate', effectHandler((c) =>
         modelUsed = result.model;
       } else {
         aiError = result.error;
-        const fallbackModel = 'nvidia/nemotron-nano-9b-v2:free';
+        const fallbackModel = OPENROUTER_FALLBACK_MODEL;
         const isLengthStop = Boolean(result.error && result.error.includes('finish_reason=length'));
 
         if (isLengthStop) {
@@ -471,11 +491,16 @@ ai.post('/generate', effectHandler((c) =>
       }
     } else if (provider === 'openai' && env.OPENAI_API_KEY) {
       const baseUrl = env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
-      const model = env.OPENAI_MODEL || 'gpt-4o-mini';
-      const result = yield* callOpenAI(baseUrl, model, env.OPENAI_API_KEY, prompt);
-      if (result) {
-        summaryText = result;
-        usedAI = true;
+      const model = env.OPENAI_MODEL;
+      if (model) {
+        const result = yield* callOpenAI(baseUrl, model, env.OPENAI_API_KEY, prompt);
+        if (result) {
+          summaryText = result;
+          usedAI = true;
+          modelUsed = model;
+        }
+      } else {
+        aiError = 'OPENAI_MODEL is not configured; skipping paid direct OpenAI default';
       }
     } else if (provider === 'groq' && env.GROQ_API_KEY) {
       const model = env.GROQ_MODEL || 'llama-3.1-70b-versatile';
