@@ -19,8 +19,8 @@ interface UseMatchSummaryReturn {
   aiError: string | null;
 }
 
-// Bump version to invalidate prompt-echo summaries from older model defaults.
-const STORAGE_KEY_PREFIX = 'match_summary_v4:';
+// Bump version to invalidate prompt-echo summaries from older prompt format.
+const STORAGE_KEY_PREFIX = 'match_summary_v5:';
 
 export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn {
   const [summary, setSummary] = useState<string | null>(null);
@@ -58,7 +58,9 @@ export function useMatchSummary(match: MatchData | null): UseMatchSummaryReturn 
           setModel(data.model || null);
           setFallbackUsed(Boolean(data.fallbackUsed || data.model === 'fallback'));
           setAiError(data.aiError || null);
-          localStorage.setItem(cacheKey, data.summary);
+          if (!data.fallbackUsed) {
+            localStorage.setItem(cacheKey, data.summary);
+          }
         }
       } catch (err) {
         if (!cancelled) {
